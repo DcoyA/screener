@@ -5,37 +5,37 @@
     "market": "KOSPI",
     "totalScore": 92,
     "valueScore": 34,
-    "qualityScore": 23,
-    "safetyScore": 18,
-    "changeScore": 17,
-    "risk": "리스크 없음",
+    "qualityScore": 24,
+    "safetyScore": 20,
+    "changeScore": 14,
+    "risk": "대형 악재 공시는 없지만 업황 변동성은 점검 필요",
     "summary": "저평가·수익성·안정성이 모두 우수한 상위권 후보입니다.",
-    "description": "대형주이면서도 밸류·품질·안정성의 균형이 좋아 MVP 테스트에서 최상위권 후보로 분류됩니다."
+    "description": "공시 기준 주요 재무 체력과 시장 지표를 함께 보면 밸류에이션 부담이 크지 않고 재무 안정성도 양호한 편입니다. 다만 업황 민감도가 높은 업종 특성은 함께 체크해야 합니다."
   },
   {
     "code": "005380",
     "name": "현대차",
     "market": "KOSPI",
     "totalScore": 88,
-    "valueScore": 35,
+    "valueScore": 33,
     "qualityScore": 21,
-    "safetyScore": 18,
-    "changeScore": 14,
-    "risk": "리스크 없음",
+    "safetyScore": 19,
+    "changeScore": 15,
+    "risk": "가치와 안정성은 양호하지만 추가 공시 흐름은 점검 필요",
     "summary": "가치와 안정성 측면이 강한 편이며 추가 공시 점검 가치가 있습니다.",
-    "description": "가치 점수가 높고 안정성이 양호한 편이라 저평가 스크리너에서 상위 후보로 볼 수 있는 구조입니다."
+    "description": "공시 및 기본 지표 기준으로 보면 밸류에이션 부담이 낮은 편이고 수익성과 재무 구조도 비교적 안정적입니다. 다만 산업 경기와 환율 변수는 함께 봐야 합니다."
   },
   {
     "code": "000660",
     "name": "SK하이닉스",
     "market": "KOSPI",
     "totalScore": 84,
-    "valueScore": 26,
+    "valueScore": 27,
     "qualityScore": 24,
-    "safetyScore": 16,
-    "changeScore": 18,
-    "risk": "리스크 없음",
-    "summary": "성장성과 수익성이 강하지만 밸류 부담은 함께 확인할 필요가 있습니다.",
-    "description": "성장성과 이익 개선은 강하지만 절대 밸류 부담과 업황 민감도를 함께 체크해야 하는 종목입니다."
+    "safetyScore": 17,
+    "changeScore": 16,
+    "risk": "성장성과 수익성은 강하지만 밸류 부담 구간은 추가 확인 필요",
+    "summary": "성장성과 수익성이 강하지만 밸류 부담 구간은 함께 확인할 필요가 있습니다.",
+    "description": "최근 공시와 실적 흐름을 기준으로 보면 이익 체력은 개선된 편이지만 업황 기대가 주가에 반영되는 속도도 빨라 밸류에이션 체감 부담은 함께 확인해야 합니다."
   }
 ]
