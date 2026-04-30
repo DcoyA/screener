@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import stocks from "../../data/stocks.json";
 
-export default function StockDetailPage({ params }) {
-  const stock = stocks.find((item) => item.code === params.code);
+export default async function StockDetailPage({ params }) {
+  const { code } = await params;
+  const stock = stocks.find((item) => item.code === code);
 
   if (!stock) {
     notFound();
