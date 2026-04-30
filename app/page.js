@@ -3,7 +3,7 @@ export default function HomePage() {
     <main className="container">
       <section className="hero">
         <p className="badge">MVP TEST</p>
-        <h1>우량주 스카우터2</h1>
+        <h1>우량주 스카우터</h1>
         <p className="desc">
           OpenDART와 KRX 데이터를 바탕으로 저평가 후보 종목과 리스크를 정리하는 MVP입니다.
         </p>
