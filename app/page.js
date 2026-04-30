@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { sampleStocks } from "./lib/sampleData";
+import stocks from "./data/stocks.json";
 
 export default function HomePage() {
-  const topStocks = sampleStocks.slice(0, 3);
+  const topStocks = stocks.slice(0, 3);
+
 
   return (
     <>
@@ -29,6 +30,9 @@ export default function HomePage() {
             <p className="muted">종목코드 {stock.code}</p>
             <p>총점 {stock.totalScore}점</p>
             <p>{stock.summary}</p>
+              <div className="buttonRow">
+                <Link href={`/stock/${stock.code}`} className="button secondary">종목 상세 보기</Link>
+              </div>
           </div>
         ))}
       </div>
