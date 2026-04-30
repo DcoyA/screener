@@ -1,4 +1,6 @@
-import { sampleStocks } from "../lib/sampleData";
+import Link from "next/link";
+import stocks from "../data/stocks.json";
+
 
 export default function RankingPage() {
   return (
@@ -27,10 +29,12 @@ export default function RankingPage() {
             </tr>
           </thead>
           <tbody>
-            {sampleStocks.map((stock) => (
+            {stocks.map((stock) => (
               <tr key={stock.code}>
                 <td>{stock.code}</td>
-                <td>{stock.name}</td>
+                <td>
+                  <Link href={`/stock/${stock.code}`}>{stock.name}</Link>
+                </td>
                 <td>{stock.totalScore}</td>
                 <td>{stock.valueScore}</td>
                 <td>{stock.qualityScore}</td>
