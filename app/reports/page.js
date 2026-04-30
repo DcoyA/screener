@@ -1,4 +1,4 @@
-import { sampleReports } from "../lib/sampleData";
+import reports from "../data/reports.json";
 
 export default function ReportsPage() {
   return (
@@ -12,7 +12,7 @@ export default function ReportsPage() {
       </section>
 
       <div className="grid">
-        {sampleReports.map((report) => (
+        {reports.map((report) => (
           <div className="card" key={report.id}>
             <h3>{report.title}</h3>
             <p>{report.summary}</p>
