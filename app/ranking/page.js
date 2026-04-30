@@ -1,51 +1,40 @@
 import Link from "next/link";
 import stocks from "../data/stocks.json";
 
-
 export default function RankingPage() {
-  return (
-    <>
-      <section className="hero">
-        <div className="badge">랭킹</div>
-        <h1>점수 상위 종목</h1>
-        <p>
-          가치·품질·안정성·변화 점수를 합산한 샘플 랭킹 화면입니다.
-          다음 단계에서 구글시트의 사이트출력 탭과 연결할 예정입니다.
-        </p>
-      </section>
+  const rankedStocks = [...stocks].sort((a, b) => b.totalScore - a.totalScore);
 
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>종목코드</th>
-              <th>회사명</th>
-              <th>총점</th>
-              <th>가치</th>
-              <th>품질</th>
-              <th>안정성</th>
-              <th>변화</th>
-              <th>리스크</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stocks.map((stock) => (
-              <tr key={stock.code}>
-                <td>{stock.code}</td>
-                <td>
-                  <Link href={`/stock/${stock.code}`}>{stock.name}</Link>
-                </td>
-                <td>{stock.totalScore}</td>
-                <td>{stock.valueScore}</td>
-                <td>{stock.qualityScore}</td>
-                <td>{stock.safetyScore}</td>
-                <td>{stock.changeScore}</td>
-                <td>{stock.risk}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  return (
+    <main className="container">
+      <p className="badge">RANKING</p>
+      <h1>종목 랭킹</h1>
+      <p className="desc">
+        현재는 샘플 종목 3개 기준이며, 이후 자동 수집 데이터로 매주 갱신할 예정입니다.
+      </p>
+
+      <div className="listWrap">
+        {rankedStocks.map((stock, index) => (
+          <div className="listCard" key={stock.code}>
+            <div className="listTop">
+              <div>
+                <p className="muted">#{index + 1}</p>
+                <h2>{stock.name}</h2>
+                <p className="stockCode">
+                  {stock.market} · {stock.code}
+                </p>
+              </div>
+
+              <div className="scoreBadge">{stock.totalScore}점</div>
+            </div>
+
+            <p className="summaryText">{stock.summary}</p>
+
+            <Link className="linkBtn" href={`/stock/${stock.code}`}>
+              종목 상세 보기
+            </Link>
+          </div>
+        ))}
       </div>
-    </>
+    </main>
   );
 }
