@@ -11,58 +11,60 @@ export default async function StockDetailPage({ params }) {
   }
 
   return (
-    <>
-      <section className="hero">
-        <div className="badge">{stock.market}</div>
-        <h1>{stock.name}</h1>
-        <p>
-          종목코드 {stock.code} · 총점 {stock.totalScore}점
-        </p>
+    <main className="container">
+      <Link className="backLink" href="/ranking">
+        ← 랭킹으로 돌아가기
+      </Link>
 
-        <div className="buttonRow">
-          <Link href="/ranking" className="button">랭킹으로 돌아가기</Link>
-          <Link href="/" className="button secondary">홈으로 이동</Link>
+      <section className="detailHeader">
+        <p className="marketBadge">{stock.market}</p>
+        <h1>{stock.name}</h1>
+        <p className="stockCode">종목코드 {stock.code}</p>
+        <p className="desc">{stock.summary}</p>
+      </section>
+
+      <section className="twoCol">
+        <div className="detailBox">
+          <h2>상세 설명</h2>
+          <p className="detailText">{stock.description}</p>
+        </div>
+
+        <div className="detailBox">
+          <h2>리스크 체크</h2>
+          <p className="detailText">{stock.risk}</p>
         </div>
       </section>
 
-      <h2 className="section-title">한줄 해석</h2>
-      <div className="card">
-        <p>{stock.summary}</p>
-        <p className="muted">{stock.description}</p>
-      </div>
+      <section className="detailBox">
+        <h2>점수 구성</h2>
 
-      <h2 className="section-title">점수 구성</h2>
-      <div className="grid">
-        <div className="card">
-          <h3>총점</h3>
-          <p>{stock.totalScore}점</p>
-        </div>
-        <div className="card">
-          <h3>가치</h3>
-          <p>{stock.valueScore}점</p>
-        </div>
-        <div className="card">
-          <h3>품질</h3>
-          <p>{stock.qualityScore}점</p>
-        </div>
-        <div className="card">
-          <h3>안정성</h3>
-          <p>{stock.safetyScore}점</p>
-        </div>
-        <div className="card">
-          <h3>변화</h3>
-          <p>{stock.changeScore}점</p>
-        </div>
-        <div className="card">
-          <h3>리스크</h3>
-          <p>{stock.risk}</p>
-        </div>
-      </div>
+        <div className="scoreGrid">
+          <div className="scoreBox">
+            <span>총점</span>
+            <strong>{stock.totalScore}점</strong>
+          </div>
 
-      <div className="notice">
-        이 페이지는 MVP용 종목 상세 화면입니다. 현재는 JSON 데이터 기반이며,
-        다음 단계에서 구글시트의 사이트출력 데이터와 연결할 예정입니다.
-      </div>
-    </>
+          <div className="scoreBox">
+            <span>가치점수</span>
+            <strong>{stock.valueScore}점</strong>
+          </div>
+
+          <div className="scoreBox">
+            <span>품질점수</span>
+            <strong>{stock.qualityScore}점</strong>
+          </div>
+
+          <div className="scoreBox">
+            <span>안정성점수</span>
+            <strong>{stock.safetyScore}점</strong>
+          </div>
+
+          <div className="scoreBox">
+            <span>변화점수</span>
+            <strong>{stock.changeScore}점</strong>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
