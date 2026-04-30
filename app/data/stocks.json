@@ -1,0 +1,67 @@
+[
+  {
+    "code": "005930",
+    "name": "삼성전자",
+    "market": "KOSPI",
+    "totalScore": 92,
+    "valueScore": 34,
+    "qualityScore": 23,
+    "safetyScore": 18,
+    "changeScore": 17,
+    "risk": "리스크 없음",
+    "summary": "저평가·수익성·안정성이 모두 우수한 상위권 후보입니다.",
+    "description": "대형주이면서도 밸류·품질·안정성의 균형이 좋아 MVP 테스트에서 최상위권 후보로 분류됩니다."
+  },
+  {
+    "code": "000660",
+    "name": "SK하이닉스",
+    "market": "KOSPI",
+    "totalScore": 84,
+    "valueScore": 26,
+    "qualityScore": 24,
+    "safetyScore": 16,
+    "changeScore": 18,
+    "risk": "리스크 없음",
+    "summary": "성장성과 수익성이 강하지만 밸류 부담은 함께 확인할 필요가 있습니다.",
+    "description": "성장성과 이익 개선은 강하지만 절대 밸류 부담과 업황 민감도를 함께 체크해야 하는 종목입니다."
+  },
+  {
+    "code": "005380",
+    "name": "현대차",
+    "market": "KOSPI",
+    "totalScore": 88,
+    "valueScore": 35,
+    "qualityScore": 21,
+    "safetyScore": 18,
+    "changeScore": 14,
+    "risk": "리스크 없음",
+    "summary": "가치와 안정성 측면이 강한 편이며 추가 공시 점검 가치가 있습니다.",
+    "description": "가치 점수가 높고 안정성이 양호한 편이라 저평가 스크리너에서 자주 상위에 올라올 수 있는 구조입니다."
+  },
+  {
+    "code": "214150",
+    "name": "클래시스",
+    "market": "KOSDAQ",
+    "totalScore": 76,
+    "valueScore": 20,
+    "qualityScore": 24,
+    "safetyScore": 15,
+    "changeScore": 17,
+    "risk": "리스크 없음",
+    "summary": "고수익성과 성장성을 유지하는 종목으로 추적 가치가 있습니다.",
+    "description": "수익성·성장성 성격이 강한 종목으로, 가치보다 품질과 변화 측면의 점수가 높은 케이스입니다."
+  },
+  {
+    "code": "263750",
+    "name": "펄어비스",
+    "market": "KOSDAQ",
+    "totalScore": 54,
+    "valueScore": 18,
+    "qualityScore": 12,
+    "safetyScore": 10,
+    "changeScore": 14,
+    "risk": "변동성 확인 필요",
+    "summary": "일부 지표는 무난하지만 선별적 해석이 필요한 종목입니다.",
+    "description": "절대 점수는 중간 수준이며, 실적 기대와 실제 수치 간 괴리 가능성을 따로 점검해야 합니다."
+  }
+]
