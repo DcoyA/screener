@@ -1,4 +1,4 @@
-import { sampleRisks } from "../lib/sampleData";
+import risks from "../data/risks.json";
 
 export default function RiskPage() {
   return (
@@ -13,7 +13,7 @@ export default function RiskPage() {
       </section>
 
       <div className="grid">
-        {sampleRisks.map((risk) => (
+        {risks.map((risk) => (
           <div className="card" key={`${risk.code}-${risk.date}`}>
             <div className="badge">{risk.severity} 위험도</div>
             <h3>{risk.name}</h3>
