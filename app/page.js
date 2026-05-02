@@ -29,6 +29,11 @@ export default function HomePage() {
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (!email.trim()) return;
+
+    const subject = encodeURIComponent("[우량주스카우터-구독신청]");
+    const body = encodeURIComponent(`신청자 이메일: ${email}`);
+    window.location.href = `mailto:iamborghini5757@gmail.com?subject=${subject}&body=${body}`;
+
     setIsSubmitted(true);
   };
 
