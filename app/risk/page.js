@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import risks from "../data/risks.json";
+
 
 function getRiskClass(level) {
   if (level === "주의") return "riskBadge riskHigh";
