@@ -32,7 +32,7 @@ export default function HomePage() {
     if (!email.trim()) return;
 
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbzQqPFqYDJIfKzQerwHtYc5K2Q6BPlhuYftVv84Eqm6bNfkhXMxEaBSPshBJpY_OrJxwA/exec", {
+      await fetch("https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
