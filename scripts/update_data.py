@@ -176,14 +176,21 @@ def krx_headers():
         "Accept": "application/json"
     }
 
-def fetch_krx_rows(url):
+def recent_krx_bas_dd_candidates(days_back=14):
+    base_date = (kst_now - timedelta(days=1)).date()
+    return [
+        (base_date - timedelta(days=offset)).strftime("%Y%m%d")
+        for offset in range(days_back)
+    ]
+
+def fetch_krx_rows(url, bas_dd):
     if not url:
-        return []
+        return [], [f"missing url for basDd={bas_dd}"]
 
     attempts = [
-        {"headers": krx_headers(), "params": None, "label": "header-auth"},
-        {"headers": {"Accept": "application/json"}, "params": {"AUTH_KEY": KRX_API_KEY}, "label": "query-auth"},
-        {"headers": krx_headers(), "params": {"AUTH_KEY": KRX_API_KEY}, "label": "header+query-auth"},
+        {"headers": krx_headers(), "params": {"basDd": bas_dd}, "label": "header-auth"},
+        {"headers": {"Accept": "application/json"}, "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd}, "label": "query-auth"},
+        {"headers": krx_headers(), "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd}, "label": "header+query-auth"},
     ]
 
     errors = []
@@ -203,14 +210,14 @@ def fetch_krx_rows(url):
 
             rows = data.get("OutBlock_1", [])
             if isinstance(rows, list) and rows:
-                return rows
+                return rows, errors
             if isinstance(rows, list):
-                errors.append(f"{attempt['label']}: OutBlock_1 empty")
+                errors.append(f"{attempt['label']}: OutBlock_1 empty for basDd={bas_dd}")
                 continue
 
-        errors.append(f"{attempt['label']}: unexpected payload shape")
+        errors.append(f"{attempt['label']}: unexpected payload shape for basDd={bas_dd}")
 
-    raise RuntimeError("KRX rows fetch failed for %s | %s" % (url, " ; ".join(errors)))
+    return [], errors
 
 def normalize_basic_rows(rows, market_name):
     result = []
@@ -281,44 +288,80 @@ def normalize_daily_rows(rows):
             )
         )
 
+        market_cap = parse_amount(
+            pick_field(
+                row,
+                exact_keys=["MKTCAP", "MKT_CAP", "TDD_MRKT_CAP", "TDD_MRKT_CAP_AMT"],
+                contains_keys=["mktcap", "market_cap", "mkt_cap"]
+            )
+        )
+
+        list_shares = parse_amount(
+            pick_field(
+                row,
+                exact_keys=["LIST_SHRS"],
+                contains_keys=["list_shrs", "shares"]
+            )
+        )
+
         if not code:
             continue
 
         result[code] = {
             "tradeValue": trade_value,
-            "closePrice": close_price
+            "closePrice": close_price,
+            "marketCap": market_cap,
+            "listShares": list_shares
         }
 
     return result
 
 def build_krx_universe():
-    kospi_basic = normalize_basic_rows(fetch_krx_rows(KRX_KOSPI_BASIC_URL), "KOSPI")
-    kosdaq_basic = normalize_basic_rows(fetch_krx_rows(KRX_KOSDAQ_BASIC_URL), "KOSDAQ")
+    diagnostics = []
 
-    basic_rows = kospi_basic + kosdaq_basic
-    if not basic_rows:
-        raise RuntimeError(
-            "KRX basic info returned 0 rows. "
-            f"KOSPI_BASIC_URL={KRX_KOSPI_BASIC_URL}, KOSDAQ_BASIC_URL={KRX_KOSDAQ_BASIC_URL}"
-        )
+    for bas_dd in recent_krx_bas_dd_candidates():
+        kospi_basic_rows, kospi_basic_errors = fetch_krx_rows(KRX_KOSPI_BASIC_URL, bas_dd)
+        kosdaq_basic_rows, kosdaq_basic_errors = fetch_krx_rows(KRX_KOSDAQ_BASIC_URL, bas_dd)
 
-    kospi_daily = normalize_daily_rows(fetch_krx_rows(KRX_KOSPI_DAILY_URL))
-    kosdaq_daily = normalize_daily_rows(fetch_krx_rows(KRX_KOSDAQ_DAILY_URL))
+        kospi_basic = normalize_basic_rows(kospi_basic_rows, "KOSPI")
+        kosdaq_basic = normalize_basic_rows(kosdaq_basic_rows, "KOSDAQ")
+        basic_rows = kospi_basic + kosdaq_basic
 
-    daily_map = {}
-    daily_map.update(kospi_daily)
-    daily_map.update(kosdaq_daily)
+        if not basic_rows:
+            diagnostics.append(
+                f"{bas_dd} | KOSPI basic: {' ; '.join(kospi_basic_errors)} | KOSDAQ basic: {' ; '.join(kosdaq_basic_errors)}"
+            )
+            continue
 
-    merged = {}
-    for row in basic_rows:
-        code = row["code"]
-        item = dict(row)
-        item.update(daily_map.get(code, {"tradeValue": 0, "closePrice": 0}))
-        merged[code] = item
+        kospi_daily_rows, kospi_daily_errors = fetch_krx_rows(KRX_KOSPI_DAILY_URL, bas_dd)
+        kosdaq_daily_rows, kosdaq_daily_errors = fetch_krx_rows(KRX_KOSDAQ_DAILY_URL, bas_dd)
 
-    result = list(merged.values())
-    result.sort(key=lambda x: (x.get("tradeValue", 0), x.get("marketCap", 0)), reverse=True)
-    return result
+        kospi_daily = normalize_daily_rows(kospi_daily_rows)
+        kosdaq_daily = normalize_daily_rows(kosdaq_daily_rows)
+
+        daily_map = {}
+        daily_map.update(kospi_daily)
+        daily_map.update(kosdaq_daily)
+
+        merged = {}
+        for row in basic_rows:
+            code = row["code"]
+            item = dict(row)
+            item.update(daily_map.get(code, {"tradeValue": 0, "closePrice": 0, "marketCap": item.get("marketCap", 0)}))
+            merged[code] = item
+
+        result = list(merged.values())
+        result.sort(key=lambda x: (x.get("tradeValue", 0), x.get("marketCap", 0)), reverse=True)
+        print(f"Using KRX basDd={bas_dd}")
+        if kospi_daily_errors or kosdaq_daily_errors:
+            print(f"KRX daily fetch notes: KOSPI={' ; '.join(kospi_daily_errors)} | KOSDAQ={' ; '.join(kosdaq_daily_errors)}")
+        return result
+
+    raise RuntimeError(
+        "KRX basic info returned 0 rows across recent basDd candidates. "
+        f"KOSPI_BASIC_URL={KRX_KOSPI_BASIC_URL}, KOSDAQ_BASIC_URL={KRX_KOSDAQ_BASIC_URL} | "
+        + " || ".join(diagnostics[:8])
+    )
 
 def fetch_major_accounts(corp_code, year):
     data = http_get_json(
