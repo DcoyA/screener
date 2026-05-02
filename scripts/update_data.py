@@ -25,7 +25,7 @@ DEFAULT_KRX_KOSDAQ_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_isu_
 DEFAULT_KRX_KOSPI_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_bydd_trd"
 DEFAULT_KRX_KOSDAQ_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_bydd_trd"
 
-MAX_STOCKS = 50
+MAX_STOCKS = 500
 REPORT_CODE = "11011"
 DAILY_WINDOW = 5
 RECENT_DAYS_BACK = 20
