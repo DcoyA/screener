@@ -2,6 +2,7 @@ import io
 import json
 import os
 import re
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -19,10 +20,22 @@ reports_path = DATA_DIR / "reports.json"
 OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
 KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
 
-KRX_KOSPI_BASIC_URL = os.getenv("KRX_KOSPI_BASIC_URL", "").strip()
-KRX_KOSDAQ_BASIC_URL = os.getenv("KRX_KOSDAQ_BASIC_URL", "").strip()
-KRX_KOSPI_DAILY_URL = os.getenv("KRX_KOSPI_DAILY_URL", "").strip()
-KRX_KOSDAQ_DAILY_URL = os.getenv("KRX_KOSDAQ_DAILY_URL", "").strip()
+DEFAULT_KRX_KOSPI_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_isu_base_info"
+DEFAULT_KRX_KOSDAQ_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_isu_base_info"
+DEFAULT_KRX_KOSPI_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_bydd_trd"
+DEFAULT_KRX_KOSDAQ_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_bydd_trd"
+
+def normalize_krx_url(url, fallback):
+    candidate = (url or fallback or "").strip()
+    if not candidate:
+        return fallback
+    candidate = candidate.replace("/svc/sample/apis/", "/svc/apis/")
+    return candidate
+
+KRX_KOSPI_BASIC_URL = normalize_krx_url(os.getenv("KRX_KOSPI_BASIC_URL", ""), DEFAULT_KRX_KOSPI_BASIC_URL)
+KRX_KOSDAQ_BASIC_URL = normalize_krx_url(os.getenv("KRX_KOSDAQ_BASIC_URL", ""), DEFAULT_KRX_KOSDAQ_BASIC_URL)
+KRX_KOSPI_DAILY_URL = normalize_krx_url(os.getenv("KRX_KOSPI_DAILY_URL", ""), DEFAULT_KRX_KOSPI_DAILY_URL)
+KRX_KOSDAQ_DAILY_URL = normalize_krx_url(os.getenv("KRX_KOSDAQ_DAILY_URL", ""), DEFAULT_KRX_KOSDAQ_DAILY_URL)
 
 MAX_STOCKS = 50
 REPORT_CODE = "11011"
@@ -47,10 +60,30 @@ def http_get_json(base_url, params):
     with urllib.request.urlopen(url, timeout=60) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
-def request_json_url(url, headers=None):
-    req = urllib.request.Request(url, headers=headers or {})
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+def request_json_url(url, headers=None, params=None):
+    headers = headers or {}
+    if params:
+        query = urllib.parse.urlencode(params)
+        sep = "&" if "?" in url else "?"
+        url = f"{url}{sep}{query}"
+
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        try:
+            payload = json.loads(body) if body else {}
+        except Exception:
+            payload = {"raw": body}
+        payload["http_status"] = e.code
+        raise RuntimeError(f"KRX request failed for {url}: {json.dumps(payload, ensure_ascii=False)}")
+
+    try:
+        return json.loads(body)
+    except Exception:
+        raise RuntimeError(f"Invalid JSON response from {url}: {body[:300]}")
 
 def parse_amount(value):
     if value is None:
@@ -146,11 +179,38 @@ def krx_headers():
 def fetch_krx_rows(url):
     if not url:
         return []
-    data = request_json_url(url, headers=krx_headers())
-    rows = data.get("OutBlock_1", [])
-    if not isinstance(rows, list):
-        return []
-    return rows
+
+    attempts = [
+        {"headers": krx_headers(), "params": None, "label": "header-auth"},
+        {"headers": {"Accept": "application/json"}, "params": {"AUTH_KEY": KRX_API_KEY}, "label": "query-auth"},
+        {"headers": krx_headers(), "params": {"AUTH_KEY": KRX_API_KEY}, "label": "header+query-auth"},
+    ]
+
+    errors = []
+    for attempt in attempts:
+        try:
+            data = request_json_url(url, headers=attempt["headers"], params=attempt["params"])
+        except RuntimeError as e:
+            errors.append(f"{attempt['label']}: {e}")
+            continue
+
+        if isinstance(data, dict):
+            resp_code = str(data.get("respCode", "")).strip()
+            resp_msg = str(data.get("respMsg", "")).strip()
+            if resp_code and resp_code != "000":
+                errors.append(f"{attempt['label']}: respCode={resp_code}, respMsg={resp_msg}")
+                continue
+
+            rows = data.get("OutBlock_1", [])
+            if isinstance(rows, list) and rows:
+                return rows
+            if isinstance(rows, list):
+                errors.append(f"{attempt['label']}: OutBlock_1 empty")
+                continue
+
+        errors.append(f"{attempt['label']}: unexpected payload shape")
+
+    raise RuntimeError("KRX rows fetch failed for %s | %s" % (url, " ; ".join(errors)))
 
 def normalize_basic_rows(rows, market_name):
     result = []
@@ -237,7 +297,10 @@ def build_krx_universe():
 
     basic_rows = kospi_basic + kosdaq_basic
     if not basic_rows:
-        raise RuntimeError("KRX basic info returned 0 rows. Check KRX approval and URL variables.")
+        raise RuntimeError(
+            "KRX basic info returned 0 rows. "
+            f"KOSPI_BASIC_URL={KRX_KOSPI_BASIC_URL}, KOSDAQ_BASIC_URL={KRX_KOSDAQ_BASIC_URL}"
+        )
 
     kospi_daily = normalize_daily_rows(fetch_krx_rows(KRX_KOSPI_DAILY_URL))
     kosdaq_daily = normalize_daily_rows(fetch_krx_rows(KRX_KOSDAQ_DAILY_URL))
