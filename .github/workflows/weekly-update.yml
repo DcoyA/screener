@@ -8,6 +8,9 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    env:
+      OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
+      KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
 
     steps:
       - name: Checkout repository
@@ -22,11 +25,7 @@ jobs:
         run: pip install requests
 
       - name: Run update script
-        env:
-        OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
-        KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
         run: python scripts/update_data.py
-
 
       - name: Commit updated JSON
         run: |
