@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import stocks from "./data/stocks.json";
+import Image from "next/image";
 
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,6 +51,13 @@ export default function HomePage() {
       <main className="container">
         <header className="topBar">
           <Link href="/" className="brandArea">
+            <Image
+              src="/logo.png"
+              alt="우량주 스카우터 로고"
+              width={32}
+              height={32}
+              className="brandLogo"
+            />
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
 
@@ -231,8 +239,18 @@ export default function HomePage() {
         }
 
         .brandArea {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
           text-decoration: none;
         }
+        
+        .brandLogo {
+          width: 32px;
+          height: 32px;
+          object-fit: contain;
+        }
+
 
         .brandTitle {
           font-size: 1.05rem;
