@@ -26,16 +26,24 @@ export default function HomePage() {
     setIsSubmitted(false);
   };
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email.trim()) return;
 
-    const subject = encodeURIComponent("[우량주스카우터-구독신청]");
-    const body = encodeURIComponent(`신청자 이메일: ${email}`);
-    window.location.href = `mailto:iamborghini5757@gmail.com?subject=${subject}&body=${body}`;
+    try {
+      await fetch("https://script.google.com/macros/s/AKfycbzQqPFqYDJIfKzQerwHtYc5K2Q6BPlhuYftVv84Eqm6bNfkhXMxEaBSPshBJpY_OrJxwA/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+    } catch (err) {
+      // no-cors 모드에서는 응답을 못 읽지만 전송은 됨
+   }
 
-    setIsSubmitted(true);
-  };
+  setIsSubmitted(true);
+};
+
 
   return (
     <>
