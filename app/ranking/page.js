@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import stocks from "../data/stocks.json";
+
 
 export default function RankingPage() {
   const rankedStocks = [...stocks].sort((a, b) => b.totalScore - a.totalScore);
