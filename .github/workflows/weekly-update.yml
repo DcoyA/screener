@@ -14,7 +14,11 @@ jobs:
     env:
       OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
       KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
-
+      KRX_KOSPI_BASIC_URL: ${{ vars.KRX_KOSPI_BASIC_URL }}
+      KRX_KOSDAQ_BASIC_URL: ${{ vars.KRX_KOSDAQ_BASIC_URL }}
+      KRX_KOSPI_DAILY_URL: ${{ vars.KRX_KOSPI_DAILY_URL }}
+      KRX_KOSDAQ_DAILY_URL: ${{ vars.KRX_KOSDAQ_DAILY_URL }}
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
