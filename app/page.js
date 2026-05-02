@@ -13,6 +13,7 @@ export default function HomePage() {
     () => [...stocks].sort((a, b) => b.totalScore - a.totalScore).slice(0, 3),
     []
   );
+  const updatedAt = topStocks[0]?.updatedAt || stocks[0]?.updatedAt || "-";
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -47,24 +48,34 @@ export default function HomePage() {
         </header>
 
         <section className="hero">
-          <p className="badge">OFFICIAL DATA LIVE</p>
-          <h1>우량주 스카우터</h1>
-          <p className="desc">
-            우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일
-            오전 9시에 자동 수집하고, AI가 재무 건전성·저평가 여부·시장
-            유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반
-            주식 리서치 서비스입니다. PER, PBR, ROE, 부채비율, 시가총액,
-            최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
-            형태로 제공합니다.
-          </p>
+          <div className="heroTop">
+            <div className="heroMain">
+              <p className="badge">OFFICIAL DATA LIVE</p>
+              <h1>우량주 스카우터</h1>
+              <p className="desc">
+                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일
+                오전 9시에 자동 수집하고, AI가 재무 건전성·저평가 여부·시장
+                유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반
+                주식 리서치 서비스입니다. PER, PBR, ROE, 부채비율, 시가총액,
+                최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
+                형태로 제공합니다.
+              </p>
 
-          <div className="heroActions">
-            <Link className="primaryBtn" href="/ranking">
-              상위 랭킹 보기
-            </Link>
-            <Link className="secondaryBtn" href="/reports">
-              이번 주 리포트 보기
-            </Link>
+              <div className="heroActions">
+                <Link className="primaryBtn" href="/ranking">
+                  상위 랭킹 보기
+                </Link>
+                <Link className="secondaryBtn" href="/reports">
+                  이번 주 리포트 보기
+                </Link>
+              </div>
+            </div>
+
+            <aside className="updateBox" aria-label="업데이트 날짜">
+              <span className="updateLabel">업데이트</span>
+              <strong>{updatedAt}</strong>
+              <p className="updateDesc">최근 자동 수집 및 분석 반영일</p>
+            </aside>
           </div>
         </section>
 
@@ -237,6 +248,19 @@ export default function HomePage() {
           padding: 20px 0 8px;
         }
 
+        .heroTop {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+          flex-wrap: wrap;
+        }
+
+        .heroMain {
+          flex: 1 1 720px;
+          min-width: 0;
+        }
+
         .badge,
         .subscribeEyebrow,
         .modalBadge {
@@ -265,6 +289,37 @@ export default function HomePage() {
           line-height: 1.9;
           color: #475569;
           margin: 0;
+        }
+
+        .updateBox {
+          min-width: 200px;
+          padding: 16px 18px;
+          border-radius: 18px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+          text-align: right;
+        }
+
+        .updateLabel {
+          display: block;
+          margin-bottom: 6px;
+          color: #64748b;
+          font-size: 0.88rem;
+          font-weight: 700;
+        }
+
+        .updateBox strong {
+          display: block;
+          font-size: 1.15rem;
+          color: #0f172a;
+        }
+
+        .updateDesc {
+          margin: 8px 0 0;
+          color: #64748b;
+          font-size: 0.92rem;
+          line-height: 1.5;
         }
 
         .heroActions,
@@ -522,6 +577,15 @@ export default function HomePage() {
           .quickLinksGrid,
           .cardWrap {
             grid-template-columns: 1fr;
+          }
+
+          .heroTop {
+            flex-direction: column;
+          }
+
+          .updateBox {
+            width: 100%;
+            text-align: left;
           }
         }
 
