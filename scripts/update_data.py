@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -15,21 +16,26 @@ stocks_path = DATA_DIR / "stocks.json"
 risks_path = DATA_DIR / "risks.json"
 reports_path = DATA_DIR / "reports.json"
 
-API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
+OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
+KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
 
-TARGET_STOCKS = {
-    "005930": {"name": "삼성전자", "market": "KOSPI"},
-    "005380": {"name": "현대차", "market": "KOSPI"},
-    "000660": {"name": "SK하이닉스", "market": "KOSPI"},
-}
+KRX_KOSPI_BASIC_URL = os.getenv("KRX_KOSPI_BASIC_URL", "").strip()
+KRX_KOSDAQ_BASIC_URL = os.getenv("KRX_KOSDAQ_BASIC_URL", "").strip()
+KRX_KOSPI_DAILY_URL = os.getenv("KRX_KOSPI_DAILY_URL", "").strip()
+KRX_KOSDAQ_DAILY_URL = os.getenv("KRX_KOSDAQ_DAILY_URL", "").strip()
+
+MAX_STOCKS = 50
+REPORT_CODE = "11011"
 
 kst_now = datetime.utcnow() + timedelta(hours=9)
 today = kst_now.strftime("%Y-%m-%d")
-target_year = str(kst_now.year - 1)  # 예: 2026-04 기준 2025 사업보고서 사용
-report_code = "11011"  # 사업보고서
+target_year = str(kst_now.year - 1)
 
-if not API_KEY:
+if not OPENDART_API_KEY:
     raise RuntimeError("OPENDART_API_KEY is missing")
+
+if not KRX_API_KEY:
+    raise RuntimeError("KRX_API_KEY is missing")
 
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
@@ -38,13 +44,73 @@ def save_json(path, data):
 def http_get_json(base_url, params):
     query = urllib.parse.urlencode(params)
     url = f"{base_url}?{query}"
-    with urllib.request.urlopen(url) as resp:
+    with urllib.request.urlopen(url, timeout=60) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
+def request_json_url(url, headers=None):
+    req = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+def parse_amount(value):
+    if value is None:
+        return 0
+    text = str(value).strip().replace(",", "")
+    if text == "":
+        return 0
+    if text.startswith("(") and text.endswith(")"):
+        text = "-" + text[1:-1]
+    try:
+        return int(float(text))
+    except:
+        return 0
+
+def normalize_code(value):
+    if value is None:
+        return ""
+    digits = re.sub(r"[^0-9]", "", str(value))
+    if len(digits) >= 6:
+        return digits[-6:]
+    return digits.zfill(6) if digits else ""
+
+def fmt_krw(value):
+    n = abs(int(value))
+    sign = "-" if value < 0 else ""
+
+    if n >= 1_0000_0000_0000:
+        return f"{sign}{n / 1_0000_0000_0000:.1f}조원"
+    elif n >= 1_0000_0000:
+        return f"{sign}{n / 1_0000_0000:.0f}억원"
+    else:
+        return f"{sign}{n:,}원"
+
+def pct(a, b):
+    if not b:
+        return 0.0
+    return ((a - b) / abs(b)) * 100
+
+def pick_field(row, exact_keys=None, contains_keys=None):
+    exact_keys = exact_keys or []
+    contains_keys = contains_keys or []
+
+    lowered = {str(k).lower(): k for k in row.keys()}
+
+    for key in exact_keys:
+        if key.lower() in lowered:
+            return row[lowered[key.lower()]]
+
+    for k, v in row.items():
+        lk = str(k).lower()
+        for ck in contains_keys:
+            if ck.lower() in lk:
+                return v
+
+    return None
+
 def download_corp_code_xml():
-    query = urllib.parse.urlencode({"crtfc_key": API_KEY})
+    query = urllib.parse.urlencode({"crtfc_key": OPENDART_API_KEY})
     url = f"https://opendart.fss.or.kr/api/corpCode.xml?{query}"
-    with urllib.request.urlopen(url) as resp:
+    with urllib.request.urlopen(url, timeout=60) as resp:
         data = resp.read()
 
     with zipfile.ZipFile(io.BytesIO(data)) as zf:
@@ -70,34 +136,156 @@ def build_corp_code_map():
 
     return mapping
 
-def parse_amount(value):
-    if value is None:
-        return 0
-    text = str(value).strip().replace(",", "")
-    if text == "":
-        return 0
-    if text.startswith("(") and text.endswith(")"):
-        text = "-" + text[1:-1]
-    try:
-        return int(float(text))
-    except:
-        return 0
+def krx_headers():
+    return {
+        "AUTH_KEY": KRX_API_KEY,
+        "Content-Type": "application/json; charset=utf-8",
+        "Accept": "application/json"
+    }
 
-def fmt_krw(value):
-    n = abs(int(value))
-    sign = "-" if value < 0 else ""
+def fetch_krx_rows(url):
+    if not url:
+        return []
+    data = request_json_url(url, headers=krx_headers())
+    rows = data.get("OutBlock_1", [])
+    if not isinstance(rows, list):
+        return []
+    return rows
 
-    if n >= 1_0000_0000_0000:
-        return f"{sign}{n / 1_0000_0000_0000:.1f}조원"
-    elif n >= 1_0000_0000:
-        return f"{sign}{n / 1_0000_0000:.0f}억원"
-    else:
-        return f"{sign}{n:,}원"
+def normalize_basic_rows(rows, market_name):
+    result = []
+    for row in rows:
+        code = normalize_code(
+            pick_field(
+                row,
+                exact_keys=["ISU_SRT_CD", "ISU_CD", "isuSrtCd", "isuCd", "SRTN_CD"],
+                contains_keys=["srt_cd", "isu_cd", "stock_code", "short_code"]
+            )
+        )
 
-def pct(a, b):
-    if not b:
-        return 0.0
-    return ((a - b) / abs(b)) * 100
+        name = pick_field(
+            row,
+            exact_keys=["ISU_NM", "isuNm", "ISU_ABBRV", "isuAbbrv", "KOR_NM"],
+            contains_keys=["isu_nm", "name", "nm", "abbrv"]
+        )
+
+        market_cap = parse_amount(
+            pick_field(
+                row,
+                exact_keys=["MKTCAP", "MKT_CAP", "TDD_MRKT_CAP", "TDD_MRKT_CAP_AMT"],
+                contains_keys=["mkt_cap", "market_cap", "mktcap"]
+            )
+        )
+
+        if not code or not name:
+            continue
+
+        nm = str(name).strip()
+
+        if "ETF" in nm or "ETN" in nm or "스팩" in nm:
+            continue
+
+        result.append({
+            "code": code,
+            "name": nm,
+            "market": market_name,
+            "marketCap": market_cap
+        })
+
+    return result
+
+def normalize_daily_rows(rows):
+    result = {}
+    for row in rows:
+        code = normalize_code(
+            pick_field(
+                row,
+                exact_keys=["ISU_SRT_CD", "ISU_CD", "isuSrtCd", "isuCd", "SRTN_CD"],
+                contains_keys=["srt_cd", "isu_cd", "stock_code", "short_code"]
+            )
+        )
+
+        trade_value = parse_amount(
+            pick_field(
+                row,
+                exact_keys=["ACC_TRDVAL", "TDD_TRDVAL", "TRDVAL", "accTrdVal"],
+                contains_keys=["trdval", "trade_value", "acc_trd"]
+            )
+        )
+
+        close_price = parse_amount(
+            pick_field(
+                row,
+                exact_keys=["TDD_CLSPRC", "CLSPRC", "closePrice"],
+                contains_keys=["clsprc", "close"]
+            )
+        )
+
+        if not code:
+            continue
+
+        result[code] = {
+            "tradeValue": trade_value,
+            "closePrice": close_price
+        }
+
+    return result
+
+def build_krx_universe():
+    kospi_basic = normalize_basic_rows(fetch_krx_rows(KRX_KOSPI_BASIC_URL), "KOSPI")
+    kosdaq_basic = normalize_basic_rows(fetch_krx_rows(KRX_KOSDAQ_BASIC_URL), "KOSDAQ")
+
+    basic_rows = kospi_basic + kosdaq_basic
+    if not basic_rows:
+        raise RuntimeError("KRX basic info returned 0 rows. Check KRX approval and URL variables.")
+
+    kospi_daily = normalize_daily_rows(fetch_krx_rows(KRX_KOSPI_DAILY_URL))
+    kosdaq_daily = normalize_daily_rows(fetch_krx_rows(KRX_KOSDAQ_DAILY_URL))
+
+    daily_map = {}
+    daily_map.update(kospi_daily)
+    daily_map.update(kosdaq_daily)
+
+    merged = {}
+    for row in basic_rows:
+        code = row["code"]
+        item = dict(row)
+        item.update(daily_map.get(code, {"tradeValue": 0, "closePrice": 0}))
+        merged[code] = item
+
+    result = list(merged.values())
+    result.sort(key=lambda x: (x.get("tradeValue", 0), x.get("marketCap", 0)), reverse=True)
+    return result
+
+def fetch_major_accounts(corp_code, year):
+    data = http_get_json(
+        "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json",
+        {
+            "crtfc_key": OPENDART_API_KEY,
+            "corp_code": corp_code,
+            "bsns_year": year,
+            "reprt_code": REPORT_CODE
+        }
+    )
+
+    if data.get("status") == "000":
+        return data.get("list", []), year
+
+    fallback_year = str(int(year) - 1)
+    data2 = http_get_json(
+        "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json",
+        {
+            "crtfc_key": OPENDART_API_KEY,
+            "corp_code": corp_code,
+            "bsns_year": fallback_year,
+            "reprt_code": REPORT_CODE
+        }
+    )
+
+    if data2.get("status") == "000":
+        return data2.get("list", []), fallback_year
+
+    return [], fallback_year
 
 def pick_account(rows, names):
     for target in names:
@@ -114,46 +302,15 @@ def pick_account(rows, names):
 
     return {}
 
-def fetch_major_accounts(corp_code, year):
-    data = http_get_json(
-        "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json",
-        {
-            "crtfc_key": API_KEY,
-            "corp_code": corp_code,
-            "bsns_year": year,
-            "reprt_code": report_code
-        }
-    )
-
-    if data.get("status") == "000":
-        return data.get("list", []), year
-
-    # 올해-1 사업보고서가 아직 없을 수도 있으므로 1년 전 fallback
-    fallback_year = str(int(year) - 1)
-    data2 = http_get_json(
-        "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json",
-        {
-            "crtfc_key": API_KEY,
-            "corp_code": corp_code,
-            "bsns_year": fallback_year,
-            "reprt_code": report_code
-        }
-    )
-
-    if data2.get("status") == "000":
-        return data2.get("list", []), fallback_year
-
-    raise RuntimeError(
-        f"Failed to fetch financials for corp_code={corp_code}, "
-        f"status={data.get('status')} / fallback={data2.get('status')}"
-    )
-
-def build_stock_item(stock_code, meta, corp_map):
+def build_stock_item(item, corp_map):
+    stock_code = item["code"]
     corp_info = corp_map.get(stock_code)
     if not corp_info:
-        raise RuntimeError(f"corp_code not found for stock_code={stock_code}")
+        return None
 
     rows, used_year = fetch_major_accounts(corp_info["corp_code"], target_year)
+    if not rows:
+        return None
 
     revenue_row = pick_account(rows, ["매출액", "수익(매출액)", "영업수익"])
     op_row = pick_account(rows, ["영업이익", "영업이익(손실)"])
@@ -175,15 +332,19 @@ def build_stock_item(stock_code, meta, corp_map):
     liabilities = parse_amount(liabilities_row.get("thstrm_amount"))
     equity = parse_amount(equity_row.get("thstrm_amount"))
 
+    if revenue <= 0 or equity <= 0:
+        return None
+
     op_margin = (op_income / revenue * 100) if revenue else 0.0
     debt_ratio = (liabilities / equity * 100) if equity else 999.0
     revenue_growth = pct(revenue, revenue_prev) if revenue_prev else 0.0
     op_growth = pct(op_income, op_income_prev) if op_income_prev else 0.0
     net_growth = pct(net_income, net_income_prev) if net_income_prev else 0.0
 
-    # NOTE:
-    # 이번 단계는 OpenDART만 붙이므로, valueScore는 진짜 PER/PBR 기반이 아니라
-    # "재무 기반 후보 점수" 성격의 임시 점수다.
+    trade_value = int(item.get("tradeValue", 0))
+    market_cap = int(item.get("marketCap", 0))
+    close_price = int(item.get("closePrice", 0))
+
     value_score = 0
     value_score += 10 if equity > 0 else 0
     value_score += 10 if op_income > 0 else 0
@@ -201,15 +362,23 @@ def build_stock_item(stock_code, meta, corp_map):
     safety_score = 0
     safety_score += 5 if equity > 0 else 0
     if debt_ratio < 50:
-        safety_score += 15
-    elif debt_ratio < 100:
         safety_score += 12
+    elif debt_ratio < 100:
+        safety_score += 10
     elif debt_ratio < 150:
-        safety_score += 9
+        safety_score += 7
     elif debt_ratio < 200:
-        safety_score += 6
+        safety_score += 4
     else:
+        safety_score += 1
+
+    if trade_value >= 100_0000_0000:
+        safety_score += 3
+    elif trade_value >= 10_0000_0000:
         safety_score += 2
+    elif trade_value >= 1_0000_0000:
+        safety_score += 1
+
     safety_score = min(safety_score, 20)
 
     change_score = 0
@@ -233,15 +402,15 @@ def build_stock_item(stock_code, meta, corp_map):
         risk_level = "주의"
         risk_title = "수익성 회복 여부 확인 필요"
         check_point = "다음 분기 실적 및 영업이익 개선 여부 확인"
-    elif op_margin < 5:
-        risk_text = f"영업이익률이 {op_margin:.1f}% 수준이라 수익성 방어력을 추가 확인할 필요가 있습니다."
+    elif trade_value < 1_0000_0000:
+        risk_text = "거래대금이 상대적으로 낮아 유동성 측면 점검이 필요합니다."
         risk_level = "보통"
-        risk_title = "수익성 방어력 점검 필요"
-        check_point = "영업이익률과 비용 구조 관련 공시 흐름 확인"
+        risk_title = "유동성 점검 필요"
+        check_point = "최근 거래대금 및 시장 관심도 확인"
     else:
-        risk_text = f"사업보고서 기준 재무 구조는 비교적 안정적이지만 업황 변수는 함께 확인해야 합니다."
+        risk_text = "재무 구조와 유동성은 비교적 안정적이지만 업황 변수는 함께 확인해야 합니다."
         risk_level = "낮음"
-        risk_title = "전반적 재무 안정"
+        risk_title = "전반적 안정 구간"
         check_point = "업황 및 다음 분기 실적 흐름 확인"
 
     summary = (
@@ -250,17 +419,15 @@ def build_stock_item(stock_code, meta, corp_map):
     )
 
     description = (
-        f"{used_year} 사업보고서 주요계정 기준으로 보면 "
-        f"매출은 전년 대비 {revenue_growth:.1f}%, "
-        f"영업이익은 전년 대비 {op_growth:.1f}% 변동했습니다. "
-        f"자본총계는 {fmt_krw(equity)}이며, "
-        f"현재 점수는 OpenDART 재무 데이터만 반영한 1차 후보 점수입니다."
+        f"{used_year} 사업보고서 기준 재무와 KRX 시장 데이터를 함께 반영했습니다. "
+        f"매출은 전년 대비 {revenue_growth:.1f}%, 영업이익은 전년 대비 {op_growth:.1f}% 변동했고, "
+        f"최근 일별매매정보 기준 거래대금은 {fmt_krw(trade_value)} 수준입니다."
     )
 
     return {
         "code": stock_code,
-        "name": meta["name"],
-        "market": meta["market"],
+        "name": item["name"],
+        "market": item["market"],
         "totalScore": total_score,
         "valueScore": value_score,
         "qualityScore": quality_score,
@@ -284,6 +451,9 @@ def build_stock_item(stock_code, meta, corp_map):
             "revenueGrowth": round(revenue_growth, 1),
             "operatingIncomeGrowth": round(op_growth, 1),
             "netIncomeGrowth": round(net_growth, 1),
+            "marketCap": market_cap,
+            "tradeValue": trade_value,
+            "closePrice": close_price
         },
         "riskMeta": {
             "level": risk_level,
@@ -298,13 +468,31 @@ def get_week_label(dt):
 
 def main():
     corp_map = build_corp_code_map()
+    krx_universe = build_krx_universe()
+
+    # 거래대금/시총 기준 상위 후보 중 DART 매핑 가능한 종목만 우선 수집
+    candidates = [x for x in krx_universe if x["code"] in corp_map]
+    candidates.sort(key=lambda x: (x.get("tradeValue", 0), x.get("marketCap", 0)), reverse=True)
 
     stocks = []
-    for stock_code, meta in TARGET_STOCKS.items():
-        item = build_stock_item(stock_code, meta, corp_map)
-        stocks.append(item)
+    for item in candidates[: max(MAX_STOCKS * 3, 150)]:
+        stock = build_stock_item(item, corp_map)
+        if stock:
+            stocks.append(stock)
+        if len(stocks) >= MAX_STOCKS:
+            break
 
-    stocks = sorted(stocks, key=lambda x: x["totalScore"], reverse=True)
+    if not stocks:
+        raise RuntimeError("No stocks generated. Check KRX approvals and DART mappings.")
+
+    stocks.sort(
+        key=lambda x: (
+            x["totalScore"],
+            x["metrics"].get("tradeValue", 0),
+            x["metrics"].get("marketCap", 0)
+        ),
+        reverse=True
+    )
 
     risks = []
     for stock in stocks:
@@ -318,16 +506,16 @@ def main():
             "checkPoint": stock["riskMeta"]["checkPoint"]
         })
 
-    top_picks = stocks[:3]
+    top_picks = stocks[:10]
     reports = [
         {
             "week": get_week_label(kst_now),
             "publishedAt": today,
-            "title": "이번 주 공시 기반 우량주 후보 리포트",
-            "summary": "OpenDART 사업보고서 주요계정을 바탕으로 자동 생성한 주간 리포트입니다.",
+            "title": "이번 주 공시 + 시장데이터 기반 우량주 후보 리포트",
+            "summary": "OpenDART 사업보고서와 KRX 상장종목/일별매매정보를 바탕으로 자동 생성한 주간 리포트입니다.",
             "topPickCodes": [item["code"] for item in top_picks],
-            "highlights": [item["summary"] for item in top_picks],
-            "marketNote": "이번 단계는 OpenDART 재무 데이터만 반영한 상태이며, 다음 단계에서 KRX 시장 데이터(PER/PBR 등)를 붙여 가치 해석을 강화합니다.",
+            "highlights": [item["summary"] for item in top_picks[:5]],
+            "marketNote": "이번 단계부터는 KRX 상장 종목 정보와 거래대금을 함께 반영해 다수 종목 후보군을 자동 수집합니다.",
             "disclaimer": "본 자료는 투자 권유가 아니라 공개 데이터 기반 정리 자료입니다."
         }
     ]
@@ -336,9 +524,10 @@ def main():
     save_json(risks_path, risks)
     save_json(reports_path, reports)
 
-    print("REAL DART update completed")
+    print("KRX + DART bulk update completed")
     print(f"today={today}")
     print(f"target_year={target_year}")
+    print(f"krx_universe={len(krx_universe)}")
     print(f"generated_stocks={len(stocks)}")
 
 if __name__ == "__main__":
