@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import reports from "../data/reports.json";
 import stocks from "../data/stocks.json";
+
 
 export default function ReportsPage() {
   const updatedAt = reports[0]?.publishedAt || "-";
