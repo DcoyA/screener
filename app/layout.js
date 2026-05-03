@@ -15,7 +15,7 @@ export const metadata = {
     title: "우량주 스카우터",
     description:
       "공식 공시·재무·시장 데이터를 바탕으로 AI가 상위 후보 종목을 분석하는 주식 리서치 서비스",
-    url: "https://screener-two-kappa.vercel.app",
+    url: "https://www.hellomedia.win",
     siteName: "우량주 스카우터",
     locale: "ko_KR",
     type: "website",
