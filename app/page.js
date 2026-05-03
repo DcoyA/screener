@@ -145,7 +145,7 @@ export default function HomePage() {
             <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
             <h2>메일로 받아보는 상위 3개 종목 상세 리포트</h2>
             <p className="subscribeDesc">
-              주별 상위 3개 종목의 심층분석 핵심 포인트를 이메일로
+              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로
               받아보세요. 현재는 무료 체험 기간으로 운영 중이며, 신청자에게
               우선 제공됩니다.
               매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한 복기를 제공해 드립니다.
