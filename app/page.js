@@ -6,7 +6,7 @@ import stocks from "./data/stocks.json";
 import Image from "next/image";
 
 const SUBSCRIBE_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbzQqPFqYDJIfKzQerwHtYc5K2Q6BPlhuYftVv84Eqm6bNfkhXMxEaBSPshBJpY_OrJxwA/exec";
+  "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
 
 function formatKstDateTime(date = new Date()) {
   const parts = new Intl.DateTimeFormat("sv-SE", {
