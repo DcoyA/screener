@@ -4,6 +4,6 @@ export default function robots() {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://screener-two-kappa.vercel.app/sitemap.xml",
+    sitemap: "https://www.hellomedia.win/sitemap.xml",
   };
 }
