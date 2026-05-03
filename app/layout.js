@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  metadataBase: new URL("https://screener-two-kappa.vercel.app"),
+  metadataBase: new URL("https://www.hellomedia.win"),
   title: {
     default: "우량주 스카우터",
     template: "%s | 우량주 스카우터",
