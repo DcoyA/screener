@@ -5,10 +5,38 @@ import { useMemo, useState } from "react";
 import stocks from "./data/stocks.json";
 import Image from "next/image";
 
+const SUBSCRIBE_ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
+
+function formatKstDateTime(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+
+  const get = (type) => parts.find((part) => part.type === type)?.value || "00";
+
+  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
+}
+
+function createUnsubscribeToken(emailValue) {
+  const safeEmail = emailValue.toLowerCase().replace(/[^a-z0-9]/gi, "");
+  const randomPart = Math.random().toString(36).slice(2, 10);
+  return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
+}
+
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const topStocks = useMemo(
     () => [...stocks].sort((a, b) => b.totalScore - a.totalScore).slice(0, 3),
@@ -19,31 +47,57 @@ export default function HomePage() {
   const openModal = () => {
     setIsModalOpen(true);
     setIsSubmitted(false);
+    setSubmitError("");
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEmail("");
     setIsSubmitted(false);
+    setIsSubmitting(false);
+    setSubmitError("");
   };
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!email.trim()) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return;
+
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    const payload = {
+      email: normalizedEmail,
+      subscribed_at: formatKstDateTime(),
+      plan: "premium",
+      status: "active",
+      source: "site_popup",
+      last_sent_at: "",
+      last_report_id: "",
+      unsubscribe_token: createUnsubscribeToken(normalizedEmail),
+    };
 
     try {
-      await fetch("https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec", {
+      const body = new URLSearchParams(payload).toString();
+
+      await fetch(SUBSCRIBE_ENDPOINT, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        },
+        body,
       });
-    } catch (err) {
-      // no-cors 모드에서는 응답을 못 읽지만 전송은 됨
-   }
 
-  setIsSubmitted(true);
-};
+      setIsSubmitted(true);
+      setEmail("");
+    } catch (err) {
+      setSubmitError("신청 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   return (
@@ -143,7 +197,7 @@ export default function HomePage() {
         <section className="subscribeSection">
           <div className="subscribeCard">
             <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
-            <h2>메일로 받아보는 상위 3개 종목 상세 리포트</h2>
+            <h2>메일로 받아보는 상위 5개 종목 상세 리포트</h2>
             <p className="subscribeDesc">
               주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로
               받아보세요. 현재는 무료 체험 기간으로 운영 중이며, 신청자에게
@@ -179,10 +233,10 @@ export default function HomePage() {
             {!isSubmitted ? (
               <>
                 <p className="modalBadge">무료 체험</p>
-                <h3>상위 3개 종목 리포트 무료 신청</h3>
+                <h3>상위 5개 종목 리포트 무료 신청</h3>
                 <p className="modalDesc">
-                  현재 무료 체험 기간입니다. 이메일 주소를 남겨주시면 매일 상위
-                  3개 종목 상세 리포트 제공 대상에 우선 등록됩니다.
+                  현재 무료 체험 기간입니다. 이메일 주소를 남겨주시면 주 2회 발송되는 상위
+                  5개 종목 상세 리포트 제공 대상에 우선 등록됩니다.
                 </p>
 
                 <form className="subscribeForm" onSubmit={handleSubscribe}>
@@ -193,12 +247,14 @@ export default function HomePage() {
                     placeholder="이메일 주소를 입력해주세요"
                     required
                   />
+                  {submitError ? <p className="errorText">{submitError}</p> : null}
+
                   <div className="modalActions">
                     <button type="button" className="ghostBtn" onClick={closeModal}>
                       닫기
                     </button>
-                    <button type="submit" className="primaryBtn">
-                      구독하기
+                    <button type="submit" className="primaryBtn" disabled={isSubmitting}>
+                      {isSubmitting ? "저장 중..." : "구독하기"}
                     </button>
                   </div>
                 </form>
@@ -387,6 +443,13 @@ export default function HomePage() {
 
         .primaryBtn:hover {
           background: #111827;
+        }
+
+        .primaryBtn:disabled,
+        .ghostBtn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          box-shadow: none;
         }
 
         .secondaryBtn,
@@ -599,6 +662,13 @@ export default function HomePage() {
         .subscribeForm input:focus {
           border-color: #4f46e5;
           box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+        }
+
+        .errorText {
+          margin: 12px 0 0;
+          color: #dc2626;
+          font-size: 0.92rem;
+          font-weight: 600;
         }
 
         .singleAction {
