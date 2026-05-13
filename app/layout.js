@@ -1,4 +1,5 @@
 import "./globals.css";
+import FloatingKakao from "./components/FloatingKakao";
 
 export const metadata = {
   metadataBase: new URL("https://www.hellomedia.win"),
@@ -26,7 +27,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        
+        <FloatingKakao url="https://open.kakao.com/o/srEOdDai" />
+      </body>
     </html>
   );
 }
