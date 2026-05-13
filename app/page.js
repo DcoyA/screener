@@ -738,6 +738,18 @@ export default function HomePage() {
             min-height: auto;
           }
         }
+          .subscribeActions {
+          display: flex;
+          gap: 14px;
+          flex-wrap: wrap;
+          margin-top: 20px;
+        }
+        
+        @media (max-width: 640px) {
+          .subscribeActions {
+            flex-direction: column;
+          }
+        }
       `}</style>
     </>
   );
