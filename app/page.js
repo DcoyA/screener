@@ -205,17 +205,17 @@ export default function HomePage() {
                우선 제공됩니다.
                매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한 복기를 제공해 드립니다.
              </p>
-      -      <button type="button" className="primaryBtn" onClick={openModal}>
-      -        무료로 신청하기
-      -      </button>
-      +      <div className="subscribeActions">
-      +        /sample-report.html
-      +          샘플 리포트 보기
-      +        </a>
-      +        <button type="button" className="primaryBtn" onClick={openModal}>
-      +          무료로 신청하기
-      +        </button>
-      +      </div>
+            <button type="button" className="primaryBtn" onClick={openModal}>
+              무료로 신청하기
+            </button>
+            <div className="subscribeActions">
+              /sample-report.html
+                샘플 리포트 보기
+              </a>
+              <button type="button" className="primaryBtn" onClick={openModal}>
+                무료로 신청하기
+              </button>
+            </div>
            </div>
          </section>
 
