@@ -209,13 +209,19 @@ export default function HomePage() {
               무료로 신청하기
             </button>
             <div className="subscribeActions">
-              /sample-report.html
-                샘플 리포트 보기
-              </a>
-              <button type="button" className="primaryBtn" onClick={openModal}>
-                무료로 신청하기
-              </button>
-            </div>
+                <a
+                  className="secondaryBtn"
+                  href="/sample-report.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  샘플 리포트 보기
+                </a>
+              
+                <button type="button" className="primaryBtn" onClick={openModal}>
+                  무료로 신청하기
+                </button>
+              </div>
            </div>
          </section>
 
