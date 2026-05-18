@@ -23,11 +23,11 @@ export default function ReportsPage() {
 
         <section className="pageHero">
           <div>
-            <p className="badge">WEEKLY REPORT</p>
-            <h1>주간 리포트</h1>
+            <p className="badge">DAILY REPORT</p>
+            <h1>일간 리포트</h1>
             <p className="desc">
-              매주 자동 수집된 공식 데이터를 바탕으로 상위 후보와 핵심 코멘트를
-              정리하는 페이지입니다. 이번 주 핵심 후보와 시장 코멘트를 한 번에
+              매일 자동 수집된 공식 데이터를 바탕으로 상위 후보와 핵심 코멘트를
+              정리하는 페이지입니다. 오늘의 핵심 후보와 시장 코멘트를 한 번에
               볼 수 있도록 구성했습니다.
             </p>
           </div>
