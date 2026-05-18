@@ -2,11 +2,15 @@ name: Weekly JSON Update
 
 on:
   schedule:
-    - cron: "7 0 * * 1"
+    - cron: "7 0 * * 1-5"  # 09:07 KST (UTC+9) 평일 아침
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: weekday-json-update
+  cancel-in-progress: true
 
 jobs:
   update:
@@ -41,3 +45,8 @@ jobs:
           git add app/data/*.json
           git diff --cached --quiet || git commit -m "auto update json data"
           git push
+``` [2](blob:https://outlook.office.com/566bd63c-b5ab-493d-a7a8-f96b07505758)
+
+---
+
+원하면 내가 이 파일명을 너 레포에서 쓰는 기존 파일명(`weekly-update.yml`)로 맞춰서 **그대로 덮어쓰기용**으로도 만들어줄까? (지금은 새 파일로 만들어 뒀음) [1](https://creverse-my.sharepoint.com/personal/kykim_creverse_com/Documents/Microsoft%20Copilot%20Chat%20%ED%8C%8C%EC%9D%BC/weekly-update.yml)[2](blob:https://outlook.office.com/566bd63c-b5ab-493d-a7a8-f96b07505758)
