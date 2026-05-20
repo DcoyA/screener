@@ -46,4 +46,4 @@ jobs:
           git add app/data/*.json
           git diff --cached --quiet || git commit -m "auto update json data"
           git push
-``
+
