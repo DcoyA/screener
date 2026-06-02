@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import risks from "../data/risks.json";
-
 
 function getRiskClass(level) {
   if (level === "주의") return "riskBadge riskHigh";
@@ -10,8 +10,46 @@ function getRiskClass(level) {
   return "riskBadge riskLow";
 }
 
+function normalizeKeyword(value = "") {
+  return value.toLowerCase().replace(/\s+/g, "").trim();
+}
+
+function renderHighlightedName(name, query) {
+  if (!query) return name;
+
+  const directIndex = name.toLowerCase().indexOf(query.toLowerCase());
+  if (directIndex === -1) return name;
+
+  const before = name.slice(0, directIndex);
+  const match = name.slice(directIndex, directIndex + query.length);
+  const after = name.slice(directIndex + query.length);
+
+  return (
+    <>
+      {before}
+      <mark className="nameHighlight">{match}</mark>
+      {after}
+    </>
+  );
+}
+
 export default function RiskPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const updatedAt = risks[0]?.date || "-";
+  const normalizedSearchTerm = normalizeKeyword(searchTerm);
+
+  const filteredRisks = useMemo(() => {
+    if (!normalizedSearchTerm) return risks;
+
+    return risks.filter((item) =>
+      normalizeKeyword(item.name).includes(normalizedSearchTerm)
+    );
+  }, [normalizedSearchTerm]);
+
+  const resultCountText = normalizedSearchTerm
+    ? `검색 결과 ${filteredRisks.length}개 / 전체 ${risks.length}개`
+    : `전체 ${risks.length}개 종목`;
 
   return (
     <>
@@ -42,37 +80,89 @@ export default function RiskPage() {
           </div>
         </section>
 
-        <div className="riskList">
-          {risks.map((item) => (
-            <div className="riskCard" key={item.code}>
-              <div className="riskTop">
-                <div>
-                  <p className="stockCode">{item.date}</p>
-                  <h2>{item.name}</h2>
-                  <p className="stockCode">종목코드 {item.code}</p>
-                </div>
-
-                <span className={getRiskClass(item.level)}>{item.level}</span>
-              </div>
-
-              <h3 className="riskTitle">{item.title}</h3>
-              <p className="summaryText">{item.summary}</p>
-
-              <div className="checkBox">
-                <strong>체크 포인트</strong>
-                <p>{item.checkPoint}</p>
-              </div>
-
-              <div className="actionsRow">
-                <Link className="linkBtn" href={`/stock/${item.code}`}>
-                  종목 상세 보기
-                </Link>
-                <Link className="ghostBtn" href="/">
-                  메인으로 가기
-                </Link>
+        <div className="floatingSearchWrap">
+          <div className="floatingSearchCard">
+            <div className="searchHeader">
+              <div>
+                <p className="searchLabel">종목명 검색</p>
+                <p className="searchMeta">{resultCountText}</p>
               </div>
             </div>
-          ))}
+
+            <div className="searchInputRow">
+              <div className="searchInputBox">
+                <span className="searchIcon" aria-hidden="true">
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="종목명으로 검색"
+                  aria-label="종목명 검색"
+                />
+              </div>
+
+              {searchTerm ? (
+                <button
+                  type="button"
+                  className="clearBtn"
+                  onClick={() => setSearchTerm("")}
+                >
+                  초기화
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="riskList">
+          {filteredRisks.length > 0 ? (
+            filteredRisks.map((item) => (
+              <div className="riskCard" key={item.code}>
+                <div className="riskTop">
+                  <div>
+                    <p className="stockCode">{item.date}</p>
+                    <h2>{renderHighlightedName(item.name, searchTerm)}</h2>
+                    <p className="stockCode">종목코드 {item.code}</p>
+                  </div>
+
+                  <span className={getRiskClass(item.level)}>{item.level}</span>
+                </div>
+
+                <h3 className="riskTitle">{item.title}</h3>
+                <p className="summaryText">{item.summary}</p>
+
+                <div className="checkBox">
+                  <strong>체크 포인트</strong>
+                  <p>{item.checkPoint}</p>
+                </div>
+
+                <div className="actionsRow">
+                  <Link className="linkBtn" href={`/stock/${item.code}`}>
+                    종목 상세 보기
+                  </Link>
+                  <Link className="ghostBtn" href="/">
+                    메인으로 가기
+                  </Link>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="emptyState">
+              <p className="emptyTitle">검색 결과가 없습니다.</p>
+              <p className="emptyDesc">
+                종목명 기준으로만 검색됩니다. 다른 종목명을 입력해 보세요.
+              </p>
+              <button
+                type="button"
+                className="ghostBtn"
+                onClick={() => setSearchTerm("")}
+              >
+                검색 초기화
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
@@ -140,7 +230,8 @@ export default function RiskPage() {
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
           text-align: right;
         }
-        .updateLabel, .stockCode {
+        .updateLabel,
+        .stockCode {
           color: #64748b;
         }
         .updateLabel {
@@ -148,6 +239,82 @@ export default function RiskPage() {
           margin-bottom: 6px;
           font-size: 0.88rem;
           font-weight: 700;
+        }
+        .floatingSearchWrap {
+          position: sticky;
+          top: 16px;
+          z-index: 30;
+          margin-bottom: 18px;
+        }
+        .floatingSearchCard {
+          border: 1px solid rgba(219, 227, 240, 0.95);
+          border-radius: 20px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.94);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+        .searchHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .searchLabel {
+          margin: 0;
+          font-size: 0.92rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .searchMeta {
+          margin: 4px 0 0;
+          color: #64748b;
+          font-size: 0.88rem;
+        }
+        .searchInputRow {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .searchInputBox {
+          flex: 1 1 320px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          height: 54px;
+          border-radius: 16px;
+          border: 1px solid #dbe3f0;
+          background: #ffffff;
+          padding: 0 14px;
+        }
+        .searchInputBox:focus-within {
+          border-color: #4f46e5;
+          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+        }
+        .searchIcon {
+          font-size: 1rem;
+          line-height: 1;
+        }
+        .searchInputBox input {
+          flex: 1;
+          height: 100%;
+          border: none;
+          outline: none;
+          background: transparent;
+          color: #0f172a;
+          font-size: 1rem;
+        }
+        .clearBtn {
+          height: 54px;
+          padding: 0 16px;
+          border-radius: 16px;
+          border: 1px solid #dbe3f0;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 800;
+          cursor: pointer;
         }
         .riskList {
           display: grid;
@@ -170,6 +337,13 @@ export default function RiskPage() {
           margin: 8px 0 10px;
           font-size: 1.8rem;
           letter-spacing: -0.03em;
+          word-break: keep-all;
+        }
+        .nameHighlight {
+          background: #fef08a;
+          color: inherit;
+          padding: 0 2px;
+          border-radius: 4px;
         }
         .riskTitle {
           margin: 18px 0 10px;
@@ -219,6 +393,25 @@ export default function RiskPage() {
           flex-wrap: wrap;
           margin-top: 18px;
         }
+        .emptyState {
+          border-radius: 24px;
+          padding: 36px 24px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+          text-align: center;
+        }
+        .emptyTitle {
+          margin: 0 0 8px;
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .emptyDesc {
+          margin: 0 0 18px;
+          color: #64748b;
+          line-height: 1.7;
+        }
         .homeBtn,
         .linkBtn,
         .ghostBtn {
@@ -232,6 +425,7 @@ export default function RiskPage() {
           border: 1px solid #dbe3f0;
           background: #fff;
           color: #0f172a;
+          cursor: pointer;
         }
         .homeBtn {
           background: #0f172a;
@@ -249,6 +443,19 @@ export default function RiskPage() {
           .updateBox {
             width: 100%;
             text-align: left;
+          }
+          .floatingSearchWrap {
+            top: 12px;
+          }
+          .searchInputRow {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .clearBtn,
+          .homeBtn,
+          .linkBtn,
+          .ghostBtn {
+            width: 100%;
           }
         }
       `}</style>
