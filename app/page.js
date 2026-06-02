@@ -21,7 +21,6 @@ function formatKstDateTime(date = new Date()) {
   }).formatToParts(date);
 
   const get = (type) => parts.find((part) => part.type === type)?.value || "00";
-
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
 }
 
@@ -42,6 +41,7 @@ export default function HomePage() {
     () => [...stocks].sort((a, b) => b.totalScore - a.totalScore).slice(0, 3),
     []
   );
+
   const updatedAt = topStocks[0]?.updatedAt || stocks[0]?.updatedAt || "-";
 
   const openModal = () => {
@@ -60,7 +60,6 @@ export default function HomePage() {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
 
@@ -80,7 +79,6 @@ export default function HomePage() {
 
     try {
       const body = new URLSearchParams(payload).toString();
-
       await fetch(SUBSCRIBE_ENDPOINT, {
         method: "POST",
         mode: "no-cors",
@@ -89,7 +87,6 @@ export default function HomePage() {
         },
         body,
       });
-
       setIsSubmitted(true);
       setEmail("");
     } catch (err) {
@@ -98,7 +95,6 @@ export default function HomePage() {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <>
@@ -114,7 +110,6 @@ export default function HomePage() {
             />
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
-
           <nav className="mainNav" aria-label="주요 메뉴">
             <Link href="/ranking">랭킹</Link>
             <Link href="/risk">리스크</Link>
@@ -128,14 +123,13 @@ export default function HomePage() {
               <p className="badge">OFFICIAL DATA LIVE</p>
               <h1>우량주 스카우터</h1>
               <p className="desc">
-                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매일
+                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일
                 오전 9시에 자동 수집하고, AI가 재무 건전성·저평가 여부·시장
                 유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반
                 주식 리서치 서비스입니다. PER, PBR, ROE, 부채비율, 시가총액,
                 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
                 형태로 제공합니다.
               </p>
-
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
                   상위 랭킹 보기
@@ -144,11 +138,6 @@ export default function HomePage() {
                   이번 주 리포트 보기
                 </Link>
               </div>
-
-              
-              <div className="heroBackground">
-                <img src="/vegeta-style.png" alt="scouter warrior" />
-              </div>    
             </div>
 
             <aside className="updateBox" aria-label="업데이트 날짜">
@@ -156,6 +145,18 @@ export default function HomePage() {
               <strong>{updatedAt}</strong>
               <p className="updateDesc">최근 자동 수집 및 분석 반영일</p>
             </aside>
+
+            <div className="heroCharacter" aria-hidden="true">
+              <div className="heroCharacterGlow" />
+              <Image
+                src="/vegeta-style.png"
+                alt=""
+                width={1200}
+                height={1200}
+                className="heroCharacterImage"
+                priority
+              />
+            </div>
           </div>
         </section>
 
@@ -181,7 +182,6 @@ export default function HomePage() {
 
         <section>
           <h2 className="sectionTitle">이번 주 상위 후보</h2>
-
           <div className="cardWrap">
             {topStocks.map((stock) => (
               <div className="card" key={stock.code}>
@@ -190,7 +190,6 @@ export default function HomePage() {
                 <p className="stockCode">종목코드 {stock.code}</p>
                 <p className="scoreLine">총점 {stock.totalScore}점</p>
                 <p className="summaryText">{stock.summary}</p>
-
                 <Link className="linkBtn" href={`/stock/${stock.code}`}>
                   종목 상세 보기
                 </Link>
@@ -199,35 +198,31 @@ export default function HomePage() {
           </div>
         </section>
 
-        
-         <section className="subscribeSection">
-           <div className="subscribeCard">
-             <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
-             <h2>메일로 받아보는 상위 5개 종목 상세 리포트</h2>
-             <p className="subscribeDesc">
-               주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로
-               받아보세요. 현재는 무료 체험 기간으로 운영 중이며, 신청자에게
-               우선 제공됩니다.
-               매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한 복기를 제공해 드립니다.
-             </p>
-
+        <section className="subscribeSection">
+          <div className="subscribeCard">
+            <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
+            <h2>메일로 받아보는 상위 5개 종목 상세 리포트</h2>
+            <p className="subscribeDesc">
+              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로
+              받아보세요. 현재는 무료 체험 기간으로 운영 중이며, 신청자에게
+              우선 제공됩니다. 매주 화요일 7시 40분 새로운 전략과 매주 목요일
+              20시 30분 한주에 대한 복기를 제공해 드립니다.
+            </p>
             <div className="subscribeActions">
-                <a
-                  className="secondaryBtn"
-                  href="/sample-report.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  샘플 리포트 보기
-                </a>
-              
-                <button type="button" className="primaryBtn" onClick={openModal}>
-                  무료로 신청하기
-                </button>
-              </div>
-           </div>
-         </section>
-
+              <a
+                href="/sample-report.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="secondaryBtn"
+              >
+                샘플 리포트 보기
+              </a>
+              <button type="button" className="primaryBtn" onClick={openModal}>
+                무료로 신청하기
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="footer">
@@ -248,7 +243,6 @@ export default function HomePage() {
             >
               ×
             </button>
-
             {!isSubmitted ? (
               <>
                 <p className="modalBadge">무료 체험</p>
@@ -257,7 +251,6 @@ export default function HomePage() {
                   현재 무료 체험 기간입니다. 이메일 주소를 남겨주시면 주 2회 발송되는 상위
                   5개 종목 상세 리포트 제공 대상에 우선 등록됩니다.
                 </p>
-
                 <form className="subscribeForm" onSubmit={handleSubscribe}>
                   <input
                     type="email"
@@ -267,7 +260,6 @@ export default function HomePage() {
                     required
                   />
                   {submitError ? <p className="errorText">{submitError}</p> : null}
-
                   <div className="modalActions">
                     <button type="button" className="ghostBtn" onClick={closeModal}>
                       닫기
@@ -304,7 +296,6 @@ export default function HomePage() {
           padding: 32px 24px 80px;
           color: #0f172a;
         }
-
         .topBar {
           display: flex;
           align-items: center;
@@ -313,61 +304,99 @@ export default function HomePage() {
           margin-bottom: 40px;
           flex-wrap: wrap;
         }
-
         .brandArea {
           display: inline-flex;
           align-items: center;
           gap: 10px;
           text-decoration: none;
         }
-        
         .brandLogo {
           width: 32px;
           height: 32px;
           object-fit: contain;
         }
-
-
         .brandTitle {
           font-size: 1.05rem;
           font-weight: 800;
           color: #0f172a;
           letter-spacing: -0.02em;
         }
-
         .mainNav {
           display: flex;
           gap: 18px;
           flex-wrap: wrap;
         }
-
         .mainNav a {
           color: #334155;
           text-decoration: none;
           font-weight: 700;
         }
-
         .mainNav a:hover {
           color: #0f172a;
         }
-
         .hero {
+          position: relative;
+          overflow: hidden;
           padding: 20px 0 8px;
         }
-
+        .hero::before {
+          content: "";
+          position: absolute;
+          right: -40px;
+          top: 10px;
+          width: 340px;
+          height: 340px;
+          background: radial-gradient(circle, rgba(0, 255, 100, 0.16), transparent 68%);
+          filter: blur(42px);
+          pointer-events: none;
+          z-index: 0;
+        }
         .heroTop {
+          position: relative;
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           gap: 24px;
           flex-wrap: wrap;
+          min-height: 420px;
+          z-index: 1;
         }
-
         .heroMain {
+          position: relative;
+          z-index: 2;
           flex: 1 1 720px;
           min-width: 0;
+          max-width: 760px;
         }
-
+        .heroCharacter {
+          position: absolute;
+          right: -40px;
+          bottom: -30px;
+          width: min(44vw, 560px);
+          max-width: 560px;
+          opacity: 0.2;
+          pointer-events: none;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+          z-index: 1;
+        }
+        .hero:hover .heroCharacter {
+          opacity: 0.28;
+          transform: translateY(-4px);
+        }
+        .heroCharacterGlow {
+          position: absolute;
+          inset: 16% 18% 18% 18%;
+          background: radial-gradient(circle, rgba(120, 255, 160, 0.22), transparent 72%);
+          filter: blur(24px);
+          z-index: 0;
+        }
+        .heroCharacterImage {
+          position: relative;
+          width: 100%;
+          height: auto;
+          display: block;
+          z-index: 1;
+        }
         .badge,
         .subscribeEyebrow,
         .modalBadge {
@@ -382,14 +411,12 @@ export default function HomePage() {
           letter-spacing: 0.02em;
           margin: 0 0 18px;
         }
-
         h1 {
           font-size: clamp(2.2rem, 5vw, 3.5rem);
           line-height: 1.1;
           letter-spacing: -0.04em;
           margin: 0 0 16px;
         }
-
         .desc {
           max-width: 920px;
           font-size: 1.08rem;
@@ -397,8 +424,9 @@ export default function HomePage() {
           color: #475569;
           margin: 0;
         }
-
         .updateBox {
+          position: relative;
+          z-index: 2;
           min-width: 200px;
           padding: 16px 18px;
           border-radius: 18px;
@@ -407,7 +435,6 @@ export default function HomePage() {
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
           text-align: right;
         }
-
         .updateLabel {
           display: block;
           margin-bottom: 6px;
@@ -415,28 +442,25 @@ export default function HomePage() {
           font-size: 0.88rem;
           font-weight: 700;
         }
-
         .updateBox strong {
           display: block;
           font-size: 1.15rem;
           color: #0f172a;
         }
-
         .updateDesc {
           margin: 8px 0 0;
           color: #64748b;
           font-size: 0.92rem;
           line-height: 1.5;
         }
-
         .heroActions,
-        .modalActions {
+        .modalActions,
+        .subscribeActions {
           display: flex;
           gap: 14px;
           flex-wrap: wrap;
           margin-top: 28px;
         }
-
         .primaryBtn,
         .secondaryBtn,
         .linkBtn,
@@ -453,24 +477,20 @@ export default function HomePage() {
           transition: all 0.2s ease;
           font-size: 0.98rem;
         }
-
         .primaryBtn {
           background: #0f172a;
           color: #ffffff;
           box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
         }
-
         .primaryBtn:hover {
           background: #111827;
         }
-
         .primaryBtn:disabled,
         .ghostBtn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
           box-shadow: none;
         }
-
         .secondaryBtn,
         .ghostBtn,
         .linkBtn {
@@ -478,17 +498,14 @@ export default function HomePage() {
           color: #0f172a;
           border-color: #dbe3f0;
         }
-
         .secondaryBtn:hover,
         .ghostBtn:hover,
         .linkBtn:hover {
           background: #f8fafc;
         }
-
         .quickLinksSection {
           margin-top: 34px;
         }
-
         .quickLinksCard,
         .subscribeCard {
           border: 1px solid #e5e7eb;
@@ -497,20 +514,17 @@ export default function HomePage() {
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
-
         .quickLinksCard h2,
         .subscribeCard h2 {
           margin: 0 0 16px;
           font-size: 1.6rem;
           letter-spacing: -0.03em;
         }
-
         .quickLinksGrid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 16px;
         }
-
         .quickLinkItem {
           display: flex;
           flex-direction: column;
@@ -522,28 +536,23 @@ export default function HomePage() {
           border: 1px solid #e5e7eb;
           color: #0f172a;
         }
-
         .quickLinkItem strong {
           font-size: 1.05rem;
         }
-
         .quickLinkItem span {
           color: #64748b;
           line-height: 1.6;
         }
-
         .sectionTitle {
           margin: 56px 0 22px;
           font-size: 2rem;
           letter-spacing: -0.03em;
         }
-
         .cardWrap {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
         }
-
         .card {
           border-radius: 24px;
           padding: 22px;
@@ -551,7 +560,6 @@ export default function HomePage() {
           background: #ffffff;
           box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
         }
-
         .marketBadge {
           display: inline-flex;
           padding: 7px 12px;
@@ -562,21 +570,18 @@ export default function HomePage() {
           font-weight: 800;
           margin: 0 0 18px;
         }
-
         .card h3 {
           margin: 0 0 12px;
           font-size: 1.4rem;
           letter-spacing: -0.03em;
           word-break: keep-all;
         }
-
         .stockCode,
         .scoreLine {
           margin: 0 0 8px;
           color: #64748b;
           font-weight: 600;
         }
-
         .summaryText {
           min-height: 92px;
           margin: 10px 0 18px;
@@ -584,11 +589,9 @@ export default function HomePage() {
           line-height: 1.75;
           word-break: keep-all;
         }
-
         .subscribeSection {
           margin-top: 56px;
         }
-
         .subscribeDesc,
         .modalDesc {
           margin: 0;
@@ -596,12 +599,10 @@ export default function HomePage() {
           line-height: 1.8;
           font-size: 1rem;
         }
-
         .footer {
           border-top: 1px solid #e5e7eb;
           background: #ffffff;
         }
-
         .footerInner {
           max-width: 1180px;
           margin: 0 auto;
@@ -613,17 +614,14 @@ export default function HomePage() {
           flex-wrap: wrap;
           color: #64748b;
         }
-
         .footerInner p {
           margin: 0;
         }
-
         .footerInner a {
           color: #0f172a;
           text-decoration: none;
           font-weight: 700;
         }
-
         .modalOverlay {
           position: fixed;
           inset: 0;
@@ -634,7 +632,6 @@ export default function HomePage() {
           padding: 20px;
           z-index: 1000;
         }
-
         .modalCard {
           position: relative;
           width: min(100%, 560px);
@@ -643,13 +640,11 @@ export default function HomePage() {
           padding: 30px;
           box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
         }
-
         .modalCard h3 {
           margin: 0 0 12px;
           font-size: 1.7rem;
           letter-spacing: -0.03em;
         }
-
         .closeBtn {
           position: absolute;
           top: 14px;
@@ -662,11 +657,9 @@ export default function HomePage() {
           font-size: 1.5rem;
           cursor: pointer;
         }
-
         .subscribeForm {
           margin-top: 22px;
         }
-
         .subscribeForm input {
           width: 100%;
           height: 54px;
@@ -677,82 +670,69 @@ export default function HomePage() {
           outline: none;
           box-sizing: border-box;
         }
-
         .subscribeForm input:focus {
           border-color: #4f46e5;
           box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
         }
-
         .errorText {
           margin: 12px 0 0;
           color: #dc2626;
           font-size: 0.92rem;
           font-weight: 600;
         }
-
         .singleAction {
           justify-content: flex-start;
         }
-
         @media (max-width: 900px) {
           .quickLinksGrid,
           .cardWrap {
             grid-template-columns: 1fr;
           }
-
           .heroTop {
             flex-direction: column;
+            min-height: unset;
           }
-
+          .heroMain {
+            max-width: 100%;
+          }
           .updateBox {
             width: 100%;
             text-align: left;
           }
+          .heroCharacter {
+            display: none;
+          }
+          .hero::before {
+            display: none;
+          }
         }
-
         @media (max-width: 640px) {
           .container {
             padding: 24px 18px 64px;
           }
-
           .topBar {
             align-items: flex-start;
             margin-bottom: 28px;
           }
-
           .heroActions,
-          .modalActions {
+          .modalActions,
+          .subscribeActions {
             flex-direction: column;
           }
-
           .primaryBtn,
           .secondaryBtn,
           .ghostBtn,
           .linkBtn {
             width: 100%;
           }
-
           .quickLinksCard,
           .subscribeCard,
           .card,
           .modalCard {
             padding: 22px;
           }
-
           .summaryText {
             min-height: auto;
-          }
-        }
-          .subscribeActions {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-          margin-top: 20px;
-        }
-        
-        @media (max-width: 640px) {
-          .subscribeActions {
-            flex-direction: column;
           }
         }
       `}</style>
