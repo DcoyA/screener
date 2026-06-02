@@ -1,12 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import stocks from "../data/stocks.json";
 
+function normalizeKeyword(value = "") {
+  return value.toLowerCase().replace(/\s+/g, "").trim();
+}
+
+function renderHighlightedName(name, query) {
+  if (!query) return name;
+
+  const directIndex = name.toLowerCase().indexOf(query.toLowerCase());
+  if (directIndex === -1) return name;
+
+  const before = name.slice(0, directIndex);
+  const match = name.slice(directIndex, directIndex + query.length);
+  const after = name.slice(directIndex + query.length);
+
+  return (
+    <>
+      {before}
+      <mark className="nameHighlight">{match}</mark>
+      {after}
+    </>
+  );
+}
 
 export default function RankingPage() {
-  const rankedStocks = [...stocks].sort((a, b) => b.totalScore - a.totalScore);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const rankedStocks = useMemo(
+    () =>
+      [...stocks]
+        .sort((a, b) => b.totalScore - a.totalScore)
+        .map((stock, index) => ({
+          ...stock,
+          originalRank: index + 1,
+        })),
+    []
+  );
+
   const updatedAt = rankedStocks[0]?.updatedAt || "-";
+  const normalizedSearchTerm = normalizeKeyword(searchTerm);
+
+  const filteredStocks = useMemo(() => {
+    if (!normalizedSearchTerm) return rankedStocks;
+
+    return rankedStocks.filter((stock) =>
+      normalizeKeyword(stock.name).includes(normalizedSearchTerm)
+    );
+  }, [rankedStocks, normalizedSearchTerm]);
+
+  const resultCountText = normalizedSearchTerm
+    ? `검색 결과 ${filteredStocks.length}개 / 전체 ${rankedStocks.length}개`
+    : `전체 ${rankedStocks.length}개 종목`;
 
   return (
     <>
@@ -37,33 +85,85 @@ export default function RankingPage() {
           </div>
         </section>
 
-        <div className="listWrap">
-          {rankedStocks.map((stock, index) => (
-            <div className="listCard" key={stock.code}>
-              <div className="listTop">
-                <div>
-                  <p className="muted">#{index + 1}</p>
-                  <h2>{stock.name}</h2>
-                  <p className="stockCode">
-                    {stock.market} · {stock.code}
-                  </p>
-                </div>
-
-                <div className="scoreBadge">{stock.totalScore}점</div>
-              </div>
-
-              <p className="summaryText">{stock.summary}</p>
-
-              <div className="actionsRow">
-                <Link className="linkBtn" href={`/stock/${stock.code}`}>
-                  종목 상세 보기
-                </Link>
-                <Link className="ghostBtn" href="/">
-                  메인으로 가기
-                </Link>
+        <div className="floatingSearchWrap">
+          <div className="floatingSearchCard">
+            <div className="searchHeader">
+              <div>
+                <p className="searchLabel">종목명 검색</p>
+                <p className="searchMeta">{resultCountText}</p>
               </div>
             </div>
-          ))}
+
+            <div className="searchInputRow">
+              <div className="searchInputBox">
+                <span className="searchIcon" aria-hidden="true">
+                  🔍
+                </span>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="종목명으로 검색"
+                  aria-label="종목명 검색"
+                />
+              </div>
+
+              {searchTerm ? (
+                <button
+                  type="button"
+                  className="clearBtn"
+                  onClick={() => setSearchTerm("")}
+                >
+                  초기화
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="listWrap">
+          {filteredStocks.length > 0 ? (
+            filteredStocks.map((stock) => (
+              <div className="listCard" key={stock.code}>
+                <div className="listTop">
+                  <div>
+                    <p className="muted">#{stock.originalRank}</p>
+                    <h2>{renderHighlightedName(stock.name, searchTerm)}</h2>
+                    <p className="stockCode">
+                      {stock.market} · {stock.code}
+                    </p>
+                  </div>
+
+                  <div className="scoreBadge">{stock.totalScore}점</div>
+                </div>
+
+                <p className="summaryText">{stock.summary}</p>
+
+                <div className="actionsRow">
+                  <Link className="linkBtn" href={`/stock/${stock.code}`}>
+                    종목 상세 보기
+                  </Link>
+                  <Link className="ghostBtn" href="/">
+                    메인으로 가기
+                  </Link>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="emptyState">
+              <p className="emptyTitle">검색 결과가 없습니다.</p>
+              <p className="emptyDesc">
+                종목명 기준으로만 검색됩니다. 다른 종목명을 입력해 보세요.
+              </p>
+              <button
+                type="button"
+                className="ghostBtn"
+                onClick={() => setSearchTerm("")}
+              >
+                검색 초기화
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
@@ -131,7 +231,9 @@ export default function RankingPage() {
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
           text-align: right;
         }
-        .updateLabel, .muted, .stockCode {
+        .updateLabel,
+        .muted,
+        .stockCode {
           color: #64748b;
         }
         .updateLabel {
@@ -139,6 +241,82 @@ export default function RankingPage() {
           margin-bottom: 6px;
           font-size: 0.88rem;
           font-weight: 700;
+        }
+        .floatingSearchWrap {
+          position: sticky;
+          top: 16px;
+          z-index: 30;
+          margin-bottom: 18px;
+        }
+        .floatingSearchCard {
+          border: 1px solid rgba(219, 227, 240, 0.95);
+          border-radius: 20px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.94);
+          backdrop-filter: blur(12px);
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+        .searchHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .searchLabel {
+          margin: 0;
+          font-size: 0.92rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .searchMeta {
+          margin: 4px 0 0;
+          color: #64748b;
+          font-size: 0.88rem;
+        }
+        .searchInputRow {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .searchInputBox {
+          flex: 1 1 320px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          height: 54px;
+          border-radius: 16px;
+          border: 1px solid #dbe3f0;
+          background: #ffffff;
+          padding: 0 14px;
+        }
+        .searchInputBox:focus-within {
+          border-color: #4f46e5;
+          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+        }
+        .searchIcon {
+          font-size: 1rem;
+          line-height: 1;
+        }
+        .searchInputBox input {
+          flex: 1;
+          height: 100%;
+          border: none;
+          outline: none;
+          background: transparent;
+          color: #0f172a;
+          font-size: 1rem;
+        }
+        .clearBtn {
+          height: 54px;
+          padding: 0 16px;
+          border-radius: 16px;
+          border: 1px solid #dbe3f0;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 800;
+          cursor: pointer;
         }
         .listWrap {
           display: grid;
@@ -162,6 +340,13 @@ export default function RankingPage() {
           margin: 8px 0 10px;
           font-size: 1.9rem;
           letter-spacing: -0.03em;
+          word-break: keep-all;
+        }
+        .nameHighlight {
+          background: #fef08a;
+          color: inherit;
+          padding: 0 2px;
+          border-radius: 4px;
         }
         .summaryText {
           margin: 14px 0 20px;
@@ -182,6 +367,25 @@ export default function RankingPage() {
           gap: 12px;
           flex-wrap: wrap;
         }
+        .emptyState {
+          border-radius: 24px;
+          padding: 36px 24px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+          text-align: center;
+        }
+        .emptyTitle {
+          margin: 0 0 8px;
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .emptyDesc {
+          margin: 0 0 18px;
+          color: #64748b;
+          line-height: 1.7;
+        }
         .homeBtn,
         .linkBtn,
         .ghostBtn {
@@ -195,6 +399,7 @@ export default function RankingPage() {
           border: 1px solid #dbe3f0;
           background: #fff;
           color: #0f172a;
+          cursor: pointer;
         }
         .homeBtn {
           background: #0f172a;
@@ -212,6 +417,19 @@ export default function RankingPage() {
           .updateBox {
             width: 100%;
             text-align: left;
+          }
+          .floatingSearchWrap {
+            top: 12px;
+          }
+          .searchInputRow {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .clearBtn,
+          .homeBtn,
+          .linkBtn,
+          .ghostBtn {
+            width: 100%;
           }
         }
       `}</style>
