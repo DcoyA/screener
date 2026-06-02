@@ -144,6 +144,11 @@ export default function HomePage() {
                   이번 주 리포트 보기
                 </Link>
               </div>
+
+              
+              <div className="heroBackground">
+                <img src="/vegeta-style.png" alt="scouter warrior" />
+              </div>    
             </div>
 
             <aside className="updateBox" aria-label="업데이트 날짜">
