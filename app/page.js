@@ -379,7 +379,7 @@ export default function HomePage() {
           height: min(42vw, 520px);
           max-width: 520px;
           max-height: 520px;
-          opacity: 0.18;
+          opacity: 0.70;
           pointer-events: none;
           transition: opacity 0.2s ease, transform 0.2s ease;
           z-index: 1;
