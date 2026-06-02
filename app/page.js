@@ -148,14 +148,16 @@ export default function HomePage() {
 
             <div className="heroCharacter" aria-hidden="true">
               <div className="heroCharacterGlow" />
-              <Image
-                src="/vegeta-style.png"
-                alt=""
-                width={1200}
-                height={1200}
-                className="heroCharacterImage"
-                priority
-              />
+              <div className="heroCharacter" aria-hidden="true">
+                <div className="heroCharacterGlow" />
+                <Image
+                  src="/vegeta-style.png"
+                  alt=""
+                  fill
+                  className="heroCharacterImage"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -368,17 +370,22 @@ export default function HomePage() {
           min-width: 0;
           max-width: 760px;
         }
+        
         .heroCharacter {
           position: absolute;
-          right: -40px;
-          bottom: -30px;
-          width: min(44vw, 560px);
-          max-width: 560px;
-          opacity: 0.2;
+          right: -10px;
+          bottom: -20px;
+          width: min(42vw, 520px);
+          height: min(42vw, 520px);
+          max-width: 520px;
+          max-height: 520px;
+          opacity: 0.18;
           pointer-events: none;
           transition: opacity 0.2s ease, transform 0.2s ease;
           z-index: 1;
+          overflow: hidden;
         }
+
         .hero:hover .heroCharacter {
           opacity: 0.28;
           transform: translateY(-4px);
@@ -390,13 +397,12 @@ export default function HomePage() {
           filter: blur(24px);
           z-index: 0;
         }
+        
         .heroCharacterImage {
-          position: relative;
-          width: 100%;
-          height: auto;
-          display: block;
-          z-index: 1;
+          object-fit: contain;
+          object-position: left bottom;
         }
+
         .badge,
         .subscribeEyebrow,
         .modalBadge {
