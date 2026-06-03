@@ -717,7 +717,7 @@ export default function HomePage() {
           border-color: rgba(148, 163, 184, 0.38);
         }
         .rank3 {
-          background: linear-gradient(135deg, #fdba74 0%, #ea580c 100%);
+          background: linear-gradient(135deg, #b45309 0%, #ea580c 100%);
           color: #fff;
           border-color: rgba(234, 88, 12, 0.3);
         }
