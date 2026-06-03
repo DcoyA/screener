@@ -830,6 +830,15 @@ export default function HomePage() {
           font-weight: 800;
           text-align: center;
         }
+
+        .noticePreviewCard {
+          flex-direction: column;
+        }
+        
+        .noticePreviewDate {
+          width: 100%;
+        }
+
       `}</style>
     </>
   );
