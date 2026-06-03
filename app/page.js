@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import stocks from "./data/stocks.json";
+import notices from "./data/notices.json";
 import Image from "next/image";
 
 const SUBSCRIBE_ENDPOINT =
@@ -36,6 +37,9 @@ export default function HomePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const latestNotice = [...notices].sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  )[0];
 
   const topStocks = useMemo(
     () => [...stocks].sort((a, b) => b.totalScore - a.totalScore).slice(0, 3),
@@ -163,6 +167,22 @@ export default function HomePage() {
           </div>
         </section>
 
+        {latestNotice ? (
+          <section className="noticePreviewSection">
+            <Link href="/notice" className="noticePreviewCard">
+              <div className="noticePreviewLeft">
+                <p className="noticePreviewBadge">📢 공지</p>
+                <div>
+                  <h2>{latestNotice.title}</h2>
+                  <p className="noticePreviewText">{latestNotice.content}</p>
+                </div>
+              </div>
+        
+              <div className="noticePreviewDate">{latestNotice.date}</div>
+            </Link>
+          </section>
+        ) : null}
+                    
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
@@ -745,6 +765,70 @@ export default function HomePage() {
           .summaryText {
             min-height: auto;
           }
+        }
+
+        .noticePreviewSection {
+          margin-top: 28px;
+        }
+        
+        .noticePreviewCard {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 18px;
+          text-decoration: none;
+          border: 1px solid #e5e7eb;
+          border-radius: 24px;
+          padding: 22px 24px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+          color: #0f172a;
+        }
+        
+        .noticePreviewLeft {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          min-width: 0;
+        }
+        
+        .noticePreviewBadge {
+          display: inline-flex;
+          align-items: center;
+          width: fit-content;
+          padding: 8px 14px;
+          border-radius: 999px;
+          background: #eef2ff;
+          color: #4f46e5;
+          font-size: 0.82rem;
+          font-weight: 800;
+          margin: 0;
+        }
+        
+        .noticePreviewCard h2 {
+          margin: 0 0 8px;
+          font-size: 1.35rem;
+          letter-spacing: -0.03em;
+        }
+        
+        .noticePreviewText {
+          margin: 0;
+          color: #475569;
+          line-height: 1.7;
+          font-size: 0.98rem;
+          white-space: pre-line;
+        }
+        
+        .noticePreviewDate {
+          flex-shrink: 0;
+          min-width: 120px;
+          padding: 12px 16px;
+          border-radius: 16px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-weight: 800;
+          text-align: center;
         }
       `}</style>
     </>
