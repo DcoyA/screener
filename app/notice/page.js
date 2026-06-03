@@ -358,6 +358,7 @@ export default function NoticePage() {
           color: #475569;
           line-height: 1.8;
           font-size: 1rem;
+          white-space: pre-line;
         }
 
         @media (max-width: 720px) {
