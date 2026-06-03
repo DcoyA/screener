@@ -167,7 +167,7 @@ export default function HomePage() {
             <h2>서비스 바로가기</h2>
             <div className="quickLinksGrid">   
               <Link href="/notice" className="noticeBtn">
-                <strong>공지</strong>
+                <strong>📢 공지</strong>
                 <span>사이트 업데이트 안내</span>
               </Link>
               <Link href="/ranking" className="quickLinkItem">
