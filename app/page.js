@@ -153,16 +153,13 @@ export default function HomePage() {
 
             <div className="heroCharacter" aria-hidden="true">
               <div className="heroCharacterGlow" />
-              <div className="heroCharacter" aria-hidden="true">
-                <div className="heroCharacterGlow" />
-                <Image
-                  src="/vegeta-style.png"
-                  alt=""
-                  fill
-                  className="heroCharacterImage"
-                  priority
-                />
-              </div>
+              <Image
+                src="/vegeta-style.png"
+                alt=""
+                fill
+                className="heroCharacterImage"
+                priority
+              />
             </div>
           </div>
         </section>
@@ -187,7 +184,7 @@ export default function HomePage() {
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
             <div className="quickLinksGrid">   
-              <Link href="/notice" className="noticeBtn">
+              <Link href="/notice" className="quickLinkItem">
                 <strong>📢 공지</strong>
                 <span>사이트 업데이트 안내</span>
               </Link>
@@ -736,6 +733,13 @@ export default function HomePage() {
           .hero::before {
             display: none;
           }
+          .noticePreviewCard {
+            flex-direction: column;
+          }
+          
+          .noticePreviewDate {
+            width: 100%;
+          }
         }
         @media (max-width: 640px) {
           .container {
@@ -830,15 +834,6 @@ export default function HomePage() {
           font-weight: 800;
           text-align: center;
         }
-
-        .noticePreviewCard {
-          flex-direction: column;
-        }
-        
-        .noticePreviewDate {
-          width: 100%;
-        }
-
       `}</style>
     </>
   );
