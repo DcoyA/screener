@@ -234,8 +234,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-      </main>
-
+                  
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
@@ -276,6 +275,7 @@ export default function HomePage() {
             </div>
           </section>
         ) : null}
+      </main>
                   
       <footer className="footer">
         <div className="footerInner">
