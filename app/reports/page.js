@@ -34,7 +34,7 @@ export default function ReportsPage() {
           </div>
           <div className="updateBox">
             <span className="updateLabel">업데이트</span>
-
+            <strong>{updatedAt}</strong>
           </div>
         </section>
 
