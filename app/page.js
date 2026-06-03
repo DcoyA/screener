@@ -848,8 +848,13 @@ export default function HomePage() {
             flex-direction: column;
             align-items: flex-start;
           }
+          
           .noticePreviewDate {
             width: 100%;
+          }
+          
+          .noticePreviewWrap {
+            padding: 18px;
           }
         }
         @media (max-width: 640px) {
