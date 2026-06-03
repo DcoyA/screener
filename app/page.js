@@ -387,7 +387,7 @@ export default function HomePage() {
         }
 
         .hero:hover .heroCharacter {
-          opacity: 0.28;
+          opacity: 0.5;
           transform: translateY(-4px);
         }
         .heroCharacterGlow {
