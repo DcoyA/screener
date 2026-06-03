@@ -165,16 +165,19 @@ export default function HomePage() {
 
         {latestNotice ? (
           <section className="noticePreviewSection">
-            <Link href="/notice" className="noticePreviewCard">
-              <div className="noticePreviewTopLine">
-                <span className="noticePreviewBadge">📢 공지</span>
-                <span className="noticePreviewDate">{latestNotice.date}</span>
-              </div>
-              <div className="noticePreviewBody">
-                <h2>{latestNotice.title}</h2>
-                <p className="noticePreviewText">{latestNotice.content}</p>
-              </div>
-            </Link>
+            <div className="noticePreviewWrap">
+              <Link href="/notice" className="noticePreviewCard">
+                <div className="noticePreviewTopLine">
+                  <span className="noticePreviewBadge">📢 공지</span>
+                  <span className="noticePreviewDate">{latestNotice.date}</span>
+                </div>
+        
+                <div className="noticePreviewBody">
+                  <h2>{latestNotice.title}</h2>
+                  <p className="noticePreviewText">{latestNotice.content}</p>
+                </div>
+              </Link>
+            </div>
           </section>
         ) : null}
 
