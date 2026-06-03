@@ -16,6 +16,7 @@ export default function ReportsPage() {
             홈으로 가기
           </Link>
           <div className="subNav">
+            <Link href="/notice">공지</Link>
             <Link href="/ranking">랭킹</Link>
             <Link href="/risk">리스크</Link>
           </div>
