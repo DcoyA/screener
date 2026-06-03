@@ -159,7 +159,7 @@ export default function HomePage() {
                   상위 랭킹 보기
                 </Link>
                 <Link className="secondaryBtn" href="/reports">
-                  이번 주 리포트 보기
+                  TOP 10 리포트 보기
                 </Link>
               </div>
             </div>
