@@ -20,7 +20,6 @@ function formatKstDateTime(date = new Date()) {
     second: "2-digit",
     hour12: false,
   }).formatToParts(date);
-
   const get = (type) => parts.find((part) => part.type === type)?.value || "00";
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
 }
@@ -67,7 +66,6 @@ export default function HomePage() {
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
-
     setIsSubmitting(true);
     setSubmitError("");
 
@@ -115,7 +113,6 @@ export default function HomePage() {
             />
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
-
           <nav className="mainNav" aria-label="주요 메뉴">
             <Link href="/notice">공지</Link>
             <Link href="/ranking">랭킹</Link>
@@ -137,7 +134,6 @@ export default function HomePage() {
                 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
                 형태로 제공합니다.
               </p>
-
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
                   상위 랭킹 보기
@@ -170,15 +166,14 @@ export default function HomePage() {
         {latestNotice ? (
           <section className="noticePreviewSection">
             <Link href="/notice" className="noticePreviewCard">
-              <div className="noticePreviewLeft">
-                <p className="noticePreviewBadge">📢 공지</p>
-                <div className="noticePreviewBody">
-                  <h2>{latestNotice.title}</h2>
-                  <p className="noticePreviewText">{latestNotice.content}</p>
-                </div>
+              <div className="noticePreviewTopLine">
+                <span className="noticePreviewBadge">📢 공지</span>
+                <span className="noticePreviewDate">{latestNotice.date}</span>
               </div>
-
-              <div className="noticePreviewDate">{latestNotice.date}</div>
+              <div className="noticePreviewBody">
+                <h2>{latestNotice.title}</h2>
+                <p className="noticePreviewText">{latestNotice.content}</p>
+              </div>
             </Link>
           </section>
         ) : null}
@@ -275,8 +270,7 @@ export default function HomePage() {
                 <p className="modalBadge">무료 체험</p>
                 <h3>상위 5개 종목 리포트 무료 신청</h3>
                 <p className="modalDesc">
-                  현재 무료 체험 기간입니다. 이메일 주소를 남겨주시면 주 2회 발송되는 상위
-                  5개 종목 상세 리포트 제공 대상에 우선 등록됩니다.
+                  현재 무료 체험 기간입니다. 이메일 주소를 남겨주시면 주 2회 발송되는 상위 5개 종목 상세 리포트 제공 대상에 우선 등록됩니다.
                 </p>
                 <form className="subscribeForm" onSubmit={handleSubscribe}>
                   <input
@@ -302,8 +296,7 @@ export default function HomePage() {
                 <p className="modalBadge">신청 완료</p>
                 <h3>접수가 완료되었습니다</h3>
                 <p className="modalDesc">
-                  신청이 접수되었습니다. 무료 체험 오픈 안내 및 리포트 제공 소식을 이메일로
-                  보내드릴게요.
+                  신청이 접수되었습니다. 무료 체험 오픈 안내 및 리포트 제공 소식을 이메일로 보내드릴게요.
                 </p>
                 <div className="modalActions singleAction">
                   <button type="button" className="primaryBtn" onClick={closeModal}>
@@ -403,14 +396,14 @@ export default function HomePage() {
           height: min(42vw, 520px);
           max-width: 520px;
           max-height: 520px;
-          opacity: 0.18;
+          opacity: 1;
           pointer-events: none;
-          transition: opacity 0.2s ease, transform 0.2s ease;
+          transition: opacity 0.5s ease, transform 0.2s ease;
           z-index: 1;
           overflow: hidden;
         }
         .hero:hover .heroCharacter {
-          opacity: 0.28;
+          opacity: 0.5;
           transform: translateY(-4px);
         }
         .heroCharacterGlow {
@@ -484,11 +477,7 @@ export default function HomePage() {
           margin: 28px 0 34px;
         }
         .noticePreviewCard {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 20px;
-          width: 100%;
+          display: block;
           text-decoration: none;
           border: 1px solid #e5e7eb;
           border-radius: 24px;
@@ -496,14 +485,14 @@ export default function HomePage() {
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
           color: #0f172a;
-          box-sizing: border-box;
         }
-        .noticePreviewLeft {
+        .noticePreviewTopLine {
           display: flex;
-          flex-direction: column;
-          gap: 14px;
-          min-width: 0;
-          flex: 1;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
         }
         .noticePreviewBadge {
           display: inline-flex;
@@ -517,20 +506,7 @@ export default function HomePage() {
           font-weight: 800;
           margin: 0;
         }
-        .noticePreviewBody h2 {
-          margin: 0 0 8px;
-          font-size: 1.35rem;
-          letter-spacing: -0.03em;
-        }
-        .noticePreviewText {
-          margin: 0;
-          color: #475569;
-          line-height: 1.7;
-          font-size: 0.98rem;
-          white-space: pre-line;
-        }
         .noticePreviewDate {
-          flex-shrink: 0;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -542,6 +518,18 @@ export default function HomePage() {
           color: #0f172a;
           font-weight: 800;
           text-align: center;
+        }
+        .noticePreviewBody h2 {
+          margin: 0 0 8px;
+          font-size: 1.35rem;
+          letter-spacing: -0.03em;
+        }
+        .noticePreviewText {
+          margin: 0;
+          color: #475569;
+          line-height: 1.7;
+          font-size: 0.98rem;
+          white-space: pre-line;
         }
         .heroActions,
         .modalActions,
@@ -795,8 +783,9 @@ export default function HomePage() {
           .hero::before {
             display: none;
           }
-          .noticePreviewCard {
+          .noticePreviewTopLine {
             flex-direction: column;
+            align-items: flex-start;
           }
           .noticePreviewDate {
             width: 100%;
