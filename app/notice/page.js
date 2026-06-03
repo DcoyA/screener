@@ -39,6 +39,7 @@ const faqItems = [
 
 export default function NoticePage() {
   const [openFaqId, setOpenFaqId] = useState(1);
+
   const sortedNotices = [...notices].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   );
@@ -87,11 +88,11 @@ export default function NoticePage() {
                 서비스 이용 전 많이 묻는 질문을 먼저 정리해두었습니다.
               </p>
             </div>
-        
+
             <div className="faqList">
               {faqItems.map((item) => {
                 const isOpen = openFaqId === item.id;
-        
+
                 return (
                   <div className="faqItem" key={item.id}>
                     <button
@@ -102,7 +103,7 @@ export default function NoticePage() {
                       <span>{item.question}</span>
                       <span className={`faqIcon ${isOpen ? "open" : ""}`}>⌄</span>
                     </button>
-        
+
                     {isOpen ? <div className="faqAnswer">{item.answer}</div> : null}
                   </div>
                 );
@@ -110,7 +111,7 @@ export default function NoticePage() {
             </div>
           </div>
         </section>
-    
+
         <div className="noticeList">
           {sortedNotices.map((item) => (
             <article className="noticeCard" key={item.id}>
@@ -183,7 +184,8 @@ export default function NoticePage() {
           flex-wrap: wrap;
         }
 
-        .badge {
+        .badge,
+        .faqEyebrow {
           display: inline-flex;
           padding: 8px 14px;
           border-radius: 999px;
@@ -228,6 +230,86 @@ export default function NoticePage() {
           margin-bottom: 6px;
           font-size: 0.88rem;
           font-weight: 700;
+        }
+
+        .faqSection {
+          margin-bottom: 28px;
+        }
+
+        .faqCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 28px;
+          padding: 28px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+        }
+
+        .faqHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 18px;
+          margin-bottom: 18px;
+          flex-wrap: wrap;
+        }
+
+        .faqTitle {
+          margin: 0;
+          font-size: 1.5rem;
+          letter-spacing: -0.03em;
+        }
+
+        .faqDesc {
+          margin: 0;
+          max-width: 420px;
+          color: #64748b;
+          line-height: 1.7;
+          font-size: 0.95rem;
+        }
+
+        .faqList {
+          display: grid;
+          gap: 12px;
+        }
+
+        .faqItem {
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          background: #ffffff;
+          overflow: hidden;
+        }
+
+        .faqQuestion {
+          width: 100%;
+          border: none;
+          background: transparent;
+          padding: 18px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+          text-align: left;
+          font-size: 1rem;
+          font-weight: 800;
+          color: #0f172a;
+          cursor: pointer;
+        }
+
+        .faqIcon {
+          flex-shrink: 0;
+          font-size: 1.1rem;
+          transition: transform 0.2s ease;
+        }
+
+        .faqIcon.open {
+          transform: rotate(180deg);
+        }
+
+        .faqAnswer {
+          padding: 0 20px 20px;
+          color: #475569;
+          line-height: 1.8;
+          font-size: 0.98rem;
         }
 
         .noticeList {
@@ -283,24 +365,9 @@ export default function NoticePage() {
             padding: 24px 18px 64px;
           }
 
-            .faqCard {
-            padding: 22px;
-          }
-          
-          .faqHeader {
-            flex-direction: column;
-          }
-          
-          .faqQuestion {
-            padding: 16px 18px;
-          }
-          
-          .faqAnswer {
-            padding: 0 18px 18px;
-          }
-        
           .pageHero,
-          .noticeTop {
+          .noticeTop,
+          .faqHeader {
             flex-direction: column;
           }
 
@@ -314,96 +381,17 @@ export default function NoticePage() {
             width: 100%;
           }
 
-          .faqSection {
-            margin-bottom: 28px;
-          }
-          
           .faqCard {
-            border: 1px solid #e5e7eb;
-            border-radius: 28px;
-            padding: 28px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+            padding: 22px;
           }
-          
-          .faqHeader {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 18px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-          }
-          
-          .faqEyebrow {
-            display: inline-flex;
-            padding: 8px 14px;
-            border-radius: 999px;
-            background: #eef2ff;
-            color: #4f46e5;
-            font-size: 0.82rem;
-            font-weight: 800;
-            margin: 0 0 14px;
-          }
-          
-          .faqTitle {
-            margin: 0;
-            font-size: 1.5rem;
-            letter-spacing: -0.03em;
-          }
-          
-          .faqDesc {
-            margin: 0;
-            max-width: 420px;
-            color: #64748b;
-            line-height: 1.7;
-            font-size: 0.95rem;
-          }
-          
-          .faqList {
-            display: grid;
-            gap: 12px;
-          }
-          
-          .faqItem {
-            border: 1px solid #e5e7eb;
-            border-radius: 18px;
-            background: #ffffff;
-            overflow: hidden;
-          }
-          
+
           .faqQuestion {
-            width: 100%;
-            border: none;
-            background: transparent;
-            padding: 18px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            text-align: left;
-            font-size: 1rem;
-            font-weight: 800;
-            color: #0f172a;
-            cursor: pointer;
+            padding: 16px 18px;
           }
-          
-          .faqIcon {
-            font-size: 1.1rem;
-            transition: transform 0.2s ease;
-          }
-          
-          .faqIcon.open {
-            transform: rotate(180deg);
-          }
-          
+
           .faqAnswer {
-            padding: 0 20px 20px;
-            color: #475569;
-            line-height: 1.8;
-            font-size: 0.98rem;
+            padding: 0 18px 18px;
           }
-          
         }
       `}</style>
     </>
