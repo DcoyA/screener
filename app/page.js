@@ -165,7 +165,11 @@ export default function HomePage() {
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
-            <div className="quickLinksGrid">
+            <div className="quickLinksGrid">   
+              <Link href="/notice" className="noticeBtn">
+                <strong>📢 공지</strong>
+                <span>사이트 업데이트 안내</span>
+              </Link>
               <Link href="/ranking" className="quickLinkItem">
                 <strong>랭킹</strong>
                 <span>AI 점수 기준 상위 종목 보기</span>
