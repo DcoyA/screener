@@ -37,6 +37,12 @@ function getRankBadgeClass(rank) {
   return "rankBadge rankDefault";
 }
 
+function formatPrice(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -233,6 +239,7 @@ export default function HomePage() {
 
                 <h3>{stock.name}</h3>
                 <p className="stockCode">종목코드 {stock.code}</p>
+                <p className="priceLine">최근 종가 {formatPrice(stock.metrics?.closePrice)}</p>
                 <p className="scoreLine">총점 {stock.totalScore}점</p>
                 <p className="summaryText">{stock.summary}</p>
                 <Link className="linkBtn" href={`/stock/${stock.code}`}>
@@ -736,12 +743,20 @@ export default function HomePage() {
           letter-spacing: -0.03em;
           word-break: keep-all;
         }
+        
         .stockCode,
+        .priceLine,
         .scoreLine {
           margin: 0 0 8px;
           color: #64748b;
           font-weight: 600;
         }
+        
+        .priceLine {
+          color: #0f172a;
+          font-weight: 800;
+        }
+
         .summaryText {
           min-height: 92px;
           margin: 10px 0 18px;
