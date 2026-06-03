@@ -8,34 +8,57 @@ const SCORE_META = [
     label: "가치",
     max: 30,
     desc: "저평가 정도를 반영합니다. PER, PBR, 저평가 보너스를 합산합니다.",
+    children: [
+      { key: "perScore", label: "PER", max: 12 },
+      { key: "pbrScore", label: "PBR", max: 12 },
+      { key: "discountBonus", label: "저평가 보너스", max: 6 },
+    ],
   },
   {
     key: "quality",
     label: "품질",
     max: 25,
     desc: "수익성과 효율성을 반영합니다. 영업이익률, ROE, 이익 안정성을 반영합니다.",
+    children: [
+      { key: "operatingMarginScore", label: "영업이익률", max: 10 },
+      { key: "roeScore", label: "ROE", max: 10 },
+      { key: "profitStabilityScore", label: "이익 안정성", max: 5 },
+    ],
   },
   {
     key: "safety",
     label: "안정성",
     max: 20,
     desc: "재무 안정성과 손익 안전성을 반영합니다. 부채비율과 이익 안전성을 기준으로 계산됩니다.",
+    children: [
+      { key: "debtRatioScore", label: "부채비율", max: 10 },
+      { key: "earningsSafetyScore", label: "이익 안전성", max: 10 },
+    ],
   },
   {
     key: "market",
     label: "시장성",
     max: 15,
     desc: "시장 규모와 유동성을 반영합니다. 시가총액과 거래대금이 반영됩니다.",
+    children: [
+      { key: "marketCapScore", label: "시가총액", max: 7 },
+      { key: "liquidityScore", label: "유동성", max: 8 },
+    ],
   },
   {
     key: "change",
     label: "변화",
     max: 10,
     desc: "성장 흐름을 반영합니다. 매출, 영업이익, 순이익 성장률이 반영됩니다.",
+    children: [
+      { key: "revenueGrowthScore", label: "매출 성장", max: 4 },
+      { key: "operatingIncomeGrowthScore", label: "영업이익 성장", max: 4 },
+      { key: "netIncomeGrowthScore", label: "순이익 성장", max: 2 },
+    ],
   },
 ];
 
-function getScoreValue(stock, key) {
+function getCategoryScore(stock, key) {
   if (stock?.scoreBreakdown?.[key] !== undefined) {
     return stock.scoreBreakdown[key];
   }
@@ -46,6 +69,10 @@ function getScoreValue(stock, key) {
   if (key === "market") return stock?.marketScore ?? 0;
   if (key === "change") return stock?.changeScore ?? 0;
   return 0;
+}
+
+function getChildScore(stock, key) {
+  return stock?.scoreBreakdown?.[key] ?? 0;
 }
 
 export default async function StockDetailPage({ params }) {
@@ -109,10 +136,22 @@ export default async function StockDetailPage({ params }) {
                 <div className="scoreCardTop">
                   <span className="scoreName">{item.label}</span>
                   <span className="scoreValue">
-                    {getScoreValue(stock, item.key)} / {item.max}
+                    {getCategoryScore(stock, item.key)} / {item.max}
                   </span>
                 </div>
+
                 <p className="scoreMeaning">{item.desc}</p>
+
+                <div className="scoreBreakdownList">
+                  {item.children.map((child) => (
+                    <div className="scoreBreakdownItem" key={child.key}>
+                      <span className="scoreBreakdownLabel">{child.label}</span>
+                      <span className="scoreBreakdownValue">
+                        {getChildScore(stock, child.key)} / {child.max}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -297,10 +336,34 @@ export default async function StockDetailPage({ params }) {
           font-weight: 800;
         }
         .scoreMeaning {
-          margin: 0;
+          margin: 0 0 14px;
           color: #475569;
           line-height: 1.75;
           font-size: 0.95rem;
+        }
+        .scoreBreakdownList {
+          display: grid;
+          gap: 10px;
+        }
+        .scoreBreakdownItem {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 14px;
+          border-radius: 14px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+        }
+        .scoreBreakdownLabel {
+          color: #475569;
+          font-size: 0.95rem;
+          font-weight: 700;
+        }
+        .scoreBreakdownValue {
+          color: #0f172a;
+          font-weight: 800;
+          flex-shrink: 0;
         }
         @media (max-width: 900px) {
           .infoGrid,
