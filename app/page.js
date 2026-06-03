@@ -111,6 +111,7 @@ export default function HomePage() {
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
           <nav className="mainNav" aria-label="주요 메뉴">
+            <Link href="/notice">공지</Link>
             <Link href="/ranking">랭킹</Link>
             <Link href="/risk">리스크</Link>
             <Link href="/reports">리포트</Link>
@@ -171,15 +172,15 @@ export default function HomePage() {
                 <span>사이트 업데이트 안내</span>
               </Link>
               <Link href="/ranking" className="quickLinkItem">
-                <strong>랭킹</strong>
+                <strong>🏆 랭킹</strong>
                 <span>AI 점수 기준 상위 종목 보기</span>
               </Link>
               <Link href="/risk" className="quickLinkItem">
-                <strong>리스크</strong>
+                <strong>⚠️ 리스크</strong>
                 <span>주의 종목과 체크포인트 확인</span>
               </Link>
               <Link href="/reports" className="quickLinkItem">
-                <strong>리포트</strong>
+                <strong>📝 리포트</strong>
                 <span>주간 요약과 핵심 후보 정리</span>
               </Link>
             </div>
