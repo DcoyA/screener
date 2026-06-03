@@ -60,7 +60,7 @@ export default function RiskPage() {
 
   const resultCountText = normalizedSearchTerm
     ? `검색 결과 ${filteredRisks.length}개 / 전체 ${risks.length}개`
-    : `전체 ${risks.length}개 종목`;
+    : `상위 ${risks.length}개 종목에 대해서만 제공합니다.`;
 
   return (
     <>
