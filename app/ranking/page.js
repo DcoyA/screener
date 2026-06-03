@@ -148,9 +148,12 @@ export default function RankingPage() {
 
                     <div className="titleBlock">
                       <h2>{renderHighlightedName(stock.name, searchTerm)}</h2>
-                      <p className="stockCode">
-                        {stock.market} · {stock.code} · 최근 종가 {formatPrice(stock.metrics?.closePrice)}
-                      </p>
+                        <p className="stockCode">
+                          {stock.market} · {stock.code} ·{" "}
+                          <span className="priceInline">
+                            최근 종가 {formatPrice(stock.metrics?.closePrice)}
+                          </span>
+                        </p>
                     </div>
                   </div>
 
@@ -188,6 +191,10 @@ export default function RankingPage() {
       </main>
 
       <style jsx>{`
+        .priceInline {
+          color: #0ea5e9;
+          font-weight: 900;
+        }
         .container {
           max-width: 1180px;
           margin: 0 auto;
