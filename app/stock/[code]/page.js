@@ -231,6 +231,22 @@ const styles = {
     color: "#0f172a",
     fontWeight: 800,
   },
+  scoreValueCurrent: {
+    fontSize: "1.2rem",
+    fontWeight: 900,
+    color: "#4f46e5",
+    lineHeight: 1,
+  },
+  
+  scoreValueSlash: {
+    color: "#94a3b8",
+    fontWeight: 700,
+  },
+  
+  scoreValueMax: {
+    color: "#94a3b8",
+    fontWeight: 700,
+  },
   scoreMeaning: {
     margin: "0 0 14px",
     color: "#475569",
@@ -338,9 +354,13 @@ export default async function StockDetailPage({ params }) {
             <div style={styles.scoreCard} key={item.key}>
               <div style={styles.scoreCardTop}>
                 <span style={styles.scoreName}>{item.label}</span>
-                <span style={styles.scoreValue}>
-                  {getCategoryScore(stock, item.key)} / {item.max}
-                </span>
+                  <span style={styles.scoreValue}>
+                    <span style={styles.scoreValueCurrent}>
+                      {getCategoryScore(stock, item.key)}
+                    </span>
+                    <span style={styles.scoreValueSlash}> / </span>
+                    <span style={styles.scoreValueMax}>{item.max}</span>
+                  </span>
               </div>
 
               <p style={styles.scoreMeaning}>{item.desc}</p>
