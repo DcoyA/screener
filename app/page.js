@@ -30,6 +30,13 @@ function createUnsubscribeToken(emailValue) {
   return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
 }
 
+function getRankBadgeClass(rank) {
+  if (rank === 1) return "rankBadge rank1";
+  if (rank === 2) return "rankBadge rank2";
+  if (rank === 3) return "rankBadge rank3";
+  return "rankBadge rankDefault";
+}
+
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -42,7 +49,14 @@ export default function HomePage() {
   )[0];
 
   const topStocks = useMemo(
-    () => [...stocks].sort((a, b) => b.totalScore - a.totalScore).slice(0, 3),
+    () =>
+      [...stocks]
+        .sort((a, b) => b.totalScore - a.totalScore)
+        .slice(0, 3)
+        .map((stock, index) => ({
+          ...stock,
+          originalRank: index + 1,
+        })),
     []
   );
 
@@ -171,7 +185,6 @@ export default function HomePage() {
                   <span className="noticePreviewBadge">📢 공지</span>
                   <span className="noticePreviewDate">{latestNotice.date}</span>
                 </div>
-        
                 <div className="noticePreviewBody">
                   <h2>{latestNotice.title}</h2>
                   <p className="noticePreviewText">{latestNotice.content}</p>
@@ -210,7 +223,14 @@ export default function HomePage() {
           <div className="cardWrap">
             {topStocks.map((stock) => (
               <div className="card" key={stock.code}>
-                <p className="marketBadge">{stock.market}</p>
+                <div className="candidateRankRow">
+                  <div className={getRankBadgeClass(stock.originalRank)}>
+                    <span className="rankHash">#</span>
+                    <span className="rankNumber">{stock.originalRank}</span>
+                  </div>
+                  <p className="marketBadge">{stock.market}</p>
+                </div>
+
                 <h3>{stock.name}</h3>
                 <p className="stockCode">종목코드 {stock.code}</p>
                 <p className="scoreLine">총점 {stock.totalScore}점</p>
@@ -479,7 +499,6 @@ export default function HomePage() {
         .noticePreviewSection {
           margin: 28px 0 34px;
         }
-        
         .noticePreviewWrap {
           border: 1px solid #e5e7eb;
           border-radius: 28px;
@@ -487,7 +506,6 @@ export default function HomePage() {
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
-        
         .noticePreviewCard {
           display: block;
           text-decoration: none;
@@ -496,56 +514,6 @@ export default function HomePage() {
           padding: 22px 24px;
           background: #ffffff;
           color: #0f172a;
-        }
-        
-        .noticePreviewTopLine {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
-        
-        .noticePreviewBadge {
-          display: inline-flex;
-          align-items: center;
-          width: fit-content;
-          padding: 8px 14px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
-          font-size: 0.82rem;
-          font-weight: 800;
-          margin: 0;
-        }
-        
-        .noticePreviewDate {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 120px;
-          padding: 12px 16px;
-          border-radius: 16px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          color: #0f172a;
-          font-weight: 800;
-          text-align: center;
-        }
-        
-        .noticePreviewBody h2 {
-          margin: 0 0 8px;
-          font-size: 1.35rem;
-          letter-spacing: -0.03em;
-        }
-        
-        .noticePreviewText {
-          margin: 0;
-          color: #475569;
-          line-height: 1.7;
-          font-size: 0.98rem;
-          white-space: pre-line;
         }
         .noticePreviewTopLine {
           display: flex;
@@ -699,6 +667,59 @@ export default function HomePage() {
           background: #ffffff;
           box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
         }
+        .candidateRankRow {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 18px;
+        }
+        .rankBadge {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 72px;
+          height: 72px;
+          border-radius: 22px;
+          padding: 0 14px;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+          border: 1px solid transparent;
+          flex-shrink: 0;
+        }
+        .rankHash {
+          font-size: 1rem;
+          line-height: 1;
+          margin-right: 2px;
+          opacity: 0.92;
+        }
+        .rankNumber {
+          font-size: 1.8rem;
+          line-height: 1;
+        }
+        .rank1 {
+          background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+          color: #111827;
+          border-color: rgba(245, 158, 11, 0.35);
+        }
+        .rank2 {
+          background: linear-gradient(135deg, #e5e7eb 0%, #94a3b8 100%);
+          color: #0f172a;
+          border-color: rgba(148, 163, 184, 0.38);
+        }
+        .rank3 {
+          background: linear-gradient(135deg, #fdba74 0%, #ea580c 100%);
+          color: #fff;
+          border-color: rgba(234, 88, 12, 0.3);
+        }
+        .rankDefault {
+          background: #f8fafc;
+          color: #334155;
+          border-color: #e2e8f0;
+          box-shadow: none;
+        }
         .marketBadge {
           display: inline-flex;
           padding: 7px 12px;
@@ -707,7 +728,7 @@ export default function HomePage() {
           color: #64748b;
           font-size: 0.8rem;
           font-weight: 800;
-          margin: 0 0 18px;
+          margin: 0;
         }
         .card h3 {
           margin: 0 0 12px;
@@ -848,13 +869,8 @@ export default function HomePage() {
             flex-direction: column;
             align-items: flex-start;
           }
-          
           .noticePreviewDate {
             width: 100%;
-          }
-          
-          .noticePreviewWrap {
-            padding: 18px;
           }
         }
         @media (max-width: 640px) {
@@ -879,11 +895,15 @@ export default function HomePage() {
           .quickLinksCard,
           .subscribeCard,
           .card,
-          .modalCard {
+          .modalCard,
+          .noticePreviewWrap {
             padding: 22px;
           }
           .summaryText {
             min-height: auto;
+          }
+          .candidateRankRow {
+            align-items: flex-start;
           }
         }
       `}</style>
