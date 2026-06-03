@@ -27,6 +27,13 @@ function renderHighlightedName(name, query) {
   );
 }
 
+function getRankBadgeClass(rank) {
+  if (rank === 1) return "rankBadge rank1";
+  if (rank === 2) return "rankBadge rank2";
+  if (rank === 3) return "rankBadge rank3";
+  return "rankBadge rankDefault";
+}
+
 export default function RankingPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -127,12 +134,18 @@ export default function RankingPage() {
             filteredStocks.map((stock) => (
               <div className="listCard" key={stock.code}>
                 <div className="listTop">
-                  <div>
-                    <p className="muted">#{stock.originalRank}</p>
-                    <h2>{renderHighlightedName(stock.name, searchTerm)}</h2>
-                    <p className="stockCode">
-                      {stock.market} · {stock.code}
-                    </p>
+                  <div className="rankHeader">
+                    <div className={getRankBadgeClass(stock.originalRank)}>
+                      <span className="rankHash">#</span>
+                      <span className="rankNumber">{stock.originalRank}</span>
+                    </div>
+
+                    <div className="titleBlock">
+                      <h2>{renderHighlightedName(stock.name, searchTerm)}</h2>
+                      <p className="stockCode">
+                        {stock.market} · {stock.code}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="scoreBadge">{stock.totalScore}점</div>
@@ -337,8 +350,63 @@ export default function RankingPage() {
           gap: 16px;
           margin-bottom: 10px;
         }
+        .rankHeader {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          min-width: 0;
+        }
+        .titleBlock {
+          min-width: 0;
+        }
+        .rankBadge {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 82px;
+          height: 82px;
+          border-radius: 24px;
+          padding: 0 16px;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+          border: 1px solid transparent;
+          flex-shrink: 0;
+        }
+        .rankHash {
+          font-size: 1.1rem;
+          line-height: 1;
+          margin-right: 2px;
+          opacity: 0.92;
+        }
+        .rankNumber {
+          font-size: 2rem;
+          line-height: 1;
+        }
+        .rank1 {
+          background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+          color: #111827;
+          border-color: rgba(245, 158, 11, 0.35);
+        }
+        .rank2 {
+          background: linear-gradient(135deg, #e5e7eb 0%, #94a3b8 100%);
+          color: #0f172a;
+          border-color: rgba(148, 163, 184, 0.38);
+        }
+        .rank3 {
+          background: linear-gradient(135deg, #fdba74 0%, #ea580c 100%);
+          color: #fff;
+          border-color: rgba(234, 88, 12, 0.3);
+        }
+        .rankDefault {
+          background: #f8fafc;
+          color: #334155;
+          border-color: #e2e8f0;
+          box-shadow: none;
+        }
         h2 {
-          margin: 8px 0 10px;
+          margin: 4px 0 10px;
           font-size: 1.9rem;
           letter-spacing: -0.03em;
           word-break: keep-all;
@@ -362,6 +430,7 @@ export default function RankingPage() {
           font-weight: 800;
           min-width: 64px;
           text-align: center;
+          flex-shrink: 0;
         }
         .actionsRow {
           display: flex;
@@ -412,7 +481,8 @@ export default function RankingPage() {
             padding: 24px 18px 64px;
           }
           .pageHero,
-          .listTop {
+          .listTop,
+          .rankHeader {
             flex-direction: column;
           }
           .updateBox {
@@ -431,6 +501,9 @@ export default function RankingPage() {
           .linkBtn,
           .ghostBtn {
             width: 100%;
+          }
+          .rankBadge {
+            width: 86px;
           }
         }
       `}</style>
