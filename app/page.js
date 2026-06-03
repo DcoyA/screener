@@ -183,47 +183,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {latestNotice ? (
-          <section className="noticePreviewSection">
-            <div className="noticePreviewWrap">
-              <Link href="/notice" className="noticePreviewCard">
-                <div className="noticePreviewTopLine">
-                  <span className="noticePreviewBadge">📢 공지</span>
-                  <span className="noticePreviewDate">{latestNotice.date}</span>
-                </div>
-                <div className="noticePreviewBody">
-                  <h2>{latestNotice.title}</h2>
-                  <p className="noticePreviewText">{latestNotice.content}</p>
-                </div>
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        <section className="quickLinksSection">
-          <div className="quickLinksCard">
-            <h2>서비스 바로가기</h2>
-            <div className="quickLinksGrid">
-              <Link href="/notice" className="quickLinkItem">
-                <strong>📢 공지</strong>
-                <span>사이트 업데이트 안내</span>
-              </Link>
-              <Link href="/ranking" className="quickLinkItem">
-                <strong>🏆 랭킹</strong>
-                <span>AI 점수 기준 상위 종목 보기</span>
-              </Link>
-              <Link href="/risk" className="quickLinkItem">
-                <strong>⚠️ 리스크</strong>
-                <span>주의 종목과 체크포인트 확인</span>
-              </Link>
-              <Link href="/reports" className="quickLinkItem">
-                <strong>📝 리포트</strong>
-                <span>주간 요약과 핵심 후보 정리</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
         <section>
           <h2 className="sectionTitle">이번 주 상위 후보</h2>
           <div className="cardWrap">
@@ -277,6 +236,47 @@ export default function HomePage() {
         </section>
       </main>
 
+        <section className="quickLinksSection">
+          <div className="quickLinksCard">
+            <h2>서비스 바로가기</h2>
+            <div className="quickLinksGrid">
+              <Link href="/notice" className="quickLinkItem">
+                <strong>📢 공지</strong>
+                <span>사이트 업데이트 안내</span>
+              </Link>
+              <Link href="/ranking" className="quickLinkItem">
+                <strong>🏆 랭킹</strong>
+                <span>AI 점수 기준 상위 종목 보기</span>
+              </Link>
+              <Link href="/risk" className="quickLinkItem">
+                <strong>⚠️ 리스크</strong>
+                <span>주의 종목과 체크포인트 확인</span>
+              </Link>
+              <Link href="/reports" className="quickLinkItem">
+                <strong>📝 리포트</strong>
+                <span>주간 요약과 핵심 후보 정리</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {latestNotice ? (
+          <section className="noticePreviewSection">
+            <div className="noticePreviewWrap">
+              <Link href="/notice" className="noticePreviewCard">
+                <div className="noticePreviewTopLine">
+                  <span className="noticePreviewBadge">📢 공지</span>
+                  <span className="noticePreviewDate">{latestNotice.date}</span>
+                </div>
+                <div className="noticePreviewBody">
+                  <h2>{latestNotice.title}</h2>
+                  <p className="noticePreviewText">{latestNotice.content}</p>
+                </div>
+              </Link>
+            </div>
+          </section>
+        ) : null}
+                  
       <footer className="footer">
         <div className="footerInner">
           <p>HELLO MEDIA · All rights reserved.</p>
