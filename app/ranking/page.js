@@ -34,6 +34,12 @@ function getRankBadgeClass(rank) {
   return "rankBadge rankDefault";
 }
 
+function formatPrice(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+
 export default function RankingPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -143,7 +149,7 @@ export default function RankingPage() {
                     <div className="titleBlock">
                       <h2>{renderHighlightedName(stock.name, searchTerm)}</h2>
                       <p className="stockCode">
-                        {stock.market} · {stock.code}
+                        {stock.market} · {stock.code} · 최근 종가 {formatPrice(stock.metrics?.closePrice)}
                       </p>
                     </div>
                   </div>
@@ -245,11 +251,17 @@ export default function RankingPage() {
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
           text-align: right;
         }
+        
         .updateLabel,
         .muted,
         .stockCode {
           color: #64748b;
         }
+        
+        .stockCode {
+          line-height: 1.7;
+        }
+
         .updateLabel {
           display: block;
           margin-bottom: 6px;
