@@ -156,7 +156,7 @@ export default function HomePage() {
               </p>
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
-                  상위 랭킹 보기
+                  랭킹 500 전체보기
                 </Link>
                 <Link className="secondaryBtn" href="/reports">
                   TOP 10 리포트 보기
