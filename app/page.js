@@ -479,15 +479,73 @@ export default function HomePage() {
         .noticePreviewSection {
           margin: 28px 0 34px;
         }
+        
+        .noticePreviewWrap {
+          border: 1px solid #e5e7eb;
+          border-radius: 28px;
+          padding: 22px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+        }
+        
         .noticePreviewCard {
           display: block;
           text-decoration: none;
           border: 1px solid #e5e7eb;
-          border-radius: 24px;
+          border-radius: 22px;
           padding: 22px 24px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+          background: #ffffff;
           color: #0f172a;
+        }
+        
+        .noticePreviewTopLine {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+        
+        .noticePreviewBadge {
+          display: inline-flex;
+          align-items: center;
+          width: fit-content;
+          padding: 8px 14px;
+          border-radius: 999px;
+          background: #eef2ff;
+          color: #4f46e5;
+          font-size: 0.82rem;
+          font-weight: 800;
+          margin: 0;
+        }
+        
+        .noticePreviewDate {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 120px;
+          padding: 12px 16px;
+          border-radius: 16px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-weight: 800;
+          text-align: center;
+        }
+        
+        .noticePreviewBody h2 {
+          margin: 0 0 8px;
+          font-size: 1.35rem;
+          letter-spacing: -0.03em;
+        }
+        
+        .noticePreviewText {
+          margin: 0;
+          color: #475569;
+          line-height: 1.7;
+          font-size: 0.98rem;
+          white-space: pre-line;
         }
         .noticePreviewTopLine {
           display: flex;
