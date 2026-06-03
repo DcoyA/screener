@@ -59,6 +59,7 @@ export default function RiskPage() {
             홈으로 가기
           </Link>
           <div className="subNav">
+            <Link href="/notice">공지</Link>
             <Link href="/ranking">랭킹</Link>
             <Link href="/reports">리포트</Link>
           </div>
