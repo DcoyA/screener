@@ -37,6 +37,7 @@ export default function HomePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
   const latestNotice = [...notices].sort(
     (a, b) => new Date(b.date) - new Date(a.date)
   )[0];
@@ -114,6 +115,7 @@ export default function HomePage() {
             />
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
+
           <nav className="mainNav" aria-label="주요 메뉴">
             <Link href="/notice">공지</Link>
             <Link href="/ranking">랭킹</Link>
@@ -135,6 +137,7 @@ export default function HomePage() {
                 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
                 형태로 제공합니다.
               </p>
+
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
                   상위 랭킹 보기
@@ -169,21 +172,21 @@ export default function HomePage() {
             <Link href="/notice" className="noticePreviewCard">
               <div className="noticePreviewLeft">
                 <p className="noticePreviewBadge">📢 공지</p>
-                <div>
+                <div className="noticePreviewBody">
                   <h2>{latestNotice.title}</h2>
                   <p className="noticePreviewText">{latestNotice.content}</p>
                 </div>
               </div>
-        
+
               <div className="noticePreviewDate">{latestNotice.date}</div>
             </Link>
           </section>
         ) : null}
-                    
+
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
-            <div className="quickLinksGrid">   
+            <div className="quickLinksGrid">
               <Link href="/notice" className="quickLinkItem">
                 <strong>📢 공지</strong>
                 <span>사이트 업데이트 안내</span>
@@ -227,10 +230,10 @@ export default function HomePage() {
             <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
             <h2>메일로 받아보는 상위 5개 종목 상세 리포트</h2>
             <p className="subscribeDesc">
-              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로
-              받아보세요. 현재는 무료 체험 기간으로 운영 중이며, 신청자에게
-              우선 제공됩니다. 매주 화요일 7시 40분 새로운 전략과 매주 목요일
-              20시 30분 한주에 대한 복기를 제공해 드립니다.
+              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로 받아보세요.
+              현재는 무료 체험 기간으로 운영 중이며, 신청자에게 우선 제공됩니다.
+              매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한
+              복기를 제공해 드립니다.
             </p>
             <div className="subscribeActions">
               <a
@@ -299,8 +302,8 @@ export default function HomePage() {
                 <p className="modalBadge">신청 완료</p>
                 <h3>접수가 완료되었습니다</h3>
                 <p className="modalDesc">
-                  신청이 접수되었습니다. 무료 체험 오픈 안내 및 리포트 제공 소식을
-                  이메일로 보내드릴게요.
+                  신청이 접수되었습니다. 무료 체험 오픈 안내 및 리포트 제공 소식을 이메일로
+                  보내드릴게요.
                 </p>
                 <div className="modalActions singleAction">
                   <button type="button" className="primaryBtn" onClick={closeModal}>
@@ -392,7 +395,6 @@ export default function HomePage() {
           min-width: 0;
           max-width: 760px;
         }
-        
         .heroCharacter {
           position: absolute;
           right: -10px;
@@ -401,15 +403,14 @@ export default function HomePage() {
           height: min(42vw, 520px);
           max-width: 520px;
           max-height: 520px;
-          opacity: 1.00;
+          opacity: 0.18;
           pointer-events: none;
-          transition: opacity 0.5s ease, transform 0.2s ease;
+          transition: opacity 0.2s ease, transform 0.2s ease;
           z-index: 1;
           overflow: hidden;
         }
-
         .hero:hover .heroCharacter {
-          opacity: 0.5;
+          opacity: 0.28;
           transform: translateY(-4px);
         }
         .heroCharacterGlow {
@@ -419,12 +420,10 @@ export default function HomePage() {
           filter: blur(24px);
           z-index: 0;
         }
-        
         .heroCharacterImage {
           object-fit: contain;
           object-position: left bottom;
         }
-
         .badge,
         .subscribeEyebrow,
         .modalBadge {
@@ -480,6 +479,69 @@ export default function HomePage() {
           color: #64748b;
           font-size: 0.92rem;
           line-height: 1.5;
+        }
+        .noticePreviewSection {
+          margin: 28px 0 34px;
+        }
+        .noticePreviewCard {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+          width: 100%;
+          text-decoration: none;
+          border: 1px solid #e5e7eb;
+          border-radius: 24px;
+          padding: 22px 24px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+          color: #0f172a;
+          box-sizing: border-box;
+        }
+        .noticePreviewLeft {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          min-width: 0;
+          flex: 1;
+        }
+        .noticePreviewBadge {
+          display: inline-flex;
+          align-items: center;
+          width: fit-content;
+          padding: 8px 14px;
+          border-radius: 999px;
+          background: #eef2ff;
+          color: #4f46e5;
+          font-size: 0.82rem;
+          font-weight: 800;
+          margin: 0;
+        }
+        .noticePreviewBody h2 {
+          margin: 0 0 8px;
+          font-size: 1.35rem;
+          letter-spacing: -0.03em;
+        }
+        .noticePreviewText {
+          margin: 0;
+          color: #475569;
+          line-height: 1.7;
+          font-size: 0.98rem;
+          white-space: pre-line;
+        }
+        .noticePreviewDate {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 120px;
+          padding: 12px 16px;
+          border-radius: 16px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #0f172a;
+          font-weight: 800;
+          text-align: center;
         }
         .heroActions,
         .modalActions,
@@ -550,7 +612,7 @@ export default function HomePage() {
         }
         .quickLinksGrid {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 16px;
         }
         .quickLinkItem {
@@ -736,7 +798,6 @@ export default function HomePage() {
           .noticePreviewCard {
             flex-direction: column;
           }
-          
           .noticePreviewDate {
             width: 100%;
           }
@@ -769,70 +830,6 @@ export default function HomePage() {
           .summaryText {
             min-height: auto;
           }
-        }
-
-        .noticePreviewSection {
-          margin-top: 28px;
-        }
-        
-        .noticePreviewCard {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 18px;
-          text-decoration: none;
-          border: 1px solid #e5e7eb;
-          border-radius: 24px;
-          padding: 22px 24px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
-          color: #0f172a;
-        }
-        
-        .noticePreviewLeft {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          min-width: 0;
-        }
-        
-        .noticePreviewBadge {
-          display: inline-flex;
-          align-items: center;
-          width: fit-content;
-          padding: 8px 14px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
-          font-size: 0.82rem;
-          font-weight: 800;
-          margin: 0;
-        }
-        
-        .noticePreviewCard h2 {
-          margin: 0 0 8px;
-          font-size: 1.35rem;
-          letter-spacing: -0.03em;
-        }
-        
-        .noticePreviewText {
-          margin: 0;
-          color: #475569;
-          line-height: 1.7;
-          font-size: 0.98rem;
-          white-space: pre-line;
-        }
-        
-        .noticePreviewDate {
-          flex-shrink: 0;
-          min-width: 120px;
-          padding: 12px 16px;
-          border-radius: 16px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          color: #0f172a;
-          font-weight: 800;
-          text-align: center;
         }
       `}</style>
     </>
