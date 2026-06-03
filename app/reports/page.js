@@ -25,7 +25,7 @@ export default function ReportsPage() {
         <section className="pageHero">
           <div>
             <p className="badge">DAILY REPORT</p>
-            <h1>일간 리포트</h1>
+            <h1>데일리 Top10 리포트</h1>
             <p className="desc">
               매일 자동 수집된 공식 데이터를 바탕으로 상위 후보와 핵심 코멘트를
               정리하는 페이지입니다. <br />오늘의 핵심 후보와 시장 코멘트를 한 번에
@@ -57,7 +57,7 @@ export default function ReportsPage() {
                 </div>
 
                 <section className="reportSection">
-                  <h3>이번 주 상위 후보</h3>
+                  <h3>오늘의 Top10 후보</h3>
                   <div className="miniCardWrap">
                     {topPicks.map((stock) => (
                       <div className="miniCard" key={stock.code}>
