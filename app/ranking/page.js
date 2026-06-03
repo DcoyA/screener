@@ -67,7 +67,7 @@ export default function RankingPage() {
 
   const resultCountText = normalizedSearchTerm
     ? `검색 결과 ${filteredStocks.length}개 / 전체 ${rankedStocks.length}개`
-    : `전체 ${rankedStocks.length}개 종목`;
+    : `상위 ${rankedStocks.length}개 종목에 대해서만 제공합니다`;
 
   return (
     <>
