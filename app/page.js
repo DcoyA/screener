@@ -753,8 +753,9 @@ export default function HomePage() {
         }
         
         .priceLine {
-          color: #0f172a;
-          font-weight: 800;
+          color: #0ea5e9;
+          font-weight: 900;
+          letter-spacing: -0.01em;
         }
 
         .summaryText {
