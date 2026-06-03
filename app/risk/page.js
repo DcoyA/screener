@@ -249,7 +249,7 @@ export default function RiskPage() {
         
         .stockCode,
         .priceLine {
-          color: #64748b;
+          color: #0ea5e9;
         }
         
         .priceLine {
