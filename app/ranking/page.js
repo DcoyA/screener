@@ -89,7 +89,7 @@ export default function RankingPage() {
             <h1>종목 랭킹</h1>
             <p className="desc">
               OpenDART 공시와 KRX 시장 데이터를 바탕으로 AI 점수를 계산해 상위
-              종목을 정렬한 페이지입니다. \n 가치·품질·안전성·시장성·변화 점수를
+              종목을 정렬한 페이지입니다. <br /> 가치·품질·안전성·시장성·변화 점수를
               함께 반영합니다.
             </p>
           </div>
