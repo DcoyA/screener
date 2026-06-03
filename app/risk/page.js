@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import risks from "../data/risks.json";
+import stocks from "../data/stocks.json";
 
 function getRiskClass(level) {
   if (level === "주의") return "riskBadge riskHigh";
@@ -33,12 +34,22 @@ function renderHighlightedName(name, query) {
   );
 }
 
+function formatPrice(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+
 export default function RiskPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const updatedAt = risks[0]?.date || "-";
   const normalizedSearchTerm = normalizeKeyword(searchTerm);
-
+  const stockPriceMap = useMemo(() => {
+    return Object.fromEntries(
+      stocks.map((item) => [item.code, item.metrics?.closePrice || 0])
+    );
+  }, []);
   const filteredRisks = useMemo(() => {
     if (!normalizedSearchTerm) return risks;
 
@@ -126,6 +137,9 @@ export default function RiskPage() {
                     <p className="stockCode">{item.date}</p>
                     <h2>{renderHighlightedName(item.name, searchTerm)}</h2>
                     <p className="stockCode">종목코드 {item.code}</p>
+                    <p className="priceLine">
+                      최근 종가 {formatPrice(stockPriceMap[item.code])}
+                    </p>
                   </div>
 
                   <span className={getRiskClass(item.level)}>{item.level}</span>
@@ -232,9 +246,18 @@ export default function RiskPage() {
           text-align: right;
         }
         .updateLabel,
-        .stockCode {
+        
+        .stockCode,
+        .priceLine {
           color: #64748b;
         }
+        
+        .priceLine {
+          margin-top: 6px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
         .updateLabel {
           display: block;
           margin-bottom: 6px;
