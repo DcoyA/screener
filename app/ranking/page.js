@@ -64,6 +64,7 @@ export default function RankingPage() {
             홈으로 가기
           </Link>
           <div className="subNav">
+            <Link href="/notice">랭킹</Link>
             <Link href="/risk">리스크</Link>
             <Link href="/reports">리포트</Link>
           </div>
