@@ -42,17 +42,21 @@ function formatPrice(value) {
 
 export default function RankingPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortMode, setSortMode] = useState("total");
 
-  const rankedStocks = useMemo(
-    () =>
-      [...stocks]
-        .sort((a, b) => b.totalScore - a.totalScore)
-        .map((stock, index) => ({
-          ...stock,
-          originalRank: index + 1,
-        })),
-    []
-  );
+  const rankedStocks = useMemo(() => {
+    const sorted = [...stocks].sort((a, b) => {
+      if (sortMode === "upside") {
+        return (b.metrics?.upside ?? -9999) - (a.metrics?.upside ?? -9999);
+      }
+      return b.totalScore - a.totalScore;
+    });
+  
+    return sorted.map((stock, index) => ({
+      ...stock,
+      originalRank: index + 1,
+    }));
+  }, [sortMode]);
 
   const updatedAt = rankedStocks[0]?.updatedAt || "-";
   const normalizedSearchTerm = normalizeKeyword(searchTerm);
