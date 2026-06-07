@@ -107,6 +107,118 @@ const styles = {
     fontSize: "1.02rem",
     maxWidth: "920px",
   },
+  investSummaryCard: {
+    border: "1px solid #e5e7eb",
+    borderRadius: "28px",
+    padding: "28px",
+    marginBottom: "28px",
+    background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
+    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.06)",
+  },
+  investHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "20px",
+    flexWrap: "wrap",
+    marginBottom: "16px",
+  },
+  investEyebrow: {
+    display: "inline-flex",
+    alignItems: "center",
+    padding: "8px 14px",
+    borderRadius: "999px",
+    background: "#ecfeff",
+    color: "#0891b2",
+    fontSize: "0.82rem",
+    fontWeight: 800,
+    margin: "0 0 14px",
+  },
+  investTitle: {
+    margin: "0 0 10px",
+    fontSize: "1.7rem",
+    letterSpacing: "-0.03em",
+  },
+  investDesc: {
+    margin: 0,
+    color: "#64748b",
+    lineHeight: 1.7,
+    fontSize: "0.98rem",
+    maxWidth: "700px",
+  },
+  investHero: {
+    minWidth: "180px",
+    padding: "18px 20px",
+    borderRadius: "20px",
+    background: "#0f172a",
+    color: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    boxShadow: "0 18px 40px rgba(15, 23, 42, 0.18)",
+  },
+  investHeroLabel: {
+    fontSize: "0.88rem",
+    fontWeight: 700,
+    opacity: 0.82,
+    marginBottom: "8px",
+  },
+  investHeroValue: {
+    fontSize: "2rem",
+    lineHeight: 1,
+    letterSpacing: "-0.04em",
+    fontWeight: 900,
+  },
+  investHeroSub: {
+    marginTop: "6px",
+    fontSize: "0.95rem",
+    opacity: 0.82,
+  },
+  investGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: "14px",
+  },
+  investItem: {
+    border: "1px solid #e5e7eb",
+    borderRadius: "18px",
+    padding: "16px",
+    background: "#ffffff",
+  },
+  investItemLabel: {
+    display: "block",
+    marginBottom: "8px",
+    color: "#64748b",
+    fontSize: "0.84rem",
+    fontWeight: 700,
+  },
+  investItemValue: {
+    margin: 0,
+    color: "#0f172a",
+    fontSize: "1.15rem",
+    fontWeight: 900,
+    letterSpacing: "-0.02em",
+  },
+  investItemValueSky: {
+    margin: 0,
+    color: "#0ea5e9",
+    fontSize: "1.15rem",
+    fontWeight: 900,
+    letterSpacing: "-0.02em",
+  },
+  investItemValueMuted: {
+    margin: 0,
+    color: "#64748b",
+    fontSize: "1.15rem",
+    fontWeight: 900,
+    letterSpacing: "-0.02em",
+  },
+  investNote: {
+    margin: "16px 0 0",
+    color: "#64748b",
+    fontSize: "0.92rem",
+    lineHeight: 1.7,
+  },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -231,22 +343,6 @@ const styles = {
     color: "#0f172a",
     fontWeight: 800,
   },
-  scoreValueCurrent: {
-    fontSize: "1.2rem",
-    fontWeight: 900,
-    color: "#4f46e5",
-    lineHeight: 1,
-  },
-  
-  scoreValueSlash: {
-    color: "#94a3b8",
-    fontWeight: 700,
-  },
-  
-  scoreValueMax: {
-    color: "#94a3b8",
-    fontWeight: 700,
-  },
   scoreMeaning: {
     margin: "0 0 14px",
     color: "#475569",
@@ -279,6 +375,19 @@ const styles = {
   },
 };
 
+function formatPrice(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+
+function formatPercent(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(1)}%`;
+}
+
 function getCategoryScore(stock, key) {
   if (stock?.scoreBreakdown?.[key] !== undefined) {
     return stock.scoreBreakdown[key];
@@ -293,6 +402,13 @@ function getCategoryScore(stock, key) {
 
 function getChildScore(stock, key) {
   return stock?.scoreBreakdown?.[key] ?? 0;
+}
+
+function getUpsideTone(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return styles.investItemValueMuted;
+  if (num > 0) return styles.investItemValueSky;
+  return styles.investItemValueMuted;
 }
 
 export default async function StockDetailPage({ params }) {
@@ -318,6 +434,48 @@ export default async function StockDetailPage({ params }) {
           <p style={styles.stockCode}>종목코드 {stock.code}</p>
           <p style={styles.summaryText}>{stock.summary}</p>
         </div>
+      </section>
+
+      <section style={styles.investSummaryCard}>
+        <div style={styles.investHeader}>
+          <div>
+            <p style={styles.investEyebrow}>INVESTMENT VIEW</p>
+            <h2 style={styles.investTitle}>투자 관점 요약</h2>
+            <p style={styles.investDesc}>
+              현재 가격과 적정가 추정, 상승여력, 최근 흐름을 함께 보여주는 요약 카드입니다.
+              적정가 추정은 현재 재무 및 시장 데이터를 기준으로 계산한 참고 수치입니다.
+            </p>
+          </div>
+
+          <div style={styles.investHero}>
+            <span style={styles.investHeroLabel}>적정가 추정</span>
+            <strong style={styles.investHeroValue}>{formatPrice(stock.metrics?.targetPrice)}</strong>
+            <span style={styles.investHeroSub}>현재가 대비 기대 구간</span>
+          </div>
+        </div>
+
+        <div style={styles.investGrid}>
+          <div style={styles.investItem}>
+            <span style={styles.investItemLabel}>최근 종가</span>
+            <p style={styles.investItemValue}>{formatPrice(stock.metrics?.closePrice)}</p>
+          </div>
+          <div style={styles.investItem}>
+            <span style={styles.investItemLabel}>직전 종가</span>
+            <p style={styles.investItemValueMuted}>{formatPrice(stock.metrics?.prevClosePrice)}</p>
+          </div>
+          <div style={styles.investItem}>
+            <span style={styles.investItemLabel}>상승여력</span>
+            <p style={getUpsideTone(stock.metrics?.upside)}>{formatPercent(stock.metrics?.upside)}</p>
+          </div>
+          <div style={styles.investItem}>
+            <span style={styles.investItemLabel}>최근 흐름</span>
+            <p style={getUpsideTone(stock.metrics?.momentum)}>{formatPercent(stock.metrics?.momentum)}</p>
+          </div>
+        </div>
+
+        <p style={styles.investNote}>
+          ※ 적정가 추정과 상승여력은 참고용 정보이며, 실제 시장 가격은 업황·심리·공시·정책 변수에 따라 크게 달라질 수 있습니다.
+        </p>
       </section>
 
       <div style={styles.infoGrid}>
@@ -354,13 +512,9 @@ export default async function StockDetailPage({ params }) {
             <div style={styles.scoreCard} key={item.key}>
               <div style={styles.scoreCardTop}>
                 <span style={styles.scoreName}>{item.label}</span>
-                  <span style={styles.scoreValue}>
-                    <span style={styles.scoreValueCurrent}>
-                      {getCategoryScore(stock, item.key)}
-                    </span>
-                    <span style={styles.scoreValueSlash}> / </span>
-                    <span style={styles.scoreValueMax}>{item.max}</span>
-                  </span>
+                <span style={styles.scoreValue}>
+                  {getCategoryScore(stock, item.key)} / {item.max}
+                </span>
               </div>
 
               <p style={styles.scoreMeaning}>{item.desc}</p>
