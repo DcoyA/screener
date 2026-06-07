@@ -238,9 +238,8 @@ export default function HomePage() {
             <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
             <h2>메일로 받아보는 상위 5개 종목 상세 리포트</h2>
             <p className="subscribeDesc">
-              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로 받아보세요.
-              현재는 무료 체험 기간으로 운영 중이며, 신청자에게 우선 제공됩니다.
-              매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한 복기를 제공합니다.
+              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로 받아보세요. \n 매주 화요일 새로운 전략과 목요일 한 주에 대한 복기를 제공합니다. \n
+              현재 무료 체험 기간으로 운영 중! (네이버 메일은 정상적으로 보이지 않을 수 있습니다. 가급적 구글 메일을 기재해 주세요.)
             </p>
             <div className="subscribeActions">
               <a
