@@ -352,13 +352,12 @@ def normalize_daily_rows(rows):
 def build_krx_universe():
     diagnostics = []
     candidates = recent_krx_bas_dd_candidates()
-
     basic_rows = []
     basic_bas_dd = None
+
     for bas_dd in candidates:
         kospi_basic_rows, kospi_basic_errors = fetch_krx_rows(KRX_KOSPI_BASIC_URL, bas_dd)
         kosdaq_basic_rows, kosdaq_basic_errors = fetch_krx_rows(KRX_KOSDAQ_BASIC_URL, bas_dd)
-
         kospi_basic = normalize_basic_rows(kospi_basic_rows, "KOSPI")
         kosdaq_basic = normalize_basic_rows(kosdaq_basic_rows, "KOSDAQ")
         merged_basic = kospi_basic + kosdaq_basic
@@ -366,7 +365,6 @@ def build_krx_universe():
             basic_rows = merged_basic
             basic_bas_dd = bas_dd
             break
-
         diagnostics.append(
             f"{bas_dd} | KOSPI basic: {' ; '.join(kospi_basic_errors)} | KOSDAQ basic: {' ; '.join(kosdaq_basic_errors)}"
         )
@@ -383,14 +381,11 @@ def build_krx_universe():
     for bas_dd in candidates:
         kospi_daily_rows, kospi_daily_errors = fetch_krx_rows(KRX_KOSPI_DAILY_URL, bas_dd)
         kosdaq_daily_rows, kosdaq_daily_errors = fetch_krx_rows(KRX_KOSDAQ_DAILY_URL, bas_dd)
-
         kospi_daily = normalize_daily_rows(kospi_daily_rows)
         kosdaq_daily = normalize_daily_rows(kosdaq_daily_rows)
-
         merged_daily = {}
         merged_daily.update(kospi_daily)
         merged_daily.update(kosdaq_daily)
-
         if merged_daily:
             daily_snapshots.append({"basDd": bas_dd, "rows": merged_daily})
             if len(daily_snapshots) >= DAILY_WINDOW:
@@ -417,19 +412,20 @@ def build_krx_universe():
                 trade_values.append(int(row_daily.get("tradeValue", 0)))
                 if not latest_metrics:
                     latest_metrics = row_daily
-                    prev_close = int(prev_daily.get(code, {}).get("closePrice", 0))
-                    close_price = int(latest_metrics.get("closePrice", 0))
-                        "prevClosePrice": prev_close,
-                        "priceChange": price_change,
-                        "priceChangeRate": round
-                    price_change = close_price - prev_close
-                    price_change_rate = (price_change / prev_close * 100) if prev_close else 0
-        
+
+        prev_close = int(prev_daily.get(code, {}).get("closePrice", 0))
+        close_price = int(latest_metrics.get("closePrice", 0))
+        price_change = close_price - prev_close
+        price_change_rate = (price_change / prev_close * 100) if prev_close else 0
+
         avg_trade_value_5d = int(sum(trade_values) / len(trade_values)) if trade_values else 0
         item.update(
             {
                 "tradeValue": int(latest_metrics.get("tradeValue", 0)),
-                "closePrice": int(latest_metrics.get("closePrice", 0)),
+                "closePrice": close_price,
+                "prevClosePrice": prev_close,
+                "priceChange": price_change,
+                "priceChangeRate": round(price_change_rate, 2),
                 "marketCap": int(latest_metrics.get("marketCap", 0)),
                 "listShares": int(latest_metrics.get("listShares", 0) or item.get("listShares", 0)),
                 "avgTradeValue5d": avg_trade_value_5d,
@@ -447,7 +443,6 @@ def build_krx_universe():
     if daily_diagnostics:
         print("KRX daily empty-date notes: " + " || ".join(daily_diagnostics[:5]))
     return result
-
 
 def fetch_major_accounts(corp_code, year):
     data = http_get_json(
