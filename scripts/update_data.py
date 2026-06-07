@@ -402,6 +402,7 @@ def build_krx_universe():
 
     latest_daily = daily_snapshots[0]["rows"] if daily_snapshots else {}
     used_daily_dates = [snap["basDd"] for snap in daily_snapshots]
+    prev_daily = daily_snapshots[1]["rows"] if len(daily_snapshots) > 1 else {}
 
     merged = {}
     for row in basic_rows:
@@ -416,7 +417,14 @@ def build_krx_universe():
                 trade_values.append(int(row_daily.get("tradeValue", 0)))
                 if not latest_metrics:
                     latest_metrics = row_daily
-
+                    prev_close = int(prev_daily.get(code, {}).get("closePrice", 0))
+                    close_price = int(latest_metrics.get("closePrice", 0))
+                        "prevClosePrice": prev_close,
+                        "priceChange": price_change,
+                        "priceChangeRate": round
+                    price_change = close_price - prev_close
+                    price_change_rate = (price_change / prev_close * 100) if prev_close else 0
+        
         avg_trade_value_5d = int(sum(trade_values) / len(trade_values)) if trade_values else 0
         item.update(
             {
@@ -697,6 +705,17 @@ def build_stock_item(item, corp_map):
     if market_cap > 0 and net_income > 0:
         per = market_cap / net_income
 
+    target_per = 12  # 우선 고정 기준, 나중에 업종/시장별로 개선 가능
+
+    target_price = None
+    upside = None
+    
+    if per is not None and per > 0 and close_price > 0:
+        target_price = int(close_price * (target_per / per))
+        upside = (target_price - close_price) / close_price * 100
+
+    momentum = round(item.get("priceChangeRate", 0), 2)
+    
     pbr = None
     if market_cap > 0 and equity > 0:
         pbr = market_cap / equity
@@ -818,6 +837,12 @@ def build_stock_item(item, corp_map):
             "basicBasDd": item.get("basicBasDd"),
             "dailyBasDd": item.get("dailyBasDd"),
             "dailyWindowDates": item.get("dailyWindowDates", []),
+            "prevClosePrice": int(item.get("prevClosePrice", 0)),
+            "priceChange": int(item.get("priceChange", 0)),
+            "priceChangeRate": round(item.get("priceChangeRate", 0), 2),
+            "targetPrice": target_price,
+            "upside": round(upside, 1) if upside is not None else None,
+            "momentum": momentum,
         },
         "riskMeta": {
             "level": risk_level,
