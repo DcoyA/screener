@@ -43,6 +43,21 @@ function formatPrice(value) {
   return `${num.toLocaleString("ko-KR")}원`;
 }
 
+function formatPercent(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(1)}%`;
+}
+
+function getUpsideClass(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "upsideLine";
+  if (num > 0) return "upsideLine upsidePositive";
+  if (num < 0) return "upsideLine upsideNegative";
+  return "upsideLine upsideNeutral";
+}
+
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -50,9 +65,7 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const latestNotice = [...notices].sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
-  )[0];
+  const latestNotice = [...notices].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
 
   const topStocks = useMemo(
     () =>
@@ -147,19 +160,16 @@ export default function HomePage() {
               <p className="badge">OFFICIAL DATA LIVE</p>
               <h1>우량주 스카우터</h1>
               <p className="desc">
-                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매일
-                오전 2시에 자동 수집하고, AI가 재무 건전성·저평가 여부·시장
-                유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반
-                주식 리서치 서비스입니다. PER, PBR, ROE, 부채비율, 시가총액,
-                최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
-                형태로 제공합니다.
+                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일 오전 9시에 자동 수집하고,
+                AI가 재무 건전성·저평가 여부·시장 유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반 주식 리서치 서비스입니다.
+                PER, PBR, ROE, 부채비율, 시가총액, 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트 형태로 제공합니다.
               </p>
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
-                  랭킹 500 전체보기
+                  상위 랭킹 보기
                 </Link>
                 <Link className="secondaryBtn" href="/reports">
-                  TOP 10 리포트 보기
+                  이번 주 리포트 보기
                 </Link>
               </div>
             </div>
@@ -198,7 +208,21 @@ export default function HomePage() {
 
                 <h3>{stock.name}</h3>
                 <p className="stockCode">종목코드 {stock.code}</p>
-                <p className="priceLine">최근 종가 {formatPrice(stock.metrics?.closePrice)}</p>
+
+                <div className="candidatePriceMeta">
+                  <div className="candidatePriceItem">
+                    <span className="candidatePriceLabel">최근 종가</span>
+                    <strong className="priceLine">{formatPrice(stock.metrics?.closePrice)}</strong>
+                  </div>
+                  <div className="candidatePriceItem">
+                    <span className="candidatePriceLabel">적정가 추정</span>
+                    <strong className="targetLine">{formatPrice(stock.metrics?.targetPrice)}</strong>
+                  </div>
+                </div>
+
+                <p className={getUpsideClass(stock.metrics?.upside)}>
+                  상승여력 {formatPercent(stock.metrics?.upside)}
+                </p>
                 <p className="scoreLine">총점 {stock.totalScore}점</p>
                 <p className="summaryText">{stock.summary}</p>
                 <Link className="linkBtn" href={`/stock/${stock.code}`}>
@@ -216,8 +240,7 @@ export default function HomePage() {
             <p className="subscribeDesc">
               주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로 받아보세요.
               현재는 무료 체험 기간으로 운영 중이며, 신청자에게 우선 제공됩니다.
-              매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한
-              복기를 제공해 드립니다.
+              매주 화요일 7시 40분 새로운 전략과 매주 목요일 20시 30분 한주에 대한 복기를 제공합니다.
             </p>
             <div className="subscribeActions">
               <a
@@ -234,7 +257,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-                  
+
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
@@ -276,7 +299,7 @@ export default function HomePage() {
           </section>
         ) : null}
       </main>
-                  
+
       <footer className="footer">
         <div className="footerInner">
           <p>HELLO MEDIA · All rights reserved.</p>
@@ -503,6 +526,245 @@ export default function HomePage() {
           font-size: 0.92rem;
           line-height: 1.5;
         }
+        .heroActions,
+        .modalActions,
+        .subscribeActions {
+          display: flex;
+          gap: 14px;
+          flex-wrap: wrap;
+          margin-top: 28px;
+        }
+        .primaryBtn,
+        .secondaryBtn,
+        .linkBtn,
+        .ghostBtn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 14px;
+          padding: 14px 18px;
+          font-weight: 800;
+          text-decoration: none;
+          border: 1px solid transparent;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 0.98rem;
+        }
+        .primaryBtn {
+          background: #0f172a;
+          color: #ffffff;
+          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+        }
+        .primaryBtn:hover {
+          background: #111827;
+        }
+        .primaryBtn:disabled,
+        .ghostBtn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+        .secondaryBtn,
+        .ghostBtn,
+        .linkBtn {
+          background: #ffffff;
+          color: #0f172a;
+          border-color: #dbe3f0;
+        }
+        .secondaryBtn:hover,
+        .ghostBtn:hover,
+        .linkBtn:hover {
+          background: #f8fafc;
+        }
+        .sectionTitle {
+          margin: 56px 0 22px;
+          font-size: 2rem;
+          letter-spacing: -0.03em;
+        }
+        .cardWrap {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 18px;
+        }
+        .card {
+          border-radius: 24px;
+          padding: 22px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+        }
+        .candidateRankRow {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 18px;
+        }
+        .rankBadge {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 72px;
+          height: 72px;
+          border-radius: 22px;
+          padding: 0 14px;
+          font-weight: 900;
+          letter-spacing: -0.04em;
+          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+          border: 1px solid transparent;
+          flex-shrink: 0;
+        }
+        .rankHash {
+          font-size: 1rem;
+          line-height: 1;
+          margin-right: 2px;
+          opacity: 0.92;
+        }
+        .rankNumber {
+          font-size: 1.8rem;
+          line-height: 1;
+        }
+        .rank1 {
+          background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+          color: #111827;
+          border-color: rgba(245, 158, 11, 0.35);
+        }
+        .rank2 {
+          background: linear-gradient(135deg, #e5e7eb 0%, #94a3b8 100%);
+          color: #0f172a;
+          border-color: rgba(148, 163, 184, 0.38);
+        }
+        .rank3 {
+          background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+          color: #fff;
+          border-color: rgba(146, 64, 14, 0.35);
+        }
+        .rankDefault {
+          background: #f8fafc;
+          color: #334155;
+          border-color: #e2e8f0;
+          box-shadow: none;
+        }
+        .marketBadge {
+          display: inline-flex;
+          padding: 7px 12px;
+          border-radius: 999px;
+          background: #f1f5f9;
+          color: #64748b;
+          font-size: 0.8rem;
+          font-weight: 800;
+          margin: 0;
+        }
+        .card h3 {
+          margin: 0 0 12px;
+          font-size: 1.4rem;
+          letter-spacing: -0.03em;
+          word-break: keep-all;
+        }
+        .stockCode {
+          margin: 0 0 10px;
+          color: #64748b;
+          font-weight: 600;
+        }
+        .candidatePriceMeta {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .candidatePriceItem {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 12px;
+          background: #f8fafc;
+        }
+        .candidatePriceLabel {
+          display: block;
+          margin-bottom: 6px;
+          color: #64748b;
+          font-size: 0.8rem;
+          font-weight: 700;
+        }
+        .priceLine,
+        .targetLine {
+          display: block;
+          margin: 0;
+          font-weight: 900;
+          letter-spacing: -0.01em;
+        }
+        .priceLine {
+          color: #0ea5e9;
+        }
+        .targetLine {
+          color: #0f172a;
+        }
+        .upsideLine {
+          margin: 0 0 10px;
+          font-weight: 900;
+        }
+        .upsidePositive {
+          color: #0ea5e9;
+        }
+        .upsideNegative,
+        .upsideNeutral {
+          color: #64748b;
+        }
+        .scoreLine {
+          margin: 0 0 8px;
+          color: #64748b;
+          font-weight: 600;
+        }
+        .summaryText {
+          min-height: 92px;
+          margin: 10px 0 18px;
+          color: #475569;
+          line-height: 1.75;
+          word-break: keep-all;
+        }
+        .subscribeSection {
+          margin-top: 56px;
+        }
+        .quickLinksSection {
+          margin-top: 34px;
+        }
+        .quickLinksCard,
+        .subscribeCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 28px;
+          padding: 28px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+        }
+        .quickLinksCard h2,
+        .subscribeCard h2 {
+          margin: 0 0 16px;
+          font-size: 1.6rem;
+          letter-spacing: -0.03em;
+        }
+        .quickLinksGrid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 16px;
+        }
+        .quickLinkItem {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          text-decoration: none;
+          padding: 20px;
+          border-radius: 20px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          color: #0f172a;
+        }
+        .quickLinkItem strong {
+          font-size: 1.05rem;
+        }
+        .quickLinkItem span {
+          color: #64748b;
+          line-height: 1.6;
+        }
         .noticePreviewSection {
           margin: 28px 0 34px;
         }
@@ -566,207 +828,6 @@ export default function HomePage() {
           line-height: 1.7;
           font-size: 0.98rem;
           white-space: pre-line;
-        }
-        .heroActions,
-        .modalActions,
-        .subscribeActions {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-          margin-top: 28px;
-        }
-        .primaryBtn,
-        .secondaryBtn,
-        .linkBtn,
-        .ghostBtn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 14px;
-          padding: 14px 18px;
-          font-weight: 800;
-          text-decoration: none;
-          border: 1px solid transparent;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 0.98rem;
-        }
-        .primaryBtn {
-          background: #0f172a;
-          color: #ffffff;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
-        }
-        .primaryBtn:hover {
-          background: #111827;
-        }
-        .primaryBtn:disabled,
-        .ghostBtn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          box-shadow: none;
-        }
-        .secondaryBtn,
-        .ghostBtn,
-        .linkBtn {
-          background: #ffffff;
-          color: #0f172a;
-          border-color: #dbe3f0;
-        }
-        .secondaryBtn:hover,
-        .ghostBtn:hover,
-        .linkBtn:hover {
-          background: #f8fafc;
-        }
-        .quickLinksSection {
-          margin-top: 34px;
-        }
-        .quickLinksCard,
-        .subscribeCard {
-          border: 1px solid #e5e7eb;
-          border-radius: 28px;
-          padding: 28px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
-        }
-        .quickLinksCard h2,
-        .subscribeCard h2 {
-          margin: 0 0 16px;
-          font-size: 1.6rem;
-          letter-spacing: -0.03em;
-        }
-        .quickLinksGrid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 16px;
-        }
-        .quickLinkItem {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          text-decoration: none;
-          padding: 20px;
-          border-radius: 20px;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          color: #0f172a;
-        }
-        .quickLinkItem strong {
-          font-size: 1.05rem;
-        }
-        .quickLinkItem span {
-          color: #64748b;
-          line-height: 1.6;
-        }
-        .sectionTitle {
-          margin: 56px 0 22px;
-          font-size: 2rem;
-          letter-spacing: -0.03em;
-        }
-        .cardWrap {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 18px;
-        }
-        .card {
-          border-radius: 24px;
-          padding: 22px;
-          border: 1px solid #e5e7eb;
-          background: #ffffff;
-          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
-        }
-        .candidateRankRow {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 18px;
-        }
-        .rankBadge {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 72px;
-          height: 72px;
-          border-radius: 22px;
-          padding: 0 14px;
-          font-weight: 900;
-          letter-spacing: -0.04em;
-          box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
-          border: 1px solid transparent;
-          flex-shrink: 0;
-        }
-        .rankHash {
-          font-size: 1rem;
-          line-height: 1;
-          margin-right: 2px;
-          opacity: 0.92;
-        }
-        .rankNumber {
-          font-size: 1.8rem;
-          line-height: 1;
-        }
-        .rank1 {
-          background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
-          color: #111827;
-          border-color: rgba(245, 158, 11, 0.35);
-        }
-        .rank2 {
-          background: linear-gradient(135deg, #e5e7eb 0%, #94a3b8 100%);
-          color: #0f172a;
-          border-color: rgba(148, 163, 184, 0.38);
-        }
-        .rank3 {
-          background: linear-gradient(135deg, #b45309 0%, #ea580c 100%);
-          color: #fff;
-          border-color: rgba(234, 88, 12, 0.3);
-        }
-        .rankDefault {
-          background: #f8fafc;
-          color: #334155;
-          border-color: #e2e8f0;
-          box-shadow: none;
-        }
-        .marketBadge {
-          display: inline-flex;
-          padding: 7px 12px;
-          border-radius: 999px;
-          background: #f1f5f9;
-          color: #64748b;
-          font-size: 0.8rem;
-          font-weight: 800;
-          margin: 0;
-        }
-        .card h3 {
-          margin: 0 0 12px;
-          font-size: 1.4rem;
-          letter-spacing: -0.03em;
-          word-break: keep-all;
-        }
-        
-        .stockCode,
-        .priceLine,
-        .scoreLine {
-          margin: 0 0 8px;
-          color: #64748b;
-          font-weight: 600;
-        }
-        
-        .priceLine {
-          color: #0ea5e9;
-          font-weight: 900;
-          letter-spacing: -0.01em;
-        }
-
-        .summaryText {
-          min-height: 92px;
-          margin: 10px 0 18px;
-          color: #475569;
-          line-height: 1.75;
-          word-break: keep-all;
-        }
-        .subscribeSection {
-          margin-top: 56px;
         }
         .subscribeDesc,
         .modalDesc {
@@ -915,6 +976,9 @@ export default function HomePage() {
           .noticePreviewWrap {
             padding: 22px;
           }
+          .candidatePriceMeta {
+            grid-template-columns: 1fr;
+          }
           .summaryText {
             min-height: auto;
           }
@@ -926,4 +990,3 @@ export default function HomePage() {
     </>
   );
 }
- 
