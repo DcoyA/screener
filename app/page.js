@@ -147,8 +147,8 @@ export default function HomePage() {
               <p className="badge">OFFICIAL DATA LIVE</p>
               <h1>우량주 스카우터</h1>
               <p className="desc">
-                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일
-                오전 9시에 자동 수집하고, AI가 재무 건전성·저평가 여부·시장
+                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매일
+                오전 2시에 자동 수집하고, AI가 재무 건전성·저평가 여부·시장
                 유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반
                 주식 리서치 서비스입니다. PER, PBR, ROE, 부채비율, 시가총액,
                 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트
