@@ -40,6 +40,21 @@ function formatPrice(value) {
   return `${num.toLocaleString("ko-KR")}원`;
 }
 
+function formatPercent(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(1)}%`;
+}
+
+function getUpsideClass(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "upsideValue";
+  if (num > 0) return "upsideValue upsidePositive";
+  if (num < 0) return "upsideValue upsideNegative";
+  return "upsideValue upsideNeutral";
+}
+
 export default function RankingPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortMode, setSortMode] = useState("total");
@@ -51,7 +66,7 @@ export default function RankingPage() {
       }
       return b.totalScore - a.totalScore;
     });
-  
+
     return sorted.map((stock, index) => ({
       ...stock,
       originalRank: index + 1,
@@ -63,7 +78,6 @@ export default function RankingPage() {
 
   const filteredStocks = useMemo(() => {
     if (!normalizedSearchTerm) return rankedStocks;
-
     return rankedStocks.filter((stock) =>
       normalizeKeyword(stock.name).includes(normalizedSearchTerm)
     );
@@ -71,7 +85,7 @@ export default function RankingPage() {
 
   const resultCountText = normalizedSearchTerm
     ? `검색 결과 ${filteredStocks.length}개 / 전체 ${rankedStocks.length}개`
-    : `상위 ${rankedStocks.length}개 종목에 대해서만 제공합니다`;
+    : `전체 ${rankedStocks.length}개 종목`;
 
   return (
     <>
@@ -80,6 +94,7 @@ export default function RankingPage() {
           <Link href="/" className="homeBtn">
             홈으로 가기
           </Link>
+
           <div className="subNav">
             <Link href="/notice">공지</Link>
             <Link href="/risk">리스크</Link>
@@ -92,11 +107,13 @@ export default function RankingPage() {
             <p className="badge">RANKING</p>
             <h1>종목 랭킹</h1>
             <p className="desc">
-              OpenDART 공시와 KRX 시장 데이터를 바탕으로 AI 점수를 계산해 상위
-              종목을 정렬한 페이지입니다. <br /> 가치·품질·안전성·시장성·변화 점수를
-              함께 반영합니다.
+              OpenDART 공시와 KRX 시장 데이터를 바탕으로 AI 점수를 계산해 상위 종목을
+              정렬한 페이지입니다.
+              <br />
+              가치·품질·안정성·시장성·변화 점수를 함께 반영합니다.
             </p>
           </div>
+
           <div className="updateBox">
             <span className="updateLabel">업데이트</span>
             <strong>{updatedAt}</strong>
@@ -136,6 +153,23 @@ export default function RankingPage() {
                 </button>
               ) : null}
             </div>
+
+            <div className="sortTabs">
+              <button
+                type="button"
+                className={`sortTab ${sortMode === "total" ? "active" : ""}`}
+                onClick={() => setSortMode("total")}
+              >
+                종합
+              </button>
+              <button
+                type="button"
+                className={`sortTab ${sortMode === "upside" ? "active" : ""}`}
+                onClick={() => setSortMode("upside")}
+              >
+                상승여력
+              </button>
+            </div>
           </div>
         </div>
 
@@ -152,16 +186,30 @@ export default function RankingPage() {
 
                     <div className="titleBlock">
                       <h2>{renderHighlightedName(stock.name, searchTerm)}</h2>
-                        <p className="stockCode">
-                          {stock.market} · {stock.code} ·{" "}
-                          <span className="priceInline">
-                            최근 종가 {formatPrice(stock.metrics?.closePrice)}
-                          </span>
-                        </p>
+                      <p className="stockCode">
+                        {stock.market} · {stock.code}
+                      </p>
                     </div>
                   </div>
 
                   <div className="scoreBadge">{stock.totalScore}점</div>
+                </div>
+
+                <div className="priceMeta">
+                  <div className="priceMetaItem">
+                    <span className="priceMetaLabel">현재가</span>
+                    <strong>{formatPrice(stock.metrics?.closePrice)}</strong>
+                  </div>
+                  <div className="priceMetaItem">
+                    <span className="priceMetaLabel">적정가 추정</span>
+                    <strong>{formatPrice(stock.metrics?.targetPrice)}</strong>
+                  </div>
+                  <div className="priceMetaItem">
+                    <span className="priceMetaLabel">상승여력</span>
+                    <strong className={getUpsideClass(stock.metrics?.upside)}>
+                      {formatPercent(stock.metrics?.upside)}
+                    </strong>
+                  </div>
                 </div>
 
                 <p className="summaryText">{stock.summary}</p>
@@ -195,10 +243,6 @@ export default function RankingPage() {
       </main>
 
       <style jsx>{`
-        .priceInline {
-          color: #0ea5e9;
-          font-weight: 900;
-        }
         .container {
           max-width: 1180px;
           margin: 0 auto;
@@ -262,17 +306,10 @@ export default function RankingPage() {
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
           text-align: right;
         }
-        
         .updateLabel,
-        .muted,
         .stockCode {
           color: #64748b;
         }
-        
-        .stockCode {
-          line-height: 1.7;
-        }
-
         .updateLabel {
           display: block;
           margin-bottom: 6px;
@@ -355,6 +392,27 @@ export default function RankingPage() {
           font-weight: 800;
           cursor: pointer;
         }
+        .sortTabs {
+          display: flex;
+          gap: 10px;
+          margin: 14px 0 6px;
+          flex-wrap: wrap;
+        }
+        .sortTab {
+          height: 42px;
+          padding: 0 16px;
+          border-radius: 999px;
+          border: 1px solid #dbe3f0;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .sortTab.active {
+          background: #0f172a;
+          color: #ffffff;
+          border-color: #0f172a;
+        }
         .listWrap {
           display: grid;
           gap: 18px;
@@ -418,9 +476,9 @@ export default function RankingPage() {
           border-color: rgba(148, 163, 184, 0.38);
         }
         .rank3 {
-          background: linear-gradient(135deg, #b45309 0%, #ea580c 100%);
+          background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
           color: #fff;
-          border-color: rgba(234, 88, 12, 0.3);
+          border-color: rgba(146, 64, 14, 0.35);
         }
         .rankDefault {
           background: #f8fafc;
@@ -439,6 +497,42 @@ export default function RankingPage() {
           color: inherit;
           padding: 0 2px;
           border-radius: 4px;
+        }
+        .priceMeta {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+          margin: 14px 0 18px;
+        }
+        .priceMetaItem {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 14px;
+          background: #f8fafc;
+        }
+        .priceMetaLabel {
+          display: block;
+          margin-bottom: 6px;
+          color: #64748b;
+          font-size: 0.82rem;
+          font-weight: 700;
+        }
+        .priceMetaItem strong {
+          color: #0f172a;
+          font-size: 1rem;
+          font-weight: 900;
+        }
+        .upsideValue {
+          color: #0f172a;
+        }
+        .upsidePositive {
+          color: #0ea5e9 !important;
+        }
+        .upsideNegative {
+          color: #64748b !important;
+        }
+        .upsideNeutral {
+          color: #64748b !important;
         }
         .summaryText {
           margin: 14px 0 20px;
@@ -527,6 +621,12 @@ export default function RankingPage() {
           }
           .rankBadge {
             width: 86px;
+          }
+          .priceMeta {
+            grid-template-columns: 1fr;
+          }
+          .scoreBadge {
+            width: 100%;
           }
         }
       `}</style>
