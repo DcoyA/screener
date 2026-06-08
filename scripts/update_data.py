@@ -25,6 +25,11 @@ DEFAULT_KRX_KOSPI_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_isu_b
 DEFAULT_KRX_KOSDAQ_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_isu_base_info"
 DEFAULT_KRX_KOSPI_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_bydd_trd"
 DEFAULT_KRX_KOSDAQ_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_bydd_trd"
+DEFAULT_KRX_KOSPI_INDEX_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/idx/kospi_dd_trd"
+KRX_KOSPI_INDEX_DAILY_URL = normalize_krx_url(
+    os.getenv("KRX_KOSPI_INDEX_DAILY_URL", ""),
+    DEFAULT_KRX_KOSPI_INDEX_DAILY_URL,
+)
 
 MAX_STOCKS = 500
 REPORT_CODE = "11011"
@@ -117,6 +122,56 @@ def parse_amount(value):
         return int(float(text))
     except Exception:
         return 0
+
+
+def parse_number(value):
+    if value is None:
+        return None
+    text = str(value).strip().replace(",", "")
+    if text == "":
+        return None
+    if text.startswith("(") and text.endswith(")"):
+        text = "-" + text[1:-1]
+    try:
+        return float(text)
+    except Exception:
+        return None
+
+
+def extract_kospi_benchmark(rows):
+    for row in rows:
+        idx_name = str(
+            pick_field(
+                row,
+                exact_keys=["IDX_NM", "idxNm", "KOR_NM"],
+                contains_keys=["idx_nm", "name", "nm"],
+            )
+            or ""
+        ).strip()
+
+        if idx_name.lower() not in {"kospi", "코스피"}:
+            continue
+
+        close_value = parse_number(
+            pick_field(
+                row,
+                exact_keys=[
+                    "CLSPRC_IDX",
+                    "TDD_CLSPRC_IDX",
+                    "closePrice",
+                    "IDX_CLSPRC",
+                ],
+                contains_keys=["clsprc", "close"],
+            )
+        )
+
+        if close_value is not None:
+            return {
+                "name": "KOSPI",
+                "close": round(close_value, 2),
+            }
+
+    return None
 
 
 def normalize_code(value):
@@ -875,9 +930,20 @@ def build_report_highlight(stock):
 def build_history_entry(stocks):
     top_picks = stocks[:10]
 
+    kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, kst_now.strftime("%Y%m%d"))
+    benchmark = extract_kospi_benchmark(kospi_rows)
+
+    if benchmark is None:
+        for bas_dd in recent_krx_bas_dd_candidates():
+            kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
+            benchmark = extract_kospi_benchmark(kospi_rows)
+            if benchmark:
+                break
+
     return {
         "snapshotDate": today,
         "weekLabel": get_week_label(kst_now),
+        "benchmark": benchmark,
         "top10": [
             {
                 "rank": idx + 1,
@@ -893,6 +959,7 @@ def build_history_entry(stocks):
             for idx, stock in enumerate(top_picks)
         ],
     }
+
 
 def main():
     corp_map = build_corp_code_map()
