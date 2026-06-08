@@ -21,6 +21,14 @@ history_path = DATA_DIR / "history.json"
 OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
 KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
 
+
+def normalize_krx_url(url, fallback):
+    candidate = (url or fallback or "").strip()
+    if not candidate:
+        return fallback
+    return candidate.replace("/svc/sample/apis/", "/svc/apis/")
+
+
 DEFAULT_KRX_KOSPI_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_isu_base_info"
 DEFAULT_KRX_KOSDAQ_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_isu_base_info"
 DEFAULT_KRX_KOSPI_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_bydd_trd"
@@ -41,13 +49,6 @@ MIN_AVG_TRADE_VALUE = 10_0000_0000  # 10억원
 kst_now = datetime.utcnow() + timedelta(hours=9)
 today = kst_now.strftime("%Y-%m-%d")
 target_year = str(kst_now.year - 1)
-
-
-def normalize_krx_url(url, fallback):
-    candidate = (url or fallback or "").strip()
-    if not candidate:
-        return fallback
-    return candidate.replace("/svc/sample/apis/", "/svc/apis/")
 
 
 KRX_KOSPI_BASIC_URL = normalize_krx_url(os.getenv("KRX_KOSPI_BASIC_URL", ""), DEFAULT_KRX_KOSPI_BASIC_URL)
