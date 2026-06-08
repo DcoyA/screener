@@ -148,6 +148,7 @@ export default function HomePage() {
           </Link>
           <nav className="mainNav" aria-label="주요 메뉴">
             <Link href="/notice">공지</Link>
+            <Link href="/performance">성과/백테스트</Link>
             <Link href="/ranking">랭킹</Link>
             <Link href="/risk">리스크</Link>
             <Link href="/reports">리포트</Link>
@@ -263,6 +264,10 @@ export default function HomePage() {
             <div className="quickLinksGrid">
               <Link href="/notice" className="quickLinkItem">
                 <strong>📢 공지</strong>
+                <span>사이트 업데이트 안내</span>
+              </Link>
+              <Link href="/performance" className="quickLinkItem">
+                <strong>📢 성과/백테스트</strong>
                 <span>사이트 업데이트 안내</span>
               </Link>
               <Link href="/ranking" className="quickLinkItem">
