@@ -97,6 +97,7 @@ export default function RankingPage() {
 
           <div className="subNav">
             <Link href="/notice">공지</Link>
+            <Link href="/performance">성과/백테스트</Link>
             <Link href="/risk">리스크</Link>
             <Link href="/reports">리포트</Link>
           </div>
