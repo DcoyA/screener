@@ -176,6 +176,8 @@ export default function PerformancePage() {
     };
   }, [currentPriceMap, selectedSnapshotDate, stockMap]);
 
+  const selectedWeek = performanceData.selectedWeek;
+
   const chart = useMemo(() => {
     const values = performanceData.graphRows.map((row) => row.value ?? 0);
     return buildLinePoints(values, 820, 280);
@@ -220,7 +222,7 @@ export default function PerformancePage() {
             <p className="desc">
               추천 결과를 주차별로 기록하고, 시간이 지나면서 실제 성과를 공개하는 페이지입니다.
               <br />
-              현재는 history.json에 축적된 추천 당시 가격과 현재 가격을 비교한 기준으로 보여줍니다.
+              축적된 추천 당시 가격과 현재 가격을 비교한 기준으로 보여줍니다.
             </p>
           </div>
           <div className="updateBox">
@@ -346,7 +348,7 @@ export default function PerformancePage() {
                 </tbody>
               </table>
             </div>
-            <p className="tableNote">※ 현재 수익률은 추천 당시 지정가와 최근 종가를 비교한 기준입니다.</p>
+            <p className="tableNote">※ 현재 수익률은 추천 당시 selectedPrice와 현재 stocks.json의 최근 종가를 비교한 기준입니다.</p>
           </div>
         </section>
 
