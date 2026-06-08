@@ -140,6 +140,10 @@ def parse_number(value):
 
 
 def extract_kospi_benchmark(rows):
+    if not rows:
+        return None
+
+    # 1차: 이름 기반으로 우선 탐색
     for row in rows:
         idx_name = str(
             pick_field(
@@ -150,27 +154,50 @@ def extract_kospi_benchmark(rows):
             or ""
         ).strip()
 
-        if idx_name.lower() not in {"kospi", "코스피"}:
-            continue
-
         close_value = parse_number(
             pick_field(
                 row,
                 exact_keys=[
                     "CLSPRC_IDX",
                     "TDD_CLSPRC_IDX",
-                    "closePrice",
                     "IDX_CLSPRC",
+                    "closePrice",
                 ],
                 contains_keys=["clsprc", "close"],
             )
         )
 
-        if close_value is not None:
+        # 이름 매칭을 더 느슨하게
+        if close_value is not None and (
+            idx_name.lower() == "kospi"
+            or idx_name == "코스피"
+            or "kospi" in idx_name.lower()
+            or "코스피" in idx_name
+        ):
             return {
-                "name": "KOSPI",
+                "name": idx_name or "KOSPI",
                 "close": round(close_value, 2),
             }
+
+    # 2차: 첫 번째 행을 fallback으로 사용 (디버그용)
+    first = rows[0]
+    close_value = parse_number(
+        pick_field(
+            first,
+            exact_keys=[
+                "CLSPRC_IDX",
+                "TDD_CLSPRC_IDX",
+                "IDX_CLSPRC",
+                "closePrice",
+            ],
+            contains_keys=["clsprc", "close"],
+        )
+    )
+    if close_value is not None:
+        return {
+            "name": str(first.get("IDX_NM") or first.get("idxNm") or "KOSPI"),
+            "close": round(close_value, 2),
+        }
 
     return None
 
