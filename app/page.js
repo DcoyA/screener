@@ -268,7 +268,7 @@ export default function HomePage() {
               </Link>
               <Link href="/performance" className="quickLinkItem">
                 <strong>📢 성과/백테스트</strong>
-                <span>사이트 업데이트 안내</span>
+                <span>추천종목 실제 투자결과</span>
               </Link>
               <Link href="/ranking" className="quickLinkItem">
                 <strong>🏆 랭킹</strong>
