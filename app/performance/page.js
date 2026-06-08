@@ -1,14 +1,117 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import history from "../data/history.json";
+import stocks from "../data/stocks.json";
 
-function getPreviewNames(top10 = []) {
-  return top10.slice(0, 3).map((item) => item.name).join(", ");
+function formatPrice(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+
+function formatPercent(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(1)}%`;
+}
+
+function calcReturnRate(selectedPrice, currentPrice) {
+  const base = Number(selectedPrice || 0);
+  const now = Number(currentPrice || 0);
+  if (!base || !now) return null;
+  return ((now - base) / base) * 100;
+}
+
+function getToneClass(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "toneNeutral";
+  if (num > 0) return "tonePositive";
+  if (num < 0) return "toneNegative";
+  return "toneNeutral";
 }
 
 export default function PerformancePage() {
   const latestDate = history[0]?.snapshotDate || "-";
+
+  const currentPriceMap = useMemo(() => {
+    return Object.fromEntries(
+      stocks.map((item) => [item.code, item.metrics?.closePrice || 0])
+    );
+  }, []);
+
+  const performanceData = useMemo(() => {
+    const weeklyRows = history.map((entry) => {
+      const picks = (entry.top10 || []).map((pick) => {
+        const currentPrice = Number(currentPriceMap[pick.code] || 0);
+        const returnRate = calcReturnRate(pick.selectedPrice, currentPrice);
+        return {
+          ...pick,
+          currentPrice,
+          returnRate,
+        };
+      });
+
+      const validReturns = picks
+        .map((item) => item.returnRate)
+        .filter((value) => Number.isFinite(value));
+
+      const avgReturn = validReturns.length
+        ? validReturns.reduce((acc, cur) => acc + cur, 0) / validReturns.length
+        : null;
+
+      const winCount = validReturns.filter((value) => value > 0).length;
+      const loseCount = validReturns.filter((value) => value < 0).length;
+      const winRate = validReturns.length ? (winCount / validReturns.length) * 100 : null;
+      const bestReturn = validReturns.length ? Math.max(...validReturns) : null;
+      const worstReturn = validReturns.length ? Math.min(...validReturns) : null;
+
+      return {
+        snapshotDate: entry.snapshotDate,
+        weekLabel: entry.weekLabel,
+        picks,
+        count: picks.length,
+        avgReturn,
+        winRate,
+        winCount,
+        loseCount,
+        bestReturn,
+        worstReturn,
+      };
+    });
+
+    const allPicks = weeklyRows.flatMap((row) => row.picks);
+    const allReturns = allPicks
+      .map((item) => item.returnRate)
+      .filter((value) => Number.isFinite(value));
+
+    const overallAvg = allReturns.length
+      ? allReturns.reduce((acc, cur) => acc + cur, 0) / allReturns.length
+      : null;
+    const overallWinRate = allReturns.length
+      ? (allReturns.filter((value) => value > 0).length / allReturns.length) * 100
+      : null;
+    const overallBest = allReturns.length ? Math.max(...allReturns) : null;
+    const overallWorst = allReturns.length ? Math.min(...allReturns) : null;
+
+    const sortedByReturn = [...allPicks]
+      .filter((item) => Number.isFinite(item.returnRate))
+      .sort((a, b) => b.returnRate - a.returnRate);
+
+    return {
+      weeklyRows,
+      overallAvg,
+      overallWinRate,
+      overallBest,
+      overallWorst,
+      totalSnapshots: weeklyRows.length,
+      totalPicks: allPicks.length,
+      bestPicks: sortedByReturn.slice(0, 3),
+      worstPicks: [...sortedByReturn].reverse().slice(0, 3),
+    };
+  }, [currentPriceMap]);
 
   return (
     <>
@@ -31,10 +134,9 @@ export default function PerformancePage() {
             <h1>성과/백테스트</h1>
             <p className="desc">
               추천 결과를 주차별로 기록하고, 시간이 지나면서 실제 성과를
-              투명하게 공개하기 위한 페이지입니다.
+              공개하는 페이지입니다.
               <br />
-              현재는 추천 이력 축적 단계이며, 이후 실제 수익률 비교와 그래프가
-              추가될 예정입니다.
+              현재는 history.json에 축적된 추천 당시 가격과 현재 가격을 비교한 기준으로 보여줍니다.
             </p>
           </div>
 
@@ -44,30 +146,118 @@ export default function PerformancePage() {
           </div>
         </section>
 
+        <section className="kpiSection">
+          <div className="kpiGrid">
+            <div className="kpiCard">
+              <span className="kpiLabel">전체 평균 수익률</span>
+              <strong className={getToneClass(performanceData.overallAvg)}>
+                {formatPercent(performanceData.overallAvg)}
+              </strong>
+              <p>history 기준 전체 추천 종목 평균</p>
+            </div>
+            <div className="kpiCard">
+              <span className="kpiLabel">전체 승률</span>
+              <strong>{formatPercent(performanceData.overallWinRate)}</strong>
+              <p>수익률이 플러스인 종목 비율</p>
+            </div>
+            <div className="kpiCard">
+              <span className="kpiLabel">최고 수익률</span>
+              <strong className={getToneClass(performanceData.overallBest)}>
+                {formatPercent(performanceData.overallBest)}
+              </strong>
+              <p>누적 기준 최고 성과 종목</p>
+            </div>
+            <div className="kpiCard">
+              <span className="kpiLabel">최저 수익률</span>
+              <strong className={getToneClass(performanceData.overallWorst)}>
+                {formatPercent(performanceData.overallWorst)}
+              </strong>
+              <p>누적 기준 최저 성과 종목</p>
+            </div>
+            <div className="kpiCard">
+              <span className="kpiLabel">누적 주차 수</span>
+              <strong>{performanceData.totalSnapshots}회</strong>
+              <p>축적된 추천 스냅샷 수</p>
+            </div>
+            <div className="kpiCard">
+              <span className="kpiLabel">누적 추천 종목 수</span>
+              <strong>{performanceData.totalPicks}종목</strong>
+              <p>top10 누적 집계 기준</p>
+            </div>
+          </div>
+        </section>
+
         <section className="historySection">
           <div className="sectionCard">
-            <h2>최근 기록 목록</h2>
-            <div className="historyList">
-              {history.map((entry) => (
-                <div className="historyItem" key={entry.snapshotDate}>
-                  <div className="historyMain">
-                    <p className="historyWeek">{entry.weekLabel}</p>
-                    <p className="historyDate">{entry.snapshotDate}</p>
-                    <p className="historyPreview">
-                      대표 종목: {getPreviewNames(entry.top10)}
-                    </p>
-                  </div>
+            <h2>주차별 성과 요약</h2>
+            <div className="tableWrap">
+              <table className="historyTable">
+                <thead>
+                  <tr>
+                    <th>기준일</th>
+                    <th>주차</th>
+                    <th>추천 수</th>
+                    <th>평균 수익률</th>
+                    <th>승률</th>
+                    <th>최고</th>
+                    <th>최저</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {performanceData.weeklyRows.map((row) => (
+                    <tr key={row.snapshotDate}>
+                      <td>{row.snapshotDate}</td>
+                      <td>{row.weekLabel}</td>
+                      <td>{row.count}</td>
+                      <td className={getToneClass(row.avgReturn)}>{formatPercent(row.avgReturn)}</td>
+                      <td>{formatPercent(row.winRate)}</td>
+                      <td className={getToneClass(row.bestReturn)}>{formatPercent(row.bestReturn)}</td>
+                      <td className={getToneClass(row.worstReturn)}>{formatPercent(row.worstReturn)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="tableNote">
+              ※ 현재 수익률은 추천 당시 selectedPrice와 현재 stocks.json의 최근 종가를 비교한 기준입니다.
+            </p>
+          </div>
+        </section>
 
-                  <div className="historyMeta">
-                    <span className="countBadge">
-                      추천 {entry.top10?.length || 0}종목
-                    </span>
-                    <button type="button" className="detailBtn" disabled>
-                      상세 성과 준비 중
-                    </button>
+        <section className="pickSection">
+          <div className="pickGrid">
+            <div className="pickCard">
+              <h2>이번까지 베스트 TOP3</h2>
+              <div className="pickList">
+                {performanceData.bestPicks.map((item, index) => (
+                  <div className="pickItem" key={`${item.code}-${index}`}>
+                    <div>
+                      <p className="pickName">{item.name}</p>
+                      <p className="pickMeta">{item.market} · {item.code}</p>
+                    </div>
+                    <strong className={getToneClass(item.returnRate)}>
+                      {formatPercent(item.returnRate)}
+                    </strong>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            <div className="pickCard">
+              <h2>이번까지 워스트 TOP3</h2>
+              <div className="pickList">
+                {performanceData.worstPicks.map((item, index) => (
+                  <div className="pickItem" key={`${item.code}-${index}`}>
+                    <div>
+                      <p className="pickName">{item.name}</p>
+                      <p className="pickMeta">{item.market} · {item.code}</p>
+                    </div>
+                    <strong className={getToneClass(item.returnRate)}>
+                      {formatPercent(item.returnRate)}
+                    </strong>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -180,92 +370,122 @@ export default function PerformancePage() {
           font-size: 0.88rem;
           font-weight: 700;
         }
+        .kpiSection,
         .historySection,
+        .pickSection,
         .noticeSection {
           margin-top: 24px;
         }
+        .kpiGrid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+        .kpiCard,
         .sectionCard,
-        .noticeCard {
+        .noticeCard,
+        .pickCard {
           border: 1px solid #e5e7eb;
           border-radius: 28px;
-          padding: 28px;
+          padding: 24px;
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
+        .kpiLabel {
+          display: block;
+          margin-bottom: 10px;
+          color: #64748b;
+          font-size: 0.9rem;
+          font-weight: 700;
+        }
+        .kpiCard strong {
+          display: block;
+          font-size: 2rem;
+          line-height: 1;
+          letter-spacing: -0.04em;
+          margin-bottom: 10px;
+        }
+        .kpiCard p {
+          margin: 0;
+          color: #64748b;
+          line-height: 1.7;
+          font-size: 0.92rem;
+        }
         .sectionCard h2,
-        .noticeCard h2 {
+        .noticeCard h2,
+        .pickCard h2 {
           margin: 0 0 18px;
           font-size: 1.5rem;
           letter-spacing: -0.03em;
         }
-        .historyList {
-          display: grid;
-          gap: 14px;
+        .tableWrap {
+          overflow-x: auto;
         }
-        .historyItem {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 16px;
-          padding: 18px 20px;
-          border-radius: 20px;
-          border: 1px solid #e5e7eb;
-          background: #ffffff;
+        .historyTable {
+          width: 100%;
+          border-collapse: collapse;
         }
-        .historyWeek {
-          margin: 0 0 6px;
-          font-size: 1.05rem;
-          font-weight: 800;
-          color: #0f172a;
+        .historyTable th,
+        .historyTable td {
+          padding: 14px 10px;
+          border-bottom: 1px solid #e5e7eb;
+          text-align: left;
+          white-space: nowrap;
         }
-        .historyDate {
-          margin: 0 0 8px;
+        .historyTable th {
           color: #64748b;
-          font-size: 0.9rem;
+          font-size: 0.86rem;
+          font-weight: 800;
         }
-        .historyPreview {
-          margin: 0;
-          color: #475569;
+        .historyTable td {
+          color: #0f172a;
+          font-size: 0.95rem;
+        }
+        .tableNote {
+          margin: 14px 0 0;
+          color: #64748b;
+          font-size: 0.92rem;
           line-height: 1.7;
         }
-        .historyMeta {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          align-items: flex-end;
-          min-width: 150px;
-        }
-        .countBadge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 8px 12px;
-          border-radius: 999px;
-          background: #ecfeff;
-          color: #0891b2;
-          font-size: 0.84rem;
-          font-weight: 800;
-        }
-        .detailBtn {
-          height: 42px;
-          padding: 0 14px;
-          border-radius: 12px;
-          border: 1px solid #dbe3f0;
-          background: #f8fafc;
-          color: #64748b;
-          font-weight: 800;
-          cursor: not-allowed;
-        }
+        .pickGrid,
         .noticeGrid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 14px;
         }
+        .pickList {
+          display: grid;
+          gap: 12px;
+        }
+        .pickItem,
         .noticeItem {
           border: 1px solid #e5e7eb;
-          border-radius: 20px;
-          padding: 18px;
+          border-radius: 18px;
+          padding: 16px;
           background: #ffffff;
+        }
+        .pickItem {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 14px;
+        }
+        .pickName {
+          margin: 0 0 4px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .pickMeta {
+          margin: 0;
+          color: #64748b;
+          font-size: 0.9rem;
+        }
+        .pickItem strong {
+          font-size: 1.05rem;
+          font-weight: 900;
+          flex-shrink: 0;
+        }
+        .noticeItem {
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -278,25 +498,37 @@ export default function PerformancePage() {
           color: #64748b;
           line-height: 1.7;
         }
+        .tonePositive {
+          color: #0ea5e9;
+        }
+        .toneNegative {
+          color: #64748b;
+        }
+        .toneNeutral {
+          color: #0f172a;
+        }
+        @media (max-width: 900px) {
+          .kpiGrid,
+          .pickGrid,
+          .noticeGrid {
+            grid-template-columns: 1fr;
+          }
+        }
         @media (max-width: 720px) {
           .container {
             padding: 24px 18px 64px;
           }
-          .pageHero,
-          .historyItem {
+          .pageHero {
             flex-direction: column;
           }
-          .updateBox,
-          .historyMeta {
+          .updateBox {
             width: 100%;
             text-align: left;
-            align-items: flex-start;
           }
-          .noticeGrid {
-            grid-template-columns: 1fr;
-          }
+          .kpiCard,
           .sectionCard,
-          .noticeCard {
+          .noticeCard,
+          .pickCard {
             padding: 22px;
           }
         }
