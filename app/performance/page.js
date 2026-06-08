@@ -18,6 +18,7 @@ function formatIndex(value) {
 }
 
 function formatPercent(value) {
+  if (value === null || value === undefined || value === "") return "-";
   const num = Number(value);
   if (!Number.isFinite(num)) return "-";
   const sign = num > 0 ? "+" : "";
