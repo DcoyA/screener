@@ -62,6 +62,16 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+def load_json(path, default):
+    if not path.exists():
+        return default
+    with open(path, "r", encoding="utf-8") as f:
+        try:
+            return json.load(f)
+        except Exception:
+            return default
+
+
 def http_get_json(base_url, params):
     query = urllib.parse.urlencode(params)
     url = f"{base_url}?{query}"
