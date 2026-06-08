@@ -872,6 +872,27 @@ def build_report_highlight(stock):
         f"부채비율 {metrics.get('debtRatio', 0):.1f}%"
     )
 
+def build_history_entry(stocks):
+    top_picks = stocks[:10]
+
+    return {
+        "snapshotDate": today,
+        "weekLabel": get_week_label(kst_now),
+        "top10": [
+            {
+                "rank": idx + 1,
+                "code": stock["code"],
+                "name": stock["name"],
+                "market": stock["market"],
+                "selectedPrice": int(stock.get("metrics", {}).get("closePrice", 0)),
+                "totalScore": stock.get("totalScore", 0),
+                "targetPrice": stock.get("metrics", {}).get("targetPrice"),
+                "upside": stock.get("metrics", {}).get("upside"),
+                "momentum": stock.get("metrics", {}).get("momentum"),
+            }
+            for idx, stock in enumerate(top_picks)
+        ],
+    }
 
 def main():
     corp_map = build_corp_code_map()
@@ -939,6 +960,18 @@ def main():
         }
     ]
 
+    existing_history = load_json(history_path, [])
+    history_entry = build_history_entry(stocks)
+    
+    history_without_today = [
+        item for item in existing_history
+        if item.get("snapshotDate") != today
+    ]
+    
+    history = [history_entry] + history_without_today
+    history = history[:104]  # 대략 2년치 주간 기록 여유
+    
+    save_json(history_path, history)
     save_json(stocks_path, stocks)
     save_json(risks_path, risks)
     save_json(reports_path, reports)
