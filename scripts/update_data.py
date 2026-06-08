@@ -16,6 +16,7 @@ DATA_DIR = ROOT / "app" / "data"
 stocks_path = DATA_DIR / "stocks.json"
 risks_path = DATA_DIR / "risks.json"
 reports_path = DATA_DIR / "reports.json"
+history_path = DATA_DIR / "history.json"
 
 OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
 KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
