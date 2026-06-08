@@ -61,6 +61,7 @@ export default function NoticePage() {
           </Link>
 
           <div className="subNav">
+            <Link href="/performance">성과/백테스트</Link>        
             <Link href="/ranking">랭킹</Link>
             <Link href="/risk">리스크</Link>
             <Link href="/reports">리포트</Link>
