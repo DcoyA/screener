@@ -17,6 +17,7 @@ export default function ReportsPage() {
           </Link>
           <div className="subNav">
             <Link href="/notice">공지</Link>
+            <Link href="/performance">성과/백테스트</Link>
             <Link href="/ranking">랭킹</Link>
             <Link href="/risk">리스크</Link>
           </div>
