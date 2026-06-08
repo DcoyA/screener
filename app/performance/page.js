@@ -169,6 +169,7 @@ export default function PerformancePage() {
   }, [currentPriceMap, latestBenchmarkClose, selectedSnapshotDate, stockMap]);
 
   const selectedWeek = performanceData.selectedWeek;
+  const controversialPick = performanceData.controversialPick;
   const chartValues = useMemo(() => {
     const rows = performanceData.chartRows;
     const width = 860;
