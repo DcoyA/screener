@@ -958,13 +958,22 @@ def build_report_highlight(stock):
 def build_history_entry(stocks):
     top_picks = stocks[:10]
 
+    print("KOSPI index request date:", kst_now.strftime("%Y%m%d"))
     kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, kst_now.strftime("%Y%m%d"))
+    print("KOSPI rows sample:", kospi_rows[:2])
+
     benchmark = extract_kospi_benchmark(kospi_rows)
+    print("Extracted benchmark:", benchmark)
 
     if benchmark is None:
         for bas_dd in recent_krx_bas_dd_candidates():
+            print("Retry bas_dd:", bas_dd)
             kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
+            print("Retry rows sample:", kospi_rows[:2])
+
             benchmark = extract_kospi_benchmark(kospi_rows)
+            print("Retry extracted benchmark:", benchmark)
+
             if benchmark:
                 break
 
