@@ -143,7 +143,7 @@ def extract_kospi_benchmark(rows):
     if not rows:
         return None
 
-    # 1차: 이름 기반으로 우선 탐색
+    # 1차: 이름 기반 우선 탐색
     for row in rows:
         idx_name = str(
             pick_field(
@@ -167,7 +167,8 @@ def extract_kospi_benchmark(rows):
             )
         )
 
-        # 이름 매칭을 더 느슨하게
+        print("Index row check:", idx_name, close_value)
+
         if close_value is not None and (
             idx_name.lower() == "kospi"
             or idx_name == "코스피"
@@ -179,9 +180,10 @@ def extract_kospi_benchmark(rows):
                 "close": round(close_value, 2),
             }
 
-    # 2차: 첫 번째 행을 fallback으로 사용 (디버그용)
+    # 2차: 첫 번째 row fallback (디버그용)
     first = rows[0]
-    close_value = parse_number(
+    fallback_name = str(first.get("IDX_NM") or first.get("idxNm") or "KOSPI")
+    fallback_close = parse_number(
         pick_field(
             first,
             exact_keys=[
@@ -193,10 +195,14 @@ def extract_kospi_benchmark(rows):
             contains_keys=["clsprc", "close"],
         )
     )
-    if close_value is not None:
+
+    print("Fallback first row:", first)
+    print("Fallback parsed close:", fallback_close)
+
+    if fallback_close is not None:
         return {
-            "name": str(first.get("IDX_NM") or first.get("idxNm") or "KOSPI"),
-            "close": round(close_value, 2),
+            "name": fallback_name,
+            "close": round(fallback_close, 2),
         }
 
     return None
@@ -958,9 +964,13 @@ def build_report_highlight(stock):
 def build_history_entry(stocks):
     top_picks = stocks[:10]
 
-    print("KOSPI index request date:", kst_now.strftime("%Y%m%d"))
-    kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, kst_now.strftime("%Y%m%d"))
+    request_date = kst_now.strftime("%Y%m%d")
+    print("KOSPI index request date:", request_date)
+
+    kospi_rows, kospi_errors = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, request_date)
+    print("KOSPI rows count:", len(kospi_rows))
     print("KOSPI rows sample:", kospi_rows[:2])
+    print("KOSPI fetch errors:", kospi_errors)
 
     benchmark = extract_kospi_benchmark(kospi_rows)
     print("Extracted benchmark:", benchmark)
@@ -968,8 +978,11 @@ def build_history_entry(stocks):
     if benchmark is None:
         for bas_dd in recent_krx_bas_dd_candidates():
             print("Retry bas_dd:", bas_dd)
-            kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
+
+            kospi_rows, kospi_errors = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
+            print("Retry rows count:", len(kospi_rows))
             print("Retry rows sample:", kospi_rows[:2])
+            print("Retry fetch errors:", kospi_errors)
 
             benchmark = extract_kospi_benchmark(kospi_rows)
             print("Retry extracted benchmark:", benchmark)
