@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import history from "../data/history.json";
 import stocks from "../data/stocks.json";
 
@@ -35,6 +35,13 @@ function getToneClass(value) {
 
 export default function PerformancePage() {
   const latestDate = history[0]?.snapshotDate || "-";
+  const [selectedSnapshotDate, setSelectedSnapshotDate] = useState(history[0]?.snapshotDate || null);
+
+  useEffect(() => {
+    if (!selectedSnapshotDate && history[0]?.snapshotDate) {
+      setSelectedSnapshotDate(history[0].snapshotDate);
+    }
+  }, [selectedSnapshotDate]);
 
   const currentPriceMap = useMemo(() => {
     return Object.fromEntries(
@@ -45,12 +52,15 @@ export default function PerformancePage() {
   const performanceData = useMemo(() => {
     const weeklyRows = history.map((entry) => {
       const picks = (entry.top10 || []).map((pick) => {
+        const currentStock = stocks.find((item) => item.code === pick.code);
         const currentPrice = Number(currentPriceMap[pick.code] || 0);
         const returnRate = calcReturnRate(pick.selectedPrice, currentPrice);
         return {
           ...pick,
           currentPrice,
           returnRate,
+          currentTargetPrice: currentStock?.metrics?.targetPrice ?? null,
+          currentUpside: currentStock?.metrics?.upside ?? null,
         };
       });
 
@@ -100,6 +110,8 @@ export default function PerformancePage() {
       .filter((item) => Number.isFinite(item.returnRate))
       .sort((a, b) => b.returnRate - a.returnRate);
 
+    const selectedWeek = weeklyRows.find((row) => row.snapshotDate === selectedSnapshotDate) || weeklyRows[0] || null;
+
     return {
       weeklyRows,
       overallAvg,
@@ -110,8 +122,11 @@ export default function PerformancePage() {
       totalPicks: allPicks.length,
       bestPicks: sortedByReturn.slice(0, 3),
       worstPicks: [...sortedByReturn].reverse().slice(0, 3),
+      selectedWeek,
     };
-  }, [currentPriceMap]);
+  }, [currentPriceMap, selectedSnapshotDate]);
+
+  const selectedWeek = performanceData.selectedWeek;
 
   return (
     <>
@@ -133,8 +148,7 @@ export default function PerformancePage() {
             <p className="badge">PERFORMANCE</p>
             <h1>성과/백테스트</h1>
             <p className="desc">
-              추천 결과를 주차별로 기록하고, 시간이 지나면서 실제 성과를
-              공개하는 페이지입니다.
+              추천 결과를 주차별로 기록하고, 시간이 지나면서 실제 성과를 공개하는 페이지입니다.
               <br />
               현재는 history.json에 축적된 추천 당시 가격과 현재 가격을 비교한 기준으로 보여줍니다.
             </p>
@@ -201,6 +215,7 @@ export default function PerformancePage() {
                     <th>승률</th>
                     <th>최고</th>
                     <th>최저</th>
+                    <th>상세</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,6 +228,15 @@ export default function PerformancePage() {
                       <td>{formatPercent(row.winRate)}</td>
                       <td className={getToneClass(row.bestReturn)}>{formatPercent(row.bestReturn)}</td>
                       <td className={getToneClass(row.worstReturn)}>{formatPercent(row.worstReturn)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={`detailBtn ${selectedSnapshotDate === row.snapshotDate ? "active" : ""}`}
+                          onClick={() => setSelectedSnapshotDate(row.snapshotDate)}
+                        >
+                          보기
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -223,6 +247,58 @@ export default function PerformancePage() {
             </p>
           </div>
         </section>
+
+        {selectedWeek ? (
+          <section className="detailSection">
+            <div className="sectionCard">
+              <div className="detailHeader">
+                <div>
+                  <h2>{selectedWeek.weekLabel} 상세 성과</h2>
+                  <p className="detailDesc">
+                    추천 당시 가격, 현재 가격, 실제 수익률과 당시 상승여력을 함께 보여줍니다.
+                  </p>
+                </div>
+                <span className="detailBadge">기준일 {selectedWeek.snapshotDate}</span>
+              </div>
+
+              <div className="tableWrap">
+                <table className="detailTable">
+                  <thead>
+                    <tr>
+                      <th>순위</th>
+                      <th>종목</th>
+                      <th>추천가</th>
+                      <th>현재가</th>
+                      <th>수익률</th>
+                      <th>당시 적정가</th>
+                      <th>당시 상승여력</th>
+                      <th>현재 상승여력</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedWeek.picks.map((pick) => (
+                      <tr key={`${selectedWeek.snapshotDate}-${pick.code}`}>
+                        <td>{pick.rank}</td>
+                        <td>
+                          <div className="stockCell">
+                            <strong>{pick.name}</strong>
+                            <span>{pick.market} · {pick.code}</span>
+                          </div>
+                        </td>
+                        <td>{formatPrice(pick.selectedPrice)}</td>
+                        <td>{formatPrice(pick.currentPrice)}</td>
+                        <td className={getToneClass(pick.returnRate)}>{formatPercent(pick.returnRate)}</td>
+                        <td>{formatPrice(pick.targetPrice)}</td>
+                        <td className={getToneClass(pick.upside)}>{formatPercent(pick.upside)}</td>
+                        <td className={getToneClass(pick.currentUpside)}>{formatPercent(pick.currentUpside)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="pickSection">
           <div className="pickGrid">
@@ -372,6 +448,7 @@ export default function PerformancePage() {
         }
         .kpiSection,
         .historySection,
+        .detailSection,
         .pickSection,
         .noticeSection {
           margin-top: 24px;
@@ -421,23 +498,28 @@ export default function PerformancePage() {
         .tableWrap {
           overflow-x: auto;
         }
-        .historyTable {
+        .historyTable,
+        .detailTable {
           width: 100%;
           border-collapse: collapse;
         }
         .historyTable th,
-        .historyTable td {
+        .historyTable td,
+        .detailTable th,
+        .detailTable td {
           padding: 14px 10px;
           border-bottom: 1px solid #e5e7eb;
           text-align: left;
           white-space: nowrap;
         }
-        .historyTable th {
+        .historyTable th,
+        .detailTable th {
           color: #64748b;
           font-size: 0.86rem;
           font-weight: 800;
         }
-        .historyTable td {
+        .historyTable td,
+        .detailTable td {
           color: #0f172a;
           font-size: 0.95rem;
         }
@@ -446,6 +528,57 @@ export default function PerformancePage() {
           color: #64748b;
           font-size: 0.92rem;
           line-height: 1.7;
+        }
+        .detailHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+          flex-wrap: wrap;
+          margin-bottom: 18px;
+        }
+        .detailDesc {
+          margin: 0;
+          color: #64748b;
+          line-height: 1.7;
+        }
+        .detailBadge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 12px;
+          border-radius: 999px;
+          background: #ecfeff;
+          color: #0891b2;
+          font-size: 0.84rem;
+          font-weight: 800;
+        }
+        .detailBtn {
+          height: 38px;
+          padding: 0 14px;
+          border-radius: 12px;
+          border: 1px solid #dbe3f0;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .detailBtn.active {
+          background: #0f172a;
+          color: #ffffff;
+          border-color: #0f172a;
+        }
+        .stockCell {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .stockCell strong {
+          color: #0f172a;
+        }
+        .stockCell span {
+          color: #64748b;
+          font-size: 0.88rem;
         }
         .pickGrid,
         .noticeGrid {
@@ -518,7 +651,8 @@ export default function PerformancePage() {
           .container {
             padding: 24px 18px 64px;
           }
-          .pageHero {
+          .pageHero,
+          .detailHeader {
             flex-direction: column;
           }
           .updateBox {
