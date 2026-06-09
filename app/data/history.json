@@ -2,21 +2,35 @@
   {
     "snapshotDate": "2026-06-09",
     "weekLabel": "2026년 6월 2주차",
-    "benchmark": null,
+    "benchmark": {
+      "name": "코스피",
+      "close": 7484.41
+    },
     "top10": [
       {
         "rank": 1,
         "code": "021080",
         "name": "에이티넘인베스트먼트",
         "market": "KOSDAQ",
-        "selectedPrice": 2900,
+        "selectedPrice": 2690,
         "totalScore": 87,
         "targetPrice": 6273,
-        "upside": 116.3,
-        "momentum": -3.81
+        "upside": 133.2,
+        "momentum": -7.24
       },
       {
         "rank": 2,
+        "code": "041510",
+        "name": "에스엠엔터테인먼트",
+        "market": "KOSDAQ",
+        "selectedPrice": 71100,
+        "totalScore": 85,
+        "targetPrice": 188356,
+        "upside": 164.9,
+        "momentum": -4.44
+      },
+      {
+        "rank": 3,
         "code": "246690",
         "name": "티에스인베스트먼트",
         "market": "KOSDAQ",
@@ -27,92 +41,81 @@
         "momentum": 0.0
       },
       {
-        "rank": 3,
-        "code": "041510",
-        "name": "에스엠엔터테인먼트",
-        "market": "KOSDAQ",
-        "selectedPrice": 74400,
-        "totalScore": 82,
-        "targetPrice": 188356,
-        "upside": 153.2,
-        "momentum": -5.46
-      },
-      {
         "rank": 4,
         "code": "015760",
         "name": "한국전력공사보통주",
         "market": "KOSPI",
-        "selectedPrice": 38100,
+        "selectedPrice": 36000,
         "totalScore": 81,
         "targetPrice": 162002,
-        "upside": 325.2,
-        "momentum": -1.55
+        "upside": 350.0,
+        "momentum": -5.51
       },
       {
         "rank": 5,
-        "code": "192080",
-        "name": "더블유게임즈보통주",
-        "market": "KOSPI",
-        "selectedPrice": 71100,
-        "totalScore": 78,
-        "targetPrice": 101907,
-        "upside": 43.3,
-        "momentum": 1.14
-      },
-      {
-        "rank": 6,
-        "code": "006730",
-        "name": "서부티엔디",
-        "market": "KOSDAQ",
-        "selectedPrice": 11290,
-        "totalScore": 77,
-        "targetPrice": 21475,
-        "upside": 90.2,
-        "momentum": -0.44
-      },
-      {
-        "rank": 7,
         "code": "111770",
         "name": "영원무역보통주",
         "market": "KOSPI",
-        "selectedPrice": 79800,
-        "totalScore": 77,
+        "selectedPrice": 74100,
+        "totalScore": 81,
         "targetPrice": 115433,
-        "upside": 44.7,
-        "momentum": -2.21
+        "upside": 55.8,
+        "momentum": -7.14
+      },
+      {
+        "rank": 6,
+        "code": "192080",
+        "name": "더블유게임즈보통주",
+        "market": "KOSPI",
+        "selectedPrice": 67900,
+        "totalScore": 80,
+        "targetPrice": 101907,
+        "upside": 50.1,
+        "momentum": -4.5
+      },
+      {
+        "rank": 7,
+        "code": "006730",
+        "name": "서부티엔디",
+        "market": "KOSDAQ",
+        "selectedPrice": 10680,
+        "totalScore": 79,
+        "targetPrice": 21475,
+        "upside": 101.1,
+        "momentum": -5.4
       },
       {
         "rank": 8,
-        "code": "041190",
-        "name": "우리기술투자",
+        "code": "036830",
+        "name": "솔브레인홀딩스",
         "market": "KOSDAQ",
-        "selectedPrice": 5580,
-        "totalScore": 77,
-        "targetPrice": 15792,
-        "upside": 183.0,
-        "momentum": -4.94
+        "selectedPrice": 40800,
+        "totalScore": 79,
+        "targetPrice": 290026,
+        "upside": 610.8,
+        "momentum": -8.52
       },
       {
         "rank": 9,
-        "code": "067160",
-        "name": "숲",
-        "market": "KOSDAQ",
-        "selectedPrice": 48250,
-        "totalScore": 77,
-        "targetPrice": 108304,
-        "upside": 124.5,
-        "momentum": -2.03
-      },
-      {
-        "rank": 10,
         "code": "375500",
         "name": "DL이앤씨보통주",
         "market": "KOSPI",
-        "selectedPrice": 71900,
-        "totalScore": 76,
+        "selectedPrice": 67500,
+        "totalScore": 78,
         "targetPrice": 114806,
-        "upside": 59.7,
-        "momentum": 0.56
+        "upside": 70.1,
+        "momentum": -6.12
+      },
+      {
+        "rank": 10,
+        "code": "041190",
+        "name": "우리기술투자",
+        "market": "KOSDAQ",
+        "selectedPrice": 5160,
+        "totalScore": 77,
+        "targetPrice": 15792,
+        "upside": 206.0,
+        "momentum": -7.53
       }
     ]
   },
