@@ -1010,6 +1010,19 @@ def build_stock_item(item, corp_map):
             "flags": rank_flags,
             "topRankEligible": top_rank_eligible,
         },
+        "undervalueMeta": {
+            "eligible": (
+                equity > 0
+                and market_cap >= MIN_MARKET_CAP
+                and avg_trade_value_5d >= MIN_AVG_TRADE_VALUE
+                and per is not None
+                and pbr is not None
+            ),
+            "flags": (
+                (["고부채 저평가"] if debt_ratio >= 200 else [])
+                + (["이익 불안정"] if (operating_income <= 0 or net_income <= 0) else [])
+            ),
+        },
     }
 
 
