@@ -134,15 +134,17 @@ export default function RankingPage() {
           </div>
 
           <div className="heroMeta">
-            <div className="metaCard">
-              <span className="metaLabel">종합 우선 후보</span>
-              <strong>{topEligibleCount}종목</strong>
+            <div className="heroMetaTopRow">
+              <div className="metaCard compact">
+                <span className="metaLabel">종합 우선 후보</span>
+                <strong>{topEligibleCount}종목</strong>
+              </div>
+              <div className="metaCard compact">
+                <span className="metaLabel">저평가 후보</span>
+                <strong>{undervalueEligibleCount}종목</strong>
+              </div>
             </div>
-            <div className="metaCard">
-              <span className="metaLabel">저평가 후보</span>
-              <strong>{undervalueEligibleCount}종목</strong>
-            </div>
-            <div className="metaCard light">
+            <div className="metaCard light fullSearchCard">
               <span className="metaLabel">검색</span>
               <input
                 className="searchInput"
@@ -254,19 +256,20 @@ export default function RankingPage() {
       <style jsx>{`
         .container { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; color: #0f172a; }
         .topLinks { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
-        .subNav { display: flex; gap: 14px; flex-wrap: wrap; }
-        .subNav a { color: #475569; text-decoration: none; font-weight: 700; }
         .homeBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; padding: 12px 16px; text-decoration: none; font-weight: 800; border: 1px solid #0f172a; background: #0f172a; color: #fff; }
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
         .badge { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #eef2ff; color: #4f46e5; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
         h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em; }
         .desc { margin: 0; max-width: 760px; color: #475569; line-height: 1.8; font-size: 1.02rem; }
-        .heroMeta { display: grid; gap: 12px; min-width: 280px; }
+        .heroMeta { display: grid; gap: 12px; min-width: 280px; width: 320px; }
+        .heroMetaTopRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .metaCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,0.05); }
+        .metaCard.compact { min-width: 0; }
         .metaCard.light { background: #f8fbff; }
         .metaLabel { display:block; margin-bottom:8px; color:#64748b; font-size:.88rem; font-weight:700; }
         .metaCard strong { font-size: 1.5rem; letter-spacing: -0.03em; }
-        .searchInput { width: 100%; height: 44px; border-radius: 12px; border: 1px solid #dbe3f0; padding: 0 14px; font-size: .95rem; }
+        .fullSearchCard { width: 100%; }
+        .searchInput { width: 100%; height: 44px; border-radius: 12px; border: 1px solid #dbe3f0; padding: 0 14px; font-size: .95rem; box-sizing: border-box; }
         .guideSection, .tabSection, .listSection { margin-top: 20px; }
         .guideCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,0.06); }
         .guideCard h2 { margin:0 0 16px; font-size:1.35rem; }
@@ -302,12 +305,19 @@ export default function RankingPage() {
         .summary { margin:0; color:#475569; line-height:1.8; }
         .linkRow { margin-top:14px; display:flex; justify-content:flex-end; }
         .detailBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#0f172a; color:#fff; font-weight:800; }
-        @media (max-width: 900px) { .guideGrid, .metricRow { grid-template-columns: 1fr; } }
-        @media (max-width: 720px) {
+        @media (max-width: 900px) {
+          .guideGrid, .metricRow { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 640px) {
           .container { padding: 24px 18px 64px; }
           .pageHero, .cardTop { flex-direction:column; }
           .scoreWrap { text-align:left; }
           .guideCard, .stockCard { padding:20px; }
+          .heroMeta { width: 100%; min-width: 0; }
+          .heroMetaTopRow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+          .metaCard.compact { padding: 16px; }
+          .fullSearchCard { width: 100%; }
+          .searchInput { width: 100%; }
         }
       `}</style>
     </>
