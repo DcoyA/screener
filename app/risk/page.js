@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import risks from "../data/risks.json";
 import stocks from "../data/stocks.json";
+import MainNav from "../components/MainNav";
 
 function getRiskClass(level) {
   if (level === "주의") return "riskBadge riskHigh";
@@ -66,15 +67,8 @@ export default function RiskPage() {
     <>
       <main className="container">
         <div className="topLinks">
-          <Link href="/" className="homeBtn">
-            홈으로 가기
-          </Link>
-          <div className="subNav">
-            <Link href="/notice">공지</Link>
-            <Link href="/performance">성과/백테스트</Link>
-            <Link href="/ranking">랭킹</Link>
-            <Link href="/reports">리포트</Link>
-          </div>
+          <Link href="/" className="homeBtn">홈으로 가기</Link>
+          <MainNav />
         </div>
 
         <section className="pageHero">
