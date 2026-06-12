@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import notices from "../data/notices.json";
+import MainNav from "../components/MainNav";
 
 const faqItems = [
   {
@@ -56,16 +57,8 @@ export default function NoticePage() {
     <>
       <main className="container">
         <div className="topLinks">
-          <Link href="/" className="homeBtn">
-            홈으로 가기
-          </Link>
-
-          <div className="subNav">
-            <Link href="/performance">성과/백테스트</Link>        
-            <Link href="/ranking">랭킹</Link>
-            <Link href="/risk">리스크</Link>
-            <Link href="/reports">리포트</Link>
-          </div>
+          <Link href="/" className="homeBtn">홈으로 가기</Link>
+          <MainNav />
         </div>
 
         <section className="pageHero">
