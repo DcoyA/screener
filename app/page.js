@@ -1,10 +1,10 @@
 "use client";
-
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import stocks from "./data/stocks.json";
 import notices from "./data/notices.json";
 import Image from "next/image";
+import MainNav from "./components/MainNav";
 
 const SUBSCRIBE_ENDPOINT =
   "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
@@ -23,34 +23,28 @@ function formatKstDateTime(date = new Date()) {
   const get = (type) => parts.find((part) => part.type === type)?.value || "00";
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
 }
-
 function createUnsubscribeToken(emailValue) {
   const safeEmail = emailValue.toLowerCase().replace(/[^a-z0-9]/gi, "");
   const randomPart = Math.random().toString(36).slice(2, 10);
   return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
 }
-
 function getRankBadgeClass(rank) {
   if (rank === 1) return "rankBadge rank1";
   if (rank === 2) return "rankBadge rank2";
   if (rank === 3) return "rankBadge rank3";
   return "rankBadge rankDefault";
 }
-
 function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
   return `${num.toLocaleString("ko-KR")}원`;
 }
-
 function formatPercent(value) {
-  if (value === null || value === undefined || value === "") return "-";
   const num = Number(value);
   if (!Number.isFinite(num)) return "-";
   const sign = num > 0 ? "+" : "";
   return `${sign}${num.toFixed(1)}%`;
 }
-
 function getUpsideClass(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "upsideLine";
@@ -73,9 +67,7 @@ function sortForTopCandidates(items) {
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
     if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
 
-    const aMarketCap = Number(a?.metrics?.marketCap ?? 0);
-    const bMarketCap = Number(b?.metrics?.marketCap ?? 0);
-    return bMarketCap - aMarketCap;
+    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
   });
 }
 
@@ -85,9 +77,7 @@ export default function HomePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-
   const latestNotice = [...notices].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
-
   const topStocks = useMemo(
     () =>
       sortForTopCandidates(stocks)
@@ -98,19 +88,12 @@ export default function HomePage() {
         })),
     []
   );
-
   const updatedAt = topStocks[0]?.updatedAt || stocks[0]?.updatedAt || "-";
-  const topEligibleCount = useMemo(
-    () => stocks.filter((item) => item?.rankMeta?.topRankEligible).length,
-    []
-  );
-
   const openModal = () => {
     setIsModalOpen(true);
     setIsSubmitted(false);
     setSubmitError("");
   };
-
   const closeModal = () => {
     setIsModalOpen(false);
     setEmail("");
@@ -118,15 +101,12 @@ export default function HomePage() {
     setIsSubmitting(false);
     setSubmitError("");
   };
-
   const handleSubscribe = async (e) => {
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
-
     setIsSubmitting(true);
     setSubmitError("");
-
     const payload = {
       email: normalizedEmail,
       subscribed_at: formatKstDateTime(),
@@ -137,7 +117,6 @@ export default function HomePage() {
       last_report_id: "",
       unsubscribe_token: createUnsubscribeToken(normalizedEmail),
     };
-
     try {
       const body = new URLSearchParams(payload).toString();
       await fetch(SUBSCRIBE_ENDPOINT, {
@@ -156,7 +135,6 @@ export default function HomePage() {
       setIsSubmitting(false);
     }
   };
-
   return (
     <>
       <main className="container">
@@ -171,15 +149,8 @@ export default function HomePage() {
             />
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
-          <nav className="mainNav" aria-label="주요 메뉴">
-            <Link href="/notice">공지</Link>
-            <Link href="/performance">성과/백테스트</Link>
-            <Link href="/ranking">랭킹</Link>
-            <Link href="/risk">리스크</Link>
-            <Link href="/reports">리포트</Link>
-          </nav>
+          <MainNav className="mainNav" />
         </header>
-
         <section className="hero">
           <div className="heroTop">
             <div className="heroMain">
@@ -189,7 +160,6 @@ export default function HomePage() {
                 우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일 오전 9시에 자동 수집하고,
                 AI가 재무 건전성·저평가 여부·시장 유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반 주식 리서치 서비스입니다.
                 PER, PBR, ROE, 부채비율, 시가총액, 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트 형태로 제공합니다.
-                메인 상위 카드는 종합 점수뿐 아니라 안정성 조건을 통과한 후보를 우선 반영합니다.
               </p>
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
@@ -200,14 +170,11 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-
             <aside className="updateBox" aria-label="업데이트 날짜">
               <span className="updateLabel">업데이트</span>
               <strong>{updatedAt}</strong>
               <p className="updateDesc">최근 자동 수집 및 분석 반영일</p>
-              <p className="updateSubDesc">종합 상위 후보 {topEligibleCount}종목</p>
             </aside>
-
             <div className="heroCharacter" aria-hidden="true">
               <div className="heroCharacterGlow" />
               <Image
@@ -220,71 +187,42 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         <section>
           <h2 className="sectionTitle">이번 주 상위 후보</h2>
-          <p className="sectionHelper">
-            종합 점수와 함께 재무 안정성 조건을 통과한 종목을 우선 반영하며, 저평가·상승여력 관점은 랭킹 탭에서 별도로 비교할 수 있습니다.
-          </p>
           <div className="cardWrap">
-            {topStocks.map((stock) => {
-              const eligible = !!stock?.rankMeta?.topRankEligible;
-              const penalty = Number(stock?.rankMeta?.penalty || 0);
-              const flags = stock?.rankMeta?.flags || [];
-
-              return (
-                <div className="card" key={stock.code}>
-                  <div className="candidateRankRow">
-                    <div className={getRankBadgeClass(stock.originalRank)}>
-                      <span className="rankHash">#</span>
-                      <span className="rankNumber">{stock.originalRank}</span>
-                    </div>
-                    <p className="marketBadge">{stock.market}</p>
+            {topStocks.map((stock) => (
+              <div className="card" key={stock.code}>
+                <div className="candidateRankRow">
+                  <div className={getRankBadgeClass(stock.originalRank)}>
+                    <span className="rankHash">#</span>
+                    <span className="rankNumber">{stock.originalRank}</span>
                   </div>
-
-                  <h3>{stock.name}</h3>
-                  <p className="stockCode">종목코드 {stock.code}</p>
-
-                  <div className="candidateMetaBadges">
-                    {eligible ? (
-                      <span className="candidateMetaBadge good">종합 상위 후보</span>
-                    ) : (
-                      <span className="candidateMetaBadge warn">종합 상위 제외</span>
-                    )}
-                    {penalty > 0 ? (
-                      <span className="candidateMetaBadge muted">패널티 {penalty}</span>
-                    ) : null}
-                    {flags.map((flag) => (
-                      <span className="candidateMetaBadge soft" key={flag}>{flag}</span>
-                    ))}
-                  </div>
-
-                  <div className="candidatePriceMeta">
-                    <div className="candidatePriceItem">
-                      <span className="candidatePriceLabel">최근 종가</span>
-                      <strong className="priceLine">{formatPrice(stock.metrics?.closePrice)}</strong>
-                    </div>
-                    <div className="candidatePriceItem">
-                      <span className="candidatePriceLabel">적정가 추정</span>
-                      <strong className="targetLine">{formatPrice(stock.metrics?.targetPrice)}</strong>
-                    </div>
-                  </div>
-
-                  <p className={getUpsideClass(stock.metrics?.upside)}>
-                    상승여력 {formatPercent(stock.metrics?.upside)}
-                  </p>
-                  <p className="scoreLine">총점 {stock.totalScore}점</p>
-                  <p className="summaryText">{stock.summary}</p>
-
-                  <Link className="linkBtn" href={`/stock/${stock.code}`}>
-                    종목 상세 보기
-                  </Link>
+                  <p className="marketBadge">{stock.market}</p>
                 </div>
-              );
-            })}
+                <h3>{stock.name}</h3>
+                <p className="stockCode">종목코드 {stock.code}</p>
+                <div className="candidatePriceMeta">
+                  <div className="candidatePriceItem">
+                    <span className="candidatePriceLabel">최근 종가</span>
+                    <strong className="priceLine">{formatPrice(stock.metrics?.closePrice)}</strong>
+                  </div>
+                  <div className="candidatePriceItem">
+                    <span className="candidatePriceLabel">적정가 추정</span>
+                    <strong className="targetLine">{formatPrice(stock.metrics?.targetPrice)}</strong>
+                  </div>
+                </div>
+                <p className={getUpsideClass(stock.metrics?.upside)}>
+                  상승여력 {formatPercent(stock.metrics?.upside)}
+                </p>
+                <p className="scoreLine">총점 {stock.totalScore}점</p>
+                <p className="summaryText">{stock.summary}</p>
+                <Link className="linkBtn" href={`/stock/${stock.code}`}>
+                  종목 상세 보기
+                </Link>
+              </div>
+            ))}
           </div>
         </section>
-
         <section className="subscribeSection">
           <div className="subscribeCard">
             <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
@@ -308,7 +246,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
@@ -336,7 +273,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
         {latestNotice ? (
           <section className="noticePreviewSection">
             <div className="noticePreviewWrap">
@@ -354,14 +290,12 @@ export default function HomePage() {
           </section>
         ) : null}
       </main>
-
       <footer className="footer">
         <div className="footerInner">
           <p>HELLO MEDIA · All rights reserved.</p>
           <a href="mailto:iamborghini5757@gmail.com">iamborghini5757@gmail.com</a>
         </div>
       </footer>
-
       {isModalOpen && (
         <div className="modalOverlay" onClick={closeModal}>
           <div className="modalCard" onClick={(e) => e.stopPropagation()}>
@@ -416,7 +350,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-
       <style jsx>{`
         .container {
           max-width: 1180px;
@@ -448,19 +381,6 @@ export default function HomePage() {
           font-weight: 800;
           color: #0f172a;
           letter-spacing: -0.02em;
-        }
-        .mainNav {
-          display: flex;
-          gap: 18px;
-          flex-wrap: wrap;
-        }
-        .mainNav a {
-          color: #334155;
-          text-decoration: none;
-          font-weight: 700;
-        }
-        .mainNav a:hover {
-          color: #0f172a;
         }
         .hero {
           position: relative;
@@ -581,13 +501,6 @@ export default function HomePage() {
           font-size: 0.92rem;
           line-height: 1.5;
         }
-        .updateSubDesc {
-          margin: 8px 0 0;
-          color: #334155;
-          font-size: 0.9rem;
-          line-height: 1.5;
-          font-weight: 700;
-        }
         .heroActions,
         .modalActions,
         .subscribeActions {
@@ -639,15 +552,9 @@ export default function HomePage() {
           background: #f8fafc;
         }
         .sectionTitle {
-          margin: 56px 0 10px;
+          margin: 56px 0 22px;
           font-size: 2rem;
           letter-spacing: -0.03em;
-        }
-        .sectionHelper {
-          margin: 0 0 22px;
-          color: #64748b;
-          line-height: 1.8;
-          font-size: 0.98rem;
         }
         .cardWrap {
           display: grid;
@@ -734,37 +641,6 @@ export default function HomePage() {
           margin: 0 0 10px;
           color: #64748b;
           font-weight: 600;
-        }
-        .candidateMetaBadges {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          margin: 0 0 12px;
-        }
-        .candidateMetaBadge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 7px 11px;
-          border-radius: 999px;
-          font-size: 0.78rem;
-          font-weight: 800;
-        }
-        .candidateMetaBadge.good {
-          background: #ecfeff;
-          color: #0891b2;
-        }
-        .candidateMetaBadge.warn {
-          background: #fff7ed;
-          color: #c2410c;
-        }
-        .candidateMetaBadge.muted {
-          background: #f1f5f9;
-          color: #475569;
-        }
-        .candidateMetaBadge.soft {
-          background: #eef2ff;
-          color: #4f46e5;
         }
         .candidatePriceMeta {
           display: grid;
