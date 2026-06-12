@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import stocks from "../data/stocks.json";
+import stocks from "./data/stocks.json";
 
 function formatPrice(value) {
   const num = Number(value);
