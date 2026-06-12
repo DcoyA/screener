@@ -20,12 +20,37 @@ function formatPercent(value) {
 
 function buildSortedStocks(items, tab) {
   const list = [...items];
+
   if (tab === "upside") {
     return list.sort((a, b) => {
       const aUp = Number(a?.metrics?.upside ?? -999999);
       const bUp = Number(b?.metrics?.upside ?? -999999);
-      return bUp - aUp;
+      if (bUp !== aUp) return bUp - aUp;
+
+      const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+      const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+      return bLiquidity - aLiquidity;
     });
+  }
+
+  if (tab === "undervalue") {
+    return list
+      .filter((item) => item?.undervalueMeta?.eligible)
+      .sort((a, b) => {
+        const aValue = Number(a?.valueScore ?? 0);
+        const bValue = Number(b?.valueScore ?? 0);
+        if (bValue !== aValue) return bValue - aValue;
+
+        const aUp = Number(a?.metrics?.upside ?? -999999);
+        const bUp = Number(b?.metrics?.upside ?? -999999);
+        if (bUp !== aUp) return bUp - aUp;
+
+        const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+        const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+        if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+
+        return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+      });
   }
 
   return list.sort((a, b) => {
@@ -68,6 +93,11 @@ export default function RankingPage() {
     []
   );
 
+  const undervalueEligibleCount = useMemo(
+    () => stocks.filter((item) => item?.undervalueMeta?.eligible).length,
+    []
+  );
+
   return (
     <>
       <main className="container">
@@ -87,15 +117,18 @@ export default function RankingPage() {
             <p className="desc">
               종합 랭킹은 저평가 수치만이 아니라 재무 안정성 조건을 함께 반영합니다.
               <br />
-              부채비율, 자본 상태, 이익 안정성 조건을 통과한 종목이 상위에 우선 배치되며,
-              상승여력 탭은 별도 관점으로 확인할 수 있습니다.
+              저평가 랭킹은 PER/PBR 등 가치지표 중심으로 선별하며, 일부 종목은 리스크 플래그와 함께 표시됩니다.
             </p>
           </div>
 
           <div className="heroMeta">
             <div className="metaCard">
-              <span className="metaLabel">종합랭킹 우선 후보</span>
+              <span className="metaLabel">종합 우선 후보</span>
               <strong>{topEligibleCount}종목</strong>
+            </div>
+            <div className="metaCard">
+              <span className="metaLabel">저평가 후보</span>
+              <strong>{undervalueEligibleCount}종목</strong>
             </div>
             <div className="metaCard light">
               <span className="metaLabel">검색</span>
@@ -118,12 +151,12 @@ export default function RankingPage() {
                 <span>종합 점수는 안정성 조건을 통과한 종목을 우선 반영합니다.</span>
               </div>
               <div className="guideItem">
-                <strong>상승여력</strong>
-                <span>적정가 추정 대비 괴리가 큰 종목을 별도 관점으로 보여줍니다.</span>
+                <strong>저평가</strong>
+                <span>가치 점수 중심 탭이며, 고부채·이익불안 플래그를 함께 보여줍니다.</span>
               </div>
               <div className="guideItem">
-                <strong>리스크 플래그</strong>
-                <span>패널티/플래그가 있는 종목은 종합 상위에서 불리할 수 있습니다.</span>
+                <strong>상승여력</strong>
+                <span>적정가 추정 대비 괴리가 큰 종목을 별도 관점으로 보여줍니다.</span>
               </div>
             </div>
           </div>
@@ -140,6 +173,13 @@ export default function RankingPage() {
             </button>
             <button
               type="button"
+              className={`tabBtn ${activeTab === "undervalue" ? "active" : ""}`}
+              onClick={() => setActiveTab("undervalue")}
+            >
+              저평가
+            </button>
+            <button
+              type="button"
               className={`tabBtn ${activeTab === "upside" ? "active" : ""}`}
               onClick={() => setActiveTab("upside")}
             >
@@ -152,11 +192,14 @@ export default function RankingPage() {
           <div className="listGrid">
             {filtered.map((stock, index) => {
               const eligible = !!stock?.rankMeta?.topRankEligible;
-              const flags = stock?.rankMeta?.flags || [];
+              const rankFlags = stock?.rankMeta?.flags || [];
+              const undervalueFlags = stock?.undervalueMeta?.flags || [];
               const penalty = Number(stock?.rankMeta?.penalty || 0);
+              const scoreLabel = activeTab === "undervalue" ? "가치 점수" : "종합 점수";
+              const scoreValue = activeTab === "undervalue" ? stock.valueScore : stock.totalScore;
 
               return (
-                <article className="stockCard" key={`${stock.code}-${activeTab}`}> 
+                <article className="stockCard" key={`${stock.code}-${activeTab}`}>
                   <div className="cardTop">
                     <div className="rankWrap">
                       <span className="rankBadge">#{index + 1}</span>
@@ -166,9 +209,9 @@ export default function RankingPage() {
                       </div>
                     </div>
                     <div className="scoreWrap">
-                      <span className="scoreLabel">종합 점수</span>
-                      <strong>{stock.totalScore}</strong>
-                      {Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
+                      <span className="scoreLabel">{scoreLabel}</span>
+                      <strong>{scoreValue}</strong>
+                      {activeTab === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
                         <span className="rawScore">원점수 {stock.rawTotalScore}</span>
                       ) : null}
                     </div>
@@ -194,17 +237,23 @@ export default function RankingPage() {
                   </div>
 
                   <div className="badgeRow">
-                    {eligible ? (
-                      <span className="smallBadge good">종합 상위 후보</span>
-                    ) : (
-                      <span className="smallBadge warn">종합 상위 제외</span>
-                    )}
+                    {activeTab === "total" ? (
+                      eligible ? (
+                        <span className="smallBadge good">종합 상위 후보</span>
+                      ) : (
+                        <span className="smallBadge warn">종합 상위 제외</span>
+                      )
+                    ) : null}
 
-                    {penalty > 0 ? (
+                    {activeTab === "total" && penalty > 0 ? (
                       <span className="smallBadge muted">패널티 {penalty}</span>
                     ) : null}
 
-                    {flags.map((flag) => (
+                    {activeTab === "total" && rankFlags.map((flag) => (
+                      <span className="smallBadge soft" key={flag}>{flag}</span>
+                    ))}
+
+                    {activeTab === "undervalue" && undervalueFlags.map((flag) => (
                       <span className="smallBadge soft" key={flag}>{flag}</span>
                     ))}
                   </div>
