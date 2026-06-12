@@ -12,7 +12,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "app" / "data"
-
 stocks_path = DATA_DIR / "stocks.json"
 risks_path = DATA_DIR / "risks.json"
 reports_path = DATA_DIR / "reports.json"
@@ -21,23 +20,11 @@ history_path = DATA_DIR / "history.json"
 OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
 KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
 
-
-def normalize_krx_url(url, fallback):
-    candidate = (url or fallback or "").strip()
-    if not candidate:
-        return fallback
-    return candidate.replace("/svc/sample/apis/", "/svc/apis/")
-
-
 DEFAULT_KRX_KOSPI_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_isu_base_info"
 DEFAULT_KRX_KOSDAQ_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_isu_base_info"
 DEFAULT_KRX_KOSPI_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_bydd_trd"
 DEFAULT_KRX_KOSDAQ_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_bydd_trd"
 DEFAULT_KRX_KOSPI_INDEX_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/idx/kospi_dd_trd"
-KRX_KOSPI_INDEX_DAILY_URL = normalize_krx_url(
-    os.getenv("KRX_KOSPI_INDEX_DAILY_URL", ""),
-    DEFAULT_KRX_KOSPI_INDEX_DAILY_URL,
-)
 
 MAX_STOCKS = 500
 REPORT_CODE = "11011"
@@ -51,14 +38,31 @@ today = kst_now.strftime("%Y-%m-%d")
 target_year = str(kst_now.year - 1)
 
 
-KRX_KOSPI_BASIC_URL = normalize_krx_url(os.getenv("KRX_KOSPI_BASIC_URL", ""), DEFAULT_KRX_KOSPI_BASIC_URL)
-KRX_KOSDAQ_BASIC_URL = normalize_krx_url(os.getenv("KRX_KOSDAQ_BASIC_URL", ""), DEFAULT_KRX_KOSDAQ_BASIC_URL)
-KRX_KOSPI_DAILY_URL = normalize_krx_url(os.getenv("KRX_KOSPI_DAILY_URL", ""), DEFAULT_KRX_KOSPI_DAILY_URL)
-KRX_KOSDAQ_DAILY_URL = normalize_krx_url(os.getenv("KRX_KOSDAQ_DAILY_URL", ""), DEFAULT_KRX_KOSDAQ_DAILY_URL)
+def normalize_krx_url(url, fallback):
+    candidate = (url or fallback or "").strip()
+    if not candidate:
+        return fallback
+    return candidate.replace("/svc/sample/apis/", "/svc/apis/")
+
+
+KRX_KOSPI_BASIC_URL = normalize_krx_url(
+    os.getenv("KRX_KOSPI_BASIC_URL", ""), DEFAULT_KRX_KOSPI_BASIC_URL
+)
+KRX_KOSDAQ_BASIC_URL = normalize_krx_url(
+    os.getenv("KRX_KOSDAQ_BASIC_URL", ""), DEFAULT_KRX_KOSDAQ_BASIC_URL
+)
+KRX_KOSPI_DAILY_URL = normalize_krx_url(
+    os.getenv("KRX_KOSPI_DAILY_URL", ""), DEFAULT_KRX_KOSPI_DAILY_URL
+)
+KRX_KOSDAQ_DAILY_URL = normalize_krx_url(
+    os.getenv("KRX_KOSDAQ_DAILY_URL", ""), DEFAULT_KRX_KOSDAQ_DAILY_URL
+)
+KRX_KOSPI_INDEX_DAILY_URL = normalize_krx_url(
+    os.getenv("KRX_KOSPI_INDEX_DAILY_URL", ""), DEFAULT_KRX_KOSPI_INDEX_DAILY_URL
+)
 
 if not OPENDART_API_KEY:
     raise RuntimeError("OPENDART_API_KEY is missing")
-
 if not KRX_API_KEY:
     raise RuntimeError("KRX_API_KEY is missing")
 
@@ -66,6 +70,7 @@ if not KRX_API_KEY:
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
 
 
 def load_json(path, default):
@@ -78,11 +83,13 @@ def load_json(path, default):
             return default
 
 
+
 def http_get_json(base_url, params):
     query = urllib.parse.urlencode(params)
     url = f"{base_url}?{query}"
     with urllib.request.urlopen(url, timeout=60) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
 
 
 def request_json_url(url, headers=None, params=None):
@@ -91,7 +98,6 @@ def request_json_url(url, headers=None, params=None):
         query = urllib.parse.urlencode(params)
         sep = "&" if "?" in url else "?"
         url = f"{url}{sep}{query}"
-
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -103,12 +109,14 @@ def request_json_url(url, headers=None, params=None):
         except Exception:
             payload = {"raw": body}
         payload["http_status"] = e.code
-        raise RuntimeError(f"KRX request failed for {url}: {json.dumps(payload, ensure_ascii=False)}")
-
+        raise RuntimeError(
+            f"KRX request failed for {url}: {json.dumps(payload, ensure_ascii=False)}"
+        )
     try:
         return json.loads(body)
     except Exception:
         raise RuntimeError(f"Invalid JSON response from {url}: {body[:300]}")
+
 
 
 def parse_amount(value):
@@ -125,6 +133,7 @@ def parse_amount(value):
         return 0
 
 
+
 def parse_number(value):
     if value is None:
         return None
@@ -139,74 +148,6 @@ def parse_number(value):
         return None
 
 
-def extract_kospi_benchmark(rows):
-    if not rows:
-        return None
-
-    # 1차: 이름 기반 우선 탐색
-    for row in rows:
-        idx_name = str(
-            pick_field(
-                row,
-                exact_keys=["IDX_NM", "idxNm", "KOR_NM"],
-                contains_keys=["idx_nm", "name", "nm"],
-            )
-            or ""
-        ).strip()
-
-        close_value = parse_number(
-            pick_field(
-                row,
-                exact_keys=[
-                    "CLSPRC_IDX",
-                    "TDD_CLSPRC_IDX",
-                    "IDX_CLSPRC",
-                    "closePrice",
-                ],
-                contains_keys=["clsprc", "close"],
-            )
-        )
-
-        print("Index row check:", idx_name, close_value)
-
-        if close_value is not None and (
-            idx_name.lower() == "kospi"
-            or idx_name == "코스피"
-            or "kospi" in idx_name.lower()
-            or "코스피" in idx_name
-        ):
-            return {
-                "name": idx_name or "KOSPI",
-                "close": round(close_value, 2),
-            }
-
-    # 2차: 첫 번째 row fallback (디버그용)
-    first = rows[0]
-    fallback_name = str(first.get("IDX_NM") or first.get("idxNm") or "KOSPI")
-    fallback_close = parse_number(
-        pick_field(
-            first,
-            exact_keys=[
-                "CLSPRC_IDX",
-                "TDD_CLSPRC_IDX",
-                "IDX_CLSPRC",
-                "closePrice",
-            ],
-            contains_keys=["clsprc", "close"],
-        )
-    )
-
-    print("Fallback first row:", first)
-    print("Fallback parsed close:", fallback_close)
-
-    if fallback_close is not None:
-        return {
-            "name": fallback_name,
-            "close": round(fallback_close, 2),
-        }
-
-    return None
-
 
 def normalize_code(value):
     if value is None:
@@ -217,15 +158,16 @@ def normalize_code(value):
     return digits.zfill(6) if digits else ""
 
 
+
 def fmt_krw(value):
     n = abs(int(value or 0))
     sign = "-" if (value or 0) < 0 else ""
-
     if n >= 1_0000_0000_0000:
         return f"{sign}{n / 1_0000_0000_0000:.1f}조원"
     if n >= 1_0000_0000:
         return f"{sign}{n / 1_0000_0000:.0f}억원"
     return f"{sign}{n:,}원"
+
 
 
 def fmt_ratio(value, digits=1):
@@ -234,10 +176,12 @@ def fmt_ratio(value, digits=1):
     return f"{value:.{digits}f}"
 
 
+
 def pct(a, b):
     if not b:
         return 0.0
     return ((a - b) / abs(b)) * 100
+
 
 
 def safe_div(numerator, denominator):
@@ -246,23 +190,21 @@ def safe_div(numerator, denominator):
     return numerator / denominator
 
 
+
 def pick_field(row, exact_keys=None, contains_keys=None):
     exact_keys = exact_keys or []
     contains_keys = contains_keys or []
-
     lowered = {str(k).lower(): k for k in row.keys()}
-
     for key in exact_keys:
         if key.lower() in lowered:
             return row[lowered[key.lower()]]
-
     for k, v in row.items():
         lk = str(k).lower()
         for ck in contains_keys:
             if ck.lower() in lk:
                 return v
-
     return None
+
 
 
 def download_corp_code_xml():
@@ -270,30 +212,27 @@ def download_corp_code_xml():
     url = f"https://opendart.fss.or.kr/api/corpCode.xml?{query}"
     with urllib.request.urlopen(url, timeout=60) as resp:
         data = resp.read()
-
     with zipfile.ZipFile(io.BytesIO(data)) as zf:
         xml_name = zf.namelist()[0]
         xml_bytes = zf.read(xml_name)
-
     return ET.fromstring(xml_bytes)
+
 
 
 def build_corp_code_map():
     root = download_corp_code_xml()
     mapping = {}
-
     for item in root.findall("list"):
         stock_code = (item.findtext("stock_code") or "").strip()
         corp_code = (item.findtext("corp_code") or "").strip()
         corp_name = (item.findtext("corp_name") or "").strip()
-
         if stock_code:
             mapping[stock_code] = {
                 "corp_code": corp_code,
                 "corp_name": corp_name,
             }
-
     return mapping
+
 
 
 def krx_headers():
@@ -304,6 +243,7 @@ def krx_headers():
     }
 
 
+
 def recent_krx_bas_dd_candidates(days_back=RECENT_DAYS_BACK):
     base_date = (kst_now - timedelta(days=1)).date()
     return [
@@ -312,20 +252,33 @@ def recent_krx_bas_dd_candidates(days_back=RECENT_DAYS_BACK):
     ]
 
 
+
 def fetch_krx_rows(url, bas_dd):
     if not url:
         return [], [f"missing url for basDd={bas_dd}"]
 
     attempts = [
         {"headers": krx_headers(), "params": {"basDd": bas_dd}, "label": "header-auth"},
-        {"headers": {"Accept": "application/json"}, "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd}, "label": "query-auth"},
-        {"headers": krx_headers(), "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd}, "label": "header+query-auth"},
+        {
+            "headers": {"Accept": "application/json"},
+            "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd},
+            "label": "query-auth",
+        },
+        {
+            "headers": krx_headers(),
+            "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd},
+            "label": "header+query-auth",
+        },
     ]
 
     errors = []
     for attempt in attempts:
         try:
-            data = request_json_url(url, headers=attempt["headers"], params=attempt["params"])
+            data = request_json_url(
+                url,
+                headers=attempt["headers"],
+                params=attempt["params"],
+            )
         except RuntimeError as e:
             errors.append(f"{attempt['label']}: {e}")
             continue
@@ -334,19 +287,25 @@ def fetch_krx_rows(url, bas_dd):
             resp_code = str(data.get("respCode", "")).strip()
             resp_msg = str(data.get("respMsg", "")).strip()
             if resp_code and resp_code != "000":
-                errors.append(f"{attempt['label']}: respCode={resp_code}, respMsg={resp_msg}")
+                errors.append(
+                    f"{attempt['label']}: respCode={resp_code}, respMsg={resp_msg}"
+                )
                 continue
-
             rows = data.get("OutBlock_1", [])
             if isinstance(rows, list) and rows:
                 return rows, errors
             if isinstance(rows, list):
-                errors.append(f"{attempt['label']}: OutBlock_1 empty for basDd={bas_dd}")
+                errors.append(
+                    f"{attempt['label']}: OutBlock_1 empty for basDd={bas_dd}"
+                )
                 continue
 
-        errors.append(f"{attempt['label']}: unexpected payload shape for basDd={bas_dd}")
+        errors.append(
+            f"{attempt['label']}: unexpected payload shape for basDd={bas_dd}"
+        )
 
     return [], errors
+
 
 
 def normalize_basic_rows(rows, market_name):
@@ -359,13 +318,11 @@ def normalize_basic_rows(rows, market_name):
                 contains_keys=["srt_cd", "isu_cd", "stock_code", "short_code"],
             )
         )
-
         name = pick_field(
             row,
             exact_keys=["ISU_NM", "isuNm", "ISU_ABBRV", "isuAbbrv", "KOR_NM"],
             contains_keys=["isu_nm", "name", "nm", "abbrv"],
         )
-
         list_shares = parse_amount(
             pick_field(
                 row,
@@ -373,14 +330,11 @@ def normalize_basic_rows(rows, market_name):
                 contains_keys=["list_shrs", "shares"],
             )
         )
-
         if not code or not name:
             continue
-
         nm = str(name).strip()
         if "ETF" in nm or "ETN" in nm or "스팩" in nm:
             continue
-
         result.append(
             {
                 "code": code,
@@ -389,8 +343,8 @@ def normalize_basic_rows(rows, market_name):
                 "listShares": list_shares,
             }
         )
-
     return result
+
 
 
 def normalize_daily_rows(rows):
@@ -403,7 +357,6 @@ def normalize_daily_rows(rows):
                 contains_keys=["srt_cd", "isu_cd", "stock_code", "short_code"],
             )
         )
-
         trade_value = parse_amount(
             pick_field(
                 row,
@@ -411,7 +364,6 @@ def normalize_daily_rows(rows):
                 contains_keys=["trdval", "trade_value", "acc_trd"],
             )
         )
-
         close_price = parse_amount(
             pick_field(
                 row,
@@ -419,7 +371,6 @@ def normalize_daily_rows(rows):
                 contains_keys=["clsprc", "close"],
             )
         )
-
         market_cap = parse_amount(
             pick_field(
                 row,
@@ -427,7 +378,6 @@ def normalize_daily_rows(rows):
                 contains_keys=["mktcap", "market_cap", "mkt_cap"],
             )
         )
-
         list_shares = parse_amount(
             pick_field(
                 row,
@@ -435,26 +385,24 @@ def normalize_daily_rows(rows):
                 contains_keys=["list_shrs", "shares"],
             )
         )
-
         if not code:
             continue
-
         result[code] = {
             "tradeValue": trade_value,
             "closePrice": close_price,
             "marketCap": market_cap,
             "listShares": list_shares,
         }
-
     return result
+
 
 
 def build_krx_universe():
     diagnostics = []
     candidates = recent_krx_bas_dd_candidates()
+
     basic_rows = []
     basic_bas_dd = None
-
     for bas_dd in candidates:
         kospi_basic_rows, kospi_basic_errors = fetch_krx_rows(KRX_KOSPI_BASIC_URL, bas_dd)
         kosdaq_basic_rows, kosdaq_basic_errors = fetch_krx_rows(KRX_KOSDAQ_BASIC_URL, bas_dd)
@@ -466,7 +414,8 @@ def build_krx_universe():
             basic_bas_dd = bas_dd
             break
         diagnostics.append(
-            f"{bas_dd} | KOSPI basic: {' ; '.join(kospi_basic_errors)} | KOSDAQ basic: {' ; '.join(kosdaq_basic_errors)}"
+            f"{bas_dd} | KOSPI basic: {' ; '.join(kospi_basic_errors)} | "
+            f"KOSDAQ basic: {' ; '.join(kosdaq_basic_errors)}"
         )
 
     if not basic_rows:
@@ -483,6 +432,7 @@ def build_krx_universe():
         kosdaq_daily_rows, kosdaq_daily_errors = fetch_krx_rows(KRX_KOSDAQ_DAILY_URL, bas_dd)
         kospi_daily = normalize_daily_rows(kospi_daily_rows)
         kosdaq_daily = normalize_daily_rows(kosdaq_daily_rows)
+
         merged_daily = {}
         merged_daily.update(kospi_daily)
         merged_daily.update(kosdaq_daily)
@@ -492,7 +442,8 @@ def build_krx_universe():
                 break
         else:
             daily_diagnostics.append(
-                f"{bas_dd} | KOSPI daily: {' ; '.join(kospi_daily_errors)} | KOSDAQ daily: {' ; '.join(kosdaq_daily_errors)}"
+                f"{bas_dd} | KOSPI daily: {' ; '.join(kospi_daily_errors)} | "
+                f"KOSDAQ daily: {' ; '.join(kosdaq_daily_errors)}"
             )
 
     latest_daily = daily_snapshots[0]["rows"] if daily_snapshots else {}
@@ -503,9 +454,9 @@ def build_krx_universe():
     for row in basic_rows:
         code = row["code"]
         item = dict(row)
-
         trade_values = []
         latest_metrics = latest_daily.get(code, {})
+
         for snap in daily_snapshots:
             row_daily = snap["rows"].get(code)
             if row_daily:
@@ -517,8 +468,8 @@ def build_krx_universe():
         close_price = int(latest_metrics.get("closePrice", 0))
         price_change = close_price - prev_close
         price_change_rate = (price_change / prev_close * 100) if prev_close else 0
-
         avg_trade_value_5d = int(sum(trade_values) / len(trade_values)) if trade_values else 0
+
         item.update(
             {
                 "tradeValue": int(latest_metrics.get("tradeValue", 0)),
@@ -537,12 +488,19 @@ def build_krx_universe():
         merged[code] = item
 
     result = list(merged.values())
-    result.sort(key=lambda x: (x.get("avgTradeValue5d", 0), x.get("marketCap", 0)), reverse=True)
+    result.sort(
+        key=lambda x: (x.get("avgTradeValue5d", 0), x.get("marketCap", 0)),
+        reverse=True,
+    )
+
     print(f"Using KRX basic basDd={basic_bas_dd}")
     print(f"Using KRX daily basDd window={','.join(used_daily_dates)}")
     if daily_diagnostics:
         print("KRX daily empty-date notes: " + " || ".join(daily_diagnostics[:5]))
+
     return result
+
+
 
 def fetch_major_accounts(corp_code, year):
     data = http_get_json(
@@ -554,7 +512,6 @@ def fetch_major_accounts(corp_code, year):
             "reprt_code": REPORT_CODE,
         },
     )
-
     if data.get("status") == "000":
         return data.get("list", []), year
 
@@ -568,11 +525,11 @@ def fetch_major_accounts(corp_code, year):
             "reprt_code": REPORT_CODE,
         },
     )
-
     if data2.get("status") == "000":
         return data2.get("list", []), fallback_year
 
     return [], fallback_year
+
 
 
 def pick_account(rows, names):
@@ -581,14 +538,13 @@ def pick_account(rows, names):
             name = str(row.get("account_nm", "")).strip()
             if name == target:
                 return row
-
     for target in names:
         for row in rows:
             name = str(row.get("account_nm", "")).strip()
             if target in name:
                 return row
-
     return {}
+
 
 
 def score_per(per):
@@ -607,6 +563,7 @@ def score_per(per):
     return 0
 
 
+
 def score_pbr(pbr):
     if pbr is None or pbr <= 0:
         return 0
@@ -623,6 +580,7 @@ def score_pbr(pbr):
     return 0
 
 
+
 def score_discount_bonus(per, pbr):
     if per is None or pbr is None or per <= 0 or pbr <= 0:
         return 0
@@ -633,6 +591,7 @@ def score_discount_bonus(per, pbr):
     if per <= 15 and pbr <= 1.5:
         return 2
     return 0
+
 
 
 def score_operating_margin(op_margin):
@@ -649,6 +608,7 @@ def score_operating_margin(op_margin):
     return 0
 
 
+
 def score_roe(roe):
     if roe > 20:
         return 10
@@ -663,12 +623,14 @@ def score_roe(roe):
     return 0
 
 
+
 def score_profit_stability(operating_income, net_income):
     if operating_income > 0 and net_income > 0:
         return 5
     if operating_income > 0 or net_income > 0:
         return 2
     return 0
+
 
 
 def score_debt_ratio(debt_ratio):
@@ -685,6 +647,7 @@ def score_debt_ratio(debt_ratio):
     return 0
 
 
+
 def score_earnings_safety(operating_income, net_income):
     if operating_income > 0 and net_income > 0:
         return 10
@@ -693,6 +656,7 @@ def score_earnings_safety(operating_income, net_income):
     if operating_income <= 0 and net_income > 0:
         return 4
     return 0
+
 
 
 def score_market_cap(market_cap):
@@ -709,6 +673,7 @@ def score_market_cap(market_cap):
     return 5
 
 
+
 def score_liquidity(avg_trade_value_5d):
     if avg_trade_value_5d < 10_0000_0000:
         return 0
@@ -719,6 +684,7 @@ def score_liquidity(avg_trade_value_5d):
     if avg_trade_value_5d < 300_0000_0000:
         return 6
     return 8
+
 
 
 def score_revenue_growth(growth):
@@ -733,6 +699,7 @@ def score_revenue_growth(growth):
     return 0
 
 
+
 def score_operating_income_growth(growth):
     if growth > 30:
         return 4
@@ -745,12 +712,97 @@ def score_operating_income_growth(growth):
     return 0
 
 
+
 def score_net_income_growth(growth):
     if growth > 30:
         return 2
     if growth > 0:
         return 1
     return 0
+
+
+
+def apply_rank_gate(total_score, debt_ratio, operating_income, net_income, equity):
+    penalty = 0
+    flags = []
+    top_rank_eligible = True
+
+    if equity <= 0:
+        penalty += 40
+        flags.append("자본잠식 또는 자본 0 이하")
+        top_rank_eligible = False
+
+    if debt_ratio >= 300:
+        penalty += 30
+        flags.append("부채비율 300% 이상")
+        top_rank_eligible = False
+    elif debt_ratio >= 200:
+        penalty += 15
+        flags.append("부채비율 200% 이상")
+        top_rank_eligible = False
+
+    if operating_income <= 0 and net_income <= 0:
+        penalty += 10
+        flags.append("영업이익/순이익 동시 부진")
+    elif operating_income <= 0 or net_income <= 0:
+        penalty += 5
+        flags.append("이익 안정성 약함")
+
+    adjusted_score = max(total_score - penalty, 0)
+    return adjusted_score, penalty, flags, top_rank_eligible
+
+
+
+def extract_kospi_benchmark(rows):
+    if not rows:
+        return None
+
+    for row in rows:
+        idx_name = str(
+            pick_field(
+                row,
+                exact_keys=["IDX_NM", "idxNm", "KOR_NM"],
+                contains_keys=["idx_nm", "name", "nm"],
+            )
+            or ""
+        ).strip()
+
+        close_value = parse_number(
+            pick_field(
+                row,
+                exact_keys=["CLSPRC_IDX", "TDD_CLSPRC_IDX", "IDX_CLSPRC", "closePrice"],
+                contains_keys=["clsprc", "close"],
+            )
+        )
+
+        if close_value is not None and (
+            idx_name.lower() == "kospi"
+            or idx_name == "코스피"
+            or "kospi" in idx_name.lower()
+            or "코스피" in idx_name
+        ):
+            return {
+                "name": idx_name or "KOSPI",
+                "close": round(close_value, 2),
+            }
+
+    first = rows[0]
+    fallback_name = str(first.get("IDX_NM") or first.get("idxNm") or "KOSPI")
+    fallback_close = parse_number(
+        pick_field(
+            first,
+            exact_keys=["CLSPRC_IDX", "TDD_CLSPRC_IDX", "IDX_CLSPRC", "closePrice"],
+            contains_keys=["clsprc", "close"],
+        )
+    )
+    if fallback_close is not None:
+        return {
+            "name": fallback_name,
+            "close": round(fallback_close, 2),
+        }
+
+    return None
+
 
 
 def build_stock_item(item, corp_map):
@@ -800,17 +852,15 @@ def build_stock_item(item, corp_map):
     if market_cap > 0 and net_income > 0:
         per = market_cap / net_income
 
-    target_per = 12  # 우선 고정 기준, 나중에 업종/시장별로 개선 가능
-
+    target_per = 12
     target_price = None
     upside = None
-    
     if per is not None and per > 0 and close_price > 0:
         target_price = int(close_price * (target_per / per))
         upside = (target_price - close_price) / close_price * 100
 
     momentum = round(item.get("priceChangeRate", 0), 2)
-    
+
     pbr = None
     if market_cap > 0 and equity > 0:
         pbr = market_cap / equity
@@ -836,9 +886,20 @@ def build_stock_item(item, corp_map):
     revenue_growth_score = score_revenue_growth(revenue_growth)
     operating_income_growth_score = score_operating_income_growth(operating_income_growth)
     net_income_growth_score = score_net_income_growth(net_income_growth)
-    change_score = revenue_growth_score + operating_income_growth_score + net_income_growth_score
+    change_score = (
+        revenue_growth_score
+        + operating_income_growth_score
+        + net_income_growth_score
+    )
 
-    total_score = value_score + quality_score + safety_score + market_score + change_score
+    raw_total_score = value_score + quality_score + safety_score + market_score + change_score
+    total_score, rank_penalty, rank_flags, top_rank_eligible = apply_rank_gate(
+        raw_total_score,
+        debt_ratio,
+        operating_income,
+        net_income,
+        equity,
+    )
 
     if debt_ratio >= 200 or equity <= 0:
         risk_level = "주의"
@@ -865,7 +926,6 @@ def build_stock_item(item, corp_map):
         f"PER {fmt_ratio(per)}배, PBR {fmt_ratio(pbr)}배, 시총 {fmt_krw(market_cap)}, "
         f"최근 5일 평균 거래대금 {fmt_krw(avg_trade_value_5d)}, 부채비율 {debt_ratio:.1f}%입니다."
     )
-
     description = (
         f"{used_year} 사업보고서와 KRX 시장데이터를 함께 반영했습니다. "
         f"영업이익률은 {operating_margin:.1f}%, ROE는 {roe:.1f}%이며, "
@@ -877,6 +937,7 @@ def build_stock_item(item, corp_map):
         "code": stock_code,
         "name": item["name"],
         "market": item["market"],
+        "rawTotalScore": raw_total_score,
         "totalScore": total_score,
         "valueScore": value_score,
         "qualityScore": quality_score,
@@ -944,12 +1005,19 @@ def build_stock_item(item, corp_map):
             "title": risk_title,
             "checkPoint": check_point,
         },
+        "rankMeta": {
+            "penalty": rank_penalty,
+            "flags": rank_flags,
+            "topRankEligible": top_rank_eligible,
+        },
     }
+
 
 
 def get_week_label(dt):
     week_no = ((dt.day - 1) // 7) + 1
     return f"{dt.year}년 {dt.month}월 {week_no}주차"
+
 
 
 def build_report_highlight(stock):
@@ -961,32 +1029,23 @@ def build_report_highlight(stock):
         f"부채비율 {metrics.get('debtRatio', 0):.1f}%"
     )
 
+
+
 def build_history_entry(stocks):
-    top_picks = stocks[:10]
+    top_rank_stocks = [
+        s for s in stocks if s.get("rankMeta", {}).get("topRankEligible")
+    ]
+    top_picks = (top_rank_stocks or stocks)[:10]
 
-    request_date = kst_now.strftime("%Y%m%d")
-    print("KOSPI index request date:", request_date)
-
-    kospi_rows, kospi_errors = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, request_date)
-    print("KOSPI rows count:", len(kospi_rows))
-    print("KOSPI rows sample:", kospi_rows[:2])
-    print("KOSPI fetch errors:", kospi_errors)
-
+    kospi_rows, _ = fetch_krx_rows(
+        KRX_KOSPI_INDEX_DAILY_URL, kst_now.strftime("%Y%m%d")
+    )
     benchmark = extract_kospi_benchmark(kospi_rows)
-    print("Extracted benchmark:", benchmark)
 
     if benchmark is None:
         for bas_dd in recent_krx_bas_dd_candidates():
-            print("Retry bas_dd:", bas_dd)
-
-            kospi_rows, kospi_errors = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
-            print("Retry rows count:", len(kospi_rows))
-            print("Retry rows sample:", kospi_rows[:2])
-            print("Retry fetch errors:", kospi_errors)
-
+            kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
             benchmark = extract_kospi_benchmark(kospi_rows)
-            print("Retry extracted benchmark:", benchmark)
-
             if benchmark:
                 break
 
@@ -1002,6 +1061,7 @@ def build_history_entry(stocks):
                 "market": stock["market"],
                 "selectedPrice": int(stock.get("metrics", {}).get("closePrice", 0)),
                 "totalScore": stock.get("totalScore", 0),
+                "rawTotalScore": stock.get("rawTotalScore", 0),
                 "targetPrice": stock.get("metrics", {}).get("targetPrice"),
                 "upside": stock.get("metrics", {}).get("upside"),
                 "momentum": stock.get("metrics", {}).get("momentum"),
@@ -1009,6 +1069,7 @@ def build_history_entry(stocks):
             for idx, stock in enumerate(top_picks)
         ],
     }
+
 
 
 def main():
@@ -1022,26 +1083,30 @@ def main():
         and x.get("marketCap", 0) > 0
         and x.get("avgTradeValue5d", 0) > 0
     ]
-    candidates.sort(key=lambda x: (x.get("avgTradeValue5d", 0), x.get("marketCap", 0)), reverse=True)
+    candidates.sort(
+        key=lambda x: (x.get("avgTradeValue5d", 0), x.get("marketCap", 0)),
+        reverse=True,
+    )
 
     stocks = []
     for item in candidates[: max(MAX_STOCKS * 4, 200)]:
         stock = build_stock_item(item, corp_map)
         if not stock:
             continue
-
         if stock["metrics"].get("marketCap", 0) < MIN_MARKET_CAP:
             continue
-
         stocks.append(stock)
         if len(stocks) >= MAX_STOCKS:
             break
 
     if not stocks:
-        raise RuntimeError("No stocks generated. Check KRX approvals, basDd handling, and DART mappings.")
+        raise RuntimeError(
+            "No stocks generated. Check KRX approvals, basDd handling, and DART mappings."
+        )
 
     stocks.sort(
         key=lambda x: (
+            1 if x.get("rankMeta", {}).get("topRankEligible") else 0,
             x["totalScore"],
             x["metrics"].get("avgTradeValue5d", 0),
             x["metrics"].get("marketCap", 0),
@@ -1063,7 +1128,11 @@ def main():
             }
         )
 
-    top_picks = stocks[:10]
+    top_rank_stocks = [
+        s for s in stocks if s.get("rankMeta", {}).get("topRankEligible")
+    ]
+    top_picks = (top_rank_stocks or stocks)[:10]
+
     reports = [
         {
             "week": get_week_label(kst_now),
@@ -1079,15 +1148,13 @@ def main():
 
     existing_history = load_json(history_path, [])
     history_entry = build_history_entry(stocks)
-    
+
     history_without_today = [
-        item for item in existing_history
-        if item.get("snapshotDate") != today
+        item for item in existing_history if item.get("snapshotDate") != today
     ]
-    
     history = [history_entry] + history_without_today
-    history = history[:104]  # 대략 2년치 주간 기록 여유
-    
+    history = history[:104]
+
     save_json(history_path, history)
     save_json(stocks_path, stocks)
     save_json(risks_path, risks)
