@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import history from "../data/history.json";
 import stocks from "../data/stocks.json";
+import MainNav from "../components/MainNav";
 
 function formatPrice(value) {
   const num = Number(value);
@@ -212,12 +213,9 @@ export default function PerformancePage() {
       <main className="container">
         <div className="topLinks">
           <Link href="/" className="homeBtn">홈으로 가기</Link>
-          <div className="subNav">
-            <Link href="/ranking">랭킹</Link>
-            <Link href="/risk">리스크</Link>
-            <Link href="/reports">리포트</Link>
-          </div>
+          <MainNav className="mainNav" />
         </div>
+
 
         <section className="pageHero">
           <div>
