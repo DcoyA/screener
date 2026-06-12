@@ -18,6 +18,13 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(1)}%`;
 }
 
+function debtRatioForUndervalue(item) {
+  const explicit = Number(item?.undervalueMeta?.sortDebtRatio);
+  if (Number.isFinite(explicit)) return explicit;
+  const fallback = Number(item?.metrics?.debtRatio);
+  return Number.isFinite(fallback) ? fallback : 999999;
+}
+
 function buildSortedStocks(items, tab) {
   const list = [...items];
 
@@ -26,6 +33,10 @@ function buildSortedStocks(items, tab) {
       const aUp = Number(a?.metrics?.upside ?? -999999);
       const bUp = Number(b?.metrics?.upside ?? -999999);
       if (bUp !== aUp) return bUp - aUp;
+
+      const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
+      const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
+      if (bEligible !== aEligible) return bEligible - aEligible;
 
       const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
       const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
@@ -40,6 +51,10 @@ function buildSortedStocks(items, tab) {
         const aValue = Number(a?.valueScore ?? 0);
         const bValue = Number(b?.valueScore ?? 0);
         if (bValue !== aValue) return bValue - aValue;
+
+        const aDebt = debtRatioForUndervalue(a);
+        const bDebt = debtRatioForUndervalue(b);
+        if (aDebt !== bDebt) return aDebt - bDebt;
 
         const aUp = Number(a?.metrics?.upside ?? -999999);
         const bUp = Number(b?.metrics?.upside ?? -999999);
@@ -115,9 +130,9 @@ export default function RankingPage() {
             <p className="badge">RANKING</p>
             <h1>종목 랭킹</h1>
             <p className="desc">
-              종합 랭킹은 저평가 수치만이 아니라 재무 안정성 조건을 함께 반영합니다.
+              종합 랭킹은 안정성 조건을 통과한 종목을 우선 반영합니다.
               <br />
-              저평가 랭킹은 PER/PBR 등 가치지표 중심으로 선별하며, 일부 종목은 리스크 플래그와 함께 표시됩니다.
+              저평가 랭킹은 가치지표 중심으로 보되, 부채비율과 이익 안정성을 함께 확인하는 보수적 정렬을 사용합니다.
             </p>
           </div>
 
@@ -152,7 +167,7 @@ export default function RankingPage() {
               </div>
               <div className="guideItem">
                 <strong>저평가</strong>
-                <span>가치 점수 중심 탭이며, 고부채·이익불안 플래그를 함께 보여줍니다.</span>
+                <span>가치 점수 중심 탭이지만, 동점일 때는 부채비율이 낮은 종목을 먼저 보여줍니다.</span>
               </div>
               <div className="guideItem">
                 <strong>상승여력</strong>
@@ -164,27 +179,9 @@ export default function RankingPage() {
 
         <section className="tabSection">
           <div className="tabRow">
-            <button
-              type="button"
-              className={`tabBtn ${activeTab === "total" ? "active" : ""}`}
-              onClick={() => setActiveTab("total")}
-            >
-              종합
-            </button>
-            <button
-              type="button"
-              className={`tabBtn ${activeTab === "undervalue" ? "active" : ""}`}
-              onClick={() => setActiveTab("undervalue")}
-            >
-              저평가
-            </button>
-            <button
-              type="button"
-              className={`tabBtn ${activeTab === "upside" ? "active" : ""}`}
-              onClick={() => setActiveTab("upside")}
-            >
-              상승여력
-            </button>
+            <button type="button" className={`tabBtn ${activeTab === "total" ? "active" : ""}`} onClick={() => setActiveTab("total")}>종합</button>
+            <button type="button" className={`tabBtn ${activeTab === "undervalue" ? "active" : ""}`} onClick={() => setActiveTab("undervalue")}>저평가</button>
+            <button type="button" className={`tabBtn ${activeTab === "upside" ? "active" : ""}`} onClick={() => setActiveTab("upside")}>상승여력</button>
           </div>
         </section>
 
@@ -195,8 +192,8 @@ export default function RankingPage() {
               const rankFlags = stock?.rankMeta?.flags || [];
               const undervalueFlags = stock?.undervalueMeta?.flags || [];
               const penalty = Number(stock?.rankMeta?.penalty || 0);
-              const scoreLabel = activeTab === "undervalue" ? "가치 점수" : "종합 점수";
-              const scoreValue = activeTab === "undervalue" ? stock.valueScore : stock.totalScore;
+              const scoreLabel = activeTab === "undervalue" ? "가치 점수" : activeTab === "upside" ? "상승여력" : "종합 점수";
+              const scoreValue = activeTab === "undervalue" ? stock.valueScore : activeTab === "upside" ? formatPercent(stock?.metrics?.upside) : stock.totalScore;
 
               return (
                 <article className="stockCard" key={`${stock.code}-${activeTab}`}>
@@ -238,32 +235,17 @@ export default function RankingPage() {
 
                   <div className="badgeRow">
                     {activeTab === "total" ? (
-                      eligible ? (
-                        <span className="smallBadge good">종합 상위 후보</span>
-                      ) : (
-                        <span className="smallBadge warn">종합 상위 제외</span>
-                      )
+                      eligible ? <span className="smallBadge good">종합 상위 후보</span> : <span className="smallBadge warn">종합 상위 제외</span>
                     ) : null}
-
-                    {activeTab === "total" && penalty > 0 ? (
-                      <span className="smallBadge muted">패널티 {penalty}</span>
-                    ) : null}
-
-                    {activeTab === "total" && rankFlags.map((flag) => (
-                      <span className="smallBadge soft" key={flag}>{flag}</span>
-                    ))}
-
-                    {activeTab === "undervalue" && undervalueFlags.map((flag) => (
-                      <span className="smallBadge soft" key={flag}>{flag}</span>
-                    ))}
+                    {activeTab === "total" && penalty > 0 ? <span className="smallBadge muted">패널티 {penalty}</span> : null}
+                    {activeTab === "total" && rankFlags.map((flag) => <span className="smallBadge soft" key={flag}>{flag}</span>)}
+                    {activeTab === "undervalue" && undervalueFlags.map((flag) => <span className="smallBadge soft" key={flag}>{flag}</span>)}
                   </div>
 
                   <p className="summary">{stock.summary}</p>
 
                   <div className="linkRow">
-                    <Link href={`/stock/${stock.code}`} className="detailBtn">
-                      상세 보기
-                    </Link>
+                    <Link href={`/stock/${stock.code}`} className="detailBtn">상세 보기</Link>
                   </div>
                 </article>
               );
@@ -323,9 +305,7 @@ export default function RankingPage() {
         .summary { margin:0; color:#475569; line-height:1.8; }
         .linkRow { margin-top:14px; display:flex; justify-content:flex-end; }
         .detailBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#0f172a; color:#fff; font-weight:800; }
-        @media (max-width: 900px) {
-          .guideGrid, .metricRow { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 900px) { .guideGrid, .metricRow { grid-template-columns: 1fr; } }
         @media (max-width: 720px) {
           .container { padding: 24px 18px 64px; }
           .pageHero, .cardTop { flex-direction:column; }
