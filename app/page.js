@@ -925,65 +925,53 @@ export default function HomePage() {
             width: 100%;
           }
         }
-        @media (max-width: 640px) {
-          .container {
-            padding: 24px 18px 64px;
-          }
-        
-          .topBar {
-            align-items: flex-start;
-            margin-bottom: 28px;
-          }
-        
-          .heroTop {
-            gap: 16px;
-          }
-        
-          .heroActions {
-            flex-direction: row;
-            flex-wrap: nowrap;
-            gap: 10px;
-            margin-top: 20px;
-            width: 100%;
-          }
-        
-          .modalActions,
-          .subscribeActions {
-            flex-direction: column;
-          }
-        
-          .heroActions .primaryBtn,
-          .heroActions .secondaryBtn {
-            width: calc(50% - 5px);
-            min-width: 0;
-            padding: 14px 10px;
-            font-size: 0.95rem;
-            white-space: nowrap;
-          }
-        
-          .ghostBtn,
-          .linkBtn {
-            width: 100%;
-          }
-        
-          .quickLinksCard,
-          .subscribeCard,
-          .card,
-          .modalCard,
-          .noticePreviewWrap {
-            padding: 22px;
-          }
-        
-          .candidatePriceMeta {
+        @media (max-width: 900px) {
+          .quickLinksGrid,
+          .cardWrap {
             grid-template-columns: 1fr;
           }
         
-          .summaryText {
-            min-height: auto;
+          .heroTop {
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            min-height: 0;
+            gap: 16px;
           }
         
-          .candidateRankRow {
+          .heroMain {
+            max-width: 100%;
+            flex: none;
+          }
+        
+          .updateBox {
+            width: 100%;
+            text-align: left;
+            min-width: 0;
+          }
+        
+          .heroCharacter {
+            display: block;
+            position: relative;
+            right: auto;
+            bottom: auto;
+            width: min(72vw, 360px);
+            height: min(72vw, 360px);
+            margin: 0 auto;
+            opacity: 0.95;
+          }
+        
+          .hero::before {
+            display: none;
+          }
+        
+          .noticePreviewTopLine {
+            flex-direction: column;
             align-items: flex-start;
+          }
+        
+          .noticePreviewDate {
+            width: 100%;
           }
         }
       `}</style>
