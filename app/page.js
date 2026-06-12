@@ -929,21 +929,43 @@ export default function HomePage() {
           .container {
             padding: 24px 18px 64px;
           }
+        
           .topBar {
             align-items: flex-start;
             margin-bottom: 28px;
           }
-          .heroActions,
+        
+          .heroTop {
+            gap: 16px;
+          }
+        
+          .heroActions {
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+          }
+        
           .modalActions,
           .subscribeActions {
             flex-direction: column;
           }
-          .primaryBtn,
-          .secondaryBtn,
+        
+          .heroActions .primaryBtn,
+          .heroActions .secondaryBtn {
+            width: calc(50% - 5px);
+            min-width: 0;
+            padding: 14px 10px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+          }
+        
           .ghostBtn,
           .linkBtn {
             width: 100%;
           }
+        
           .quickLinksCard,
           .subscribeCard,
           .card,
@@ -951,12 +973,15 @@ export default function HomePage() {
           .noticePreviewWrap {
             padding: 22px;
           }
+        
           .candidatePriceMeta {
             grid-template-columns: 1fr;
           }
+        
           .summaryText {
             min-height: auto;
           }
+        
           .candidateRankRow {
             align-items: flex-start;
           }
