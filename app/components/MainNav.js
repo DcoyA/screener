@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "../config/nav-items";
 
-export default function MainNav({ className = "mainNav" }) {
+export default function MainNav() {
   const pathname = usePathname();
 
   return (
     <>
-      <nav className={className} aria-label="주요 메뉴">
+      <nav className="mainNav" aria-label="주요 메뉴">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href;
 
@@ -39,16 +39,22 @@ export default function MainNav({ className = "mainNav" }) {
           display: flex;
           gap: 18px;
           flex-wrap: wrap;
+          align-items: center;
         }
+
         .navLink {
           color: #334155;
           text-decoration: none;
           font-weight: 700;
           transition: color 0.2s ease;
+          display: inline-flex;
+          align-items: center;
         }
+
         .navLink:hover {
           color: #0f172a;
         }
+
         .navLink.active {
           color: #4f46e5;
           font-weight: 800;
