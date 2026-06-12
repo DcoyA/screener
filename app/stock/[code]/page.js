@@ -219,6 +219,79 @@ const styles = {
     fontSize: "0.92rem",
     lineHeight: 1.7,
   },
+  rankingMetaSection: { marginBottom: "28px" },
+  rankingMetaGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "16px",
+  },
+  rankingMetaCard: {
+    border: "1px solid #e5e7eb",
+    borderRadius: "24px",
+    padding: "22px",
+    background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
+    boxShadow: "0 18px 40px rgba(15, 23, 42, 0.05)",
+  },
+  metaHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+    marginBottom: "14px",
+  },
+  metaTitle: {
+    margin: 0,
+    fontSize: "1.15rem",
+    letterSpacing: "-0.02em",
+  },
+  metaStatsRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "10px",
+    marginBottom: "14px",
+  },
+  metaStat: {
+    border: "1px solid #e5e7eb",
+    borderRadius: "16px",
+    padding: "12px",
+    background: "#ffffff",
+  },
+  metaStatLabel: {
+    display: "block",
+    marginBottom: "8px",
+    color: "#64748b",
+    fontSize: "0.82rem",
+    fontWeight: 700,
+  },
+  metaStatValue: {
+    margin: 0,
+    color: "#0f172a",
+    fontSize: "1rem",
+    fontWeight: 900,
+    letterSpacing: "-0.02em",
+  },
+  metaBadgeRow: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
+    marginBottom: "14px",
+  },
+  metaBadgeBase: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "7px 11px",
+    borderRadius: "999px",
+    fontSize: "0.78rem",
+    fontWeight: 800,
+  },
+  metaDesc: {
+    margin: 0,
+    color: "#475569",
+    lineHeight: 1.8,
+    fontSize: "0.94rem",
+  },
   infoGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -411,6 +484,25 @@ function getUpsideTone(value) {
   return styles.investItemValueMuted;
 }
 
+function getRankingStatus(stock) {
+  if (stock?.rankMeta?.topRankEligible) return "종합 상위 후보";
+  return "종합 상위 제외";
+}
+
+function getBadgeStyle(kind) {
+  const base = styles.metaBadgeBase;
+  const map = {
+    good: { background: "#ecfeff", color: "#0891b2" },
+    warn: { background: "#fff7ed", color: "#c2410c" },
+    soft: { background: "#eef2ff", color: "#4f46e5" },
+    sky: { background: "#e0f2fe", color: "#0284c7" },
+    muted: { background: "#f1f5f9", color: "#475569" },
+    neutral: { background: "#f8fafc", color: "#64748b" },
+    value: { background: "#f1f5f9", color: "#334155" },
+  };
+  return { ...base, ...(map[kind] || map.neutral) };
+}
+
 export default async function StockDetailPage({ params }) {
   const { code } = await params;
   const stock = stocks.find((item) => item.code === code);
@@ -418,6 +510,13 @@ export default async function StockDetailPage({ params }) {
   if (!stock) {
     notFound();
   }
+
+  const rankFlags = stock?.rankMeta?.flags || [];
+  const undervalueFlags = stock?.undervalueMeta?.flags || [];
+  const rankPenalty = Number(stock?.rankMeta?.penalty || 0);
+  const rawTotalScore = stock?.rawTotalScore ?? stock?.totalScore ?? 0;
+  const totalScore = stock?.totalScore ?? 0;
+  const undervalueEligible = !!stock?.undervalueMeta?.eligible;
 
   return (
     <main style={styles.container}>
@@ -446,7 +545,6 @@ export default async function StockDetailPage({ params }) {
               적정가 추정은 현재 재무 및 시장 데이터를 기준으로 계산한 참고 수치입니다.
             </p>
           </div>
-
           <div style={styles.investHero}>
             <span style={styles.investHeroLabel}>적정가 추정</span>
             <strong style={styles.investHeroValue}>{formatPrice(stock.metrics?.targetPrice)}</strong>
@@ -478,12 +576,88 @@ export default async function StockDetailPage({ params }) {
         </p>
       </section>
 
+      <section style={styles.rankingMetaSection}>
+        <div style={styles.rankingMetaGrid}>
+          <div style={styles.rankingMetaCard}>
+            <div style={styles.metaHeader}>
+              <h3 style={styles.metaTitle}>종합랭킹 참고</h3>
+              <span style={getBadgeStyle(stock?.rankMeta?.topRankEligible ? "good" : "warn")}>
+                {getRankingStatus(stock)}
+              </span>
+            </div>
+
+            <div style={styles.metaStatsRow}>
+              <div style={styles.metaStat}>
+                <span style={styles.metaStatLabel}>보정 점수</span>
+                <p style={styles.metaStatValue}>{totalScore}</p>
+              </div>
+              <div style={styles.metaStat}>
+                <span style={styles.metaStatLabel}>원점수</span>
+                <p style={styles.metaStatValue}>{rawTotalScore}</p>
+              </div>
+              <div style={styles.metaStat}>
+                <span style={styles.metaStatLabel}>패널티</span>
+                <p style={styles.metaStatValue}>{rankPenalty}</p>
+              </div>
+            </div>
+
+            <div style={styles.metaBadgeRow}>
+              {rankFlags.length > 0 ? (
+                rankFlags.map((flag) => (
+                  <span key={flag} style={getBadgeStyle("soft")}>
+                    {flag}
+                  </span>
+                ))
+              ) : (
+                <span style={getBadgeStyle("neutral")}>특이 플래그 없음</span>
+              )}
+            </div>
+
+            <p style={styles.metaDesc}>
+              종합랭킹은 저평가 수치만이 아니라 재무 안정성과 이익 상태를 함께 반영합니다.
+              따라서 원점수가 높아도 부채비율·자본 상태·이익 안정성 조건에 따라 실제 종합 반영 점수는 조정될 수 있습니다.
+            </p>
+          </div>
+
+          <div style={styles.rankingMetaCard}>
+            <div style={styles.metaHeader}>
+              <h3 style={styles.metaTitle}>저평가 관점 참고</h3>
+              <span style={getBadgeStyle("value")}>
+                가치 점수 {stock?.valueScore ?? 0}점
+              </span>
+            </div>
+
+            <div style={styles.metaBadgeRow}>
+              {undervalueEligible ? (
+                <span style={getBadgeStyle("sky")}>저평가 후보</span>
+              ) : (
+                <span style={getBadgeStyle("muted")}>저평가 후보 제외</span>
+              )}
+
+              {undervalueFlags.length > 0 ? (
+                undervalueFlags.map((flag) => (
+                  <span key={flag} style={getBadgeStyle("soft")}>
+                    {flag}
+                  </span>
+                ))
+              ) : (
+                <span style={getBadgeStyle("neutral")}>특이 플래그 없음</span>
+              )}
+            </div>
+
+            <p style={styles.metaDesc}>
+              저평가 관점은 PER·PBR 등 가치지표를 중심으로 보는 해석입니다.
+              따라서 종합랭킹에서는 불리한 종목도, 저평가 랭킹에서는 별도 후보로 해석될 수 있습니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <div style={styles.infoGrid}>
         <section style={styles.infoCard}>
           <h2 style={styles.infoH2}>상세 설명</h2>
           <p style={styles.infoP}>{stock.description}</p>
         </section>
-
         <section style={styles.infoCard}>
           <h2 style={styles.infoH2}>리스크 체크</h2>
           <p style={styles.infoP}>{stock.risk}</p>
@@ -499,7 +673,6 @@ export default async function StockDetailPage({ params }) {
               총점은 100점 만점이며, 가치·품질·안정성·시장성·변화 5개 축으로 계산됩니다.
             </p>
           </div>
-
           <div style={styles.totalScoreHero}>
             <span style={styles.totalScoreLabel}>총점</span>
             <strong style={styles.totalScoreStrong}>{stock.totalScore}</strong>
@@ -516,9 +689,7 @@ export default async function StockDetailPage({ params }) {
                   {getCategoryScore(stock, item.key)} / {item.max}
                 </span>
               </div>
-
               <p style={styles.scoreMeaning}>{item.desc}</p>
-
               <div style={styles.scoreBreakdownList}>
                 {item.children.map((child) => (
                   <div style={styles.scoreBreakdownItem} key={child.key}>
