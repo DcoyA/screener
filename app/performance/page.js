@@ -213,7 +213,7 @@ export default function PerformancePage() {
       <main className="container">
         <div className="topLinks">
           <Link href="/" className="homeBtn">홈으로 가기</Link>
-          <MainNav className="mainNav" />
+          <MainNav />
         </div>
 
 
