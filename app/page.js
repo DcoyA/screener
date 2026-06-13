@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import stocks from "./data/stocks.json";
@@ -23,28 +24,33 @@ function formatKstDateTime(date = new Date()) {
   const get = (type) => parts.find((part) => part.type === type)?.value || "00";
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
 }
+
 function createUnsubscribeToken(emailValue) {
   const safeEmail = emailValue.toLowerCase().replace(/[^a-z0-9]/gi, "");
   const randomPart = Math.random().toString(36).slice(2, 10);
   return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
 }
+
 function getRankBadgeClass(rank) {
   if (rank === 1) return "rankBadge rank1";
   if (rank === 2) return "rankBadge rank2";
   if (rank === 3) return "rankBadge rank3";
   return "rankBadge rankDefault";
 }
+
 function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
   return `${num.toLocaleString("ko-KR")}원`;
 }
+
 function formatPercent(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "-";
   const sign = num > 0 ? "+" : "";
   return `${sign}${num.toFixed(1)}%`;
 }
+
 function getUpsideClass(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "upsideLine";
@@ -71,13 +77,26 @@ function sortForTopCandidates(items) {
   });
 }
 
+function buildTopReason(stock) {
+  const reasons = [];
+  if (stock?.rankMeta?.topRankEligible) reasons.push("안정성 조건 통과");
+  if (Number(stock?.totalScore ?? 0) >= 70) reasons.push(`총점 ${stock.totalScore}점`);
+  if (Number.isFinite(Number(stock?.metrics?.upside)) && Number(stock?.metrics?.upside) > 0) {
+    reasons.push(`상승여력 ${formatPercent(stock?.metrics?.upside)}`);
+  }
+  if ((stock?.rankMeta?.flags || []).length) reasons.push(stock.rankMeta.flags[0]);
+  return reasons.length ? reasons.join(" · ") : "현재 종합 점수와 조건을 통과한 후보입니다.";
+}
+
 export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
   const latestNotice = [...notices].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
   const topStocks = useMemo(
     () =>
       sortForTopCandidates(stocks)
@@ -88,12 +107,15 @@ export default function HomePage() {
         })),
     []
   );
+
   const updatedAt = topStocks[0]?.updatedAt || stocks[0]?.updatedAt || "-";
+
   const openModal = () => {
     setIsModalOpen(true);
     setIsSubmitted(false);
     setSubmitError("");
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setEmail("");
@@ -101,12 +123,15 @@ export default function HomePage() {
     setIsSubmitting(false);
     setSubmitError("");
   };
+
   const handleSubscribe = async (e) => {
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
+
     setIsSubmitting(true);
     setSubmitError("");
+
     const payload = {
       email: normalizedEmail,
       subscribed_at: formatKstDateTime(),
@@ -117,6 +142,7 @@ export default function HomePage() {
       last_report_id: "",
       unsubscribe_token: createUnsubscribeToken(normalizedEmail),
     };
+
     try {
       const body = new URLSearchParams(payload).toString();
       await fetch(SUBSCRIBE_ENDPOINT, {
@@ -127,6 +153,7 @@ export default function HomePage() {
         },
         body,
       });
+
       setIsSubmitted(true);
       setEmail("");
     } catch (err) {
@@ -135,6 +162,7 @@ export default function HomePage() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <>
       <main className="container">
@@ -151,16 +179,26 @@ export default function HomePage() {
           </Link>
           <MainNav className="mainNav" />
         </header>
+
         <section className="hero">
           <div className="heroTop">
             <div className="heroMain">
               <p className="badge">OFFICIAL DATA LIVE</p>
               <h1>우량주 스카우터</h1>
               <p className="desc">
-                우량주 스카우터는 OpenDART 전자공시와 KRX 시장 데이터를 매주 월요일 오전 9시에 자동 수집하고,
-                AI가 재무 건전성·저평가 여부·시장 유동성을 함께 분석해 상위 후보 종목을 정리해주는 공식 데이터 기반 주식 리서치 서비스입니다.
-                PER, PBR, ROE, 부채비율, 시가총액, 최근 5영업일 평균 거래대금 등을 종합 반영해 랭킹·리스크·리포트 형태로 제공합니다.
+                무료 페이지에서는 <strong>랭킹 · 리스크 · 상세 해석 · 성과 공개</strong>를 통해
+                현재 추천 논리를 검증할 수 있습니다.
+                <br />
+                프리미엄에서는 여기에 더해 <strong>단기 · 중기 · 장기 시나리오</strong>,
+                <strong> 왜 지금 보는지</strong>, <strong>무엇이 틀리면 철회할지</strong>까지 담은
+                주간 리포트를 제공할 예정입니다.
               </p>
+
+              <div className="heroPointRow">
+                <span className="heroPoint">무료: 검증 가능한 랭킹/리스크/성과</span>
+                <span className="heroPoint">프리미엄: 행동 가능한 시나리오 리포트</span>
+              </div>
+
               <div className="heroActions">
                 <Link className="primaryBtn" href="/ranking">
                   상위 랭킹 보기
@@ -170,11 +208,13 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
+
             <aside className="updateBox" aria-label="업데이트 날짜">
               <span className="updateLabel">업데이트</span>
               <strong>{updatedAt}</strong>
               <p className="updateDesc">최근 자동 수집 및 분석 반영일</p>
             </aside>
+
             <div className="heroCharacter" aria-hidden="true">
               <div className="heroCharacterGlow" />
               <Image
@@ -187,8 +227,15 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
         <section>
-          <h2 className="sectionTitle">이번 주 상위 후보</h2>
+          <div className="sectionHeaderRow">
+            <div>
+              <h2 className="sectionTitle">이번 주 상위 후보</h2>
+              <p className="sectionDesc">무료 영역에서도 왜 상단에 노출됐는지 바로 읽을 수 있게 정리한 후보입니다.</p>
+            </div>
+          </div>
+
           <div className="cardWrap">
             {topStocks.map((stock) => (
               <div className="card" key={stock.code}>
@@ -215,6 +262,10 @@ export default function HomePage() {
                   상승여력 {formatPercent(stock.metrics?.upside)}
                 </p>
                 <p className="scoreLine">총점 {stock.totalScore}점</p>
+                <div className="reasonBox">
+                  <span className="reasonLabel">왜 보였나</span>
+                  <p>{buildTopReason(stock)}</p>
+                </div>
                 <p className="summaryText">{stock.summary}</p>
                 <Link className="linkBtn" href={`/stock/${stock.code}`}>
                   종목 상세 보기
@@ -223,13 +274,54 @@ export default function HomePage() {
             ))}
           </div>
         </section>
+
+        <section className="bridgeSection">
+          <div className="bridgeCard">
+            <div className="bridgeHeader">
+              <div>
+                <p className="bridgeBadge">FREE → PREMIUM</p>
+                <h2>무료에서 검증하고, 프리미엄에서 행동합니다</h2>
+                <p className="bridgeDesc">
+                  무료 페이지는 “왜 추천 / 왜 제외 / 실제 결과”를 검증하는 영역입니다.
+                  프리미엄은 그 위에 <strong>행동 가능한 주간 시나리오</strong>를 얹는 구조로 준비 중입니다.
+                </p>
+              </div>
+            </div>
+
+            <div className="bridgeGrid">
+              <div className="bridgeItem">
+                <span className="bridgeItemLabel">무료에서 보는 것</span>
+                <ul>
+                  <li>종합/저평가 랭킹</li>
+                  <li>리스크 체크 포인트</li>
+                  <li>상세페이지 해석</li>
+                  <li>성과/백테스트 공개</li>
+                </ul>
+              </div>
+              <div className="bridgeItem premium">
+                <span className="bridgeItemLabel">프리미엄에서 추가될 것</span>
+                <ul>
+                  <li>단기 · 중기 · 장기 시나리오</li>
+                  <li>왜 지금 보는지 / 무엇이 틀리면 철회할지</li>
+                  <li>핵심 후보 정리 + 후속 추적</li>
+                  <li>주간 프리미엄 리포트</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="subscribeSection">
           <div className="subscribeCard">
-            <p className="subscribeEyebrow">FREE TRIAL OPEN</p>
-            <h2>메일로 받아보는 상위 5개 종목 상세 리포트</h2>
+            <p className="subscribeEyebrow">PREMIUM MVP WAITLIST</p>
+            <h2>주간 프리미엄 리포트 사전등록</h2>
             <p className="subscribeDesc">
-              주별 상위 5개 종목의 심층분석 핵심 포인트를 이메일로 받아보세요. 매주 화요일 새로운 전략과 목요일 한 주에 대한 복기를 제공합니다. <br />
-              현재 무료 체험 기간으로 운영 중! (네이버 메일은 정상적으로 보이지 않을 수 있습니다. 가급적 구글 메일을 기재해 주세요.)
+              현재는 무료 공개 구간을 먼저 완성하면서, 프리미엄 MVP를 함께 준비하고 있습니다.
+              <br />
+              사전등록하면 <strong>상위 후보 주간 리포트 샘플</strong>과
+              <strong> 프리미엄 베타 오픈 소식</strong>을 먼저 받아볼 수 있습니다.
+              <br />
+              (프리미엄은 확정 수익률 안내가 아니라, 단기/중기/장기 시나리오와 체크 포인트를 제공하는 구조입니다.)
             </p>
             <div className="subscribeActions">
               <a
@@ -241,11 +333,12 @@ export default function HomePage() {
                 샘플 리포트 보기
               </a>
               <button type="button" className="primaryBtn" onClick={openModal}>
-                무료로 신청하기
+                프리미엄 사전등록
               </button>
             </div>
           </div>
         </section>
+
         <section className="quickLinksSection">
           <div className="quickLinksCard">
             <h2>서비스 바로가기</h2>
@@ -255,7 +348,7 @@ export default function HomePage() {
                 <span>사이트 업데이트 안내</span>
               </Link>
               <Link href="/performance" className="quickLinkItem">
-                <strong>📢 성과/백테스트</strong>
+                <strong>📈 성과/백테스트</strong>
                 <span>추천종목 실제 투자결과</span>
               </Link>
               <Link href="/ranking" className="quickLinkItem">
@@ -273,6 +366,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
         {latestNotice ? (
           <section className="noticePreviewSection">
             <div className="noticePreviewWrap">
@@ -290,12 +384,14 @@ export default function HomePage() {
           </section>
         ) : null}
       </main>
+
       <footer className="footer">
         <div className="footerInner">
           <p>HELLO MEDIA · All rights reserved.</p>
           <a href="mailto:iamborghini5757@gmail.com">iamborghini5757@gmail.com</a>
         </div>
       </footer>
+
       {isModalOpen && (
         <div className="modalOverlay" onClick={closeModal}>
           <div className="modalCard" onClick={(e) => e.stopPropagation()}>
@@ -309,10 +405,11 @@ export default function HomePage() {
             </button>
             {!isSubmitted ? (
               <>
-                <p className="modalBadge">무료 체험</p>
-                <h3>상위 5개 종목 리포트 무료 신청</h3>
+                <p className="modalBadge">프리미엄 사전등록</p>
+                <h3>주간 프리미엄 리포트 오픈 알림 신청</h3>
                 <p className="modalDesc">
-                  현재 무료 체험 기간입니다. 이메일 주소를 남겨주시면 주 2회 발송되는 상위 5개 종목 상세 리포트 제공 대상에 우선 등록됩니다.
+                  사전등록하면 무료 샘플 리포트 안내와 프리미엄 MVP 베타 오픈 소식을 먼저 보내드립니다.
+                  프리미엄은 확정 수익이 아니라 단기/중기/장기 시나리오와 체크 포인트를 제공하는 구조로 준비 중입니다.
                 </p>
                 <form className="subscribeForm" onSubmit={handleSubscribe}>
                   <input
@@ -328,7 +425,7 @@ export default function HomePage() {
                       닫기
                     </button>
                     <button type="submit" className="primaryBtn" disabled={isSubmitting}>
-                      {isSubmitting ? "저장 중..." : "구독하기"}
+                      {isSubmitting ? "저장 중..." : "사전등록하기"}
                     </button>
                   </div>
                 </form>
@@ -338,7 +435,7 @@ export default function HomePage() {
                 <p className="modalBadge">신청 완료</p>
                 <h3>접수가 완료되었습니다</h3>
                 <p className="modalDesc">
-                  신청이 접수되었습니다. 무료 체험 오픈 안내 및 리포트 제공 소식을 이메일로 보내드릴게요.
+                  프리미엄 MVP 관련 소식과 샘플 리포트 안내를 이메일로 보내드릴게요.
                 </p>
                 <div className="modalActions singleAction">
                   <button type="button" className="primaryBtn" onClick={closeModal}>
@@ -350,6 +447,7 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
       <style jsx>{`
         .container {
           max-width: 1180px;
@@ -447,7 +545,8 @@ export default function HomePage() {
         }
         .badge,
         .subscribeEyebrow,
-        .modalBadge {
+        .modalBadge,
+        .bridgeBadge {
           display: inline-flex;
           align-items: center;
           padding: 8px 14px;
@@ -471,6 +570,26 @@ export default function HomePage() {
           line-height: 1.9;
           color: #475569;
           margin: 0;
+        }
+        .desc strong,
+        .bridgeDesc strong {
+          color: #0f172a;
+        }
+        .heroPointRow {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-top: 18px;
+        }
+        .heroPoint {
+          display: inline-flex;
+          padding: 8px 12px;
+          border-radius: 999px;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          color: #334155;
+          font-size: 0.86rem;
+          font-weight: 700;
         }
         .updateBox {
           position: relative;
@@ -551,10 +670,23 @@ export default function HomePage() {
         .linkBtn:hover {
           background: #f8fafc;
         }
-        .sectionTitle {
+        .sectionHeaderRow {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 16px;
           margin: 56px 0 22px;
+          flex-wrap: wrap;
+        }
+        .sectionTitle {
+          margin: 0 0 8px;
           font-size: 2rem;
           letter-spacing: -0.03em;
+        }
+        .sectionDesc {
+          margin: 0;
+          color: #64748b;
+          line-height: 1.7;
         }
         .cardWrap {
           display: grid;
@@ -690,6 +822,25 @@ export default function HomePage() {
           color: #64748b;
           font-weight: 600;
         }
+        .reasonBox {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 14px;
+          background: #f8fbff;
+          margin-bottom: 12px;
+        }
+        .reasonLabel {
+          display: block;
+          margin-bottom: 8px;
+          color: #0f172a;
+          font-size: 0.84rem;
+          font-weight: 800;
+        }
+        .reasonBox p {
+          margin: 0;
+          color: #475569;
+          line-height: 1.75;
+        }
         .summaryText {
           min-height: 92px;
           margin: 10px 0 18px;
@@ -697,12 +848,14 @@ export default function HomePage() {
           line-height: 1.75;
           word-break: keep-all;
         }
+        .bridgeSection,
         .subscribeSection {
-          margin-top: 56px;
+          margin-top: 40px;
         }
         .quickLinksSection {
           margin-top: 34px;
         }
+        .bridgeCard,
         .quickLinksCard,
         .subscribeCard {
           border: 1px solid #e5e7eb;
@@ -711,11 +864,47 @@ export default function HomePage() {
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
+        .bridgeCard h2,
         .quickLinksCard h2,
         .subscribeCard h2 {
           margin: 0 0 16px;
           font-size: 1.6rem;
           letter-spacing: -0.03em;
+        }
+        .bridgeDesc,
+        .subscribeDesc,
+        .modalDesc {
+          margin: 0;
+          color: #475569;
+          line-height: 1.8;
+          font-size: 1rem;
+        }
+        .bridgeGrid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          margin-top: 20px;
+        }
+        .bridgeItem {
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          padding: 20px;
+          background: #ffffff;
+        }
+        .bridgeItem.premium {
+          background: #f8fbff;
+        }
+        .bridgeItemLabel {
+          display: block;
+          margin-bottom: 12px;
+          color: #0f172a;
+          font-weight: 900;
+        }
+        .bridgeItem ul {
+          margin: 0;
+          padding-left: 18px;
+          color: #475569;
+          line-height: 1.85;
         }
         .quickLinksGrid {
           display: grid;
@@ -804,13 +993,6 @@ export default function HomePage() {
           font-size: 0.98rem;
           white-space: pre-line;
         }
-        .subscribeDesc,
-        .modalDesc {
-          margin: 0;
-          color: #475569;
-          line-height: 1.8;
-          font-size: 1rem;
-        }
         .footer {
           border-top: 1px solid #e5e7eb;
           background: #ffffff;
@@ -897,22 +1079,35 @@ export default function HomePage() {
         }
         @media (max-width: 900px) {
           .quickLinksGrid,
-          .cardWrap {
+          .cardWrap,
+          .bridgeGrid {
             grid-template-columns: 1fr;
           }
           .heroTop {
             flex-direction: column;
-            min-height: unset;
+            justify-content: flex-start;
+            align-items: stretch;
+            min-height: 0;
+            gap: 16px;
           }
           .heroMain {
             max-width: 100%;
+            flex: none;
           }
           .updateBox {
             width: 100%;
             text-align: left;
+            min-width: 0;
           }
           .heroCharacter {
-            display: none;
+            display: block;
+            position: relative;
+            right: auto;
+            bottom: auto;
+            width: min(72vw, 360px);
+            height: min(72vw, 360px);
+            margin: 0 auto;
+            opacity: 0.95;
           }
           .hero::before {
             display: none;
@@ -925,53 +1120,75 @@ export default function HomePage() {
             width: 100%;
           }
         }
-        @media (max-width: 900px) {
-          .quickLinksGrid,
-          .cardWrap {
-            grid-template-columns: 1fr;
+        @media (max-width: 640px) {
+          .container {
+            padding: 24px 18px 64px;
           }
-        
+          .topBar {
+            align-items: flex-start;
+            margin-bottom: 28px;
+          }
+          .hero {
+            padding: 12px 0 8px;
+          }
           .heroTop {
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: stretch;
-            min-height: 0;
-            gap: 16px;
+            gap: 12px;
           }
-        
           .heroMain {
-            max-width: 100%;
             flex: none;
           }
-        
-          .updateBox {
-            width: 100%;
-            text-align: left;
-            min-width: 0;
-          }
-        
           .heroCharacter {
-            display: block;
-            position: relative;
-            right: auto;
-            bottom: auto;
-            width: min(72vw, 360px);
-            height: min(72vw, 360px);
-            margin: 0 auto;
-            opacity: 0.95;
+            width: min(78vw, 320px);
+            height: min(78vw, 320px);
+            margin-top: 4px;
           }
-        
-          .hero::before {
+          .heroCharacterGlow {
             display: none;
           }
-        
-          .noticePreviewTopLine {
-            flex-direction: column;
-            align-items: flex-start;
+          .desc {
+            font-size: 1rem;
+            line-height: 1.8;
           }
-        
-          .noticePreviewDate {
+          .heroActions {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 10px;
+            margin-top: 20px;
             width: 100%;
+          }
+          .modalActions,
+          .subscribeActions {
+            flex-direction: column;
+          }
+          .heroActions .primaryBtn,
+          .heroActions .secondaryBtn {
+            width: calc(50% - 5px);
+            min-width: 0;
+            padding: 14px 10px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+          }
+          .ghostBtn,
+          .linkBtn {
+            width: 100%;
+          }
+          .bridgeCard,
+          .quickLinksCard,
+          .subscribeCard,
+          .card,
+          .modalCard,
+          .noticePreviewWrap {
+            padding: 22px;
+          }
+          .candidatePriceMeta {
+            grid-template-columns: 1fr;
+          }
+          .summaryText {
+            min-height: auto;
+          }
+          .candidateRankRow {
+            align-items: flex-start;
           }
         }
       `}</style>
