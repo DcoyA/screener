@@ -41,7 +41,9 @@ function buildSortedStocks(items, tab) {
 
       const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
       const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
-      return bLiquidity - aLiquidity;
+      if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+
+      return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
     });
   }
 
@@ -86,6 +88,62 @@ function buildSortedStocks(items, tab) {
   });
 }
 
+function buildOneLineReason(stock, activeTab) {
+  const parts = [];
+  const valueScore = Number(stock?.valueScore ?? 0);
+  const totalScore = Number(stock?.totalScore ?? 0);
+  const upside = Number(stock?.metrics?.upside);
+  const debtRatio = Number(stock?.metrics?.debtRatio);
+  const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
+  const rankFlags = stock?.rankMeta?.flags || [];
+  const undervalueFlags = stock?.undervalueMeta?.flags || [];
+
+  if (activeTab === "total") {
+    if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
+    if (totalScore >= 70) parts.push(`총점 ${totalScore}점`);
+    if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (rankPenalty > 0) parts.push(`패널티 ${rankPenalty}`);
+    if (rankFlags.length) parts.push(rankFlags[0]);
+  } else if (activeTab === "undervalue") {
+    if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
+    if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
+    if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (undervalueFlags.length) parts.push(undervalueFlags[0]);
+  } else {
+    if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (stock?.rankMeta?.topRankEligible) parts.push("종합 조건 통과");
+    if (rankFlags.length) parts.push(rankFlags[0]);
+  }
+
+  if (!parts.length) return "현재 수치 조합을 기준으로 상대 비교된 결과입니다.";
+  return parts.join(" · ");
+}
+
+function buildWarningLine(stock, activeTab) {
+  const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
+  const rankFlags = stock?.rankMeta?.flags || [];
+  const undervalueFlags = stock?.undervalueMeta?.flags || [];
+  const debtRatio = Number(stock?.metrics?.debtRatio);
+  const upside = Number(stock?.metrics?.upside);
+
+  if (activeTab === "total") {
+    if (rankPenalty > 0) return `종합 해석에는 패널티 ${rankPenalty}점이 반영됩니다.`;
+    if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
+    return "실적·재무·수급 변화에 따라 종합 조건 통과 여부가 바뀔 수 있습니다.";
+  }
+
+  if (activeTab === "undervalue") {
+    if (undervalueFlags.length) return `주의 포인트: ${undervalueFlags[0]}`;
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
+    return "가치 점수가 높아도 재무 안정성 해석은 별도로 확인해야 합니다.";
+  }
+
+  if (Number.isFinite(upside) && upside <= 0) return "현재 적정가 추정 기준 즉각적인 상승여력은 크지 않을 수 있습니다.";
+  if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
+  return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
+}
+
 export default function RankingPage() {
   const [activeTab, setActiveTab] = useState("total");
   const [query, setQuery] = useState("");
@@ -100,7 +158,6 @@ export default function RankingPage() {
           );
         })
       : stocks;
-
     return buildSortedStocks(base, activeTab);
   }, [activeTab, query]);
 
@@ -162,7 +219,7 @@ export default function RankingPage() {
             <div className="guideGrid">
               <div className="guideItem">
                 <strong>종합</strong>
-                <span>종합 점수는 안정성 조건을 통과한 종목을 우선 반영합니다.</span>
+                <span>총점이 높더라도 재무 안정성 조건을 통과하지 못하면 상단 노출이 제한될 수 있습니다.</span>
               </div>
               <div className="guideItem">
                 <strong>저평가</strong>
@@ -170,7 +227,7 @@ export default function RankingPage() {
               </div>
               <div className="guideItem">
                 <strong>상승여력</strong>
-                <span>적정가 추정 대비 괴리가 큰 종목을 별도 관점으로 보여줍니다.</span>
+                <span>적정가 추정 대비 괴리가 큰 종목을 별도 관점으로 보여주며, 실제 실현은 별도 확인이 필요합니다.</span>
               </div>
             </div>
           </div>
@@ -191,8 +248,18 @@ export default function RankingPage() {
               const rankFlags = stock?.rankMeta?.flags || [];
               const undervalueFlags = stock?.undervalueMeta?.flags || [];
               const penalty = Number(stock?.rankMeta?.penalty || 0);
-              const scoreLabel = activeTab === "undervalue" ? "가치 점수" : activeTab === "upside" ? "상승여력" : "종합 점수";
-              const scoreValue = activeTab === "undervalue" ? stock.valueScore : activeTab === "upside" ? formatPercent(stock?.metrics?.upside) : stock.totalScore;
+              const scoreLabel =
+                activeTab === "undervalue"
+                  ? "가치 점수"
+                  : activeTab === "upside"
+                    ? "상승여력"
+                    : "종합 점수";
+              const scoreValue =
+                activeTab === "undervalue"
+                  ? stock.valueScore
+                  : activeTab === "upside"
+                    ? formatPercent(stock?.metrics?.upside)
+                    : stock.totalScore;
 
               return (
                 <article className="stockCard" key={`${stock.code}-${activeTab}`}>
@@ -236,9 +303,20 @@ export default function RankingPage() {
                     {activeTab === "total" ? (
                       eligible ? <span className="smallBadge good">종합 상위 후보</span> : <span className="smallBadge warn">종합 상위 제외</span>
                     ) : null}
+                    {activeTab === "undervalue" && stock?.undervalueMeta?.eligible ? <span className="smallBadge info">저평가 후보</span> : null}
                     {activeTab === "total" && penalty > 0 ? <span className="smallBadge muted">패널티 {penalty}</span> : null}
                     {activeTab === "total" && rankFlags.map((flag) => <span className="smallBadge soft" key={flag}>{flag}</span>)}
                     {activeTab === "undervalue" && undervalueFlags.map((flag) => <span className="smallBadge soft" key={flag}>{flag}</span>)}
+                  </div>
+
+                  <div className="reasonCard goodCard">
+                    <span className="reasonLabel">왜 올라왔나</span>
+                    <p>{buildOneLineReason(stock, activeTab)}</p>
+                  </div>
+
+                  <div className="reasonCard warnCard">
+                    <span className="reasonLabel">무엇을 조심해야 하나</span>
+                    <p>{buildWarningLine(stock, activeTab)}</p>
                   </div>
 
                   <p className="summary">{stock.summary}</p>
@@ -302,6 +380,12 @@ export default function RankingPage() {
         .smallBadge.warn { background:#fff7ed; color:#c2410c; }
         .smallBadge.muted { background:#f1f5f9; color:#475569; }
         .smallBadge.soft { background:#eef2ff; color:#4f46e5; }
+        .smallBadge.info { background:#e0f2fe; color:#0284c7; }
+        .reasonCard { border:1px solid #e5e7eb; border-radius:16px; padding:14px; margin-bottom:12px; }
+        .goodCard { background:#f8fbff; }
+        .warnCard { background:#fffdfa; }
+        .reasonLabel { display:block; margin-bottom:8px; color:#0f172a; font-size:.84rem; font-weight:800; }
+        .reasonCard p { margin:0; color:#475569; line-height:1.75; }
         .summary { margin:0; color:#475569; line-height:1.8; }
         .linkRow { margin-top:14px; display:flex; justify-content:flex-end; }
         .detailBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#0f172a; color:#fff; font-weight:800; }
