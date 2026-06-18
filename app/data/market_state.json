@@ -1,28 +1,113 @@
 {
+  "generatedAt": "2026-06-18T05:43:38Z",
+  "source": {
+    "stocks": "app/data/stocks.json",
+    "sectorMap": null,
+    "override": null
+  },
   "header": {
     "title": "대안 투자",
-    "summary": "현재 시장 상태 요약이 아직 생성되지 않았습니다.",
+    "summary": "현재는 확신형 장세보다 확인형 장세에 가깝고, 개별주 / ETF 관점으로 보는 편이 무난합니다.",
     "marketTone": "중립"
   },
   "signals": {
-    "eligibleRatio": 0,
-    "avgTotalScore": 0,
-    "avgUpside": 0,
-    "avgLiquidity5d": 0,
-    "momentumSupportRatio": 0,
-    "riskConcentration": 0
+    "count": 500,
+    "eligibleRatio": 0.882,
+    "avgTotalScore": 76.55,
+    "avgUpside": 117.06,
+    "avgLiquidity5d": 18939938398.9,
+    "riskConcentration": 0.0,
+    "momentumSupportRatio": 0.0,
+    "reboundRatio": 0,
+    "liquidityBurstRatio": 0,
+    "investorPositiveRatio": 0,
+    "sectorSpread": 0,
+    "strongSectorCounts": {
+      "미분류": 20
+    },
+    "topPoolCodes": [
+      "000240",
+      "041510",
+      "192080",
+      "001800",
+      "036830",
+      "111770",
+      "006730",
+      "067160",
+      "002380",
+      "081660"
+    ]
   },
-  "preferredModes": [],
-  "avoidModes": [],
-  "approachCards": [],
+  "modeScores": {
+    "stock_pick": 51.01,
+    "etf": 38.8,
+    "dividend_defensive": 34.0,
+    "high_risk": 14.4
+  },
+  "preferredModes": [
+    "개별주",
+    "ETF"
+  ],
+  "avoidModes": [
+    "배당/방어",
+    "고위험"
+  ],
+  "approachCards": [
+    {
+      "key": "stock_pick",
+      "label": "개별주",
+      "score": 51.01,
+      "status": "유리",
+      "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
+    },
+    {
+      "key": "etf",
+      "label": "ETF",
+      "score": 38.8,
+      "status": "유리",
+      "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
+    },
+    {
+      "key": "dividend_defensive",
+      "label": "배당/방어",
+      "score": 34.0,
+      "status": "보수",
+      "description": "공격보다 방어와 안정에 무게를 두는 접근"
+    },
+    {
+      "key": "high_risk",
+      "label": "고위험",
+      "score": 14.4,
+      "status": "보수",
+      "description": "레버리지·고변동 상품처럼 짧고 강한 방향 베팅에 가까운 접근"
+    }
+  ],
   "topSectors": {
     "strong": [],
     "weak": []
   },
-  "strategyNotes": [],
+  "strategyNotes": [
+    "오늘은 개별주 / ETF 관점 우선으로 보는 편이 유리합니다.",
+    "최근 단기 모멘텀 지지 종목 비중이 낮아 추격형 접근은 보수적으로 보는 편이 좋습니다.",
+    "오늘은 배당/방어 접근은 상대적으로 보수적으로 보는 편이 좋습니다."
+  ],
   "today": {
-    "todayStock": null,
-    "todayAlternative": null
+    "todayStock": {
+      "code": "375500",
+      "name": "DL이앤씨보통주",
+      "market": "KOSPI",
+      "sector": "미분류",
+      "totalScore": 74.0,
+      "upside": 35.1,
+      "avgTradeValue5d": 89266575800.0,
+      "summary": "PER 8.9배, PBR 0.6배, 시총 3.3조원, 최근 5일 평균 거래대금 893억원, 부채비율 84.4%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 74점 · 상승여력 35.1%"
+    },
+    "todayAlternative": {
+      "mode": "etf",
+      "label": "ETF",
+      "reason": "개별주보다 업종/지수 분산 접근이 더 나은 구간으로 해석됩니다."
+    }
   },
-  "disclaimer": "본 결과는 참고용입니다."
+  "disclaimer": "본 결과는 규칙 기반 시장 상태 판정이며, 확정 수익이나 특정 매매를 보장하지 않습니다."
 }
