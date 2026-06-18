@@ -7,30 +7,71 @@
 역할:
 1) stocks.json을 읽어 현재 시장 상태를 규칙 기반으로 판정
 2) 개별주 / ETF / 배당·방어 / 고위험 접근 중 무엇이 유리한지 점수화
-3) 대안 투자 페이지에서 바로 쓸 수 있는 market_state.json 생성
+3) ETF 추천까지 포함한 market_state.json 생성
 
 입력 파일(기본값)
 - stocks.json
 - sectorMap.json (선택)
 - market_context_override.json (선택)
+- app/data/etf_universe.json (선택, 없으면 내장 ETF 후보 사용)
 
 출력 파일
 - market_state.json
-
-실행 예시
-python generate_market_state.py
-python generate_market_state.py --stocks data/stocks.json --output data/market_state.json
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from statistics import mean
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
+
+
+DEFAULT_ETF_UNIVERSE = [
+    {
+        "code": "091160",
+        "name": "KODEX 반도체",
+        "type": "sector",
+        "sector": "반도체",
+        "desc": "국내 반도체 대표 기업 묶음",
+        "behavior": "업종 상승 초기에 강하게 반응",
+    },
+    {
+        "code": "069500",
+        "name": "KODEX 200",
+        "type": "index",
+        "sector": "지수",
+        "desc": "코스피 대표 200 종목 추종",
+        "behavior": "시장 방향성 추종에 적합",
+    },
+    {
+        "code": "102110",
+        "name": "TIGER 200",
+        "type": "index",
+        "sector": "지수",
+        "desc": "코스피 200 지수 추종",
+        "behavior": "개별주보다 분산형 대응에 유리",
+    },
+    {
+        "code": "148020",
+        "name": "TIGER 배당성장",
+        "type": "dividend",
+        "sector": "배당",
+        "desc": "배당 + 성장 혼합형 ETF",
+        "behavior": "하락장 방어 구간에서 상대적으로 안정적",
+    },
+    {
+        "code": "233740",
+        "name": "KODEX 코스닥150",
+        "type": "index",
+        "sector": "성장",
+        "desc": "코스닥 성장주 중심 지수 추종",
+        "behavior": "강한 상승장에 탄력적이지만 변동성 큼",
+    },
+]
 
 
 # -----------------------------
@@ -46,7 +87,6 @@ def load_json(path: Path, default=None):
         return json.load(f)
 
 
-
 def to_float(value: Any, default: float = 0.0) -> float:
     try:
         if value in (None, "", "-"):
@@ -56,10 +96,8 @@ def to_float(value: Any, default: float = 0.0) -> float:
         return default
 
 
-
 def clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
-
 
 
 def avg(values: List[float], default: float = 0.0) -> float:
@@ -67,10 +105,17 @@ def avg(values: List[float], default: float = 0.0) -> float:
     return mean(valid) if valid else default
 
 
-
 def now_kst_iso() -> str:
-    # 별도 tz 패키지 없이 문자열만 기록
     return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def humanize_mode(mode_key: str) -> str:
+    return {
+        "stock_pick": "개별주",
+        "etf": "ETF",
+        "dividend_defensive": "배당/방어",
+        "high_risk": "고위험",
+    }.get(mode_key, mode_key)
 
 
 # -----------------------------
@@ -87,10 +132,8 @@ def get_metric(stock: Dict[str, Any], *keys: str, default: float = 0.0) -> float
     return to_float(cur, default)
 
 
-
 def get_sector(stock: Dict[str, Any], sector_map: Dict[str, str]) -> str:
     code = str(stock.get("code", ""))
-    # stocks.json 안에 sector가 있으면 우선 사용
     sector = stock.get("sector") or stock.get("industry") or sector_map.get(code)
     return str(sector).strip() if sector else "미분류"
 
@@ -110,33 +153,45 @@ def enrich_stock(stock: Dict[str, Any], sector_map: Dict[str, str]) -> Dict[str,
     upside = get_metric(stock, "metrics", "upside", default=0.0)
     debt_ratio = get_metric(stock, "metrics", "debtRatio", default=0.0)
 
-    # 추가로 반영하고 싶은 단기 지표(있으면 사용, 없으면 0)
     ret_5d = (
         get_metric(stock, "metrics", "return5d", default=float("nan"))
-        if any(k in stock.get("metrics", {}) for k in ["return5d", "ret5d", "priceReturn5d"])
+        if isinstance(stock.get("metrics"), dict)
         else to_float(stock.get("return5d"), float("nan"))
     )
+    if ret_5d != ret_5d:
+        ret_5d = to_float(stock.get("return5d"), float("nan"))
+
     ret_20d = (
         get_metric(stock, "metrics", "return20d", default=float("nan"))
-        if any(k in stock.get("metrics", {}) for k in ["return20d", "ret20d", "priceReturn20d"])
+        if isinstance(stock.get("metrics"), dict)
         else to_float(stock.get("return20d"), float("nan"))
     )
+    if ret_20d != ret_20d:
+        ret_20d = to_float(stock.get("return20d"), float("nan"))
+
     trade_value_ratio = (
         get_metric(stock, "metrics", "tradeValueVs5d", default=float("nan"))
-        if any(k in stock.get("metrics", {}) for k in ["tradeValueVs5d", "turnoverBurst", "tradeValueRatio"])
+        if isinstance(stock.get("metrics"), dict)
         else to_float(stock.get("tradeValueVs5d"), float("nan"))
     )
+    if trade_value_ratio != trade_value_ratio:
+        trade_value_ratio = to_float(stock.get("tradeValueVs5d"), float("nan"))
 
     foreign_net = (
         get_metric(stock, "metrics", "foreignNetBuy", default=float("nan"))
-        if any(k in stock.get("metrics", {}) for k in ["foreignNetBuy", "foreignNetBuy5d", "foreignNet"])
+        if isinstance(stock.get("metrics"), dict)
         else to_float(stock.get("foreignNetBuy"), float("nan"))
     )
+    if foreign_net != foreign_net:
+        foreign_net = to_float(stock.get("foreignNetBuy"), float("nan"))
+
     inst_net = (
         get_metric(stock, "metrics", "institutionNetBuy", default=float("nan"))
-        if any(k in stock.get("metrics", {}) for k in ["institutionNetBuy", "institutionNetBuy5d", "institutionNet"])
+        if isinstance(stock.get("metrics"), dict)
         else to_float(stock.get("institutionNetBuy"), float("nan"))
     )
+    if inst_net != inst_net:
+        inst_net = to_float(stock.get("institutionNetBuy"), float("nan"))
 
     rank_meta = stock.get("rankMeta") or {}
     undervalue_meta = stock.get("undervalueMeta") or {}
@@ -146,12 +201,10 @@ def enrich_stock(stock: Dict[str, Any], sector_map: Dict[str, str]) -> Dict[str,
     top_rank_eligible = bool(rank_meta.get("topRankEligible"))
     undervalue_eligible = bool(undervalue_meta.get("eligible"))
 
-    # 반등 신호: 20일은 약했는데 최근 5일은 좋아지는 경우
     rebound_signal = False
-    if ret_5d == ret_5d and ret_20d == ret_20d:  # nan check
+    if ret_5d == ret_5d and ret_20d == ret_20d:
         rebound_signal = (ret_20d < 0) and (ret_5d > 0)
 
-    # 거래/수급 기반 단기 확인 신호
     liquidity_burst = False
     if trade_value_ratio == trade_value_ratio:
         liquidity_burst = trade_value_ratio >= 1.3
@@ -162,7 +215,6 @@ def enrich_stock(stock: Dict[str, Any], sector_map: Dict[str, str]) -> Dict[str,
             inst_net if inst_net == inst_net else 0.0
         ) > 0
 
-    # 위험 플래그 강도
     risk_flag_count = len(rank_flags) + len(undervalue_flags)
     risk_score = penalty + risk_flag_count * 2
     if debt_ratio >= 200:
@@ -170,7 +222,7 @@ def enrich_stock(stock: Dict[str, Any], sector_map: Dict[str, str]) -> Dict[str,
     elif debt_ratio >= 120:
         risk_score += 2
 
-    enriched = {
+    return {
         "code": str(stock.get("code", "")),
         "name": stock.get("name", ""),
         "market": stock.get("market", ""),
@@ -200,7 +252,6 @@ def enrich_stock(stock: Dict[str, Any], sector_map: Dict[str, str]) -> Dict[str,
         "investorsTurnPositive": investors_turn_positive,
         "riskScore": risk_score,
     }
-    return enriched
 
 
 # -----------------------------
@@ -226,7 +277,11 @@ def build_feature_summary(stocks: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     total_count = len(stocks)
     eligible = [s for s in stocks if s["topRankEligible"]]
-    top_pool = sorted(stocks, key=lambda x: (x["topRankEligible"], x["totalScore"], x["avgTradeValue5d"]), reverse=True)[:20]
+    top_pool = sorted(
+        stocks,
+        key=lambda x: (x["topRankEligible"], x["totalScore"], x["avgTradeValue5d"]),
+        reverse=True,
+    )[:20]
 
     elig_ratio = len(eligible) / total_count if total_count else 0.0
     avg_total = avg([s["totalScore"] for s in top_pool], 0.0)
@@ -234,7 +289,6 @@ def build_feature_summary(stocks: List[Dict[str, Any]]) -> Dict[str, Any]:
     avg_liquidity = avg([s["avgTradeValue5d"] for s in top_pool], 0.0)
 
     risk_values = [s["riskScore"] for s in top_pool]
-    # 위험 집중도: 높은 위험 점수 종목 비중
     risk_concentration = sum(1 for r in risk_values if r >= 6) / len(risk_values) if risk_values else 1.0
 
     momentum_support = []
@@ -274,15 +328,7 @@ def build_feature_summary(stocks: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-
 def score_modes(summary: Dict[str, Any]) -> Dict[str, float]:
-    """
-    mode 점수는 0~100 사이로 산출
-    - stock_pick: 개별주 관찰/실행에 우호적
-    - etf: 분산/업종/지수 접근이 더 우호적
-    - dividend_defensive: 방어/배당 접근 우호적
-    - high_risk: 고위험 추세 추종 접근(주의 중심)
-    """
     elig = summary["eligibleRatio"]
     avg_total = summary["avgTotalScore"]
     avg_upside = summary["avgUpside"]
@@ -293,7 +339,6 @@ def score_modes(summary: Dict[str, Any]) -> Dict[str, float]:
     investor = summary["investorPositiveRatio"]
     sector_spread = summary["sectorSpread"]
 
-    # 개별주: 상위 후보가 많고, 상승여력/유동성/모멘텀이 받쳐주며, 위험 과집중이 낮을수록 유리
     stock_pick = 0.0
     stock_pick += elig * 28
     stock_pick += clamp((avg_total - 60) / 25, 0, 1) * 18
@@ -305,7 +350,6 @@ def score_modes(summary: Dict[str, Any]) -> Dict[str, float]:
     stock_pick += clamp(sector_spread / 6, 0, 1) * 6
     stock_pick -= risk * 12
 
-    # ETF: 후보는 있으나 방향성은 있고, 종목 분산/섹터 분산이 넓고, 개별주 확신이 부족할수록 유리
     etf = 0.0
     etf += clamp(sector_spread / 6, 0, 1.2) * 22
     etf += clamp((0.75 - elig) / 0.75, 0, 1) * 18
@@ -313,9 +357,8 @@ def score_modes(summary: Dict[str, Any]) -> Dict[str, float]:
     etf += clamp((0.8 - burst) / 0.8, 0, 1) * 8
     etf += clamp(avg_upside / 18, 0, 1.1) * 8
     etf += risk * 18
-    etf += 10  # 기본 대안 가치
+    etf += 10
 
-    # 방어/배당: 위험 집중 높고, 모멘텀/반등 약하고, 개별주 확신이 낮을수록 유리
     dividend_defensive = 0.0
     dividend_defensive += risk * 28
     dividend_defensive += clamp((0.55 - momentum) / 0.55, 0, 1) * 16
@@ -324,8 +367,6 @@ def score_modes(summary: Dict[str, Any]) -> Dict[str, float]:
     dividend_defensive += clamp((12 - avg_upside) / 12, 0, 1) * 12
     dividend_defensive += 8
 
-    # 고위험: 강한 모멘텀/거래급증/수급까지 모두 강할 때만 일부 점수 부여
-    # 단, 위험 과집중이 크면 점수 깎아서 기본적으로는 낮게 유지
     high_risk = 0.0
     high_risk += momentum * 22
     high_risk += burst * 28
@@ -334,14 +375,12 @@ def score_modes(summary: Dict[str, Any]) -> Dict[str, float]:
     high_risk += rebound * 10
     high_risk -= risk * 18
 
-    result = {
+    return {
         "stock_pick": round(clamp(stock_pick, 0, 100), 2),
         "etf": round(clamp(etf, 0, 100), 2),
         "dividend_defensive": round(clamp(dividend_defensive, 0, 100), 2),
         "high_risk": round(clamp(high_risk, 0, 100), 2),
     }
-    return result
-
 
 
 def select_mode_labels(mode_scores: Dict[str, float]) -> Tuple[List[str], List[str]]:
@@ -349,22 +388,10 @@ def select_mode_labels(mode_scores: Dict[str, float]) -> Tuple[List[str], List[s
     preferred = [k for k, _ in ranked[:2]]
     avoided = [k for k, _ in ranked if k not in preferred]
 
-    # 너무 애매하면 고위험은 기본 회피 처리
     if "high_risk" not in avoided and mode_scores.get("high_risk", 0) < 55:
         avoided = [m for m in avoided if m != "high_risk"] + ["high_risk"]
 
     return preferred, avoided[:2]
-
-
-
-def humanize_mode(mode_key: str) -> str:
-    return {
-        "stock_pick": "개별주",
-        "etf": "ETF",
-        "dividend_defensive": "배당/방어",
-        "high_risk": "고위험",
-    }.get(mode_key, mode_key)
-
 
 
 def determine_market_tone(summary: Dict[str, Any], mode_scores: Dict[str, float]) -> str:
@@ -381,16 +408,11 @@ def determine_market_tone(summary: Dict[str, Any], mode_scores: Dict[str, float]
     return "중립"
 
 
-
 def build_top_sector_notes(summary: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     sectors = [(k, v) for k, v in summary.get("strongSectorCounts", {}).items() if k and k != "미분류"]
     strong = [k for k, _ in sectors[:3]]
-
-    # 약한 업종은 데이터가 충분치 않으므로 자동 추정 대신 미노출이 안전하다.
-    # 다만 섹터 데이터가 충분할 경우, 상위에 안 잡히는 섹터를 약세로 볼 수도 있음.
     weak: List[str] = []
     return strong, weak
-
 
 
 def generate_one_line_summary(market_tone: str, preferred_modes: List[str], summary: Dict[str, Any]) -> str:
@@ -404,11 +426,9 @@ def generate_one_line_summary(market_tone: str, preferred_modes: List[str], summ
         return f"현재는 공격보다 방어가 중요한 구간으로, {' / '.join(pref_labels[:2])} 관점이 더 유리합니다."
     if market_tone == "분산 접근 우위":
         return f"지금은 개별주 추격보다 {' / '.join(pref_labels[:2])}처럼 분산형 접근이 더 적합한 구간입니다."
-
     if momentum >= 0.5 and risk <= 0.35:
         return f"방향성은 있으나 선별이 필요한 구간으로, {' / '.join(pref_labels[:2])} 접근을 병행하는 것이 유리합니다."
     return f"현재는 확신형 장세보다 확인형 장세에 가깝고, {' / '.join(pref_labels[:2])} 관점으로 보는 편이 무난합니다."
-
 
 
 def build_strategy_notes(market_tone: str, preferred_modes: List[str], avoided_modes: List[str], summary: Dict[str, Any]) -> List[str]:
@@ -433,7 +453,6 @@ def build_strategy_notes(market_tone: str, preferred_modes: List[str], avoided_m
     if avoid_labels:
         notes.append(f"오늘은 {' / '.join(avoid_labels[:1])} 접근은 상대적으로 보수적으로 보는 편이 좋습니다.")
     return notes[:4]
-
 
 
 def build_approach_cards(mode_scores: Dict[str, float], preferred: List[str], avoided: List[str]) -> List[Dict[str, Any]]:
@@ -466,9 +485,24 @@ def build_approach_cards(mode_scores: Dict[str, float], preferred: List[str], av
     return cards
 
 
+def build_today_stock_reason(stock: Dict[str, Any]) -> str:
+    chunks = []
+    if stock["topRankEligible"]:
+        chunks.append("종합 조건 통과")
+    if stock["totalScore"] >= 70:
+        chunks.append(f"총점 {int(round(stock['totalScore']))}점")
+    if stock["upside"] > 0:
+        chunks.append(f"상승여력 {round(stock['upside'], 1)}%")
+    if stock.get("liquidityBurst"):
+        chunks.append("거래대금 증가 신호")
+    if stock.get("reboundSignal"):
+        chunks.append("반등 신호")
+    if stock.get("rankFlags"):
+        chunks.append(stock["rankFlags"][0])
+    return " · ".join(chunks[:4]) if chunks else "현재 기준으로 가장 균형이 좋은 후보입니다."
+
 
 def pick_today_candidates(stocks: List[Dict[str, Any]], preferred_modes: List[str]) -> Dict[str, Any]:
-    # 오늘의 1종목: 기존 종합 후보 중 점수, 유동성, 리스크, 단기보조신호를 균형 반영
     def stock_pick_score(s: Dict[str, Any]) -> float:
         score = 0.0
         score += s["totalScore"] * 0.55
@@ -485,7 +519,6 @@ def pick_today_candidates(stocks: List[Dict[str, Any]], preferred_modes: List[st
     base_pool = eligible if eligible else stocks
     today_stock = sorted(base_pool, key=stock_pick_score, reverse=True)[0] if base_pool else None
 
-    # 대안은 preferred mode 기준 선택
     today_alternative = None
     if preferred_modes:
         alt = preferred_modes[0]
@@ -522,30 +555,67 @@ def pick_today_candidates(stocks: List[Dict[str, Any]], preferred_modes: List[st
     }
 
 
+def load_etf_universe() -> List[Dict[str, Any]]:
+    candidate_paths = [
+        Path("app/data/etf_universe.json"),
+        Path("data/etf_universe.json"),
+        Path("etf_universe.json"),
+    ]
+    for p in candidate_paths:
+        if p.exists():
+            try:
+                return load_json(p, default=DEFAULT_ETF_UNIVERSE)
+            except Exception:
+                return DEFAULT_ETF_UNIVERSE
+    return DEFAULT_ETF_UNIVERSE
 
-def build_today_stock_reason(stock: Dict[str, Any]) -> str:
-    chunks = []
-    if stock["topRankEligible"]:
-        chunks.append("종합 조건 통과")
-    if stock["totalScore"] >= 70:
-        chunks.append(f"총점 {int(round(stock['totalScore']))}점")
-    if stock["upside"] > 0:
-        chunks.append(f"상승여력 {round(stock['upside'], 1)}%")
-    if stock.get("liquidityBurst"):
-        chunks.append("거래대금 증가 신호")
-    if stock.get("reboundSignal"):
-        chunks.append("반등 신호")
-    if stock.get("rankFlags"):
-        chunks.append(stock["rankFlags"][0])
-    return " · ".join(chunks[:4]) if chunks else "현재 기준으로 가장 균형이 좋은 후보입니다."
 
+def recommend_etfs(market_tone: str, strong_sectors: List[str]) -> List[Dict[str, Any]]:
+    etfs = load_etf_universe()
+    recommendations = []
+
+    for etf in etfs:
+        score = 0
+        reason_parts: List[str] = []
+
+        if etf.get("sector") and etf.get("sector") in strong_sectors:
+            score += 3
+            reason_parts.append(f"{etf['sector']} 업종이 현재 상위에서 강하게 포착됨")
+
+        if market_tone in ["중립", "분산 접근 우위"] and etf.get("type") == "index":
+            score += 2
+            reason_parts.append("개별주보다 지수 추종이 유리한 구간")
+
+        if market_tone == "보수 우위" and etf.get("type") == "dividend":
+            score += 3
+            reason_parts.append("위험 구간에서는 배당/방어형이 유리")
+
+        if market_tone == "공격 가능" and etf.get("type") == "sector" and etf.get("sector") in strong_sectors:
+            score += 1
+            reason_parts.append("업종 강세 구간에서 개별주 대안으로 적합")
+
+        if score > 0:
+            recommendations.append(
+                {
+                    "code": etf.get("code", ""),
+                    "name": etf.get("name", ""),
+                    "reason": " / ".join(reason_parts) if reason_parts else "현재 시장 상태상 대안 접근용 ETF",
+                    "desc": etf.get("desc", ""),
+                    "behavior": etf.get("behavior", ""),
+                    "score": score,
+                    "type": etf.get("type", ""),
+                    "sector": etf.get("sector", ""),
+                }
+            )
+
+    recommendations.sort(key=lambda x: (x["score"], x["name"]), reverse=True)
+    return recommendations[:3]
 
 
 def apply_overrides(payload: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     if not override:
         return payload
 
-    # 얕은 merge + 일부 섹션 덮어쓰기
     merged = dict(payload)
     for key, value in override.items():
         if isinstance(value, dict) and isinstance(merged.get(key), dict):
@@ -579,6 +649,7 @@ def build_market_state(stocks_path: Path, sector_map_path: Path, override_path: 
     approach_cards = build_approach_cards(mode_scores, preferred_modes, avoided_modes)
     today_candidates = pick_today_candidates(stocks, preferred_modes)
     strong_sectors, weak_sectors = build_top_sector_notes(feature_summary)
+    etf_recommendations = recommend_etfs(market_tone, strong_sectors)
 
     payload = {
         "generatedAt": now_kst_iso(),
@@ -603,12 +674,12 @@ def build_market_state(stocks_path: Path, sector_map_path: Path, override_path: 
         },
         "strategyNotes": strategy_notes,
         "today": today_candidates,
+        "etfRecommendations": etf_recommendations,
         "disclaimer": "본 결과는 규칙 기반 시장 상태 판정이며, 확정 수익이나 특정 매매를 보장하지 않습니다.",
     }
 
     payload = apply_overrides(payload, override)
     return payload
-
 
 
 def parse_args() -> argparse.Namespace:
@@ -622,7 +693,6 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--output", default="market_state.json", help="출력 JSON 경로")
     return parser.parse_args()
-
 
 
 def main() -> None:
@@ -644,7 +714,7 @@ def main() -> None:
     print(f"- 시장 톤: {payload['header']['marketTone']}")
     print(f"- 한 줄 요약: {payload['header']['summary']}")
     print(f"- 유리한 접근: {', '.join(payload['preferredModes'])}")
-    print(f"- 보수적 접근: {', '.join(payload['avoidModes'])}")
+    print(f"- ETF 추천: {', '.join([x['name'] for x in payload.get('etfRecommendations', [])]) or '없음'}")
 
 
 if __name__ == "__main__":
