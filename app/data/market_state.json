@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T05:43:38Z",
+  "generatedAt": "2026-06-18T06:53:38Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -109,5 +109,37 @@
       "reason": "개별주보다 업종/지수 분산 접근이 더 나은 구간으로 해석됩니다."
     }
   },
+  "etfRecommendations": [
+    {
+      "code": "102110",
+      "name": "TIGER 200",
+      "reason": "개별주보다 지수 추종이 유리한 구간",
+      "desc": "코스피 200 지수 추종",
+      "behavior": "시장 전체 흐름 반영",
+      "score": 2,
+      "type": "index",
+      "sector": ""
+    },
+    {
+      "code": "233740",
+      "name": "KODEX 코스닥150",
+      "reason": "개별주보다 지수 추종이 유리한 구간",
+      "desc": "코스닥 성장주 중심",
+      "behavior": "변동성 크지만 상승장에 강함",
+      "score": 2,
+      "type": "index",
+      "sector": ""
+    },
+    {
+      "code": "069500",
+      "name": "KODEX 200",
+      "reason": "개별주보다 지수 추종이 유리한 구간",
+      "desc": "코스피 대표 200 종목 추종",
+      "behavior": "시장 방향성 따라 안정적으로 움직임",
+      "score": 2,
+      "type": "index",
+      "sector": ""
+    }
+  ],
   "disclaimer": "본 결과는 규칙 기반 시장 상태 판정이며, 확정 수익이나 특정 매매를 보장하지 않습니다."
 }
