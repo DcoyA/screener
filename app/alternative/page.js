@@ -43,6 +43,7 @@ export default function AlternativePage() {
   const topSectors = marketState?.topSectors || { strong: [], weak: [] };
   const preferredModes = marketState?.preferredModes || [];
   const avoidModes = marketState?.avoidModes || [];
+  const etfList = marketState?.etfRecommendations || [];
 
   return (
     <>
@@ -161,6 +162,32 @@ export default function AlternativePage() {
           </div>
         </section>
 
+        <section className="sectionCard">
+          <h2>오늘의 ETF 추천</h2>
+          <p className="sectionDesc">
+            현재 시장 상태를 기준으로 적합한 ETF를 자동 추천합니다.
+          </p>
+        
+          <div className="approachGrid">
+            {etfList.length ? etfList.map((etf) => (
+              <div className="approachItem" key={etf.code}>
+                <h3>{etf.name}</h3>
+        
+                <div className="reasonCard goodCard">
+                  <span className="reasonLabel">왜 추천?</span>
+                  <p>{etf.reason}</p>
+                </div>
+        
+                <p className="approachDesc">{etf.desc}</p>
+                <p className="approachDesc">📊 {etf.behavior}</p>
+              </div>
+            )) : (
+              <p>추천 ETF 없음</p>
+            )}
+          </div>
+        </section>
+
+                
         <section className="sectorSection">
           <div className="sectionCard">
             <div className="sectionHeader">
