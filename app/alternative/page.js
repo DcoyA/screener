@@ -32,6 +32,13 @@ function getToneClass(tone) {
   return "toneChip neutral";
 }
 
+function getEtfTypeLabel(type) {
+  if (type === "sector") return "업종형";
+  if (type === "index") return "지수형";
+  if (type === "dividend") return "배당형";
+  return "기타";
+}
+
 export default function AlternativePage() {
   const header = marketState?.header || {};
   const signals = marketState?.signals || {};
@@ -43,7 +50,7 @@ export default function AlternativePage() {
   const topSectors = marketState?.topSectors || { strong: [], weak: [] };
   const preferredModes = marketState?.preferredModes || [];
   const avoidModes = marketState?.avoidModes || [];
-  const etfList = marketState?.etfRecommendations || [];
+  const etfRecommendations = marketState?.etfRecommendations || [];
 
   return (
     <>
@@ -107,7 +114,7 @@ export default function AlternativePage() {
             <div className="signalGrid">
               <div className="signalItem">
                 <span>종합 후보 비중</span>
-                <strong>{formatPercent((Number(signals?.eligibleRatio || 0) * 100))}</strong>
+                <strong>{formatPercent(Number(signals?.eligibleRatio || 0) * 100)}</strong>
               </div>
               <div className="signalItem">
                 <span>상위 평균 총점</span>
@@ -123,11 +130,11 @@ export default function AlternativePage() {
               </div>
               <div className="signalItem">
                 <span>모멘텀 지지 비율</span>
-                <strong>{formatPercent((Number(signals?.momentumSupportRatio || 0) * 100))}</strong>
+                <strong>{formatPercent(Number(signals?.momentumSupportRatio || 0) * 100)}</strong>
               </div>
               <div className="signalItem">
                 <span>위험 집중도</span>
-                <strong>{formatPercent((Number(signals?.riskConcentration || 0) * 100))}</strong>
+                <strong>{formatPercent(Number(signals?.riskConcentration || 0) * 100)}</strong>
               </div>
             </div>
           </div>
@@ -162,32 +169,54 @@ export default function AlternativePage() {
           </div>
         </section>
 
-        <section className="sectionCard">
-          <h2>오늘의 ETF 추천</h2>
-          <p className="sectionDesc">
-            현재 시장 상태를 기준으로 적합한 ETF를 자동 추천합니다.
-          </p>
-        
-          <div className="approachGrid">
-            {etfList.length ? etfList.map((etf) => (
-              <div className="approachItem" key={etf.code}>
-                <h3>{etf.name}</h3>
-        
-                <div className="reasonCard goodCard">
-                  <span className="reasonLabel">왜 추천?</span>
-                  <p>{etf.reason}</p>
-                </div>
-        
-                <p className="approachDesc">{etf.desc}</p>
-                <p className="approachDesc">📊 {etf.behavior}</p>
+        <section className="etfSection">
+          <div className="sectionCard">
+            <div className="sectionHeader">
+              <div>
+                <p className="sectionEyebrow">ETF PICKS</p>
+                <h2>오늘의 ETF 추천</h2>
+                <p className="sectionDesc">현재 시장 상태를 기준으로, 개별주 대신 쓰기 좋은 ETF 대안을 자동 추천합니다.</p>
               </div>
-            )) : (
-              <p>추천 ETF 없음</p>
-            )}
+            </div>
+            <div className="etfGrid">
+              {etfRecommendations.length ? etfRecommendations.map((etf) => (
+                <div className="etfCard" key={etf.code || etf.name}>
+                  <div className="etfTop">
+                    <div>
+                      <div className="chipRow compact">
+                        <span className="smallChip info">{getEtfTypeLabel(etf.type)}</span>
+                        {etf.sector && etf.sector !== "지수" ? <span className="smallChip neutral">{etf.sector}</span> : null}
+                      </div>
+                      <h3>{etf.name}</h3>
+                      <p className="etfCode">ETF 코드 {etf.code || "-"}</p>
+                    </div>
+                    <div className="scoreBox narrow">
+                      <span>추천 점수</span>
+                      <strong>{Number(etf.score || 0).toFixed(0)}</strong>
+                    </div>
+                  </div>
+                  <div className="reasonCard goodCard">
+                    <span className="reasonLabel">왜 추천?</span>
+                    <p>{etf.reason || "현재 시장 상태상 대안 접근용 ETF"}</p>
+                  </div>
+                  <div className="etfInfoGrid">
+                    <div className="infoBox">
+                      <span>특징</span>
+                      <p>{etf.desc || "설명 없음"}</p>
+                    </div>
+                    <div className="infoBox">
+                      <span>과거 성격</span>
+                      <p>{etf.behavior || "행동 특성 정보 없음"}</p>
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div className="emptyBlock">추천 가능한 ETF가 아직 생성되지 않았습니다.</div>
+              )}
+            </div>
           </div>
         </section>
 
-                
         <section className="sectorSection">
           <div className="sectionCard">
             <div className="sectionHeader">
@@ -278,6 +307,12 @@ export default function AlternativePage() {
                       현재 시장 톤이 <strong>{header?.marketTone || "중립"}</strong>으로 판정되었기 때문에,
                       개별주 외에도 <strong>{todayAlternative.label}</strong> 관점으로 접근하는 편이 더 무난할 수 있습니다.
                     </p>
+                    {etfRecommendations.length ? (
+                      <div className="linkedEtfBox">
+                        <span className="reasonLabel">함께 볼 ETF</span>
+                        <p>{etfRecommendations[0].name}</p>
+                      </div>
+                    ) : null}
                   </>
                 ) : (
                   <p className="emptyText">오늘의 대안 접근이 아직 생성되지 않았습니다.</p>
@@ -315,6 +350,8 @@ export default function AlternativePage() {
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
         .badge, .sectionEyebrow { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 999px; background: #eef2ff; color: #4f46e5; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
         h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em; }
+        h2 { margin: 0 0 10px; font-size: 1.5rem; letter-spacing: -0.03em; }
+        h3 { margin: 0 0 8px; font-size: 1.25rem; letter-spacing: -0.02em; }
         .desc { margin: 0; max-width: 760px; color: #475569; line-height: 1.8; font-size: 1.02rem; }
         .heroMetaCardWrap { display: grid; gap: 12px; min-width: 280px; width: 320px; }
         .heroMetaCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,0.05); }
@@ -326,26 +363,28 @@ export default function AlternativePage() {
         .toneChip.info { background:#e0f2fe; color:#0284c7; }
         .toneChip.warn { background:#fff7ed; color:#c2410c; }
         .toneChip.neutral { background:#f1f5f9; color:#475569; }
-        .summarySection, .signalSection, .approachSection, .sectorSection, .todaySection, .memoSection { margin-top: 24px; }
+        .summarySection, .signalSection, .approachSection, .etfSection, .sectorSection, .todaySection, .memoSection { margin-top: 24px; }
         .sectionCard, .summaryCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,0.06); }
         .summaryHeader, .sectionHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-        .summaryCard h2, .sectionCard h2 { margin: 0 0 10px; font-size: 1.5rem; letter-spacing: -0.03em; }
         .sectionDesc { margin: 0; color: #64748b; line-height: 1.7; }
         .summaryLead { margin: 0; color: #0f172a; font-size: 1.08rem; line-height: 1.9; font-weight: 800; }
         .chipRow { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+        .chipRow.compact { margin-top: 0; margin-bottom: 8px; }
         .smallChip { display:inline-flex; align-items:center; justify-content:center; padding:7px 11px; border-radius:999px; font-size:.8rem; font-weight:800; }
         .smallChip.good { background:#ecfeff; color:#0891b2; }
         .smallChip.warn { background:#fff7ed; color:#c2410c; }
         .smallChip.neutral { background:#f1f5f9; color:#475569; }
+        .smallChip.info { background:#e0f2fe; color:#0284c7; }
         .signalGrid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-        .signalItem, .scoreBox, .metricMiniBox, .noteItem { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; }
-        .signalItem span, .scoreBox span, .metricMiniBox span { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
+        .signalItem, .scoreBox, .metricMiniBox, .noteItem, .infoBox { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; }
+        .signalItem span, .scoreBox span, .metricMiniBox span, .infoBox span { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
         .signalItem strong, .scoreBox strong, .metricMiniBox strong { font-size:1.05rem; letter-spacing:-0.02em; }
         .approachGrid, .sectorGrid, .todayGrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-        .approachItem, .sectorCard, .todayCard { border:1px solid #e5e7eb; border-radius:20px; padding:18px; background:#fff; }
-        .approachTop { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-        .approachItem h3, .todayCard h3 { margin:0 0 8px; font-size:1.25rem; letter-spacing:-0.02em; }
-        .approachDesc, .sectorNote, .summaryText, .disclaimer, .emptyText { margin:0; color:#475569; line-height:1.75; }
+        .etfGrid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .approachItem, .sectorCard, .todayCard, .etfCard { border:1px solid #e5e7eb; border-radius:20px; padding:18px; background:#fff; }
+        .approachTop, .etfTop { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+        .approachDesc, .sectorNote, .summaryText, .disclaimer, .emptyText, .etfCode { margin:0; color:#475569; line-height:1.75; }
+        .etfCode { font-size:.92rem; }
         .statusBadge { display:inline-flex; align-items:center; justify-content:center; padding:7px 11px; border-radius:999px; font-size:.8rem; font-weight:800; }
         .statusBadge.good { background:#ecfeff; color:#0891b2; }
         .statusBadge.warn { background:#fff7ed; color:#c2410c; }
@@ -354,15 +393,23 @@ export default function AlternativePage() {
         .warnCard { background:#fffdfa; }
         .sectorLabel, .todayLabel, .reasonLabel { display:block; margin-bottom:10px; color:#0f172a; font-size:.84rem; font-weight:900; }
         .todayMeta { margin:0 0 12px; color:#64748b; font-size:.9rem; }
-        .metricMiniRow { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:10px; margin-bottom:12px; }
+        .metricMiniRow, .etfInfoGrid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:10px; margin-bottom:12px; }
+        .metricMiniRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         .reasonCard { border:1px solid #e5e7eb; border-radius:16px; padding:14px; margin-bottom:12px; }
-        .reasonCard p { margin:0; color:#475569; line-height:1.75; }
+        .reasonCard p, .infoBox p { margin:0; color:#475569; line-height:1.75; }
         .actionRow { margin-top: 16px; display:flex; justify-content:flex-start; }
         .primaryBtn { display:inline-flex; align-items:center; justify-content:center; border-radius:14px; padding:12px 16px; text-decoration:none; font-weight:800; border:1px solid #0f172a; background:#0f172a; color:#fff; }
         .noteList { display:grid; gap:12px; }
         .disclaimer { margin-top:16px; color:#64748b; font-size:.92rem; }
+        .linkedEtfBox { border:1px solid #e5e7eb; border-radius:16px; padding:14px; background:#f8fbff; margin-top:12px; }
+        .linkedEtfBox p { margin:0; font-weight:800; color:#0f172a; }
+        .scoreBox.narrow { min-width: 92px; text-align: center; }
+        .emptyBlock { border:1px dashed #cbd5e1; border-radius:20px; padding:18px; color:#64748b; background:#fff; }
+        @media (max-width: 1100px) {
+          .etfGrid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 900px) {
-          .signalGrid, .approachGrid, .sectorGrid, .todayGrid, .metricMiniRow { grid-template-columns: 1fr; }
+          .signalGrid, .approachGrid, .sectorGrid, .todayGrid, .metricMiniRow, .etfInfoGrid { grid-template-columns: 1fr; }
           .heroMetaCardWrap { width:100%; min-width:0; }
         }
         @media (max-width: 640px) {
