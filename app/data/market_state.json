@@ -1,0 +1,28 @@
+{
+  "header": {
+    "title": "대안 투자",
+    "summary": "현재 시장 상태 요약이 아직 생성되지 않았습니다.",
+    "marketTone": "중립"
+  },
+  "signals": {
+    "eligibleRatio": 0,
+    "avgTotalScore": 0,
+    "avgUpside": 0,
+    "avgLiquidity5d": 0,
+    "momentumSupportRatio": 0,
+    "riskConcentration": 0
+  },
+  "preferredModes": [],
+  "avoidModes": [],
+  "approachCards": [],
+  "topSectors": {
+    "strong": [],
+    "weak": []
+  },
+  "strategyNotes": [],
+  "today": {
+    "todayStock": null,
+    "todayAlternative": null
+  },
+  "disclaimer": "본 결과는 참고용입니다."
+}
