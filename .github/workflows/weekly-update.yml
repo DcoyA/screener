@@ -2,7 +2,7 @@ name: Weekday JSON Update
 
 on:
   schedule:
-    - cron: "7 0 * * 1-5" # 09:07 KST (UTC+9) weekdays
+    - cron: "7 0 * * 1-5" # 09:07 KST weekdays
   workflow_dispatch:
 
 permissions:
@@ -22,29 +22,45 @@ jobs:
       KRX_KOSDAQ_BASIC_URL: ${{ vars.KRX_KOSDAQ_BASIC_URL }}
       KRX_KOSPI_DAILY_URL: ${{ vars.KRX_KOSPI_DAILY_URL }}
       KRX_KOSDAQ_DAILY_URL: ${{ vars.KRX_KOSDAQ_DAILY_URL }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
+          cache: "pip"
 
       - name: Install dependencies
-        run: pip install requests
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
-      - name: Run update script
+      - name: Ensure data directories exist
+        run: |
+          mkdir -p app/data
+          mkdir -p data
+
+      - name: Run update_data.py
         run: python scripts/update_data.py
 
-      - name: Commit updated JSON
+      - name: Generate market state JSON
+        run: |
+          python scripts/generate_market_state.py             --stocks app/data/stocks.json             --sector-map sectorMap.json             --override market_context_override.json             --output app/data/market_state.json
+
+      - name: Show changed files
+        run: git status --short
+
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/data/*.json
-          git diff --cached --quiet || git commit -m "auto update json data"
+          git add app/data/stocks.json app/data/history.json app/data/risks.json app/data/market_state.json || true
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Update weekday JSON data"
           git push
-
