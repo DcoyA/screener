@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.hellomedia.win/sitemap.xml
+Sitemap: https://hellomedia.win/sitemap.xml
