@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T06:53:38Z",
+  "generatedAt": "2026-06-19T05:42:46Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,10 +12,10 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.882,
-    "avgTotalScore": 76.55,
-    "avgUpside": 117.06,
-    "avgLiquidity5d": 18939938398.9,
+    "eligibleRatio": 0.88,
+    "avgTotalScore": 76.3,
+    "avgUpside": 118.81,
+    "avgLiquidity5d": 17470643538.8,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
@@ -27,19 +27,19 @@
     },
     "topPoolCodes": [
       "000240",
-      "041510",
       "192080",
       "001800",
-      "036830",
-      "111770",
       "006730",
+      "036830",
+      "041510",
+      "111770",
       "067160",
       "002380",
       "081660"
     ]
   },
   "modeScores": {
-    "stock_pick": 51.01,
+    "stock_pick": 50.78,
     "etf": 38.8,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
@@ -56,7 +56,7 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 51.01,
+      "score": 50.78,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
@@ -98,10 +98,10 @@
       "market": "KOSPI",
       "sector": "미분류",
       "totalScore": 74.0,
-      "upside": 35.1,
-      "avgTradeValue5d": 89266575800.0,
-      "summary": "PER 8.9배, PBR 0.6배, 시총 3.3조원, 최근 5일 평균 거래대금 893억원, 부채비율 84.4%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 74점 · 상승여력 35.1%"
+      "upside": 45.0,
+      "avgTradeValue5d": 97406571970.0,
+      "summary": "PER 8.3배, PBR 0.6배, 시총 3.1조원, 최근 5일 평균 거래대금 974억원, 부채비율 84.4%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 74점 · 상승여력 45.0%"
     },
     "todayAlternative": {
       "mode": "etf",
@@ -114,31 +114,31 @@
       "code": "102110",
       "name": "TIGER 200",
       "reason": "개별주보다 지수 추종이 유리한 구간",
-      "desc": "코스피 200 지수 추종",
-      "behavior": "시장 전체 흐름 반영",
+      "desc": "코스피200 지수 추종 ETF",
+      "behavior": "시장 흐름과 동일하게 움직임",
       "score": 2,
       "type": "index",
-      "sector": ""
+      "sector": "지수"
     },
     {
-      "code": "233740",
+      "code": "229200",
       "name": "KODEX 코스닥150",
       "reason": "개별주보다 지수 추종이 유리한 구간",
-      "desc": "코스닥 성장주 중심",
-      "behavior": "변동성 크지만 상승장에 강함",
+      "desc": "코스닥 성장주 중심 ETF",
+      "behavior": "상승장에서는 강하게 반응",
       "score": 2,
       "type": "index",
-      "sector": ""
+      "sector": "성장"
     },
     {
       "code": "069500",
       "name": "KODEX 200",
       "reason": "개별주보다 지수 추종이 유리한 구간",
-      "desc": "코스피 대표 200 종목 추종",
-      "behavior": "시장 방향성 따라 안정적으로 움직임",
+      "desc": "국내 대표 대형주 흐름을 추종",
+      "behavior": "시장 전체 방향을 안정적으로 반영",
       "score": 2,
       "type": "index",
-      "sector": ""
+      "sector": "지수"
     }
   ],
   "disclaimer": "본 결과는 규칙 기반 시장 상태 판정이며, 확정 수익이나 특정 매매를 보장하지 않습니다."
