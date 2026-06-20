@@ -27,17 +27,21 @@ function debtRatioForUndervalue(item) {
 
 function buildSortedStocks(items, tab) {
   const list = [...items];
+
   if (tab === "upside") {
     return list.sort((a, b) => {
       const aUp = Number(a?.metrics?.upside ?? -999999);
       const bUp = Number(b?.metrics?.upside ?? -999999);
       if (bUp !== aUp) return bUp - aUp;
+
       const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
       const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
       if (bEligible !== aEligible) return bEligible - aEligible;
+
       const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
       const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
       if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+
       return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
     });
   }
@@ -49,15 +53,19 @@ function buildSortedStocks(items, tab) {
         const aValue = Number(a?.valueScore ?? 0);
         const bValue = Number(b?.valueScore ?? 0);
         if (bValue !== aValue) return bValue - aValue;
+
         const aDebt = debtRatioForUndervalue(a);
         const bDebt = debtRatioForUndervalue(b);
         if (aDebt !== bDebt) return aDebt - bDebt;
+
         const aUp = Number(a?.metrics?.upside ?? -999999);
         const bUp = Number(b?.metrics?.upside ?? -999999);
         if (bUp !== aUp) return bUp - aUp;
+
         const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
         const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
         if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+
         return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
       });
   }
@@ -66,12 +74,15 @@ function buildSortedStocks(items, tab) {
     const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
     const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
     if (bEligible !== aEligible) return bEligible - aEligible;
+
     const aScore = Number(a?.totalScore ?? 0);
     const bScore = Number(b?.totalScore ?? 0);
     if (bScore !== aScore) return bScore - aScore;
+
     const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
     if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+
     return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
   });
 }
@@ -117,17 +128,23 @@ function buildWarningLine(stock, activeTab) {
   if (activeTab === "total") {
     if (rankPenalty > 0) return `종합 해석에는 패널티 ${rankPenalty}점이 반영됩니다.`;
     if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
-    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) {
+      return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
+    }
     return "실적·재무·수급 변화에 따라 종합 조건 통과 여부가 바뀔 수 있습니다.";
   }
 
   if (activeTab === "undervalue") {
     if (undervalueFlags.length) return `주의 포인트: ${undervalueFlags[0]}`;
-    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) {
+      return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
+    }
     return "가치 점수가 높아도 재무 안정성 해석은 별도로 확인해야 합니다.";
   }
 
-  if (Number.isFinite(upside) && upside <= 0) return "현재 적정가 추정 기준 즉각적인 상승여력은 크지 않을 수 있습니다.";
+  if (Number.isFinite(upside) && upside <= 0) {
+    return "현재 적정가 추정 기준 즉각적인 상승여력은 크지 않을 수 있습니다.";
+  }
   if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
   return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
 }
@@ -145,6 +162,7 @@ export default function RankingPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return sortedStocks;
+
     return sortedStocks.filter((item) => {
       return (
         String(item.name || "").toLowerCase().includes(q) ||
@@ -193,6 +211,7 @@ export default function RankingPage() {
                 <strong>{undervalueEligibleCount}종목</strong>
               </div>
             </div>
+
             <div className="metaCard light fullSearchCard">
               <span className="metaLabel">검색</span>
               <input
@@ -227,9 +246,27 @@ export default function RankingPage() {
 
         <section className="tabSection">
           <div className="tabRow">
-            <button type="button" className={`tabBtn ${activeTab === "total" ? "active" : ""}`} onClick={() => setActiveTab("total")}>종합</button>
-            <button type="button" className={`tabBtn ${activeTab === "undervalue" ? "active" : ""}`} onClick={() => setActiveTab("undervalue")}>저평가</button>
-            <button type="button" className={`tabBtn ${activeTab === "upside" ? "active" : ""}`} onClick={() => setActiveTab("upside")}>상승여력</button>
+            <button
+              type="button"
+              className={`tabBtn ${activeTab === "total" ? "active" : ""}`}
+              onClick={() => setActiveTab("total")}
+            >
+              종합
+            </button>
+            <button
+              type="button"
+              className={`tabBtn ${activeTab === "undervalue" ? "active" : ""}`}
+              onClick={() => setActiveTab("undervalue")}
+            >
+              저평가
+            </button>
+            <button
+              type="button"
+              className={`tabBtn ${activeTab === "upside" ? "active" : ""}`}
+              onClick={() => setActiveTab("upside")}
+            >
+              상승여력
+            </button>
           </div>
         </section>
 
@@ -241,12 +278,14 @@ export default function RankingPage() {
               const undervalueFlags = stock?.undervalueMeta?.flags || [];
               const penalty = Number(stock?.rankMeta?.penalty || 0);
               const displayRank = rankMap.get(String(stock.code)) ?? "-";
+
               const scoreLabel =
                 activeTab === "undervalue"
                   ? "가치 점수"
                   : activeTab === "upside"
                     ? "상승여력"
                     : "종합 점수";
+
               const scoreValue =
                 activeTab === "undervalue"
                   ? stock.valueScore
@@ -264,6 +303,7 @@ export default function RankingPage() {
                         <p className="stockMeta">{stock.market} · {stock.code}</p>
                       </div>
                     </div>
+
                     <div className="scoreWrap">
                       <span className="scoreLabel">{scoreLabel}</span>
                       <strong>{scoreValue}</strong>
@@ -294,12 +334,26 @@ export default function RankingPage() {
 
                   <div className="badgeRow">
                     {activeTab === "total" ? (
-                      eligible ? <span className="smallBadge good">종합 상위 후보</span> : <span className="smallBadge warn">종합 상위 제외</span>
+                      eligible
+                        ? <span className="smallBadge good">종합 상위 후보</span>
+                        : <span className="smallBadge warn">종합 상위 제외</span>
                     ) : null}
-                    {activeTab === "undervalue" && stock?.undervalueMeta?.eligible ? <span className="smallBadge info">저평가 후보</span> : null}
-                    {activeTab === "total" && penalty > 0 ? <span className="smallBadge muted">패널티 {penalty}</span> : null}
-                    {activeTab === "total" && rankFlags.map((flag) => <span className="smallBadge soft" key={flag}>{flag}</span>)}
-                    {activeTab === "undervalue" && undervalueFlags.map((flag) => <span className="smallBadge soft" key={flag}>{flag}</span>)}
+
+                    {activeTab === "undervalue" && stock?.undervalueMeta?.eligible ? (
+                      <span className="smallBadge info">저평가 후보</span>
+                    ) : null}
+
+                    {activeTab === "total" && penalty > 0 ? (
+                      <span className="smallBadge muted">패널티 {penalty}</span>
+                    ) : null}
+
+                    {activeTab === "total" && rankFlags.map((flag) => (
+                      <span className="smallBadge soft" key={flag}>{flag}</span>
+                    ))}
+
+                    {activeTab === "undervalue" && undervalueFlags.map((flag) => (
+                      <span className="smallBadge soft" key={flag}>{flag}</span>
+                    ))}
                   </div>
 
                   <div className="reasonCard goodCard">
@@ -321,7 +375,9 @@ export default function RankingPage() {
                     >
                       리스크 보기
                     </Link>
-                    <Link href={`/stock/${stock.code}`} className="detailBtn">상세 보기</Link>
+                    <Link href={`/stock/${stock.code}`} className="detailBtn">
+                      상세 보기
+                    </Link>
                   </div>
                 </article>
               );
@@ -331,78 +387,480 @@ export default function RankingPage() {
       </main>
 
       <style jsx>{`
-        .container { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; color: #0f172a; }
-        .topLinks { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
-        .homeBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; padding: 12px 16px; text-decoration: none; font-weight: 800; border: 1px solid #0f172a; background: #0f172a; color: #fff; }
-        .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
-        .badge { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #eef2ff; color: #4f46e5; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
-        h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em; }
-        .desc { margin: 0; max-width: 760px; color: #475569; line-height: 1.8; font-size: 1.02rem; }
-        .heroMeta { display: grid; gap: 12px; min-width: 280px; width: 320px; }
-        .heroMetaTopRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .metaCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,0.05); }
-        .metaCard.compact { min-width: 0; }
-        .metaCard.light { background: #f8fbff; }
-        .metaLabel { display:block; margin-bottom:8px; color:#64748b; font-size:.88rem; font-weight:700; }
-        .metaCard strong { font-size: 1.5rem; letter-spacing: -0.03em; }
-        .fullSearchCard { width: 100%; }
-        .searchInput { width: 100%; height: 44px; border-radius: 12px; border: 1px solid #dbe3f0; padding: 0 14px; font-size: .95rem; box-sizing: border-box; }
-        .guideSection, .tabSection, .listSection { margin-top: 20px; }
-        .guideCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,0.06); }
-        .guideCard h2 { margin:0 0 16px; font-size:1.35rem; }
-        .guideGrid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-        .guideItem { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; display:flex; flex-direction:column; gap:8px; }
-        .guideItem strong { color:#0f172a; }
-        .guideItem span { color:#64748b; line-height:1.7; font-size:.94rem; }
-        .tabRow { display:flex; gap:10px; flex-wrap:wrap; }
-        .tabBtn { height:44px; padding:0 18px; border-radius:14px; border:1px solid #dbe3f0; background:#fff; color:#0f172a; font-weight:800; cursor:pointer; }
-        .tabBtn.active { background:#0f172a; color:#fff; border-color:#0f172a; }
-        .listGrid { display:grid; gap:16px; }
-        .stockCard { border: 1px solid #e5e7eb; border-radius: 24px; padding: 22px; background: #fff; box-shadow: 0 18px 40px rgba(15,23,42,0.05); }
-        .cardTop { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
-        .rankWrap { display:flex; gap:14px; align-items:flex-start; }
-        .rankBadge { display:inline-flex; min-width:52px; height:52px; align-items:center; justify-content:center; border-radius:16px; background:#0f172a; color:#fff; font-weight:900; }
-        .rankWrap h3 { margin:0 0 6px; font-size:1.2rem; letter-spacing:-0.02em; }
-        .stockMeta { margin:0; color:#64748b; font-size:.92rem; }
-        .scoreWrap { text-align:right; min-width:110px; }
-        .scoreLabel { display:block; margin-bottom:6px; color:#64748b; font-size:.84rem; font-weight:700; }
-        .scoreWrap strong { display:block; font-size:1.8rem; line-height:1; letter-spacing:-0.04em; }
-        .rawScore { display:block; margin-top:6px; color:#64748b; font-size:.84rem; }
-        .metricRow { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; margin-bottom:14px; }
-        .metricBox { border:1px solid #e5e7eb; border-radius:16px; padding:14px; background:#f8fbff; }
-        .metricBox span { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
-        .metricBox strong { font-size:1rem; letter-spacing:-0.02em; }
-        .metricBox strong.sky { color:#0ea5e9; }
-        .badgeRow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-        .smallBadge { display:inline-flex; align-items:center; justify-content:center; padding:7px 11px; border-radius:999px; font-size:.8rem; font-weight:800; }
-        .smallBadge.good { background:#ecfeff; color:#0891b2; }
-        .smallBadge.warn { background:#fff7ed; color:#c2410c; }
-        .smallBadge.muted { background:#f1f5f9; color:#475569; }
-        .smallBadge.soft { background:#eef2ff; color:#4f46e5; }
-        .smallBadge.info { background:#e0f2fe; color:#0284c7; }
-        .reasonCard { border:1px solid #e5e7eb; border-radius:16px; padding:14px; margin-bottom:12px; }
-        .goodCard { background:#f8fbff; }
-        .warnCard { background:#fffdfa; }
-        .reasonLabel { display:block; margin-bottom:8px; color:#0f172a; font-size:.84rem; font-weight:800; }
-        .reasonCard p { margin:0; color:#475569; line-height:1.75; }
-        .summary { margin:0; color:#475569; line-height:1.8; }
-        .linkRow { margin-top:14px; display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; }
-        .riskBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#ffffff; color:#0f172a; font-weight:800; border:1px solid #cbd5e1; box-shadow:0 6px 16px rgba(15,23,42,0.06); transition:all .15s ease; }
-        .riskBtn:hover { border-color:#94a3b8; background:#f8fafc; transform:translateY(-1px); }
-        .detailBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#0f172a; color:#fff; font-weight:800; }
-        @media (max-width: 900px) {
-          .guideGrid, .metricRow { grid-template-columns: 1fr; }
+        .container {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 32px 24px 80px;
+          color: #0f172a;
         }
+
+        .topLinks {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+          margin-bottom: 26px;
+          flex-wrap: wrap;
+        }
+
+        .homeBtn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 14px;
+          padding: 12px 16px;
+          text-decoration: none;
+          font-weight: 800;
+          border: 1px solid #0f172a;
+          background: #0f172a;
+          color: #fff;
+        }
+
+        .pageHero {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 24px;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+        }
+
+        .badge {
+          display: inline-flex;
+          padding: 8px 14px;
+          border-radius: 999px;
+          background: #eef2ff;
+          color: #4f46e5;
+          font-size: 0.82rem;
+          font-weight: 800;
+          margin: 0 0 18px;
+        }
+
+        h1 {
+          margin: 0 0 12px;
+          font-size: clamp(2rem, 4vw, 3rem);
+          letter-spacing: -0.04em;
+        }
+
+        .desc {
+          margin: 0;
+          max-width: 760px;
+          color: #475569;
+          line-height: 1.8;
+          font-size: 1.02rem;
+        }
+
+        .heroMeta {
+          display: grid;
+          gap: 12px;
+          min-width: 280px;
+          width: 320px;
+        }
+
+        .heroMetaTopRow {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .metaCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          padding: 18px;
+          background: #fff;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+        }
+
+        .metaCard.compact {
+          min-width: 0;
+        }
+
+        .metaCard.light {
+          background: #f8fbff;
+        }
+
+        .metaLabel {
+          display: block;
+          margin-bottom: 8px;
+          color: #64748b;
+          font-size: 0.88rem;
+          font-weight: 700;
+        }
+
+        .metaCard strong {
+          font-size: 1.5rem;
+          letter-spacing: -0.03em;
+        }
+
+        .fullSearchCard {
+          width: 100%;
+        }
+
+        .searchInput {
+          width: 100%;
+          height: 44px;
+          border-radius: 12px;
+          border: 1px solid #dbe3f0;
+          padding: 0 14px;
+          font-size: 0.95rem;
+          box-sizing: border-box;
+        }
+
+        .guideSection,
+        .tabSection,
+        .listSection {
+          margin-top: 20px;
+        }
+
+        .guideCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 28px;
+          padding: 24px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
+        }
+
+        .guideCard h2 {
+          margin: 0 0 16px;
+          font-size: 1.35rem;
+        }
+
+        .guideGrid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .guideItem {
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          padding: 16px;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .guideItem strong {
+          color: #0f172a;
+        }
+
+        .guideItem span {
+          color: #64748b;
+          line-height: 1.7;
+          font-size: 0.94rem;
+        }
+
+        .tabRow {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .tabBtn {
+          height: 44px;
+          padding: 0 18px;
+          border-radius: 14px;
+          border: 1px solid #dbe3f0;
+          background: #fff;
+          color: #0f172a;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .tabBtn.active {
+          background: #0f172a;
+          color: #fff;
+          border-color: #0f172a;
+        }
+
+        .listGrid {
+          display: grid;
+          gap: 16px;
+        }
+
+        .stockCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 24px;
+          padding: 22px;
+          background: #fff;
+          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
+        }
+
+        .cardTop {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+          flex-wrap: wrap;
+          margin-bottom: 16px;
+        }
+
+        .rankWrap {
+          display: flex;
+          gap: 14px;
+          align-items: flex-start;
+        }
+
+        .rankBadge {
+          display: inline-flex;
+          min-width: 52px;
+          height: 52px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 16px;
+          background: #0f172a;
+          color: #fff;
+          font-weight: 900;
+        }
+
+        .rankWrap h3 {
+          margin: 0 0 6px;
+          font-size: 1.2rem;
+          letter-spacing: -0.02em;
+        }
+
+        .stockMeta {
+          margin: 0;
+          color: #64748b;
+          font-size: 0.92rem;
+        }
+
+        .scoreWrap {
+          text-align: right;
+          min-width: 110px;
+        }
+
+        .scoreLabel {
+          display: block;
+          margin-bottom: 6px;
+          color: #64748b;
+          font-size: 0.84rem;
+          font-weight: 700;
+        }
+
+        .scoreWrap strong {
+          display: block;
+          font-size: 1.8rem;
+          line-height: 1;
+          letter-spacing: -0.04em;
+        }
+
+        .rawScore {
+          display: block;
+          margin-top: 6px;
+          color: #64748b;
+          font-size: 0.84rem;
+        }
+
+        .metricRow {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px;
+          margin-bottom: 14px;
+        }
+
+        .metricBox {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 14px;
+          background: #f8fbff;
+        }
+
+        .metricBox span {
+          display: block;
+          margin-bottom: 8px;
+          color: #64748b;
+          font-size: 0.84rem;
+          font-weight: 700;
+        }
+
+        .metricBox strong {
+          font-size: 1rem;
+          letter-spacing: -0.02em;
+        }
+
+        .metricBox strong.sky {
+          color: #0ea5e9;
+        }
+
+        .badgeRow {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 14px;
+        }
+
+        .smallBadge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 7px 11px;
+          border-radius: 999px;
+          font-size: 0.8rem;
+          font-weight: 800;
+        }
+
+        .smallBadge.good {
+          background: #ecfeff;
+          color: #0891b2;
+        }
+
+        .smallBadge.warn {
+          background: #fff7ed;
+          color: #c2410c;
+        }
+
+        .smallBadge.muted {
+          background: #f1f5f9;
+          color: #475569;
+        }
+
+        .smallBadge.soft {
+          background: #eef2ff;
+          color: #4f46e5;
+        }
+
+        .smallBadge.info {
+          background: #e0f2fe;
+          color: #0284c7;
+        }
+
+        .reasonCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          padding: 14px;
+          margin-bottom: 12px;
+        }
+
+        .goodCard {
+          background: #f8fbff;
+        }
+
+        .warnCard {
+          background: #fffdfa;
+        }
+
+        .reasonLabel {
+          display: block;
+          margin-bottom: 8px;
+          color: #0f172a;
+          font-size: 0.84rem;
+          font-weight: 800;
+        }
+
+        .reasonCard p {
+          margin: 0;
+          color: #475569;
+          line-height: 1.75;
+        }
+
+        .summary {
+          margin: 0;
+          color: #475569;
+          line-height: 1.8;
+        }
+
+        .linkRow {
+          margin-top: 14px;
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .riskBtn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 42px;
+          padding: 0 14px;
+          border-radius: 12px;
+          text-decoration: none;
+          background: #ffffff;
+          color: #0f172a;
+          font-weight: 800;
+          border: 1px solid #cbd5e1;
+          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+          transition: all 0.15s ease;
+        }
+
+        .riskBtn:hover {
+          border-color: #94a3b8;
+          background: #f8fafc;
+          transform: translateY(-1px);
+        }
+
+        .detailBtn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          height: 42px;
+          padding: 0 14px;
+          border-radius: 12px;
+          text-decoration: none;
+          background: #0f172a;
+          color: #fff;
+          font-weight: 800;
+        }
+
+        @media (max-width: 900px) {
+          .guideGrid,
+          .metricRow {
+            grid-template-columns: 1fr;
+          }
+        }
+
         @media (max-width: 640px) {
-          .container { padding: 24px 18px 64px; }
-          .pageHero, .cardTop { flex-direction:column; }
-          .scoreWrap { text-align:left; }
-          .guideCard, .stockCard { padding:20px; }
-          .heroMeta { width: 100%; min-width: 0; }
-          .heroMetaTopRow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-          .metaCard.compact { padding: 16px; }
-          .fullSearchCard { width: 100%; }
-          .searchInput { width: 100%; }
+          .container {
+            padding: 24px 18px 64px;
+          }
+
+          .pageHero,
+          .cardTop {
+            flex-direction: column;
+          }
+
+          .scoreWrap {
+            text-align: left;
+          }
+
+          .guideCard,
+          .stockCard {
+            padding: 20px;
+          }
+
+          .heroMeta {
+            width: 100%;
+            min-width: 0;
+          }
+
+          .heroMetaTopRow {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+          }
+
+          .metaCard.compact {
+            padding: 16px;
+          }
+
+          .fullSearchCard {
+            width: 100%;
+          }
+
+          .searchInput {
+            width: 100%;
+          }
+
+          .linkRow {
+            justify-content: stretch;
+          }
+
+          .riskBtn,
+          .detailBtn {
+            width: 100%;
+          }
         }
       `}</style>
     </>
