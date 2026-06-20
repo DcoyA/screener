@@ -315,7 +315,12 @@ export default function RankingPage() {
                   <p className="summary">{stock.summary}</p>
 
                   <div className="linkRow">
-                    <Link href={`/risk?code=${stock.code}`} className="riskLinkBtn">리스크 보기</Link>
+                    <Link
+                      href={`/risk?code=${stock.code}#risk-${stock.code}`}
+                      className="riskBtn"
+                    >
+                      리스크 보기
+                    </Link>
                     <Link href={`/stock/${stock.code}`} className="detailBtn">상세 보기</Link>
                   </div>
                 </article>
@@ -382,8 +387,8 @@ export default function RankingPage() {
         .reasonCard p { margin:0; color:#475569; line-height:1.75; }
         .summary { margin:0; color:#475569; line-height:1.8; }
         .linkRow { margin-top:14px; display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; }
-        .riskLinkBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 4px; text-decoration:none; color:#475569; font-weight:800; border-bottom:1px solid transparent; }
-        .riskLinkBtn:hover { color:#0f172a; border-bottom-color:#0f172a; }
+        .riskBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#ffffff; color:#0f172a; font-weight:800; border:1px solid #cbd5e1; box-shadow:0 6px 16px rgba(15,23,42,0.06); transition:all .15s ease; }
+        .riskBtn:hover { border-color:#94a3b8; background:#f8fafc; transform:translateY(-1px); }
         .detailBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#0f172a; color:#fff; font-weight:800; }
         @media (max-width: 900px) {
           .guideGrid, .metricRow { grid-template-columns: 1fr; }
