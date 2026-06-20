@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
 
@@ -306,6 +306,9 @@ function buildWarningLine(stock, activeView, activeRisk) {
 
 function RankingPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const requestedView = (searchParams.get("view") || "").trim();
   const requestedRisk = (searchParams.get("risk") || "").trim();
 
@@ -315,6 +318,50 @@ function RankingPageContent() {
   const [activeView, setActiveView] = useState(initialView);
   const [activeRisk, setActiveRisk] = useState(initialRisk);
   const [query, setQuery] = useState("");
+
+  const updateRoute = (nextView, nextRisk) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("view");
+    params.delete("risk");
+    if (nextView && nextView !== "total") params.set("view", nextView);
+    if (nextRisk && nextRisk !== "all") params.set("risk", nextRisk);
+    const next = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(next, { scroll: false });
+  };
+
+  const handleViewChange = (nextView) => {
+    setActiveView(nextView);
+    updateRoute(nextView, activeRisk);
+  };
+
+  const handleRiskChange = (nextRisk) => {
+    setActiveRisk(nextRisk);
+    updateRoute(activeView, nextRisk);
+  };
+
+  const handleQuickCardClick = (kind) => {
+    if (kind === "total") {
+      setActiveView("total");
+      setActiveRisk("all");
+      updateRoute("total", "all");
+      return;
+    }
+    if (kind === "undervalue") {
+      setActiveView("undervalue");
+      setActiveRisk("all");
+      updateRoute("undervalue", "all");
+      return;
+    }
+    if (kind === "highDebt") {
+      setActiveRisk("highDebt");
+      updateRoute(activeView, "highDebt");
+      return;
+    }
+    if (kind === "unstableEarnings") {
+      setActiveRisk("unstableEarnings");
+      updateRoute(activeView, "unstableEarnings");
+    }
+  };
 
   useEffect(() => {
     setActiveView(initialView);
@@ -327,30 +374,19 @@ function RankingPageContent() {
   const sortedStocks = useMemo(() => buildSortedStocks(stocks, activeView), [activeView]);
   const filteredByRisk = useMemo(() => applyRiskFilter(sortedStocks, activeRisk), [sortedStocks, activeRisk]);
 
-  const rankMap = useMemo(() => {
-    return new Map(filteredByRisk.map((item, index) => [String(item.code), index + 1]));
-  }, [filteredByRisk]);
+  const rankMap = useMemo(() => new Map(filteredByRisk.map((item, index) => [String(item.code), index + 1])), [filteredByRisk]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return filteredByRisk;
-    return filteredByRisk.filter((item) => {
-      return (
-        String(item.name || "").toLowerCase().includes(q) ||
-        String(item.code || "").toLowerCase().includes(q)
-      );
-    });
+    return filteredByRisk.filter((item) =>
+      String(item.name || "").toLowerCase().includes(q) ||
+      String(item.code || "").toLowerCase().includes(q)
+    );
   }, [filteredByRisk, query]);
 
-  const topEligibleCount = useMemo(
-    () => stocks.filter((item) => item?.rankMeta?.topRankEligible).length,
-    []
-  );
-  const undervalueEligibleCount = useMemo(
-    () => stocks.filter((item) => item?.undervalueMeta?.eligible).length,
-    []
-  );
-
+  const topEligibleCount = useMemo(() => stocks.filter((item) => item?.rankMeta?.topRankEligible).length, []);
+  const undervalueEligibleCount = useMemo(() => stocks.filter((item) => item?.undervalueMeta?.eligible).length, []);
   const highDebtCount = useMemo(() => stocks.filter(isHighDebt).length, []);
   const lowLiquidityCount = useMemo(() => stocks.filter(isLowLiquidity).length, []);
   const unstableEarningsCount = useMemo(() => stocks.filter(isUnstableEarnings).length, []);
@@ -371,35 +407,49 @@ function RankingPageContent() {
             <p className="badge">RANKING</p>
             <h1>{activeViewMeta.title}</h1>
             <p className="desc">
-              {activeViewMeta.desc}
-              <br />
+              {activeViewMeta.desc}<br />
               {activeRisk !== "all"
                 ? `현재는 “${activeRiskMeta.title}” 필터가 적용된 리스트를 보고 있습니다.`
-                : "필요하면 아래 위험 필터를 추가해서 조건에 맞는 리스트만 다시 볼 수 있습니다."}
+                : "아래 퀵 선택 또는 필터 바에서 바로 원하는 보기로 이동할 수 있습니다."}
             </p>
           </div>
 
           <div className="heroMeta">
-            <div className="heroMetaTopRow">
-              <div className="metaCard compact">
-                <span className="metaLabel">종합 우선 후보</span>
+            <div className="quickStatGrid">
+              <button
+                type="button"
+                className={`quickStatCard ${activeView === "total" && activeRisk === "all" ? "active" : ""}`}
+                onClick={() => handleQuickCardClick("total")}
+              >
+                <span className="quickLabel">종합 우선 후보</span>
                 <strong>{topEligibleCount}종목</strong>
-              </div>
-              <div className="metaCard compact">
-                <span className="metaLabel">저평가 후보</span>
+              </button>
+              <button
+                type="button"
+                className={`quickStatCard ${activeView === "undervalue" && activeRisk === "all" ? "active" : ""}`}
+                onClick={() => handleQuickCardClick("undervalue")}
+              >
+                <span className="quickLabel">저평가 후보</span>
                 <strong>{undervalueEligibleCount}종목</strong>
-              </div>
-            </div>
-            <div className="heroMetaTopRow">
-              <div className="metaCard compact lightWarn">
-                <span className="metaLabel">고부채</span>
+              </button>
+              <button
+                type="button"
+                className={`quickStatCard warn ${activeRisk === "highDebt" ? "active" : ""}`}
+                onClick={() => handleQuickCardClick("highDebt")}
+              >
+                <span className="quickLabel">고부채</span>
                 <strong>{highDebtCount}종목</strong>
-              </div>
-              <div className="metaCard compact lightWarn">
-                <span className="metaLabel">이익 불안정</span>
+              </button>
+              <button
+                type="button"
+                className={`quickStatCard warn ${activeRisk === "unstableEarnings" ? "active" : ""}`}
+                onClick={() => handleQuickCardClick("unstableEarnings")}
+              >
+                <span className="quickLabel">이익 불안정</span>
                 <strong>{unstableEarningsCount}종목</strong>
-              </div>
+              </button>
             </div>
+
             <div className="metaCard light fullSearchCard">
               <span className="metaLabel">검색</span>
               <input
@@ -408,90 +458,81 @@ function RankingPageContent() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <p className="searchGuide">현재 보기 결과 {filtered.length}개 / 유동성 취약 종목 {lowLiquidityCount}개</p>
+              <p className="searchGuide">현재 보기 결과 {filtered.length}개 / 저유동성 종목 {lowLiquidityCount}개</p>
             </div>
           </div>
         </section>
 
         <section className="guideSection">
-          <div className="guideCard">
-            <h2>랭킹 해석 가이드</h2>
-            <div className="guideGrid">
-              <div className="guideItem">
-                <strong>전략별 보기</strong>
-                <span>단기/연간/장기 보유 관점으로 정렬 기준이 바뀝니다. 메인페이지 “더보기”와 연결되는 리스트입니다.</span>
-              </div>
-              <div className="guideItem">
-                <strong>위험 필터</strong>
-                <span>고부채/저유동성/이익 불안정만 따로 걸러서, “오늘은 피해야 할 타입”을 실제 리스트로 볼 수 있습니다.</span>
-              </div>
-              <div className="guideItem">
-                <strong>기존 랭킹도 유지</strong>
-                <span>종합/저평가/상승여력 탭도 그대로 두어, 기존 탐색 방식과 새 전략형 진입을 동시에 지원합니다.</span>
+          <div className="guideCard compact">
+            <div className="guideHeader">
+              <div>
+                <h2>보기 전환</h2>
+                <p className="guideIntro">세 줄로 쪼개놓기보다, 한 번에 보기 좋게 정리했습니다.</p>
               </div>
             </div>
-          </div>
-        </section>
 
-        <section className="tabSection">
-          <div className="tabGroup">
-            <span className="groupLabel">기본 랭킹</span>
-            <div className="tabRow">
-              {[
-                ["total", "종합"],
-                ["undervalue", "저평가"],
-                ["upside", "상승여력"],
-              ].map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`tabBtn ${activeView === key ? "active" : ""}`}
-                  onClick={() => setActiveView(key)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+            <div className="controlPanel">
+              <div className="controlBlock">
+                <span className="groupLabel">기본 랭킹</span>
+                <div className="chipRow">
+                  {[
+                    ["total", "종합"],
+                    ["undervalue", "저평가"],
+                    ["upside", "상승여력"],
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`filterChip ${activeView === key ? "active" : ""}`}
+                      onClick={() => handleViewChange(key)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="tabGroup">
-            <span className="groupLabel">전략별 보기</span>
-            <div className="tabRow">
-              {[
-                ["short", "단기 투자"],
-                ["annual", "연간 투자"],
-                ["long", "장기 투자"],
-              ].map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`tabBtn alt ${activeView === key ? "active" : ""}`}
-                  onClick={() => setActiveView(key)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+              <div className="controlBlock">
+                <span className="groupLabel">전략별 보기</span>
+                <div className="chipRow">
+                  {[
+                    ["short", "단기 투자"],
+                    ["annual", "연간 투자"],
+                    ["long", "장기 투자"],
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`filterChip alt ${activeView === key ? "active" : ""}`}
+                      onClick={() => handleViewChange(key)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="tabGroup riskGroup">
-            <span className="groupLabel">피해야 할 타입 필터</span>
-            <div className="tabRow">
-              {[
-                ["all", "전체"],
-                ["highDebt", "고부채"],
-                ["lowLiquidity", "저유동성"],
-                ["unstableEarnings", "이익 불안정"],
-              ].map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={`tabBtn risk ${activeRisk === key ? "active" : ""}`}
-                  onClick={() => setActiveRisk(key)}
-                >
-                  {label}
-                </button>
-              ))}
+              <div className="controlBlock">
+                <span className="groupLabel">피해야 할 타입 필터</span>
+                <div className="chipRow">
+                  {[
+                    ["all", "전체"],
+                    ["highDebt", "고부채"],
+                    ["lowLiquidity", "저유동성"],
+                    ["unstableEarnings", "이익 불안정"],
+                  ].map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`filterChip risk ${activeRisk === key ? "active" : ""}`}
+                      onClick={() => handleRiskChange(key)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -533,9 +574,7 @@ function RankingPageContent() {
                     ? formatPercent(stock?.metrics?.upside)
                     : activeView === "short"
                       ? formatPercent(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum)
-                      : activeView === "annual"
-                        ? `${Number(stock?.totalScore || 0).toFixed(0)}점`
-                        : `${Number(stock?.totalScore || 0).toFixed(0)}점`;
+                      : `${Number(stock?.totalScore || 0).toFixed(0)}점`;
 
               return (
                 <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
@@ -685,13 +724,46 @@ function RankingPageContent() {
         .heroMeta {
           display: grid;
           gap: 12px;
-          min-width: 280px;
+          min-width: 300px;
           width: 320px;
         }
-        .heroMetaTopRow {
+        .quickStatGrid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
+        }
+        .quickStatCard {
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          padding: 18px;
+          background: #fff;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.18s ease;
+        }
+        .quickStatCard:hover {
+          transform: translateY(-1px);
+          border-color: #cbd5e1;
+          background: #fbfdff;
+        }
+        .quickStatCard.warn {
+          background: #fffdfa;
+        }
+        .quickStatCard.active {
+          border-color: #0f172a;
+          box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
+        }
+        .quickLabel {
+          display: block;
+          margin-bottom: 10px;
+          color: #64748b;
+          font-size: 0.88rem;
+          font-weight: 700;
+        }
+        .quickStatCard strong {
+          font-size: 1.8rem;
+          letter-spacing: -0.04em;
         }
         .metaCard {
           border: 1px solid #e5e7eb;
@@ -700,14 +772,8 @@ function RankingPageContent() {
           background: #fff;
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
         }
-        .metaCard.compact {
-          min-width: 0;
-        }
         .metaCard.light {
           background: #f8fbff;
-        }
-        .metaCard.lightWarn {
-          background: #fffdfa;
         }
         .metaLabel {
           display: block;
@@ -715,13 +781,6 @@ function RankingPageContent() {
           color: #64748b;
           font-size: 0.88rem;
           font-weight: 700;
-        }
-        .metaCard strong {
-          font-size: 1.5rem;
-          letter-spacing: -0.03em;
-        }
-        .fullSearchCard {
-          width: 100%;
         }
         .searchInput {
           width: 100%;
@@ -738,10 +797,9 @@ function RankingPageContent() {
           font-size: 0.9rem;
         }
         .guideSection,
-        .tabSection,
         .statusSection,
         .listSection {
-          margin-top: 20px;
+          margin-top: 22px;
         }
         .guideCard,
         .statusCard {
@@ -751,64 +809,65 @@ function RankingPageContent() {
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
-        .guideCard h2 {
-          margin: 0 0 16px;
+        .guideCard.compact {
+          padding: 22px;
+        }
+        .guideHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 14px;
+          margin-bottom: 16px;
+          flex-wrap: wrap;
+        }
+        .guideHeader h2 {
+          margin: 0 0 6px;
           font-size: 1.35rem;
         }
-        .guideGrid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
+        .guideIntro {
+          margin: 0;
+          color: #64748b;
+          line-height: 1.7;
         }
-        .guideItem {
+        .controlPanel {
+          display: grid;
+          gap: 14px;
+        }
+        .controlBlock {
           border: 1px solid #e5e7eb;
           border-radius: 18px;
           padding: 16px;
           background: #fff;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .guideItem strong {
-          color: #0f172a;
-        }
-        .guideItem span {
-          color: #64748b;
-          line-height: 1.7;
-          font-size: 0.94rem;
-        }
-        .tabGroup {
-          margin-bottom: 14px;
         }
         .groupLabel {
           display: block;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
           color: #64748b;
           font-size: 0.9rem;
           font-weight: 800;
         }
-        .tabRow {
+        .chipRow {
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
         }
-        .tabBtn {
-          height: 44px;
-          padding: 0 18px;
-          border-radius: 14px;
+        .filterChip {
+          height: 42px;
+          padding: 0 16px;
+          border-radius: 999px;
           border: 1px solid #dbe3f0;
           background: #fff;
           color: #0f172a;
           font-weight: 800;
           cursor: pointer;
         }
-        .tabBtn.alt {
+        .filterChip.alt {
           background: #f8fbff;
         }
-        .tabBtn.risk {
+        .filterChip.risk {
           background: #fffdfa;
         }
-        .tabBtn.active {
+        .filterChip.active {
           background: #0f172a;
           color: #fff;
           border-color: #0f172a;
@@ -1038,42 +1097,40 @@ function RankingPageContent() {
           color: #fff;
           font-weight: 800;
         }
-        @media (max-width: 900px) {
-          .guideGrid,
+        @media (max-width: 980px) {
+          .guidеGrid,
           .metricRow,
-          .heroMetaTopRow {
+          .quickStatGrid {
             grid-template-columns: 1fr;
           }
+        }
+        @media (max-width: 900px) {
+          .metricRow,
+          .quickStatGrid {
+            grid-template-columns: 1fr;
+          }
+          .pageHero,
+          .cardTop,
           .statusCard {
             flex-direction: column;
             align-items: flex-start;
+          }
+          .scoreWrap {
+            text-align: left;
+          }
+          .heroMeta {
+            width: 100%;
+            min-width: 0;
           }
         }
         @media (max-width: 640px) {
           .container {
             padding: 24px 18px 64px;
           }
-          .pageHero,
-          .cardTop {
-            flex-direction: column;
-          }
-          .scoreWrap {
-            text-align: left;
-          }
           .guideCard,
-          .stockCard,
-          .statusCard {
+          .statusCard,
+          .stockCard {
             padding: 20px;
-          }
-          .heroMeta {
-            width: 100%;
-            min-width: 0;
-          }
-          .fullSearchCard {
-            width: 100%;
-          }
-          .searchInput {
-            width: 100%;
           }
           .linkRow {
             justify-content: stretch;
@@ -1081,6 +1138,9 @@ function RankingPageContent() {
           .riskBtn,
           .detailBtn {
             width: 100%;
+          }
+          .chipRow {
+            gap: 8px;
           }
         }
       `}</style>
