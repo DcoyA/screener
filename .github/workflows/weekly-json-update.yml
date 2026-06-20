@@ -15,6 +15,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+
     env:
       OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
       KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
@@ -22,6 +23,7 @@ jobs:
       KRX_KOSDAQ_BASIC_URL: ${{ vars.KRX_KOSDAQ_BASIC_URL }}
       KRX_KOSPI_DAILY_URL: ${{ vars.KRX_KOSPI_DAILY_URL }}
       KRX_KOSDAQ_DAILY_URL: ${{ vars.KRX_KOSDAQ_DAILY_URL }}
+      KRX_KOSPI_INDEX_DAILY_URL: ${{ vars.KRX_KOSPI_INDEX_DAILY_URL }}
 
     steps:
       - name: Checkout repository
@@ -50,8 +52,18 @@ jobs:
           mkdir -p app/data
           mkdir -p data
 
+      - name: Verify required files
+        run: |
+          test -f scripts/update_data.py
+          test -f scripts/update_etf_universe.py
+          test -f scripts/generate_market_state.py
+          test -f app/data/etf_master.json
+
       - name: Run update_data.py
         run: python scripts/update_data.py
+
+      - name: Build ETF universe
+        run: python scripts/update_etf_universe.py
 
       - name: Generate market state JSON
         run: |
@@ -64,11 +76,16 @@ jobs:
       - name: Show changed files
         run: git status --short
 
-      - name: Commit and push changes
+      - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/data/stocks.json app/data/history.json app/data/risks.json app/data/market_state.json || true
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/data/stocks.json app/data/history.json app/data/risks.json app/data/reports.json app/data/etf_universe.json app/data/market_state.json || true
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "Update weekday JSON data"
-          git push
+
+      - name: Pull latest changes
+        run: git pull origin main --rebase
+
+      - name: Push changes
+        run: git push origin main
