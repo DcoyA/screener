@@ -14,7 +14,6 @@ const RISK_FILTER_CONFIG = {
   high: { label: "주의", title: "주의 리스크" },
 };
 
-
 function getRiskClass(level) {
   if (level === "주의") return "riskBadge riskHigh";
   if (level === "보통") return "riskBadge riskMid";
@@ -67,16 +66,37 @@ function buildCheckPointGuide(item) {
 
 function RiskPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const requestedCode = searchParams.get("code")?.trim() || "";
   const requestedName = searchParams.get("name")?.trim() || "";
+  const requestedLevel = searchParams.get("level")?.trim() || "all";
+
   const initialKeyword = requestedCode || requestedName || "";
+  const initialLevel = RISK_FILTER_CONFIG[requestedLevel] ? requestedLevel : "all";
 
   const [searchTerm, setSearchTerm] = useState(initialKeyword);
+  const [selectedLevel, setSelectedLevel] = useState(initialLevel);
   const [highlightedCode, setHighlightedCode] = useState(requestedCode || "");
   const didAutoFocus = useRef(false);
 
   const updatedAt = risks[0]?.date || "-";
   const normalizedSearchTerm = normalizeKeyword(searchTerm);
+
+  const stockPriceMap = useMemo(() => {
+    return Object.fromEntries(stocks.map((item) => [item.code, item.metrics?.closePrice || 0]));
+  }, []);
+
+  useEffect(() => {
+    setSelectedLevel(initialLevel);
+  }, [initialLevel]);
+
+  useEffect(() => {
+    if (!initialKeyword) return;
+    setSearchTerm(initialKeyword);
+    if (requestedCode) setHighlightedCode(requestedCode);
+  }, [initialKeyword, requestedCode]);
 
   const updateRoute = (nextLevel) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -92,38 +112,32 @@ function RiskPageContent() {
   const handleLevelFilter = (nextLevel) => {
     setSelectedLevel(nextLevel);
     updateRoute(nextLevel);
+    didAutoFocus.current = false;
   };
 
-  useEffect(() => {
-    setSelectedLevel(initialLevel);
-  }, [initialLevel]);
-
-  const stockPriceMap = useMemo(() => {
-    return Object.fromEntries(
-      stocks.map((item) => [item.code, item.metrics?.closePrice || 0])
-    );
-  }, []);
-
   const filteredRisks = useMemo(() => {
-    if (!normalizedSearchTerm) return risks;
+    let levelFiltered = risks;
 
-    return risks.filter((item) => {
+    if (selectedLevel === "low") {
+      levelFiltered = risks.filter((item) => item.level === "낮음");
+    } else if (selectedLevel === "mid") {
+      levelFiltered = risks.filter((item) => item.level === "보통");
+    } else if (selectedLevel === "high") {
+      levelFiltered = risks.filter((item) => item.level === "주의");
+    }
+
+    if (!normalizedSearchTerm) return levelFiltered;
+
+    return levelFiltered.filter((item) => {
       const nameMatch = normalizeKeyword(item.name).includes(normalizedSearchTerm);
       const codeMatch = normalizeKeyword(item.code).includes(normalizedSearchTerm);
       return nameMatch || codeMatch;
     });
-  }, [normalizedSearchTerm]);
-
-  useEffect(() => {
-    if (!initialKeyword) return;
-    setSearchTerm(initialKeyword);
-    if (requestedCode) setHighlightedCode(requestedCode);
-  }, [initialKeyword, requestedCode]);
+  }, [normalizedSearchTerm, selectedLevel]);
 
   useEffect(() => {
     if (!requestedCode || didAutoFocus.current) return;
-
-    const exact = risks.find((item) => String(item.code) === String(requestedCode));
+    const exact = filteredRisks.find((item) => String(item.code) === String(requestedCode));
     if (!exact) return;
 
     const timer = setTimeout(() => {
@@ -143,7 +157,7 @@ function RiskPageContent() {
 
   const levelTitle = RISK_FILTER_CONFIG[selectedLevel]?.title || "전체 리스크";
   const resultCountText = normalizedSearchTerm
-    ? `검색 결과 ${filteredRisks.length}개 / ${levelTitle} ${selectedLevel === "all" ? risks.length : filteredRisks.length}개 기준`
+    ? `검색 결과 ${filteredRisks.length}개 / ${levelTitle} 기준`
     : selectedLevel === "all"
       ? `상위 ${risks.length}개 종목에 대해서만 제공합니다.`
       : `${levelTitle} 기준 ${filteredRisks.length}개 종목을 보고 있습니다.`;
@@ -250,7 +264,6 @@ function RiskPageContent() {
                 aria-label="종목명 또는 종목코드 검색"
               />
             </div>
-
             {searchTerm ? (
               <button
                 type="button"
@@ -331,6 +344,7 @@ function RiskPageContent() {
                 setSearchTerm("");
                 setHighlightedCode("");
                 didAutoFocus.current = false;
+                handleLevelFilter("all");
               }}
             >
               검색 초기화
@@ -353,10 +367,10 @@ function RiskPageContent() {
         .updateBox strong { display: block; font-size: 1.15rem; color: #0f172a; }
         .riskCountRow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
         .miniStatCard { border: 1px solid #e5e7eb; border-radius: 18px; padding: 14px; background: #ffffff; text-align: left; cursor: pointer; transition: all .18s ease; }
-        .miniStatCard span { display: block; margin-bottom: 8px; font-size: 0.82rem; font-weight: 700; }
-        .miniStatCard strong { font-size: 1.3rem; line-height: 1; letter-spacing: -0.03em; }
         .miniStatCard:hover { transform: translateY(-1px); border-color: #cbd5e1; }
         .miniStatCard.active { box-shadow: 0 0 0 2px rgba(15,23,42,0.08); }
+        .miniStatCard span { display: block; margin-bottom: 8px; font-size: 0.82rem; font-weight: 700; }
+        .miniStatCard strong { font-size: 1.3rem; line-height: 1; letter-spacing: -0.03em; }
         .miniStatCard.low span, .miniStatCard.low strong { color: #15803d; }
         .miniStatCard.mid span, .miniStatCard.mid strong { color: #b45309; }
         .miniStatCard.high span, .miniStatCard.high strong { color: #dc2626; }
@@ -374,9 +388,8 @@ function RiskPageContent() {
         .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
         .searchInput { width: 100%; height: 52px; border-radius: 16px; border: 1px solid #dbe3f0; padding: 0 16px 0 44px; font-size: 1rem; color: #0f172a; background: #fff; box-sizing: border-box; outline: none; }
         .searchInput:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
-        .filterResetBtn { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 14px; border-radius: 12px; border: 1px solid #dbe3f0; background: #fff; color: #0f172a; font-weight: 800; cursor: pointer; }
-        .resetBtn, .detailBtn, .ghostBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; height: 52px; padding: 0 16px; font-weight: 800; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 0.95rem; }
-        .resetBtn { background: #fff; color: #0f172a; border-color: #dbe3f0; }
+        .filterResetBtn, .resetBtn, .detailBtn, .ghostBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; height: 52px; padding: 0 16px; font-weight: 800; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 0.95rem; }
+        .filterResetBtn, .resetBtn { background: #fff; color: #0f172a; border-color: #dbe3f0; }
         .resetBtn.large { margin-top: 18px; }
         .detailBtn { background: #0f172a; color: #fff; }
         .ghostBtn { background: #fff; color: #0f172a; border-color: #dbe3f0; }
@@ -404,10 +417,12 @@ function RiskPageContent() {
         .nameMark { background: #fef3c7; color: #92400e; padding: 0 2px; border-radius: 4px; }
         .targetCard { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), 0 20px 50px rgba(15,23,42,0.06); }
         @media (max-width: 900px) {
-          .pageHero, .cardTop, .guideGrid { flex-direction: column; grid-template-columns: 1fr; }
+          .pageHero { flex-direction: column; }
+          .guideGrid { grid-template-columns: 1fr; }
           .heroMetaWrap, .updateBox { width: 100%; }
           .updateBox { text-align: left; }
           .riskCountRow { grid-template-columns: 1fr; }
+          .cardTop { flex-direction: column; }
         }
         @media (max-width: 640px) {
           .container { padding: 24px 18px 64px; }
@@ -415,7 +430,7 @@ function RiskPageContent() {
           .searchRow { flex-direction: column; align-items: stretch; }
           .searchInputWrap { flex: none; width: 100%; }
           .searchInput { height: 48px; min-height: 48px; max-height: 48px; padding-left: 42px; line-height: 48px; }
-          .resetBtn, .detailBtn, .ghostBtn { width: 100%; height: 48px; }
+          .filterResetBtn, .resetBtn, .detailBtn, .ghostBtn { width: 100%; height: 48px; }
           .riskCard h3 { font-size: 1.8rem; }
           .riskBody h4 { font-size: 1.35rem; }
         }
