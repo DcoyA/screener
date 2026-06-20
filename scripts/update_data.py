@@ -2,6 +2,7 @@ import io
 import json
 import os
 import re
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -27,6 +28,11 @@ DEFAULT_KRX_KOSDAQ_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_bydd
 DEFAULT_KRX_KOSPI_INDEX_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/idx/kospi_dd_trd"
 
 MAX_STOCKS = 500
+REFRESH_COUNT = 150
+REFRESH_SCAN_MULTIPLIER = 4
+HTTP_TIMEOUT = 180
+HTTP_RETRIES = 3
+HTTP_RETRY_SLEEP = 5
 REPORT_CODE = "11011"
 DAILY_WINDOW = 5
 RECENT_DAYS_BACK = 20
@@ -1120,11 +1126,18 @@ def main():
     stocks.sort(
         key=lambda x: (
             1 if x.get("rankMeta", {}).get("topRankEligible") else 0,
-            x["totalScore"],
-            x["metrics"].get("avgTradeValue5d", 0),
-            x["metrics"].get("marketCap", 0),
+            x.get("totalScore", 0),
+            x.get("metrics", {}).get("avgTradeValue5d", 0),
+            x.get("metrics", {}).get("marketCap", 0),
         ),
         reverse=True,
+    )
+    stocks = stocks[:MAX_STOCKS]
+    if not stocks:
+        raise RuntimeError("Merged stock list is empty after refresh.")
+    print(
+        f"refresh_target={refresh_target}, fresh={len(fresh_stocks)}, "
+        f"existing={len(existing_stocks)}, merged={len(stocks)}"
     )
 
     risks = []
