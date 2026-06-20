@@ -93,7 +93,7 @@ def load_json(path, default):
 def http_get_json(base_url, params):
     query = urllib.parse.urlencode(params)
     url = f"{base_url}?{query}"
-    with urllib.request.urlopen(url, timeout=60) as resp:
+    with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -216,7 +216,7 @@ def pick_field(row, exact_keys=None, contains_keys=None):
 def download_corp_code_xml():
     query = urllib.parse.urlencode({"crtfc_key": OPENDART_API_KEY})
     url = f"https://opendart.fss.or.kr/api/corpCode.xml?{query}"
-    with urllib.request.urlopen(url, timeout=60) as resp:
+    with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:
         data = resp.read()
     with zipfile.ZipFile(io.BytesIO(data)) as zf:
         xml_name = zf.namelist()[0]
