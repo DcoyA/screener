@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import stocks from "../data/stocks.json";
@@ -28,21 +27,17 @@ function debtRatioForUndervalue(item) {
 
 function buildSortedStocks(items, tab) {
   const list = [...items];
-
   if (tab === "upside") {
     return list.sort((a, b) => {
       const aUp = Number(a?.metrics?.upside ?? -999999);
       const bUp = Number(b?.metrics?.upside ?? -999999);
       if (bUp !== aUp) return bUp - aUp;
-
       const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
       const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
       if (bEligible !== aEligible) return bEligible - aEligible;
-
       const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
       const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
       if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-
       return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
     });
   }
@@ -54,19 +49,15 @@ function buildSortedStocks(items, tab) {
         const aValue = Number(a?.valueScore ?? 0);
         const bValue = Number(b?.valueScore ?? 0);
         if (bValue !== aValue) return bValue - aValue;
-
         const aDebt = debtRatioForUndervalue(a);
         const bDebt = debtRatioForUndervalue(b);
         if (aDebt !== bDebt) return aDebt - bDebt;
-
         const aUp = Number(a?.metrics?.upside ?? -999999);
         const bUp = Number(b?.metrics?.upside ?? -999999);
         if (bUp !== aUp) return bUp - aUp;
-
         const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
         const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
         if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-
         return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
       });
   }
@@ -75,15 +66,12 @@ function buildSortedStocks(items, tab) {
     const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
     const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
     if (bEligible !== aEligible) return bEligible - aEligible;
-
     const aScore = Number(a?.totalScore ?? 0);
     const bScore = Number(b?.totalScore ?? 0);
     if (bScore !== aScore) return bScore - aScore;
-
     const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
     if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-
     return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
   });
 }
@@ -148,18 +136,22 @@ export default function RankingPage() {
   const [activeTab, setActiveTab] = useState("total");
   const [query, setQuery] = useState("");
 
+  const sortedStocks = useMemo(() => buildSortedStocks(stocks, activeTab), [activeTab]);
+
+  const rankMap = useMemo(() => {
+    return new Map(sortedStocks.map((item, index) => [String(item.code), index + 1]));
+  }, [sortedStocks]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const base = q
-      ? stocks.filter((item) => {
-          return (
-            String(item.name || "").toLowerCase().includes(q) ||
-            String(item.code || "").toLowerCase().includes(q)
-          );
-        })
-      : stocks;
-    return buildSortedStocks(base, activeTab);
-  }, [activeTab, query]);
+    if (!q) return sortedStocks;
+    return sortedStocks.filter((item) => {
+      return (
+        String(item.name || "").toLowerCase().includes(q) ||
+        String(item.code || "").toLowerCase().includes(q)
+      );
+    });
+  }, [sortedStocks, query]);
 
   const topEligibleCount = useMemo(
     () => stocks.filter((item) => item?.rankMeta?.topRankEligible).length,
@@ -243,11 +235,12 @@ export default function RankingPage() {
 
         <section className="listSection">
           <div className="listGrid">
-            {filtered.map((stock, index) => {
+            {filtered.map((stock) => {
               const eligible = !!stock?.rankMeta?.topRankEligible;
               const rankFlags = stock?.rankMeta?.flags || [];
               const undervalueFlags = stock?.undervalueMeta?.flags || [];
               const penalty = Number(stock?.rankMeta?.penalty || 0);
+              const displayRank = rankMap.get(String(stock.code)) ?? "-";
               const scoreLabel =
                 activeTab === "undervalue"
                   ? "가치 점수"
@@ -265,7 +258,7 @@ export default function RankingPage() {
                 <article className="stockCard" key={`${stock.code}-${activeTab}`}>
                   <div className="cardTop">
                     <div className="rankWrap">
-                      <span className="rankBadge">#{index + 1}</span>
+                      <span className="rankBadge">#{displayRank}</span>
                       <div>
                         <h3>{stock.name}</h3>
                         <p className="stockMeta">{stock.market} · {stock.code}</p>
