@@ -1,1 +1,30 @@
-
+[
+  {
+    "code": "069500",
+    "name": "KODEX 200",
+    "manager": "삼성자산운용",
+    "launchDate": "2002-10-14",
+    "benchmark": "KOSPI200",
+    "riskLevel": "보통",
+    "avgTradeValue5d": 150000000000,
+    "return1m": 3.5,
+    "return3m": 7.2,
+    "return6m": 12.8,
+    "return1y": 18.4,
+    "topHoldings": ["삼성전자","SK하이닉스","현대차","NAVER"]
+  },
+  {
+    "code": "229200",
+    "name": "KODEX 코스닥150",
+    "manager": "삼성자산운용",
+    "launchDate": "2015-07-13",
+    "benchmark": "KOSDAQ150",
+    "riskLevel": "높음",
+    "avgTradeValue5d": 80000000000,
+    "return1m": 4.1,
+    "return3m": 8.9,
+    "return6m": 15.3,
+    "return1y": 22.5,
+    "topHoldings": ["에코프로","엘앤에프","JYP","펄어비스"]
+  }
+]
