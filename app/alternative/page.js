@@ -1,10 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import marketState from "../data/market_state.json";
+import etfUniverse from "../data/etf_universe.json";
 import MainNav from "../components/MainNav";
 
 function formatPercent(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(1)}%`;
+}
+
+function formatPercentPlain(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "-";
   const sign = num > 0 ? "+" : "";
@@ -39,6 +48,7 @@ function getEtfTypeLabel(type) {
   if (type === "bond") return "채권형";
   if (type === "commodity") return "원자재형";
   if (type === "global") return "글로벌형";
+  if (type === "theme") return "테마형";
   return "기타";
 }
 
@@ -78,7 +88,58 @@ function getRiskBand(value) {
   return "낮음 · 후보군이 한쪽 위험에 덜 쏠린 상태";
 }
 
+function buildUniverseMap(items) {
+  return new Map((items || []).map((item) => [String(item.code), item]));
+}
+
+function normalizeTopHoldings(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string") {
+    return value
+      .split(/[,/]|\n/)
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function formatDateLabel(value) {
+  if (!value) return "정보 없음";
+  return value;
+}
+
+function getReturnItems(item) {
+  return [
+    { label: "1개월", value: item?.return1m ?? item?.returns?.m1 ?? item?.perf?.m1 },
+    { label: "3개월", value: item?.return3m ?? item?.returns?.m3 ?? item?.perf?.m3 },
+    { label: "6개월", value: item?.return6m ?? item?.returns?.m6 ?? item?.perf?.m6 },
+    { label: "1년", value: item?.return1y ?? item?.returns?.y1 ?? item?.perf?.y1 },
+  ];
+}
+
+function getScoreMeaning(score) {
+  const num = Number(score || 0);
+  if (num >= 4) return "상위권 · 현재 시장 해석과 잘 맞는 편";
+  if (num >= 3) return "양호 · 보조 대안으로 볼 수 있는 수준";
+  if (num >= 2) return "중립 · 후보군 안에는 들지만 강한 확신 구간은 아님";
+  if (num > 0) return "낮음 · 참고 후보 수준";
+  return "미부여 · 자동 추천 점수 없음";
+}
+
+function getScoreBreakdown(rec, detail) {
+  const chunks = [];
+  if (rec?.type === "index") chunks.push("지수 분산형이라 현재 장 해석과 무난하게 맞음");
+  if (rec?.type === "bond") chunks.push("리스크 축소 관점에서 가점 가능");
+  if (rec?.sector && rec.sector !== "지수") chunks.push(`${rec.sector} 노출용 대안으로 분류`);
+  if (detail?.priority !== undefined) chunks.push(`유니버스 우선순위 ${detail.priority}`);
+  if (detail?.riskLevel) chunks.push(`리스크 수준 ${detail.riskLevel}`);
+  return chunks.length ? chunks.join(" · ") : "현재 시장 상태와 ETF 유형/섹터 특성을 합쳐 만든 추천 점수입니다.";
+}
+
 export default function AlternativePage() {
+  const [showAllEtfs, setShowAllEtfs] = useState(false);
+
   const header = marketState?.header || {};
   const signals = marketState?.signals || {};
   const approachCards = marketState?.approachCards || [];
@@ -90,6 +151,50 @@ export default function AlternativePage() {
   const preferredModes = marketState?.preferredModes || [];
   const avoidModes = marketState?.avoidModes || [];
   const etfRecommendations = marketState?.etfRecommendations || [];
+
+  const universeMap = useMemo(() => buildUniverseMap(etfUniverse || []), []);
+
+  const mergedRecommendedEtfs = useMemo(() => {
+    return etfRecommendations.map((rec, idx) => {
+      const detail = universeMap.get(String(rec.code)) || {};
+      return {
+        ...detail,
+        ...rec,
+        _rank: idx + 1,
+        topHoldings: normalizeTopHoldings(rec?.topHoldings || detail?.topHoldings || detail?.holdings),
+        productsCount: Array.isArray(etfRecommendations) ? etfRecommendations.length : 0,
+      };
+    });
+  }, [etfRecommendations, universeMap]);
+
+  const universeRanked = useMemo(() => {
+    const recommendedCodeSet = new Set(mergedRecommendedEtfs.map((item) => String(item.code)));
+    const enriched = (etfUniverse || []).map((item) => {
+      const rec = mergedRecommendedEtfs.find((v) => String(v.code) === String(item.code));
+      return {
+        ...item,
+        ...(rec || {}),
+        score: Number(rec?.score ?? item?.score ?? 0),
+      };
+    });
+
+    enriched.sort((a, b) => {
+      const scoreDiff = Number(b.score || 0) - Number(a.score || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      const priDiff = Number(b.priority || 0) - Number(a.priority || 0);
+      if (priDiff !== 0) return priDiff;
+      return String(a.name || "").localeCompare(String(b.name || ""), "ko");
+    });
+
+    return enriched.map((item, idx) => ({
+      ...item,
+      _rank: idx + 1,
+      _isRecommended: recommendedCodeSet.has(String(item.code)),
+      topHoldings: normalizeTopHoldings(item?.topHoldings || item?.holdings),
+    }));
+  }, [etfUniverse, mergedRecommendedEtfs]);
+
+  const visibleUniverse = showAllEtfs ? universeRanked : universeRanked.slice(0, 12);
 
   const eligibleRatio = Number(signals?.eligibleRatio || 0);
   const avgTotalScore = Number(signals?.avgTotalScore || 0);
@@ -265,24 +370,94 @@ export default function AlternativePage() {
 
         <section className="etfSection">
           <div className="sectionCard">
-            <span className="sectionLabel">ETF PICKS</span>
-            <h2>오늘의 ETF 추천</h2>
-            <p className="sectionDesc">현재 시장 상태를 기준으로, 개별주 대신 쓰기 좋은 ETF 대안을 자동 추천합니다.</p>
-            <div className="etfGrid">
-              {etfRecommendations.length ? etfRecommendations.map((etf) => (
-                <div className="etfCard" key={etf.code || etf.name}>
-                  <div className="etfMetaRow">
-                    <span className="typeBadge">{getEtfTypeLabel(etf.type)}</span>
-                    {etf.sector && etf.sector !== "지수" ? <span className="typeBadge soft">{etf.sector}</span> : null}
+            <div className="sectionHeaderRow">
+              <div>
+                <span className="sectionLabel">ETF PICKS</span>
+                <h2>오늘의 ETF 추천</h2>
+                <p className="sectionDesc">현재 시장 상태를 기준으로, 개별주 대신 쓰기 좋은 ETF 대안을 자동 추천합니다.</p>
+              </div>
+              <button type="button" className="moreBtn" onClick={() => setShowAllEtfs((prev) => !prev)}>
+                {showAllEtfs ? "추천 중심으로 보기" : `더보기 (${universeRanked.length}개 ETF)`}
+              </button>
+            </div>
+
+            <div className="signalHelpBox etfHelpBox">
+              <h3>ETF 추천 점수는 뭘 뜻하나</h3>
+              <ul>
+                <li><strong>추천 점수</strong>는 절대평가가 아니라, 현재 시장 상태와 ETF 유형/섹터 적합도를 합쳐 만든 내부 점수입니다.</li>
+                <li><strong>최고점수</strong>는 고정 공개값이 아니라 현재 추천 로직 내 상대 비교용이며, 추천 카드에서는 "몇 점 받았는지"와 함께 "왜 그 점수를 받았는지"를 같이 보여주도록 수정했습니다.</li>
+                <li><strong>랭크</strong>는 현재 추천/유니버스 안에서의 상대 순위입니다. 추천 2점이라도 현재 장에서는 상위권일 수 있고, 강한 확신 구간이 아니라는 뜻일 수도 있습니다.</li>
+                <li><strong>구성 종목 / 출시일 / 운용사 / 수익률</strong>은 JSON에 값이 있으면 보여주고, 없으면 "정보 없음"으로 표시됩니다. 즉 이 부분은 유니버스 데이터 품질이 올라갈수록 같이 좋아집니다.</li>
+              </ul>
+            </div>
+
+            <div className="etfGrid wide">
+              {(showAllEtfs ? visibleUniverse : mergedRecommendedEtfs).length ? (showAllEtfs ? visibleUniverse : mergedRecommendedEtfs).map((etf) => {
+                const returnItems = getReturnItems(etf);
+                return (
+                  <div className={`etfCard rich ${etf._isRecommended ? "recommended" : ""}`} key={`${etf.code}-${etf._rank}`}>
+                    <div className="etfHeaderRow">
+                      <div>
+                        <div className="etfMetaRow">
+                          <span className="typeBadge">{getEtfTypeLabel(etf.type)}</span>
+                          {etf.sector && etf.sector !== "지수" ? <span className="typeBadge soft">{etf.sector}</span> : null}
+                          {etf._isRecommended ? <span className="typeBadge rank">추천</span> : null}
+                        </div>
+                        <h3>{etf.name}</h3>
+                        <p className="codeLine">ETF 코드 {etf.code || "-"} · 유니버스 순위 #{etf._rank || "-"}</p>
+                      </div>
+                      <div className="scorePanel">
+                        <span>추천 점수</span>
+                        <strong>{Number(etf.score || 0).toFixed(1)}</strong>
+                        <small>{getScoreMeaning(etf.score)}</small>
+                      </div>
+                    </div>
+
+                    <div className="infoBlock emphasis">
+                      <b>왜 추천?</b>
+                      <p>{etf.reason || "현재 시장 상태상 대안 접근용 ETF"}</p>
+                      <p className="subInfo">점수 설명: {getScoreBreakdown(etfRecommendations.find((v) => String(v.code) === String(etf.code)) || etf, etf)}</p>
+                    </div>
+
+                    <div className="detailGrid">
+                      <div className="miniBox"><span>운용사</span><strong>{etf.manager || etf.provider || etf.operator || "정보 없음"}</strong></div>
+                      <div className="miniBox"><span>출시일</span><strong>{formatDateLabel(etf.launchDate || etf.inceptionDate || etf.listedDate)}</strong></div>
+                      <div className="miniBox"><span>기초/추종</span><strong>{etf.indexName || etf.benchmark || etf.desc || "정보 없음"}</strong></div>
+                      <div className="miniBox"><span>리스크 수준</span><strong>{etf.riskLevel || "정보 없음"}</strong></div>
+                    </div>
+
+                    <div className="returnsBox">
+                      <b>최근 수익률</b>
+                      <div className="returnsRow">
+                        {returnItems.map((ret) => (
+                          <div className="returnItem" key={ret.label}>
+                            <span>{ret.label}</span>
+                            <strong>{formatPercentPlain(ret.value)}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="compositionBox">
+                      <b>구성 종목 / 포지션 성격</b>
+                      {etf.topHoldings?.length ? (
+                        <div className="holdingList">
+                          {etf.topHoldings.slice(0, showAllEtfs ? 10 : 6).map((holding) => (
+                            <span className="holdingChip" key={holding}>{holding}</span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mutedText">구성 종목 정보 없음 — 유니버스 JSON에 topHoldings / holdings 필드를 넣으면 여기서 바로 보여줄 수 있습니다.</p>
+                      )}
+                    </div>
+
+                    <div className="splitInfoGrid">
+                      <div className="infoBlock"><b>특징</b><p>{etf.desc || "설명 없음"}</p></div>
+                      <div className="infoBlock"><b>과거 성격</b><p>{etf.behavior || "행동 특성 정보 없음"}</p></div>
+                    </div>
                   </div>
-                  <h3>{etf.name}</h3>
-                  <p className="codeLine">ETF 코드 {etf.code || "-"}</p>
-                  <p className="scoreText">추천 점수 {Number(etf.score || 0).toFixed(0)}</p>
-                  <div className="infoBlock"><b>왜 추천?</b><p>{etf.reason || "현재 시장 상태상 대안 접근용 ETF"}</p></div>
-                  <div className="infoBlock"><b>특징</b><p>{etf.desc || "설명 없음"}</p></div>
-                  <div className="infoBlock"><b>과거 성격</b><p>{etf.behavior || "행동 특성 정보 없음"}</p></div>
-                </div>
-              )) : <p className="emptyText">추천 가능한 ETF가 아직 생성되지 않았습니다.</p>}
+                );
+              }) : <p className="emptyText">추천 가능한 ETF가 아직 생성되지 않았습니다.</p>}
             </div>
           </div>
         </section>
@@ -326,7 +501,7 @@ export default function AlternativePage() {
                     <h4>{todayAlternative.label}</h4>
                     <div className="infoBlock"><b>왜 이게 대안인가</b><p>{todayAlternative.reason}</p></div>
                     <p className="noteText">현재 시장 톤이 {header?.marketTone || "중립"}으로 판정되었기 때문에, 개별주 외에도 {todayAlternative.label} 관점으로 접근하는 편이 더 무난할 수 있습니다.</p>
-                    {etfRecommendations.length ? <p className="metricInline">함께 볼 ETF <b>{etfRecommendations[0].name}</b></p> : null}
+                    {mergedRecommendedEtfs.length ? <p className="metricInline">함께 볼 ETF <b>{mergedRecommendedEtfs[0].name}</b></p> : null}
                   </>
                 ) : <p className="emptyText">오늘의 대안 접근이 아직 생성되지 않았습니다.</p>}
               </div>
@@ -357,7 +532,7 @@ export default function AlternativePage() {
         h2 { margin:14px 0 12px; font-size:clamp(1.45rem, 2.6vw, 2rem); letter-spacing:-0.03em; }
         h3 { margin:0 0 10px; font-size:1.15rem; }
         h4 { margin:0 0 8px; font-size:1.05rem; }
-        .desc, .sectionDesc, .noteText, .infoBlock p, .compareCard p, .summaryCard p { color:#475569; line-height:1.8; }
+        .desc, .sectionDesc, .noteText, .infoBlock p, .compareCard p, .summaryCard p, .subInfo { color:#475569; line-height:1.8; }
         .desc { max-width:760px; margin:0; }
         .heroSide { display:grid; gap:12px; min-width:290px; width:320px; }
         .heroBox, .summaryCard, .sectionCard { border:1px solid #e5e7eb; border-radius:28px; background:linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
@@ -384,9 +559,13 @@ export default function AlternativePage() {
         .guideTopRow { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:10px; }
         .guideValue { color:#0f172a; font-weight:900; }
         .detailItem p { margin:0 0 8px; color:#475569; line-height:1.7; font-size:.94rem; }
-        .approachGrid, .etfGrid, .compareGrid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; margin-top:16px; }
+        .approachGrid, .compareGrid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; margin-top:16px; }
+        .etfGrid { display:grid; gap:14px; margin-top:16px; }
+        .etfGrid.wide { grid-template-columns:repeat(2, minmax(0,1fr)); }
         .approachCard, .etfCard, .compareCard { border:1px solid #e5e7eb; border-radius:22px; background:#fff; padding:18px; }
-        .approachHeader { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+        .etfCard.rich.recommended { border-color:#93c5fd; box-shadow:0 0 0 3px rgba(59,130,246,.08); }
+        .approachHeader, .sectionHeaderRow { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+        .sectionHeaderRow { flex-wrap:wrap; }
         .statusBadge { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; }
         .statusBadge.good { background:#ecfeff; color:#0891b2; }
         .statusBadge.warn { background:#fff7ed; color:#c2410c; }
@@ -394,23 +573,41 @@ export default function AlternativePage() {
         .scoreText, .metricInline, .codeLine { color:#0f172a; font-weight:700; }
         .scoreText { margin-top:12px; }
         .metricInline { margin:6px 0; }
-        .typeBadge, .sectorChip { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; background:#eef2ff; color:#4f46e5; }
+        .typeBadge, .sectorChip, .holdingChip { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; background:#eef2ff; color:#4f46e5; }
         .typeBadge.soft { background:#f1f5f9; color:#475569; }
-        .etfMetaRow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
-        .infoBlock { margin-top:12px; }
-        .infoBlock b { display:block; margin-bottom:6px; }
+        .typeBadge.rank { background:#dcfce7; color:#15803d; }
+        .holdingChip { background:#f8fafc; color:#334155; border:1px solid #e2e8f0; }
+        .etfMetaRow, .holdingList, .returnsRow { display:flex; gap:8px; flex-wrap:wrap; }
+        .etfHeaderRow { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:14px; }
+        .scorePanel { min-width:128px; border:1px solid #e5e7eb; border-radius:18px; padding:14px; background:#f8fbff; text-align:center; }
+        .scorePanel span { display:block; margin-bottom:6px; color:#64748b; font-size:.84rem; font-weight:700; }
+        .scorePanel strong { display:block; font-size:1.7rem; line-height:1; }
+        .scorePanel small { display:block; margin-top:8px; color:#64748b; line-height:1.5; }
+        .detailGrid, .splitInfoGrid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-top:14px; }
+        .miniBox { border:1px solid #e5e7eb; border-radius:16px; padding:14px; background:#f8fbff; }
+        .miniBox span { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
+        .miniBox strong { font-size:.96rem; line-height:1.6; }
+        .returnsBox, .compositionBox, .infoBlock.emphasis { margin-top:14px; padding:14px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; }
+        .returnsBox b, .compositionBox b, .infoBlock b { display:block; margin-bottom:8px; }
+        .returnItem { min-width:88px; border:1px solid #e5e7eb; border-radius:14px; padding:10px 12px; background:#f8fbff; }
+        .returnItem span { display:block; margin-bottom:6px; color:#64748b; font-size:.8rem; font-weight:700; }
+        .returnItem strong { font-size:.95rem; }
         .emptyText, .mutedText { color:#64748b; }
         .compareWrap .compareGrid { margin-top:16px; }
-        .detailBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; background:#0f172a; color:#fff; font-weight:800; margin-top:12px; }
+        .detailBtn, .moreBtn { display:inline-flex; align-items:center; justify-content:center; height:42px; padding:0 14px; border-radius:12px; text-decoration:none; font-weight:800; }
+        .detailBtn { background:#0f172a; color:#fff; margin-top:12px; }
+        .moreBtn { background:#fff; color:#0f172a; border:1px solid #cbd5e1; cursor:pointer; }
         .notesList { margin:16px 0 0; padding-left:18px; color:#475569; line-height:1.8; }
         .disclaimer { margin-top:18px; color:#64748b; font-size:.92rem; }
-        @media (max-width: 900px) {
-          .signalMetricGrid, .guideGrid, .guideGrid.detailed, .approachGrid, .etfGrid, .compareGrid { grid-template-columns:1fr; }
+        @media (max-width: 1000px) {
+          .signalMetricGrid, .guideGrid, .guideGrid.detailed, .approachGrid, .etfGrid.wide, .compareGrid, .detailGrid, .splitInfoGrid { grid-template-columns:1fr; }
           .heroSide { width:100%; min-width:0; }
         }
         @media (max-width: 640px) {
           .container { padding:24px 18px 64px; }
           .summaryCard, .sectionCard, .heroBox { padding:20px; }
+          .scorePanel, .moreBtn, .detailBtn { width:100%; }
+          .etfHeaderRow, .sectionHeaderRow { flex-direction:column; }
         }
       `}</style>
     </>
