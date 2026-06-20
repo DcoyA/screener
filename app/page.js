@@ -300,7 +300,7 @@ export default function HomePage() {
           <div className="heroTop">
             <div className="heroMain">
               <p className="badge">OFFICIAL DATA LIVE</p>
-              <h1>종목을 발굴하려면, 먼저 데이터부터 분석해야 한다</h1>
+              <h1>종목을 발굴하려면, 데이터부터 분석해야 한다</h1>
               <p className="desc">
                 메인에서는 데이터 기반으로 접근 방식을 정리합니다.<br />
                 단기 / 연간 / 장기 관점을 나눠서, 같은 종목도 지금은 어떻게 봐야 하는지 다르게 보여줍니다.<br />
