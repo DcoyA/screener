@@ -1,7 +1,7 @@
 "use client";
-
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import risks from "../data/risks.json";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
@@ -13,22 +13,18 @@ function getRiskClass(level) {
 }
 
 function normalizeKeyword(value = "") {
-  return value.toLowerCase().replace(/\s+/g, "").trim();
+  return String(value).toLowerCase().replace(/\s+/g, "").trim();
 }
 
 function renderHighlightedName(name, query) {
   if (!query) return name;
-
-  const lowerName = name.toLowerCase();
-  const lowerQuery = query.toLowerCase();
+  const lowerName = String(name).toLowerCase();
+  const lowerQuery = String(query).toLowerCase();
   const directIndex = lowerName.indexOf(lowerQuery);
-
   if (directIndex === -1) return name;
-
   const before = name.slice(0, directIndex);
   const match = name.slice(directIndex, directIndex + query.length);
   const after = name.slice(directIndex + query.length);
-
   return (
     <>
       {before}
@@ -59,7 +55,15 @@ function buildCheckPointGuide(item) {
 }
 
 export default function RiskPage() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchParams = useSearchParams();
+  const requestedCode = searchParams.get("code")?.trim() || "";
+  const requestedName = searchParams.get("name")?.trim() || "";
+  const initialKeyword = requestedCode || requestedName || "";
+
+  const [searchTerm, setSearchTerm] = useState(initialKeyword);
+  const [highlightedCode, setHighlightedCode] = useState(requestedCode || "");
+  const didAutoFocus = useRef(false);
+
   const updatedAt = risks[0]?.date || "-";
   const normalizedSearchTerm = normalizeKeyword(searchTerm);
 
@@ -69,8 +73,35 @@ export default function RiskPage() {
 
   const filteredRisks = useMemo(() => {
     if (!normalizedSearchTerm) return risks;
-    return risks.filter((item) => normalizeKeyword(item.name).includes(normalizedSearchTerm));
+    return risks.filter((item) => {
+      const nameMatch = normalizeKeyword(item.name).includes(normalizedSearchTerm);
+      const codeMatch = normalizeKeyword(item.code).includes(normalizedSearchTerm);
+      return nameMatch || codeMatch;
+    });
   }, [normalizedSearchTerm]);
+
+  useEffect(() => {
+    if (!initialKeyword) return;
+    setSearchTerm(initialKeyword);
+    if (requestedCode) setHighlightedCode(requestedCode);
+  }, [initialKeyword, requestedCode]);
+
+  useEffect(() => {
+    if (!requestedCode || didAutoFocus.current) return;
+
+    const exact = risks.find((item) => String(item.code) === String(requestedCode));
+    if (!exact) return;
+
+    const timer = setTimeout(() => {
+      const target = document.getElementById(`risk-${exact.code}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        didAutoFocus.current = true;
+      }
+    }, 120);
+
+    return () => clearTimeout(timer);
+  }, [requestedCode, filteredRisks]);
 
   const lowCount = useMemo(() => risks.filter((item) => item.level === "낮음").length, []);
   const midCount = useMemo(() => risks.filter((item) => item.level === "보통").length, []);
@@ -104,7 +135,6 @@ export default function RiskPage() {
               <span className="updateLabel">업데이트</span>
               <strong>{updatedAt}</strong>
             </div>
-
             <div className="riskCountRow">
               <div className="miniStatCard low">
                 <span>낮음</span>
@@ -150,7 +180,6 @@ export default function RiskPage() {
                 <p className="searchDesc">{resultCountText}</p>
               </div>
             </div>
-
             <div className="searchRow">
               <div className="searchInputWrap">
                 <span className="searchIcon" aria-hidden="true">🔍</span>
@@ -158,13 +187,20 @@ export default function RiskPage() {
                   type="text"
                   className="searchInput"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="종목명으로 검색"
-                  aria-label="종목명 검색"
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (!e.target.value.trim()) setHighlightedCode("");
+                  }}
+                  placeholder="종목명 또는 종목코드로 검색"
+                  aria-label="종목명 또는 종목코드 검색"
                 />
               </div>
               {searchTerm ? (
-                <button type="button" className="resetBtn" onClick={() => setSearchTerm("")}>초기화</button>
+                <button type="button" className="resetBtn" onClick={() => {
+                  setSearchTerm("");
+                  setHighlightedCode("");
+                  didAutoFocus.current = false;
+                }}>초기화</button>
               ) : null}
             </div>
           </div>
@@ -175,8 +211,13 @@ export default function RiskPage() {
             <div className="riskList">
               {filteredRisks.map((item) => {
                 const currentPrice = formatPrice(stockPriceMap[item.code]);
+                const isFocused = highlightedCode && String(highlightedCode) === String(item.code);
                 return (
-                  <article className="riskCard" key={`${item.code}-${item.date}`}>
+                  <article
+                    className={`riskCard ${isFocused ? "targetCard" : ""}`}
+                    key={`${item.code}-${item.date}`}
+                    id={`risk-${item.code}`}
+                  >
                     <div className="cardTop">
                       <div>
                         <p className="dateText">{item.date}</p>
@@ -200,7 +241,6 @@ export default function RiskPage() {
                     <div className="riskBody">
                       <h4>{item.title}</h4>
                       <p className="summaryText">{item.summary}</p>
-
                       <div className="checkPointBox">
                         <span className="checkPointLabel">체크 포인트</span>
                         <p>{item.checkPoint}</p>
@@ -220,8 +260,12 @@ export default function RiskPage() {
           <section className="emptySection">
             <div className="emptyCard">
               <h2>검색 결과가 없습니다.</h2>
-              <p>종목명 기준으로만 검색됩니다. 다른 종목명을 입력해 보세요.</p>
-              <button type="button" className="resetBtn large" onClick={() => setSearchTerm("")}>검색 초기화</button>
+              <p>종목명 또는 종목코드 기준으로 검색됩니다. 다른 키워드를 입력해 보세요.</p>
+              <button type="button" className="resetBtn large" onClick={() => {
+                setSearchTerm("");
+                setHighlightedCode("");
+                didAutoFocus.current = false;
+              }}>검색 초기화</button>
             </div>
           </section>
         )}
@@ -287,6 +331,7 @@ export default function RiskPage() {
         .checkPointBox p { margin: 0; color: #475569; line-height: 1.75; }
         .cardActions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
         .nameMark { background: #fef3c7; color: #92400e; padding: 0 2px; border-radius: 4px; }
+        .targetCard { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), 0 20px 50px rgba(15,23,42,0.06); }
         @media (max-width: 900px) {
           .pageHero, .cardTop, .guideGrid { flex-direction: column; grid-template-columns: 1fr; }
           .heroMetaWrap, .updateBox { width: 100%; }
