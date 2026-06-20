@@ -468,7 +468,6 @@ function RankingPageContent() {
             <div className="guideHeader">
               <div>
                 <h2>보기 전환</h2>
-                <p className="guideIntro">세 줄로 쪼개놓기보다, 한 번에 보기 좋게 정리했습니다.</p>
               </div>
             </div>
 
