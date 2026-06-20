@@ -2,10 +2,18 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import risks from "../data/risks.json";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
+
+const RISK_FILTER_CONFIG = {
+  all: { label: "전체", title: "전체 리스크" },
+  low: { label: "낮음", title: "낮음 리스크" },
+  mid: { label: "보통", title: "보통 리스크" },
+  high: { label: "주의", title: "주의 리스크" },
+};
+
 
 function getRiskClass(level) {
   if (level === "주의") return "riskBadge riskHigh";
@@ -70,6 +78,26 @@ function RiskPageContent() {
   const updatedAt = risks[0]?.date || "-";
   const normalizedSearchTerm = normalizeKeyword(searchTerm);
 
+  const updateRoute = (nextLevel) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (!nextLevel || nextLevel === "all") {
+      params.delete("level");
+    } else {
+      params.set("level", nextLevel);
+    }
+    const next = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(next, { scroll: false });
+  };
+
+  const handleLevelFilter = (nextLevel) => {
+    setSelectedLevel(nextLevel);
+    updateRoute(nextLevel);
+  };
+
+  useEffect(() => {
+    setSelectedLevel(initialLevel);
+  }, [initialLevel]);
+
   const stockPriceMap = useMemo(() => {
     return Object.fromEntries(
       stocks.map((item) => [item.code, item.metrics?.closePrice || 0])
@@ -113,9 +141,12 @@ function RiskPageContent() {
   const midCount = useMemo(() => risks.filter((item) => item.level === "보통").length, []);
   const highCount = useMemo(() => risks.filter((item) => item.level === "주의").length, []);
 
+  const levelTitle = RISK_FILTER_CONFIG[selectedLevel]?.title || "전체 리스크";
   const resultCountText = normalizedSearchTerm
-    ? `검색 결과 ${filteredRisks.length}개 / 전체 ${risks.length}개`
-    : `상위 ${risks.length}개 종목에 대해서만 제공합니다.`;
+    ? `검색 결과 ${filteredRisks.length}개 / ${levelTitle} ${selectedLevel === "all" ? risks.length : filteredRisks.length}개 기준`
+    : selectedLevel === "all"
+      ? `상위 ${risks.length}개 종목에 대해서만 제공합니다.`
+      : `${levelTitle} 기준 ${filteredRisks.length}개 종목을 보고 있습니다.`;
 
   return (
     <main className="container">
@@ -142,18 +173,30 @@ function RiskPageContent() {
           </div>
 
           <div className="riskCountRow">
-            <div className="miniStatCard low">
+            <button
+              type="button"
+              className={`miniStatCard low ${selectedLevel === "low" ? "active" : ""}`}
+              onClick={() => handleLevelFilter("low")}
+            >
               <span>낮음</span>
               <strong>{lowCount}</strong>
-            </div>
-            <div className="miniStatCard mid">
+            </button>
+            <button
+              type="button"
+              className={`miniStatCard mid ${selectedLevel === "mid" ? "active" : ""}`}
+              onClick={() => handleLevelFilter("mid")}
+            >
               <span>보통</span>
               <strong>{midCount}</strong>
-            </div>
-            <div className="miniStatCard high">
+            </button>
+            <button
+              type="button"
+              className={`miniStatCard high ${selectedLevel === "high" ? "active" : ""}`}
+              onClick={() => handleLevelFilter("high")}
+            >
               <span>주의</span>
               <strong>{highCount}</strong>
-            </div>
+            </button>
           </div>
         </div>
       </section>
@@ -185,6 +228,11 @@ function RiskPageContent() {
               <h2>종목명 검색</h2>
               <p className="searchDesc">{resultCountText}</p>
             </div>
+            {selectedLevel !== "all" ? (
+              <button type="button" className="filterResetBtn" onClick={() => handleLevelFilter("all")}>
+                필터 전체 해제
+              </button>
+            ) : null}
           </div>
 
           <div className="searchRow">
@@ -304,9 +352,11 @@ function RiskPageContent() {
         .updateLabel { display: block; margin-bottom: 6px; color: #64748b; font-size: 0.88rem; font-weight: 700; }
         .updateBox strong { display: block; font-size: 1.15rem; color: #0f172a; }
         .riskCountRow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .miniStatCard { border: 1px solid #e5e7eb; border-radius: 18px; padding: 14px; background: #ffffff; }
+        .miniStatCard { border: 1px solid #e5e7eb; border-radius: 18px; padding: 14px; background: #ffffff; text-align: left; cursor: pointer; transition: all .18s ease; }
         .miniStatCard span { display: block; margin-bottom: 8px; font-size: 0.82rem; font-weight: 700; }
         .miniStatCard strong { font-size: 1.3rem; line-height: 1; letter-spacing: -0.03em; }
+        .miniStatCard:hover { transform: translateY(-1px); border-color: #cbd5e1; }
+        .miniStatCard.active { box-shadow: 0 0 0 2px rgba(15,23,42,0.08); }
         .miniStatCard.low span, .miniStatCard.low strong { color: #15803d; }
         .miniStatCard.mid span, .miniStatCard.mid strong { color: #b45309; }
         .miniStatCard.high span, .miniStatCard.high strong { color: #dc2626; }
@@ -317,13 +367,14 @@ function RiskPageContent() {
         .guideItem { border: 1px solid #e5e7eb; border-radius: 18px; padding: 16px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
         .guideItem strong { color: #0f172a; }
         .guideItem span { color: #64748b; line-height: 1.7; font-size: .94rem; }
-        .searchTop { margin-bottom: 16px; }
+        .searchTop { margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
         .searchDesc { margin: 0; color: #64748b; line-height: 1.7; }
         .searchRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .searchInputWrap { position: relative; flex: 1 1 560px; min-width: 0; }
         .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
         .searchInput { width: 100%; height: 52px; border-radius: 16px; border: 1px solid #dbe3f0; padding: 0 16px 0 44px; font-size: 1rem; color: #0f172a; background: #fff; box-sizing: border-box; outline: none; }
         .searchInput:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
+        .filterResetBtn { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 14px; border-radius: 12px; border: 1px solid #dbe3f0; background: #fff; color: #0f172a; font-weight: 800; cursor: pointer; }
         .resetBtn, .detailBtn, .ghostBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; height: 52px; padding: 0 16px; font-weight: 800; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 0.95rem; }
         .resetBtn { background: #fff; color: #0f172a; border-color: #dbe3f0; }
         .resetBtn.large { margin-top: 18px; }
