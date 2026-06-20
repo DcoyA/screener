@@ -300,13 +300,11 @@ export default function HomePage() {
           <div className="heroTop">
             <div className="heroMain">
               <p className="badge">OFFICIAL DATA LIVE</p>
-              <h1>랭킹보다 먼저, 오늘 어떤 투자 관점이 맞는지부터 보여드립니다</h1>
+              <h1>종목을 발굴하려면, 먼저 데이터부터 분석해야 한다</h1>
               <p className="desc">
-                메인페이지는 단순히 고정된 1~3위 종목을 반복 노출하지 않습니다.
-                <strong> 단기 · 연간 · 장기 </strong>
-                처럼 보유 관점 자체를 나눠서, 같은 종목이라도 왜 지금은 단기인지, 왜 장기로 봐야 하는지 다르게 읽게 만드는 구조입니다.
-                <br />
-                깊게 비교하고 검색하는 용도는 <strong>랭킹 페이지</strong>, 메인에서는 <strong>오늘 어떤 식으로 접근할지</strong>를 빠르게 정리합니다.
+                메인에서는 데이터 기반으로 접근 방식을 정리합니다.<br />
+                단기 / 연간 / 장기 관점을 나눠서, 같은 종목도 지금은 어떻게 봐야 하는지 다르게 보여줍니다.<br />
+                종목을 자세히 보고 싶다면 랭킹 페이지에서 확인하세요.
               </p>
               <div className="heroPointRow">
                 <span className="heroPoint">단기: 흐름과 거래대금 중심</span>
