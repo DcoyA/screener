@@ -1,8 +1,66 @@
 "use client";
+
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
+
+const VIEW_CONFIG = {
+  total: {
+    label: "종합",
+    title: "종합 랭킹",
+    desc: "기본 조건 통과 여부와 총점을 함께 반영한 기본 랭킹입니다.",
+  },
+  undervalue: {
+    label: "저평가",
+    title: "저평가 랭킹",
+    desc: "가치 점수 중심으로 보되, 부채비율이 낮은 순서를 우선 반영합니다.",
+  },
+  upside: {
+    label: "상승여력",
+    title: "상승여력 랭킹",
+    desc: "적정가 추정 대비 괴리가 큰 종목을 우선 보여주는 관점입니다.",
+  },
+  short: {
+    label: "단기 투자",
+    title: "단기 투자에 좋은 후보",
+    desc: "최근 흐름, 거래대금, 상승여력을 같이 봐서 지금 당장 반응 가능한 쪽을 우선 정렬합니다.",
+  },
+  annual: {
+    label: "연간 투자",
+    title: "연간 투자에 좋은 후보",
+    desc: "종합 점수, 실적 안정성, 성장 흐름을 묶어서 올해 안에 다시 볼 만한 순서로 정렬합니다.",
+  },
+  long: {
+    label: "장기 투자",
+    title: "장기 투자에 좋은 후보",
+    desc: "저평가와 재무 안정성 중심으로, 당장보다 구조를 보고 들고 갈 만한 종목을 보여줍니다.",
+  },
+};
+
+const RISK_CONFIG = {
+  all: {
+    label: "전체",
+    title: "전체 종목",
+    desc: "추가 위험 필터 없이 현재 보기 기준 전체를 보여줍니다.",
+  },
+  highDebt: {
+    label: "고부채",
+    title: "고부채 타입",
+    desc: "부채비율이 높아 저평가처럼 보여도 재무 리스크를 먼저 확인해야 하는 종목입니다.",
+  },
+  lowLiquidity: {
+    label: "저유동성",
+    title: "저유동성 타입",
+    desc: "점수는 나쁘지 않아도 실제 거래가 약해 체결/수급 측면에서 보수적으로 봐야 하는 종목입니다.",
+  },
+  unstableEarnings: {
+    label: "이익 불안정",
+    title: "이익 불안정 타입",
+    desc: "영업이익 또는 순이익 흐름이 약해, 실적 지속성을 먼저 확인해야 하는 종목입니다.",
+  },
+};
 
 function formatPrice(value) {
   const num = Number(value);
@@ -18,6 +76,14 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(1)}%`;
 }
 
+function formatKrwCompact(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
+  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+
 function debtRatioForUndervalue(item) {
   const explicit = Number(item?.undervalueMeta?.sortDebtRatio);
   if (Number.isFinite(explicit)) return explicit;
@@ -25,69 +91,135 @@ function debtRatioForUndervalue(item) {
   return Number.isFinite(fallback) ? fallback : 999999;
 }
 
-function buildSortedStocks(items, tab) {
-  const list = [...items];
+function isHighDebt(item) {
+  return Number(item?.metrics?.debtRatio ?? 0) >= 200;
+}
 
-  if (tab === "upside") {
-    return list.sort((a, b) => {
-      const aUp = Number(a?.metrics?.upside ?? -999999);
-      const bUp = Number(b?.metrics?.upside ?? -999999);
-      if (bUp !== aUp) return bUp - aUp;
+function isLowLiquidity(item) {
+  return Number(item?.metrics?.avgTradeValue5d ?? 0) < 10_0000_0000;
+}
 
-      const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
-      const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
-      if (bEligible !== aEligible) return bEligible - aEligible;
+function isUnstableEarnings(item) {
+  return Number(item?.metrics?.operatingIncome ?? 0) <= 0 || Number(item?.metrics?.netIncome ?? 0) <= 0;
+}
 
-      const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
-      const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
-      if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-
-      return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
-    });
-  }
-
-  if (tab === "undervalue") {
-    return list
-      .filter((item) => item?.undervalueMeta?.eligible)
-      .sort((a, b) => {
-        const aValue = Number(a?.valueScore ?? 0);
-        const bValue = Number(b?.valueScore ?? 0);
-        if (bValue !== aValue) return bValue - aValue;
-
-        const aDebt = debtRatioForUndervalue(a);
-        const bDebt = debtRatioForUndervalue(b);
-        if (aDebt !== bDebt) return aDebt - bDebt;
-
-        const aUp = Number(a?.metrics?.upside ?? -999999);
-        const bUp = Number(b?.metrics?.upside ?? -999999);
-        if (bUp !== aUp) return bUp - aUp;
-
-        const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
-        const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
-        if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-
-        return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
-      });
-  }
-
-  return list.sort((a, b) => {
+function sortTotal(items) {
+  return [...items].sort((a, b) => {
     const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
     const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
     if (bEligible !== aEligible) return bEligible - aEligible;
-
     const aScore = Number(a?.totalScore ?? 0);
     const bScore = Number(b?.totalScore ?? 0);
     if (bScore !== aScore) return bScore - aScore;
-
     const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
     if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-
     return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
   });
 }
 
-function buildOneLineReason(stock, activeTab) {
+function sortUndervalue(items) {
+  return [...items]
+    .filter((item) => item?.undervalueMeta?.eligible)
+    .sort((a, b) => {
+      const aValue = Number(a?.valueScore ?? 0);
+      const bValue = Number(b?.valueScore ?? 0);
+      if (bValue !== aValue) return bValue - aValue;
+      const aDebt = debtRatioForUndervalue(a);
+      const bDebt = debtRatioForUndervalue(b);
+      if (aDebt !== bDebt) return aDebt - bDebt;
+      const aUp = Number(a?.metrics?.upside ?? -999999);
+      const bUp = Number(b?.metrics?.upside ?? -999999);
+      if (bUp !== aUp) return bUp - aUp;
+      const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+      const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+      if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+      return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+    });
+}
+
+function sortUpside(items) {
+  return [...items].sort((a, b) => {
+    const aUp = Number(a?.metrics?.upside ?? -999999);
+    const bUp = Number(b?.metrics?.upside ?? -999999);
+    if (bUp !== aUp) return bUp - aUp;
+    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
+    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
+    if (bEligible !== aEligible) return bEligible - aEligible;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+  });
+}
+
+function sortShort(items) {
+  return [...items].sort((a, b) => {
+    const aMomentum = Number(a?.metrics?.priceChangeRate ?? a?.metrics?.momentum ?? 0);
+    const bMomentum = Number(b?.metrics?.priceChangeRate ?? b?.metrics?.momentum ?? 0);
+    if (bMomentum !== aMomentum) return bMomentum - aMomentum;
+    const aUp = Number(a?.metrics?.upside ?? -999999);
+    const bUp = Number(b?.metrics?.upside ?? -999999);
+    if (bUp !== aUp) return bUp - aUp;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.totalScore ?? 0) - Number(a?.totalScore ?? 0);
+  });
+}
+
+function sortAnnual(items) {
+  return [...items].sort((a, b) => {
+    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
+    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
+    if (bEligible !== aEligible) return bEligible - aEligible;
+    const aScore = Number(a?.totalScore ?? 0);
+    const bScore = Number(b?.totalScore ?? 0);
+    if (bScore !== aScore) return bScore - aScore;
+    const aGrowth = Number(a?.metrics?.operatingIncomeGrowth ?? 0) + Number(a?.metrics?.revenueGrowth ?? 0);
+    const bGrowth = Number(b?.metrics?.operatingIncomeGrowth ?? 0) + Number(b?.metrics?.revenueGrowth ?? 0);
+    if (bGrowth !== aGrowth) return bGrowth - aGrowth;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+  });
+}
+
+function sortLong(items) {
+  return [...items]
+    .filter((item) => item?.undervalueMeta?.eligible)
+    .sort((a, b) => {
+      const aValue = Number(a?.valueScore ?? 0);
+      const bValue = Number(b?.valueScore ?? 0);
+      if (bValue !== aValue) return bValue - aValue;
+      const aDebt = Number(a?.metrics?.debtRatio ?? 999999);
+      const bDebt = Number(b?.metrics?.debtRatio ?? 999999);
+      if (aDebt !== bDebt) return aDebt - bDebt;
+      const aRoe = Number(a?.metrics?.roe ?? -999999);
+      const bRoe = Number(b?.metrics?.roe ?? -999999);
+      if (bRoe !== aRoe) return bRoe - aRoe;
+      return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+    });
+}
+
+function buildSortedStocks(items, view) {
+  if (view === "upside") return sortUpside(items);
+  if (view === "undervalue") return sortUndervalue(items);
+  if (view === "short") return sortShort(items);
+  if (view === "annual") return sortAnnual(items);
+  if (view === "long") return sortLong(items);
+  return sortTotal(items);
+}
+
+function applyRiskFilter(items, risk) {
+  if (risk === "highDebt") return items.filter(isHighDebt);
+  if (risk === "lowLiquidity") return items.filter(isLowLiquidity);
+  if (risk === "unstableEarnings") return items.filter(isUnstableEarnings);
+  return items;
+}
+
+function buildOneLineReason(stock, activeView) {
   const parts = [];
   const valueScore = Number(stock?.valueScore ?? 0);
   const totalScore = Number(stock?.totalScore ?? 0);
@@ -97,51 +229,74 @@ function buildOneLineReason(stock, activeTab) {
   const rankFlags = stock?.rankMeta?.flags || [];
   const undervalueFlags = stock?.undervalueMeta?.flags || [];
 
-  if (activeTab === "total") {
+  if (activeView === "total") {
     if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
     if (totalScore >= 70) parts.push(`총점 ${totalScore}점`);
     if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
     if (rankPenalty > 0) parts.push(`패널티 ${rankPenalty}`);
     if (rankFlags.length) parts.push(rankFlags[0]);
-  } else if (activeTab === "undervalue") {
+  } else if (activeView === "undervalue") {
     if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
     if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
     if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
     if (undervalueFlags.length) parts.push(undervalueFlags[0]);
-  } else {
+  } else if (activeView === "upside") {
     if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
     if (stock?.rankMeta?.topRankEligible) parts.push("종합 조건 통과");
     if (rankFlags.length) parts.push(rankFlags[0]);
+  } else if (activeView === "short") {
+    const rate = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum);
+    if (Number.isFinite(rate)) parts.push(`최근 흐름 ${formatPercent(rate)}`);
+    if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (Number(stock?.metrics?.avgTradeValue5d ?? 0) > 0) parts.push(`유동성 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)}`);
+  } else if (activeView === "annual") {
+    if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
+    if (totalScore > 0) parts.push(`총점 ${totalScore}점`);
+    if (Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth))) {
+      parts.push(`영업이익 성장 ${formatPercent(stock?.metrics?.operatingIncomeGrowth)}`);
+    }
+    if (Number.isFinite(Number(stock?.metrics?.revenueGrowth))) {
+      parts.push(`매출 성장 ${formatPercent(stock?.metrics?.revenueGrowth)}`);
+    }
+  } else if (activeView === "long") {
+    if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
+    if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
+    if (Number.isFinite(Number(stock?.metrics?.roe))) parts.push(`ROE ${formatPercent(stock?.metrics?.roe)}`);
+    if (Number.isFinite(Number(stock?.metrics?.pbr))) parts.push(`PBR ${Number(stock.metrics.pbr).toFixed(2)}배`);
   }
 
   if (!parts.length) return "현재 수치 조합을 기준으로 상대 비교된 결과입니다.";
   return parts.join(" · ");
 }
 
-function buildWarningLine(stock, activeTab) {
+function buildWarningLine(stock, activeView, activeRisk) {
   const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
   const rankFlags = stock?.rankMeta?.flags || [];
   const undervalueFlags = stock?.undervalueMeta?.flags || [];
   const debtRatio = Number(stock?.metrics?.debtRatio);
   const upside = Number(stock?.metrics?.upside);
 
-  if (activeTab === "total") {
+  if (activeRisk === "highDebt") {
+    return `부채비율 ${formatPercent(debtRatio)} 수준이라 저평가처럼 보여도 재무 리스크를 먼저 확인해야 합니다.`;
+  }
+  if (activeRisk === "lowLiquidity") {
+    return `최근 5일 평균 거래대금 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)} 수준이라 체결/수급은 보수적으로 봐야 합니다.`;
+  }
+  if (activeRisk === "unstableEarnings") {
+    return "영업이익 또는 순이익 흐름이 약해, 다음 실적 발표와 회복 가능성을 우선 확인해야 합니다.";
+  }
+
+  if (activeView === "total" || activeView === "annual") {
     if (rankPenalty > 0) return `종합 해석에는 패널티 ${rankPenalty}점이 반영됩니다.`;
     if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
-    if (Number.isFinite(debtRatio) && debtRatio >= 150) {
-      return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
-    }
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
     return "실적·재무·수급 변화에 따라 종합 조건 통과 여부가 바뀔 수 있습니다.";
   }
-
-  if (activeTab === "undervalue") {
+  if (activeView === "undervalue" || activeView === "long") {
     if (undervalueFlags.length) return `주의 포인트: ${undervalueFlags[0]}`;
-    if (Number.isFinite(debtRatio) && debtRatio >= 150) {
-      return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
-    }
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
     return "가치 점수가 높아도 재무 안정성 해석은 별도로 확인해야 합니다.";
   }
-
   if (Number.isFinite(upside) && upside <= 0) {
     return "현재 적정가 추정 기준 즉각적인 상승여력은 크지 않을 수 있습니다.";
   }
@@ -149,37 +304,59 @@ function buildWarningLine(stock, activeTab) {
   return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
 }
 
-export default function RankingPage() {
-  const [activeTab, setActiveTab] = useState("total");
+function RankingPageContent() {
+  const searchParams = useSearchParams();
+  const requestedView = (searchParams.get("view") || "").trim();
+  const requestedRisk = (searchParams.get("risk") || "").trim();
+
+  const initialView = VIEW_CONFIG[requestedView] ? requestedView : "total";
+  const initialRisk = RISK_CONFIG[requestedRisk] ? requestedRisk : "all";
+
+  const [activeView, setActiveView] = useState(initialView);
+  const [activeRisk, setActiveRisk] = useState(initialRisk);
   const [query, setQuery] = useState("");
 
-  const sortedStocks = useMemo(() => buildSortedStocks(stocks, activeTab), [activeTab]);
+  useEffect(() => {
+    setActiveView(initialView);
+  }, [initialView]);
+
+  useEffect(() => {
+    setActiveRisk(initialRisk);
+  }, [initialRisk]);
+
+  const sortedStocks = useMemo(() => buildSortedStocks(stocks, activeView), [activeView]);
+  const filteredByRisk = useMemo(() => applyRiskFilter(sortedStocks, activeRisk), [sortedStocks, activeRisk]);
 
   const rankMap = useMemo(() => {
-    return new Map(sortedStocks.map((item, index) => [String(item.code), index + 1]));
-  }, [sortedStocks]);
+    return new Map(filteredByRisk.map((item, index) => [String(item.code), index + 1]));
+  }, [filteredByRisk]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return sortedStocks;
-
-    return sortedStocks.filter((item) => {
+    if (!q) return filteredByRisk;
+    return filteredByRisk.filter((item) => {
       return (
         String(item.name || "").toLowerCase().includes(q) ||
         String(item.code || "").toLowerCase().includes(q)
       );
     });
-  }, [sortedStocks, query]);
+  }, [filteredByRisk, query]);
 
   const topEligibleCount = useMemo(
     () => stocks.filter((item) => item?.rankMeta?.topRankEligible).length,
     []
   );
-
   const undervalueEligibleCount = useMemo(
     () => stocks.filter((item) => item?.undervalueMeta?.eligible).length,
     []
   );
+
+  const highDebtCount = useMemo(() => stocks.filter(isHighDebt).length, []);
+  const lowLiquidityCount = useMemo(() => stocks.filter(isLowLiquidity).length, []);
+  const unstableEarningsCount = useMemo(() => stocks.filter(isUnstableEarnings).length, []);
+
+  const activeViewMeta = VIEW_CONFIG[activeView] || VIEW_CONFIG.total;
+  const activeRiskMeta = RISK_CONFIG[activeRisk] || RISK_CONFIG.all;
 
   return (
     <>
@@ -192,11 +369,13 @@ export default function RankingPage() {
         <section className="pageHero">
           <div>
             <p className="badge">RANKING</p>
-            <h1>종목 랭킹</h1>
+            <h1>{activeViewMeta.title}</h1>
             <p className="desc">
-              종합 랭킹은 안정성 조건을 통과한 종목을 우선 반영합니다.
+              {activeViewMeta.desc}
               <br />
-              저평가 랭킹은 가치지표 중심으로 보되, 부채비율과 이익 안정성을 함께 확인하는 보수적 정렬을 사용합니다.
+              {activeRisk !== "all"
+                ? `현재는 “${activeRiskMeta.title}” 필터가 적용된 리스트를 보고 있습니다.`
+                : "필요하면 아래 위험 필터를 추가해서 조건에 맞는 리스트만 다시 볼 수 있습니다."}
             </p>
           </div>
 
@@ -211,7 +390,16 @@ export default function RankingPage() {
                 <strong>{undervalueEligibleCount}종목</strong>
               </div>
             </div>
-
+            <div className="heroMetaTopRow">
+              <div className="metaCard compact lightWarn">
+                <span className="metaLabel">고부채</span>
+                <strong>{highDebtCount}종목</strong>
+              </div>
+              <div className="metaCard compact lightWarn">
+                <span className="metaLabel">이익 불안정</span>
+                <strong>{unstableEarningsCount}종목</strong>
+              </div>
+            </div>
             <div className="metaCard light fullSearchCard">
               <span className="metaLabel">검색</span>
               <input
@@ -220,6 +408,7 @@ export default function RankingPage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
+              <p className="searchGuide">현재 보기 결과 {filtered.length}개 / 유동성 취약 종목 {lowLiquidityCount}개</p>
             </div>
           </div>
         </section>
@@ -229,44 +418,91 @@ export default function RankingPage() {
             <h2>랭킹 해석 가이드</h2>
             <div className="guideGrid">
               <div className="guideItem">
-                <strong>종합</strong>
-                <span>총점이 높더라도 재무 안정성 조건을 통과하지 못하면 상단 노출이 제한될 수 있습니다.</span>
+                <strong>전략별 보기</strong>
+                <span>단기/연간/장기 보유 관점으로 정렬 기준이 바뀝니다. 메인페이지 “더보기”와 연결되는 리스트입니다.</span>
               </div>
               <div className="guideItem">
-                <strong>저평가</strong>
-                <span>가치 점수 중심 탭이지만, 동점일 때는 부채비율이 낮은 종목을 먼저 보여줍니다.</span>
+                <strong>위험 필터</strong>
+                <span>고부채/저유동성/이익 불안정만 따로 걸러서, “오늘은 피해야 할 타입”을 실제 리스트로 볼 수 있습니다.</span>
               </div>
               <div className="guideItem">
-                <strong>상승여력</strong>
-                <span>적정가 추정 대비 괴리가 큰 종목을 별도 관점으로 보여주며, 실제 실현은 별도 확인이 필요합니다.</span>
+                <strong>기존 랭킹도 유지</strong>
+                <span>종합/저평가/상승여력 탭도 그대로 두어, 기존 탐색 방식과 새 전략형 진입을 동시에 지원합니다.</span>
               </div>
             </div>
           </div>
         </section>
 
         <section className="tabSection">
-          <div className="tabRow">
-            <button
-              type="button"
-              className={`tabBtn ${activeTab === "total" ? "active" : ""}`}
-              onClick={() => setActiveTab("total")}
-            >
-              종합
-            </button>
-            <button
-              type="button"
-              className={`tabBtn ${activeTab === "undervalue" ? "active" : ""}`}
-              onClick={() => setActiveTab("undervalue")}
-            >
-              저평가
-            </button>
-            <button
-              type="button"
-              className={`tabBtn ${activeTab === "upside" ? "active" : ""}`}
-              onClick={() => setActiveTab("upside")}
-            >
-              상승여력
-            </button>
+          <div className="tabGroup">
+            <span className="groupLabel">기본 랭킹</span>
+            <div className="tabRow">
+              {[
+                ["total", "종합"],
+                ["undervalue", "저평가"],
+                ["upside", "상승여력"],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`tabBtn ${activeView === key ? "active" : ""}`}
+                  onClick={() => setActiveView(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="tabGroup">
+            <span className="groupLabel">전략별 보기</span>
+            <div className="tabRow">
+              {[
+                ["short", "단기 투자"],
+                ["annual", "연간 투자"],
+                ["long", "장기 투자"],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`tabBtn alt ${activeView === key ? "active" : ""}`}
+                  onClick={() => setActiveView(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="tabGroup riskGroup">
+            <span className="groupLabel">피해야 할 타입 필터</span>
+            <div className="tabRow">
+              {[
+                ["all", "전체"],
+                ["highDebt", "고부채"],
+                ["lowLiquidity", "저유동성"],
+                ["unstableEarnings", "이익 불안정"],
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`tabBtn risk ${activeRisk === key ? "active" : ""}`}
+                  onClick={() => setActiveRisk(key)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="statusSection">
+          <div className="statusCard">
+            <div>
+              <strong>현재 보기</strong>
+              <p>{activeViewMeta.title} · {activeRiskMeta.title}</p>
+            </div>
+            <span>{filtered.length}개 노출</span>
           </div>
         </section>
 
@@ -280,21 +516,29 @@ export default function RankingPage() {
               const displayRank = rankMap.get(String(stock.code)) ?? "-";
 
               const scoreLabel =
-                activeTab === "undervalue"
+                activeView === "undervalue" || activeView === "long"
                   ? "가치 점수"
-                  : activeTab === "upside"
+                  : activeView === "upside"
                     ? "상승여력"
-                    : "종합 점수";
+                    : activeView === "short"
+                      ? "단기 적합"
+                      : activeView === "annual"
+                        ? "연간 적합"
+                        : "종합 점수";
 
               const scoreValue =
-                activeTab === "undervalue"
-                  ? stock.valueScore
-                  : activeTab === "upside"
+                activeView === "undervalue" || activeView === "long"
+                  ? `${Number(stock?.valueScore || 0).toFixed(0)}점`
+                  : activeView === "upside"
                     ? formatPercent(stock?.metrics?.upside)
-                    : stock.totalScore;
+                    : activeView === "short"
+                      ? formatPercent(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum)
+                      : activeView === "annual"
+                        ? `${Number(stock?.totalScore || 0).toFixed(0)}점`
+                        : `${Number(stock?.totalScore || 0).toFixed(0)}점`;
 
               return (
-                <article className="stockCard" key={`${stock.code}-${activeTab}`}>
+                <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
                   <div className="cardTop">
                     <div className="rankWrap">
                       <span className="rankBadge">#{displayRank}</span>
@@ -303,11 +547,10 @@ export default function RankingPage() {
                         <p className="stockMeta">{stock.market} · {stock.code}</p>
                       </div>
                     </div>
-
                     <div className="scoreWrap">
                       <span className="scoreLabel">{scoreLabel}</span>
                       <strong>{scoreValue}</strong>
-                      {activeTab === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
+                      {activeView === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
                         <span className="rawScore">원점수 {stock.rawTotalScore}</span>
                       ) : null}
                     </div>
@@ -333,46 +576,42 @@ export default function RankingPage() {
                   </div>
 
                   <div className="badgeRow">
-                    {activeTab === "total" ? (
+                    {(activeView === "total" || activeView === "annual") ? (
                       eligible
                         ? <span className="smallBadge good">종합 상위 후보</span>
                         : <span className="smallBadge warn">종합 상위 제외</span>
                     ) : null}
-
-                    {activeTab === "undervalue" && stock?.undervalueMeta?.eligible ? (
+                    {(activeView === "undervalue" || activeView === "long") && stock?.undervalueMeta?.eligible ? (
                       <span className="smallBadge info">저평가 후보</span>
                     ) : null}
-
-                    {activeTab === "total" && penalty > 0 ? (
+                    {activeRisk === "highDebt" ? <span className="smallBadge warn">고부채</span> : null}
+                    {activeRisk === "lowLiquidity" ? <span className="smallBadge muted">저유동성</span> : null}
+                    {activeRisk === "unstableEarnings" ? <span className="smallBadge soft">이익 불안정</span> : null}
+                    {(activeView === "total" || activeView === "annual") && penalty > 0 ? (
                       <span className="smallBadge muted">패널티 {penalty}</span>
                     ) : null}
-
-                    {activeTab === "total" && rankFlags.map((flag) => (
+                    {(activeView === "total" || activeView === "annual" || activeView === "short") && rankFlags.map((flag) => (
                       <span className="smallBadge soft" key={flag}>{flag}</span>
                     ))}
-
-                    {activeTab === "undervalue" && undervalueFlags.map((flag) => (
+                    {(activeView === "undervalue" || activeView === "long") && undervalueFlags.map((flag) => (
                       <span className="smallBadge soft" key={flag}>{flag}</span>
                     ))}
                   </div>
 
                   <div className="reasonCard goodCard">
-                    <span className="reasonLabel">왜 올라왔나</span>
-                    <p>{buildOneLineReason(stock, activeTab)}</p>
+                    <span className="reasonLabel">왜 이 리스트에 있나</span>
+                    <p>{buildOneLineReason(stock, activeView)}</p>
                   </div>
 
                   <div className="reasonCard warnCard">
                     <span className="reasonLabel">무엇을 조심해야 하나</span>
-                    <p>{buildWarningLine(stock, activeTab)}</p>
+                    <p>{buildWarningLine(stock, activeView, activeRisk)}</p>
                   </div>
 
                   <p className="summary">{stock.summary}</p>
 
                   <div className="linkRow">
-                    <Link
-                      href={`/risk?code=${stock.code}#risk-${stock.code}`}
-                      className="riskBtn"
-                    >
+                    <Link href={`/risk?code=${stock.code}#risk-${stock.code}`} className="riskBtn">
                       리스크 보기
                     </Link>
                     <Link href={`/stock/${stock.code}`} className="detailBtn">
@@ -393,7 +632,6 @@ export default function RankingPage() {
           padding: 32px 24px 80px;
           color: #0f172a;
         }
-
         .topLinks {
           display: flex;
           justify-content: space-between;
@@ -402,7 +640,6 @@ export default function RankingPage() {
           margin-bottom: 26px;
           flex-wrap: wrap;
         }
-
         .homeBtn {
           display: inline-flex;
           align-items: center;
@@ -415,7 +652,6 @@ export default function RankingPage() {
           background: #0f172a;
           color: #fff;
         }
-
         .pageHero {
           display: flex;
           justify-content: space-between;
@@ -424,7 +660,6 @@ export default function RankingPage() {
           margin-bottom: 24px;
           flex-wrap: wrap;
         }
-
         .badge {
           display: inline-flex;
           padding: 8px 14px;
@@ -435,13 +670,11 @@ export default function RankingPage() {
           font-weight: 800;
           margin: 0 0 18px;
         }
-
         h1 {
           margin: 0 0 12px;
           font-size: clamp(2rem, 4vw, 3rem);
           letter-spacing: -0.04em;
         }
-
         .desc {
           margin: 0;
           max-width: 760px;
@@ -449,20 +682,17 @@ export default function RankingPage() {
           line-height: 1.8;
           font-size: 1.02rem;
         }
-
         .heroMeta {
           display: grid;
           gap: 12px;
           min-width: 280px;
           width: 320px;
         }
-
         .heroMetaTopRow {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
         }
-
         .metaCard {
           border: 1px solid #e5e7eb;
           border-radius: 20px;
@@ -470,15 +700,15 @@ export default function RankingPage() {
           background: #fff;
           box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
         }
-
         .metaCard.compact {
           min-width: 0;
         }
-
         .metaCard.light {
           background: #f8fbff;
         }
-
+        .metaCard.lightWarn {
+          background: #fffdfa;
+        }
         .metaLabel {
           display: block;
           margin-bottom: 8px;
@@ -486,16 +716,13 @@ export default function RankingPage() {
           font-size: 0.88rem;
           font-weight: 700;
         }
-
         .metaCard strong {
           font-size: 1.5rem;
           letter-spacing: -0.03em;
         }
-
         .fullSearchCard {
           width: 100%;
         }
-
         .searchInput {
           width: 100%;
           height: 44px;
@@ -505,32 +732,34 @@ export default function RankingPage() {
           font-size: 0.95rem;
           box-sizing: border-box;
         }
-
+        .searchGuide {
+          margin: 10px 0 0;
+          color: #64748b;
+          font-size: 0.9rem;
+        }
         .guideSection,
         .tabSection,
+        .statusSection,
         .listSection {
           margin-top: 20px;
         }
-
-        .guideCard {
+        .guideCard,
+        .statusCard {
           border: 1px solid #e5e7eb;
           border-radius: 28px;
           padding: 24px;
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
-
         .guideCard h2 {
           margin: 0 0 16px;
           font-size: 1.35rem;
         }
-
         .guideGrid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 12px;
         }
-
         .guideItem {
           border: 1px solid #e5e7eb;
           border-radius: 18px;
@@ -540,23 +769,29 @@ export default function RankingPage() {
           flex-direction: column;
           gap: 8px;
         }
-
         .guideItem strong {
           color: #0f172a;
         }
-
         .guideItem span {
           color: #64748b;
           line-height: 1.7;
           font-size: 0.94rem;
         }
-
+        .tabGroup {
+          margin-bottom: 14px;
+        }
+        .groupLabel {
+          display: block;
+          margin-bottom: 8px;
+          color: #64748b;
+          font-size: 0.9rem;
+          font-weight: 800;
+        }
         .tabRow {
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .tabBtn {
           height: 44px;
           padding: 0 18px;
@@ -567,18 +802,48 @@ export default function RankingPage() {
           font-weight: 800;
           cursor: pointer;
         }
-
+        .tabBtn.alt {
+          background: #f8fbff;
+        }
+        .tabBtn.risk {
+          background: #fffdfa;
+        }
         .tabBtn.active {
           background: #0f172a;
           color: #fff;
           border-color: #0f172a;
         }
-
+        .statusCard {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .statusCard strong {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 1rem;
+        }
+        .statusCard p {
+          margin: 0;
+          color: #64748b;
+        }
+        .statusCard span {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 90px;
+          height: 42px;
+          border-radius: 14px;
+          background: #0f172a;
+          color: #fff;
+          font-weight: 800;
+        }
         .listGrid {
           display: grid;
           gap: 16px;
         }
-
         .stockCard {
           border: 1px solid #e5e7eb;
           border-radius: 24px;
@@ -586,7 +851,6 @@ export default function RankingPage() {
           background: #fff;
           box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
         }
-
         .cardTop {
           display: flex;
           justify-content: space-between;
@@ -595,13 +859,11 @@ export default function RankingPage() {
           flex-wrap: wrap;
           margin-bottom: 16px;
         }
-
         .rankWrap {
           display: flex;
           gap: 14px;
           align-items: flex-start;
         }
-
         .rankBadge {
           display: inline-flex;
           min-width: 52px;
@@ -613,24 +875,20 @@ export default function RankingPage() {
           color: #fff;
           font-weight: 900;
         }
-
         .rankWrap h3 {
           margin: 0 0 6px;
           font-size: 1.2rem;
           letter-spacing: -0.02em;
         }
-
         .stockMeta {
           margin: 0;
           color: #64748b;
           font-size: 0.92rem;
         }
-
         .scoreWrap {
           text-align: right;
           min-width: 110px;
         }
-
         .scoreLabel {
           display: block;
           margin-bottom: 6px;
@@ -638,35 +896,30 @@ export default function RankingPage() {
           font-size: 0.84rem;
           font-weight: 700;
         }
-
         .scoreWrap strong {
           display: block;
           font-size: 1.8rem;
           line-height: 1;
           letter-spacing: -0.04em;
         }
-
         .rawScore {
           display: block;
           margin-top: 6px;
           color: #64748b;
           font-size: 0.84rem;
         }
-
         .metricRow {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 12px;
           margin-bottom: 14px;
         }
-
         .metricBox {
           border: 1px solid #e5e7eb;
           border-radius: 16px;
           padding: 14px;
           background: #f8fbff;
         }
-
         .metricBox span {
           display: block;
           margin-bottom: 8px;
@@ -674,23 +927,19 @@ export default function RankingPage() {
           font-size: 0.84rem;
           font-weight: 700;
         }
-
         .metricBox strong {
           font-size: 1rem;
           letter-spacing: -0.02em;
         }
-
         .metricBox strong.sky {
           color: #0ea5e9;
         }
-
         .badgeRow {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
           margin-bottom: 14px;
         }
-
         .smallBadge {
           display: inline-flex;
           align-items: center;
@@ -700,47 +949,38 @@ export default function RankingPage() {
           font-size: 0.8rem;
           font-weight: 800;
         }
-
         .smallBadge.good {
           background: #ecfeff;
           color: #0891b2;
         }
-
         .smallBadge.warn {
           background: #fff7ed;
           color: #c2410c;
         }
-
         .smallBadge.muted {
           background: #f1f5f9;
           color: #475569;
         }
-
         .smallBadge.soft {
           background: #eef2ff;
           color: #4f46e5;
         }
-
         .smallBadge.info {
           background: #e0f2fe;
           color: #0284c7;
         }
-
         .reasonCard {
           border: 1px solid #e5e7eb;
           border-radius: 16px;
           padding: 14px;
           margin-bottom: 12px;
         }
-
         .goodCard {
           background: #f8fbff;
         }
-
         .warnCard {
           background: #fffdfa;
         }
-
         .reasonLabel {
           display: block;
           margin-bottom: 8px;
@@ -748,19 +988,16 @@ export default function RankingPage() {
           font-size: 0.84rem;
           font-weight: 800;
         }
-
         .reasonCard p {
           margin: 0;
           color: #475569;
           line-height: 1.75;
         }
-
         .summary {
           margin: 0;
           color: #475569;
           line-height: 1.8;
         }
-
         .linkRow {
           margin-top: 14px;
           display: flex;
@@ -769,7 +1006,6 @@ export default function RankingPage() {
           gap: 10px;
           flex-wrap: wrap;
         }
-
         .riskBtn {
           display: inline-flex;
           align-items: center;
@@ -785,13 +1021,11 @@ export default function RankingPage() {
           box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
           transition: all 0.15s ease;
         }
-
         .riskBtn:hover {
           border-color: #94a3b8;
           background: #f8fafc;
           transform: translateY(-1px);
         }
-
         .detailBtn {
           display: inline-flex;
           align-items: center;
@@ -804,59 +1038,46 @@ export default function RankingPage() {
           color: #fff;
           font-weight: 800;
         }
-
         @media (max-width: 900px) {
           .guideGrid,
-          .metricRow {
+          .metricRow,
+          .heroMetaTopRow {
             grid-template-columns: 1fr;
           }
+          .statusCard {
+            flex-direction: column;
+            align-items: flex-start;
+          }
         }
-
         @media (max-width: 640px) {
           .container {
             padding: 24px 18px 64px;
           }
-
           .pageHero,
           .cardTop {
             flex-direction: column;
           }
-
           .scoreWrap {
             text-align: left;
           }
-
           .guideCard,
-          .stockCard {
+          .stockCard,
+          .statusCard {
             padding: 20px;
           }
-
           .heroMeta {
             width: 100%;
             min-width: 0;
           }
-
-          .heroMetaTopRow {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-          }
-
-          .metaCard.compact {
-            padding: 16px;
-          }
-
           .fullSearchCard {
             width: 100%;
           }
-
           .searchInput {
             width: 100%;
           }
-
           .linkRow {
             justify-content: stretch;
           }
-
           .riskBtn,
           .detailBtn {
             width: 100%;
@@ -864,5 +1085,23 @@ export default function RankingPage() {
         }
       `}</style>
     </>
+  );
+}
+
+function RankingPageFallback() {
+  return (
+    <main className="container" style={{ padding: "32px 24px 80px", color: "#0f172a" }}>
+      <div style={{ maxWidth: 1180, margin: "0 auto" }}>
+        <p style={{ color: "#64748b", fontWeight: 700 }}>랭킹 페이지 불러오는 중...</p>
+      </div>
+    </main>
+  );
+}
+
+export default function RankingPage() {
+  return (
+    <Suspense fallback={<RankingPageFallback />}>
+      <RankingPageContent />
+    </Suspense>
   );
 }
