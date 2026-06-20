@@ -60,21 +60,6 @@ function getUpsideClass(value) {
   return "upsideLine upsideNeutral";
 }
 
-function sortForTopCandidates(items) {
-  return [...items].sort((a, b) => {
-    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
-    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
-    if (bEligible !== aEligible) return bEligible - aEligible;
-    const aScore = Number(a?.totalScore ?? 0);
-    const bScore = Number(b?.totalScore ?? 0);
-    if (bScore !== aScore) return bScore - aScore;
-    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
-    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
-    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
-  });
-}
-
 function sortForShortTerm(items) {
   return [...items].sort((a, b) => {
     const aMomentum = Number(a?.metrics?.priceChangeRate ?? a?.metrics?.momentum ?? 0);
@@ -169,10 +154,26 @@ function buildAvoidSummary(items) {
   const unstable = items.filter(
     (item) => Number(item?.metrics?.operatingIncome ?? 0) <= 0 || Number(item?.metrics?.netIncome ?? 0) <= 0
   ).length;
+
   return [
-    { label: "고부채", count: highDebt, desc: "저평가처럼 보여도 재무가 불안한 타입" },
-    { label: "저유동성", count: weakLiquidity, desc: "점수 대비 실제 거래가 약한 타입" },
-    { label: "이익 불안정", count: unstable, desc: "영업이익/순이익 흐름이 약한 타입" },
+    {
+      label: "고부채",
+      count: highDebt,
+      desc: "저평가처럼 보여도 재무가 불안한 타입",
+      href: "/ranking?risk=highDebt",
+    },
+    {
+      label: "저유동성",
+      count: weakLiquidity,
+      desc: "점수 대비 실제 거래가 약한 타입",
+      href: "/ranking?risk=lowLiquidity",
+    },
+    {
+      label: "이익 불안정",
+      count: unstable,
+      desc: "영업이익/순이익 흐름이 약한 타입",
+      href: "/ranking?risk=unstableEarnings",
+    },
   ];
 }
 
@@ -190,7 +191,7 @@ function buildStrategyCards(items) {
       stock: shortTerm,
       reason: shortTerm ? buildShortReason(shortTerm) : "단기 관점 후보가 아직 부족합니다.",
       actionLabel: "단기 흐름 더 보기",
-      actionHref: "/ranking",
+      actionHref: "/ranking?view=short",
     },
     {
       key: "annual",
@@ -199,8 +200,8 @@ function buildStrategyCards(items) {
       desc: "종합 점수, 실적 안정성, 성장 흐름을 묶어서 올해 안에 다시 볼 만한 종목을 고릅니다.",
       stock: annual,
       reason: annual ? buildAnnualReason(annual) : "연간 관점 후보가 아직 부족합니다.",
-      actionLabel: "종합 랭킹 더 보기",
-      actionHref: "/ranking",
+      actionLabel: "연간 투자 더 보기",
+      actionHref: "/ranking?view=annual",
     },
     {
       key: "long",
@@ -209,8 +210,8 @@ function buildStrategyCards(items) {
       desc: "저평가와 재무 안정성 기준으로, 당장보다 구조를 보고 들고 갈 만한 종목을 고릅니다.",
       stock: longTerm,
       reason: longTerm ? buildLongReason(longTerm) : "장기 관점 후보가 아직 부족합니다.",
-      actionLabel: "저평가 랭킹 보기",
-      actionHref: "/ranking",
+      actionLabel: "장기 투자 더 보기",
+      actionHref: "/ranking?view=long",
     },
   ];
 }
@@ -245,7 +246,6 @@ export default function HomePage() {
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) return;
-
     setIsSubmitting(true);
     setSubmitError("");
 
@@ -421,11 +421,11 @@ export default function HomePage() {
             </div>
             <div className="avoidGrid">
               {avoidSummary.map((item) => (
-                <div className="avoidItem" key={item.label}>
+                <Link href={item.href} className="avoidItem clickable" key={item.label}>
                   <strong>{item.label}</strong>
                   <span>{item.count}개 포착</span>
                   <p>{item.desc}</p>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -1023,6 +1023,13 @@ export default function HomePage() {
           display: flex;
           flex-direction: column;
           gap: 8px;
+          text-decoration: none;
+          transition: all 0.18s ease;
+        }
+        .avoidItem.clickable:hover {
+          transform: translateY(-2px);
+          border-color: #cbd5e1;
+          background: #fbfdff;
         }
         .avoidItem strong {
           font-size: 1rem;
