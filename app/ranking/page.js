@@ -218,6 +218,85 @@ function applyRiskFilter(items, risk) {
   if (risk === "unstableEarnings") return items.filter(isUnstableEarnings);
   return items;
 }
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function computeShortSuitability(stock) {
+  const momentum = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum ?? 0);
+  const upside = Number(stock?.metrics?.upside ?? 0);
+  const liquidity = Number(stock?.metrics?.avgTradeValue5d ?? 0);
+
+  const momentumScore = clamp(((momentum + 10) / 40) * 40, 0, 40);
+  const upsideScore = clamp(((upside + 30) / 80) * 25, 0, 25);
+  const liquidityScore = clamp((liquidity / 300_0000_0000) * 35, 0, 35);
+
+  return Math.round(momentumScore + upsideScore + liquidityScore);
+}
+
+function computeAnnualSuitability(stock) {
+  return clamp(Math.round(Number(stock?.totalScore ?? 0)), 0, 100);
+}
+
+function computeLongSuitability(stock) {
+  const valueScore = Number(stock?.valueScore ?? 0);
+  const debtRatio = Number(stock?.metrics?.debtRatio ?? 999999);
+  const roe = Number(stock?.metrics?.roe ?? 0);
+
+  const valuePart = clamp((valueScore / 30) * 45, 0, 45);
+  const debtPart = clamp(((200 - debtRatio) / 200) * 25, 0, 25);
+  const roePart = clamp((roe / 20) * 30, 0, 30);
+
+  return Math.round(valuePart + debtPart + roePart);
+}
+
+function getScorePresentation(stock, activeView) {
+  if (activeView === "short") {
+    return {
+      label: "단기 적합도",
+      valueText: `${computeShortSuitability(stock)} / 100`,
+      tooltip: "예상 수익률이 아니라 최근 흐름·유동성·상승여력 조합을 반영한 단기 관점 적합도 점수입니다.",
+    };
+  }
+
+  if (activeView === "annual") {
+    return {
+      label: "연간 적합도",
+      valueText: `${computeAnnualSuitability(stock)} / 100`,
+      tooltip: "예상 수익률이 아니라 종합 점수·실적 안정성·성장 흐름을 반영한 연간 관점 적합도 점수입니다.",
+    };
+  }
+
+  if (activeView === "long") {
+    return {
+      label: "장기 적합도",
+      valueText: `${computeLongSuitability(stock)} / 100`,
+      tooltip: "예상 수익률이 아니라 가치 점수·재무 안정성·ROE를 반영한 장기 관점 적합도 점수입니다.",
+    };
+  }
+
+  if (activeView === "undervalue") {
+    return {
+      label: "가치 점수",
+      valueText: `${Math.round(Number(stock?.valueScore ?? 0))}점`,
+      tooltip: "가치 점수는 저평가 관점에서의 내부 점수이며 예상 수익률을 의미하지 않습니다.",
+    };
+  }
+
+  if (activeView === "upside") {
+    return {
+      label: "상승여력",
+      valueText: formatPercent(stock?.metrics?.upside),
+      tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다.",
+    };
+  }
+
+  return {
+    label: "종합 점수",
+    valueText: `${Math.round(Number(stock?.totalScore ?? 0))}점`,
+    tooltip: "종합 점수는 안정성·가치·시장성 등을 함께 반영한 내부 점수이며 예상 수익률을 의미하지 않습니다.",
+  };
+}
 
 function buildOneLineReason(stock, activeView) {
   const parts = [];
@@ -555,25 +634,7 @@ function RankingPageContent() {
               const penalty = Number(stock?.rankMeta?.penalty || 0);
               const displayRank = rankMap.get(String(stock.code)) ?? "-";
 
-              const scoreLabel =
-                activeView === "undervalue" || activeView === "long"
-                  ? "가치 점수"
-                  : activeView === "upside"
-                    ? "상승여력"
-                    : activeView === "short"
-                      ? "단기 적합"
-                      : activeView === "annual"
-                        ? "연간 적합"
-                        : "종합 점수";
-
-              const scoreValue =
-                activeView === "undervalue" || activeView === "long"
-                  ? `${Number(stock?.valueScore || 0).toFixed(0)}점`
-                  : activeView === "upside"
-                    ? formatPercent(stock?.metrics?.upside)
-                    : activeView === "short"
-                      ? formatPercent(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum)
-                      : `${Number(stock?.totalScore || 0).toFixed(0)}점`;
+              const scorePresentation = getScorePresentation(stock, activeView);
 
               return (
                 <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
@@ -586,8 +647,13 @@ function RankingPageContent() {
                       </div>
                     </div>
                     <div className="scoreWrap">
-                      <span className="scoreLabel">{scoreLabel}</span>
-                      <strong>{scoreValue}</strong>
+                      <div className="scoreLabelRow">
+                        <span className="scoreLabel">{scorePresentation.label}</span>
+                        <span className="tooltipTrigger" tabIndex={0} aria-label={scorePresentation.tooltip}>i
+                          <span className="tooltipBubble">{scorePresentation.tooltip}</span>
+                        </span>
+                      </div>
+                      <strong>{scorePresentation.valueText}</strong>
                       {activeView === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
                         <span className="rawScore">원점수 {stock.rawTotalScore}</span>
                       ) : null}
@@ -949,10 +1015,56 @@ function RankingPageContent() {
         }
         .scoreLabel {
           display: block;
-          margin-bottom: 6px;
           color: #64748b;
           font-size: 0.84rem;
           font-weight: 700;
+        }
+        .scoreLabelRow {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 6px;
+        }
+        .tooltipTrigger {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: #eef2ff;
+          color: #4f46e5;
+          font-size: 0.72rem;
+          font-weight: 800;
+          cursor: help;
+          outline: none;
+        }
+        .tooltipBubble {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 8px);
+          width: 260px;
+          padding: 10px 12px;
+          border-radius: 12px;
+          background: #0f172a;
+          color: #fff;
+          font-size: 0.78rem;
+          font-weight: 600;
+          line-height: 1.55;
+          box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-4px);
+          transition: all 0.18s ease;
+          z-index: 20;
+          text-align: left;
+        }
+        .tooltipTrigger:hover .tooltipBubble,
+        .tooltipTrigger:focus .tooltipBubble {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
         }
         .scoreWrap strong {
           display: block;
@@ -1097,7 +1209,7 @@ function RankingPageContent() {
           font-weight: 800;
         }
         @media (max-width: 980px) {
-          .guidеGrid,
+          .guideGrid,
           .metricRow,
           .quickStatGrid {
             grid-template-columns: 1fr;
