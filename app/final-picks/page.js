@@ -611,14 +611,16 @@ export default function FinalPicksPage() {
           font-weight: 800;
         }
         .pickGrid { display: grid; gap: 16px; }
-        .pickCard { padding: 22px; }
+        .pickCard { padding: 26px; }
         .pickTop {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           gap: 16px;
           flex-wrap: wrap;
-          margin-bottom: 14px;
+          margin-bottom: 10px;
+          padding-bottom: 14px;
+          border-bottom: 1px solid #edf2f7;
         }
         .topLabelRow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
         .rankTag {
@@ -649,11 +651,15 @@ export default function FinalPicksPage() {
         .decisionChip.exclude { background: #ffe4e6; color: #be123c; }
         .smallBadge.info { background: #e0f2fe; color: #0284c7; }
         .smallBadge.soft { background: #f1f5f9; color: #475569; }
-        .pickCard h3 { margin: 0 0 8px; font-size: 1.5rem; letter-spacing: -0.03em; }
-        .subMeta { margin: 0; color: #64748b; }
+        .pickCard h3 { margin: 0 0 8px; font-size: 1.65rem; letter-spacing: -0.03em; word-break: keep-all; }
+        .subMeta { margin: 0; color: #64748b; font-size: 0.96rem; }
         .scoreBox {
-          min-width: 140px;
+          min-width: 156px;
           text-align: right;
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          padding: 14px 16px;
+          background: #f8fbff;
         }
         .scoreBox span {
           display: block;
@@ -674,11 +680,27 @@ export default function FinalPicksPage() {
           gap: 12px;
           margin-bottom: 14px;
         }
+        .decisionSummary {
+          margin: 0 0 14px;
+          padding: 14px 16px;
+          border-radius: 16px;
+          background: #f8fafc;
+          border: 1px solid #e5e7eb;
+          color: #475569;
+          line-height: 1.72;
+        }
+        .decisionSummary b {
+          color: #0f172a;
+        }
         .metricBox {
           border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          padding: 14px;
+          border-radius: 18px;
+          padding: 16px;
           background: #fff;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+        .metricBox.highlight {
+          background: #f8fbff;
         }
         .metricBox span {
           display: block;
@@ -687,7 +709,7 @@ export default function FinalPicksPage() {
           font-size: 0.84rem;
           font-weight: 700;
         }
-        .metricBox strong { font-size: 1rem; letter-spacing: -0.02em; }
+        .metricBox strong { font-size: 1.12rem; letter-spacing: -0.02em; line-height: 1.35; }
         .metricBox strong.sky { color: #0ea5e9; }
         .badgeRow {
           display: flex;
@@ -695,10 +717,13 @@ export default function FinalPicksPage() {
           flex-wrap: wrap;
           margin-bottom: 14px;
         }
+        .badgeRow.top {
+          margin: 0 0 14px;
+        }
         .reasonCard, .differenceBox {
           border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          padding: 14px;
+          border-radius: 18px;
+          padding: 16px;
           background: #fff;
           margin-bottom: 12px;
         }
@@ -709,9 +734,10 @@ export default function FinalPicksPage() {
           font-size: 0.84rem;
           font-weight: 800;
         }
-        .reasonList { margin: 0; padding-left: 18px; color: #475569; line-height: 1.75; }
+        .reasonList { margin: 0; padding-left: 18px; color: #475569; line-height: 1.8; }
+        .reasonList li + li { margin-top: 4px; }
         .differenceBox p { margin: 0; color: #475569; line-height: 1.75; }
-        .cardActions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+        .cardActions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; padding-top: 4px; }
         .detailBtn, .ghostBtn {
           display: inline-flex;
           align-items: center;
@@ -723,7 +749,7 @@ export default function FinalPicksPage() {
           text-decoration: none;
           border: 1px solid transparent;
         }
-        .detailBtn { background: #0f172a; color: #fff; }
+        .detailBtn { background: #0f172a; color: #fff; box-shadow: 0 10px 20px rgba(15,23,42,0.12); }
         .ghostBtn { background: #fff; color: #0f172a; border-color: #dbe3f0; }
         .emptyBox p { margin: 0; color: #64748b; }
         @media (max-width: 980px) {
@@ -732,7 +758,7 @@ export default function FinalPicksPage() {
         @media (max-width: 760px) {
           .container { padding: 24px 18px 64px; }
           .pageHero, .pickTop, .sectionHeaderRow { flex-direction: column; align-items: flex-start; }
-          .scoreBox { text-align: left; }
+          .scoreBox { text-align: left; width: 100%; }
           .explainCard, .switchCard, .logicCard, .pickCard, .emptyBox { padding: 20px; }
           .detailBtn, .ghostBtn { width: 100%; }
         }
