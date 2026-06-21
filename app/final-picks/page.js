@@ -124,8 +124,7 @@ function computeWarningPenalty(stock, riskItem) {
   const uncertainty = Number(stock?.newsMeta?.uncertaintyCount ?? 0);
   penalty += negativeCount * 5;
   penalty += uncertainty * 3;
-  const recentSpike = Number(stock?.timingMeta?.recentSpikeFlag ? 1 : 0);
-  if (recentSpike) penalty += 6;
+  if (stock?.timingMeta?.recentSpikeFlag) penalty += 6;
   return penalty;
 }
 
@@ -143,8 +142,8 @@ function buildDecisionReasons(stock, riskItem, scores, decision) {
   if (scores.news >= 70) reasons.push(`최근 뉴스/공시 플래그는 비교적 무난한 편입니다.`);
   else if (scores.news <= 45) reasons.push(`최근 뉴스 플래그상 불확실성이 있어 바로 진입하긴 부담이 있습니다.`);
 
-  if (riskItem?.level === "주의") reasons.push(`리스크 페이지 기준이 \"주의\"라서 최종 판단에서 감점됩니다.`);
-  else if (riskItem?.level === "보통") reasons.push(`리스크 수준이 \"보통\"이라 체크 포인트 확인이 필요합니다.`);
+  if (riskItem?.level === "주의") reasons.push(`리스크 페이지 기준이 "주의"라서 최종 판단에서 감점됩니다.`);
+  else if (riskItem?.level === "보통") reasons.push(`리스크 수준이 "보통"이라 체크 포인트 확인이 필요합니다.`);
 
   if (scores.timing >= 68) reasons.push(`타이밍/유동성 기준은 크게 무리 없는 구간입니다.`);
   else if (scores.timing <= 45) reasons.push(`지금 진입 타이밍은 다소 아쉬워 관찰이 더 적절합니다.`);
@@ -163,7 +162,6 @@ function buildFinalPicks(stocksData, risksData) {
 
   const evaluated = baseline.map((stock) => {
     const riskItem = riskMap.get(String(stock.code));
-
     const scores = {
       base: clamp(Number(stock?.totalScore ?? 0), 0, 100),
       sector: computeSectorScore(stock),
@@ -203,7 +201,6 @@ function buildFinalPicks(stocksData, risksData) {
       decision,
       sectorName: stock?.sector || stock?.industry || "업종 미분류",
       decisionReasons: buildDecisionReasons(stock, riskItem, scores, decision),
-      scoreBreakdown: scores,
       riskLevel: riskItem?.level || "낮음",
     };
   });
