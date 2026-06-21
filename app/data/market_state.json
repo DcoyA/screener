@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-19T05:42:46Z",
+  "generatedAt": "2026-06-21T09:53:20Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,35 +12,38 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.88,
-    "avgTotalScore": 76.3,
-    "avgUpside": 118.81,
-    "avgLiquidity5d": 17470643538.8,
+    "eligibleRatio": 0.882,
+    "avgTotalScore": 76.6,
+    "avgUpside": 95.04,
+    "avgLiquidity5d": 17871311396.1,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 0,
+    "sectorSpread": 4,
     "strongSectorCounts": {
-      "미분류": 20
+      "대형주": 14,
+      "중소형주": 3,
+      "미디어/엔터": 2,
+      "반도체": 1
     },
     "topPoolCodes": [
       "000240",
+      "041510",
       "192080",
+      "091590",
       "001800",
       "006730",
-      "036830",
-      "041510",
+      "267250",
       "111770",
       "067160",
-      "002380",
-      "081660"
+      "375500"
     ]
   },
   "modeScores": {
-    "stock_pick": 50.78,
-    "etf": 38.8,
+    "stock_pick": 55.05,
+    "etf": 53.47,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
@@ -56,14 +59,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 50.78,
+      "score": 55.05,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 38.8,
+      "score": 53.47,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -83,7 +86,11 @@
     }
   ],
   "topSectors": {
-    "strong": [],
+    "strong": [
+      "대형주",
+      "중소형주",
+      "미디어/엔터"
+    ],
     "weak": []
   },
   "strategyNotes": [
@@ -96,12 +103,12 @@
       "code": "375500",
       "name": "DL이앤씨보통주",
       "market": "KOSPI",
-      "sector": "미분류",
-      "totalScore": 74.0,
-      "upside": 45.0,
-      "avgTradeValue5d": 97406571970.0,
-      "summary": "PER 8.3배, PBR 0.6배, 시총 3.1조원, 최근 5일 평균 거래대금 974억원, 부채비율 84.4%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 74점 · 상승여력 45.0%"
+      "sector": "대형주",
+      "totalScore": 76.0,
+      "upside": 55.4,
+      "avgTradeValue5d": 96310287140.0,
+      "summary": "PER 7.7배, PBR 0.5배, 시총 2.9조원, 최근 5일 평균 거래대금 963억원, 부채비율 84.4%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 76점 · 상승여력 55.4%"
     },
     "todayAlternative": {
       "mode": "etf",
@@ -111,21 +118,11 @@
   },
   "etfRecommendations": [
     {
-      "code": "102110",
-      "name": "TIGER 200",
-      "reason": "개별주보다 지수 추종이 유리한 구간",
-      "desc": "코스피200 지수 추종 ETF",
-      "behavior": "시장 흐름과 동일하게 움직임",
-      "score": 2,
-      "type": "index",
-      "sector": "지수"
-    },
-    {
       "code": "229200",
       "name": "KODEX 코스닥150",
       "reason": "개별주보다 지수 추종이 유리한 구간",
-      "desc": "코스닥 성장주 중심 ETF",
-      "behavior": "상승장에서는 강하게 반응",
+      "desc": "KOSDAQ150",
+      "behavior": "시장 전체 방향을 비교적 직관적으로 반영",
       "score": 2,
       "type": "index",
       "sector": "성장"
@@ -134,8 +131,8 @@
       "code": "069500",
       "name": "KODEX 200",
       "reason": "개별주보다 지수 추종이 유리한 구간",
-      "desc": "국내 대표 대형주 흐름을 추종",
-      "behavior": "시장 전체 방향을 안정적으로 반영",
+      "desc": "KOSPI200",
+      "behavior": "시장 전체 방향을 비교적 직관적으로 반영",
       "score": 2,
       "type": "index",
       "sector": "지수"
