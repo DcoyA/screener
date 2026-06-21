@@ -29,6 +29,7 @@ DEFAULT_KRX_KOSPI_INDEX_DAILY_URL = "https://data-dbg.krx.co.kr/svc/apis/idx/kos
 
 MAX_STOCKS = 500
 REFRESH_COUNT = 150
+refresh_target = REFRESH_COUNT  # backward-compatible alias for old debug/log references
 REFRESH_SCAN_MULTIPLIER = 4
 HTTP_TIMEOUT = 180
 HTTP_RETRIES = 3
