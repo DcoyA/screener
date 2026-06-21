@@ -142,8 +142,8 @@ function buildDecisionReasons(stock, riskItem, scores, decision) {
   if (scores.news >= 70) reasons.push(`최근 뉴스/공시 플래그는 비교적 무난한 편입니다.`);
   else if (scores.news <= 45) reasons.push(`최근 뉴스 플래그상 불확실성이 있어 바로 진입하긴 부담이 있습니다.`);
 
-  if (riskItem?.level === "주의") reasons.push(`리스크 페이지 기준이 \"주의\"라서 최종 판단에서 감점됩니다.`);
-  else if (riskItem?.level === "보통") reasons.push(`리스크 수준이 \"보통\"이라 체크 포인트 확인이 필요합니다.`);
+  if (riskItem?.level === "주의") reasons.push(`리스크 페이지 기준이 "주의"라서 최종 판단에서 감점됩니다.`);
+  else if (riskItem?.level === "보통") reasons.push(`리스크 수준이 "보통"이라 체크 포인트 확인이 필요합니다.`);
 
   if (scores.timing >= 68) reasons.push(`타이밍/유동성 기준은 크게 무리 없는 구간입니다.`);
   else if (scores.timing <= 45) reasons.push(`지금 진입 타이밍은 다소 아쉬워 관찰이 더 적절합니다.`);
@@ -226,42 +226,6 @@ const DECISION_META = {
   exclude: { title: "제외 후보", desc: "랭킹에 올라와도 현재 국면에서는 실전 매수 대상으로 보기 어려운 종목입니다." },
 };
 
-const middleCardStyle = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 24,
-  background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
-  padding: 20,
-  boxShadow: "0 18px 40px rgba(15,23,42,0.06)",
-};
-
-const badgeRowStyle = {
-  display: "flex",
-  gap: 8,
-  flexWrap: "wrap",
-  marginBottom: 14,
-};
-
-const metricGridStyle = {
-  display: "grid",
-  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-  gap: 12,
-  marginBottom: 14,
-};
-
-const metricCardStyle = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 18,
-  padding: 16,
-  background: "#ffffff",
-};
-
-const panelBaseStyle = {
-  border: "1px solid #e5e7eb",
-  borderRadius: 18,
-  padding: 16,
-  background: "#ffffff",
-};
-
 function PickSection({ title, desc, items, emptyText }) {
   return (
     <section className="pickSection">
@@ -276,49 +240,82 @@ function PickSection({ title, desc, items, emptyText }) {
       {items.length ? (
         <div className="pickGrid">
           {items.map((item) => (
-            <article className="pickCard" key={`${title}-${item.code}`}>
-              <div className="pickTop">
-                <div>
-                  <div className="topLabelRow">
+            <article
+              key={`${title}-${item.code}`}
+              style={{
+                border: "1px solid #e5e7eb",
+                borderRadius: 28,
+                padding: 24,
+                background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
+                boxShadow: "0 20px 50px rgba(15,23,42,0.06)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: 18,
+                  flexWrap: "wrap",
+                  marginBottom: 18,
+                }}
+              >
+                <div style={{ minWidth: 0, flex: "1 1 520px" }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
                     <span className="rankTag">기존 랭킹 #{item.baselineRank ?? "-"}</span>
+                    <span className={getDecisionClass(item.decision)}>{item.decision}</span>
                     <span className={getRiskLevelClass(item.riskLevel)}>{item.riskLevel}</span>
+                    {item?.rankMeta?.topRankEligible ? <span className="smallBadge info">기존 종합 조건 통과</span> : null}
+                    {item?.undervalueMeta?.eligible ? <span className="smallBadge soft">저평가 후보</span> : null}
                   </div>
-                  <h3>{item.name}</h3>
-                  <p className="subMeta">{item.market} · {item.code} · {item.sectorName}</p>
+                  <h3 style={{ margin: "0 0 8px", fontSize: "1.72rem", letterSpacing: "-0.03em", wordBreak: "keep-all" }}>{item.name}</h3>
+                  <p style={{ margin: 0, color: "#64748b" }}>{item.market} · {item.code} · {item.sectorName}</p>
                 </div>
-                <div className="scoreBox">
-                  <span>최종 투자 점수</span>
-                  <strong>{item.finalScore}점</strong>
+
+                <div
+                  style={{
+                    minWidth: 160,
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 22,
+                    padding: 16,
+                    background: "#ffffff",
+                    textAlign: "right",
+                  }}
+                >
+                  <span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: ".84rem", fontWeight: 700 }}>최종 투자 점수</span>
+                  <strong style={{ display: "block", fontSize: "2rem", lineHeight: 1 }}>{item.finalScore}점</strong>
                 </div>
               </div>
 
-              <div style={middleCardStyle}>
-                <div style={badgeRowStyle}>
-                  <span className={getDecisionClass(item.decision)}>{item.decision}</span>
-                  {item?.rankMeta?.topRankEligible ? <span className="smallBadge info">기존 종합 조건 통과</span> : null}
-                  {item?.undervalueMeta?.eligible ? <span className="smallBadge soft">저평가 후보</span> : null}
-                </div>
-
-                <div className="middleMetricGrid" style={metricGridStyle}>
-                  <div style={metricCardStyle}>
+              <div
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: 24,
+                  background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
+                  padding: 20,
+                  boxShadow: "0 18px 40px rgba(15,23,42,0.06)",
+                }}
+              >
+                <div className="middleMetricGrid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 14 }}>
+                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff" }}>
                     <span className="metricLabel">현재가</span>
                     <strong className="metricValue">{formatPrice(item?.metrics?.closePrice)}</strong>
                   </div>
-                  <div style={metricCardStyle}>
+                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff" }}>
                     <span className="metricLabel">적정가 추정</span>
                     <strong className="metricValue">{formatPrice(item?.metrics?.targetPrice)}</strong>
                   </div>
-                  <div style={{ ...metricCardStyle, background: "#f8fbff" }}>
+                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#f8fbff" }}>
                     <span className="metricLabel">상승여력</span>
                     <strong className="metricValue accentText">{formatPercent(item?.metrics?.upside)}</strong>
                   </div>
-                  <div style={metricCardStyle}>
+                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff" }}>
                     <span className="metricLabel">거래대금</span>
                     <strong className="metricValue">{formatCompactKrw(item?.metrics?.avgTradeValue5d)}</strong>
                   </div>
                 </div>
 
-                <div style={{ ...panelBaseStyle, background: "#f8fafc", marginBottom: 12 }}>
+                <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#f8fafc", marginBottom: 12 }}>
                   <span className="reasonLabel">한 줄 판단</span>
                   <p className="panelText">
                     기존 랭킹 #{item.baselineRank ?? "-"} 후보였고, 업종 흐름·리스크·타이밍을 다시 반영한 결과 현재는
@@ -326,7 +323,7 @@ function PickSection({ title, desc, items, emptyText }) {
                   </p>
                 </div>
 
-                <div style={{ ...panelBaseStyle, marginBottom: 12 }}>
+                <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff", marginBottom: 12 }}>
                   <span className="reasonLabel">판정 이유 핵심</span>
                   <ul className="reasonList">
                     {item.decisionReasons.map((reason) => (
@@ -335,7 +332,7 @@ function PickSection({ title, desc, items, emptyText }) {
                   </ul>
                 </div>
 
-                <div style={{ ...panelBaseStyle, background: "#fbfdff" }}>
+                <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#fbfdff" }}>
                   <span className="reasonLabel">왜 랭킹과 최종 판단이 다를 수 있나</span>
                   <p className="panelText">
                     랭킹은 재무·밸류·유동성 중심의 1차 후보 생성입니다. 여기서는 여기에 업종 흐름,
@@ -437,7 +434,7 @@ export default function FinalPicksPage() {
         .heroInfoCard.mid span,.heroInfoCard.mid strong { color:#b45309; }
         .heroInfoCard.warn span,.heroInfoCard.warn strong { color:#be123c; }
         .switchSection,.pickSection,.logicSection { margin-top:26px; }
-        .switchCard,.pickCard,.emptyBox,.logicCard { border:1px solid #e5e7eb; border-radius:28px; padding:24px; background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
+        .switchCard,.emptyBox,.logicCard { border:1px solid #e5e7eb; border-radius:28px; padding:24px; background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
         .tabRow { display:flex; gap:10px; flex-wrap:wrap; }
         .tabBtn { height:44px; padding:0 18px; border-radius:999px; border:1px solid #dbe3f0; background:#fff; color:#0f172a; font-weight:800; cursor:pointer; }
         .tabBtn.active { background:#0f172a; color:#fff; border-color:#0f172a; }
@@ -447,9 +444,6 @@ export default function FinalPicksPage() {
         .sectionDesc { margin:0; color:#64748b; line-height:1.72; }
         .sectionCount { display:inline-flex; align-items:center; justify-content:center; min-width:74px; height:42px; padding:0 14px; border-radius:14px; background:#0f172a; color:#fff; font-weight:800; }
         .pickGrid { display:grid; gap:18px; }
-        .pickCard { padding:28px; }
-        .pickTop { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; flex-wrap:wrap; margin-bottom:18px; }
-        .topLabelRow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
         .rankTag,.riskChip,.decisionChip,.smallBadge { display:inline-flex; align-items:center; justify-content:center; padding:7px 12px; border-radius:999px; font-size:.8rem; font-weight:800; }
         .rankTag { background:#eef2ff; color:#4f46e5; }
         .riskChip.low { background:#dcfce7; color:#15803d; }
@@ -460,11 +454,6 @@ export default function FinalPicksPage() {
         .decisionChip.exclude { background:#ffe4e6; color:#be123c; }
         .smallBadge.info { background:#e0f2fe; color:#0284c7; }
         .smallBadge.soft { background:#f1f5f9; color:#475569; }
-        .pickCard h3 { margin:0 0 8px; font-size:1.72rem; letter-spacing:-0.03em; word-break:keep-all; }
-        .subMeta { margin:0; color:#64748b; }
-        .scoreBox { min-width:160px; border:1px solid #e5e7eb; border-radius:22px; padding:16px; background:#fff; text-align:right; }
-        .scoreBox span { display:block; margin-bottom:6px; color:#64748b; font-size:.84rem; font-weight:700; }
-        .scoreBox strong { display:block; font-size:2rem; line-height:1; }
         .metricLabel { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
         .metricValue { display:block; font-size:1.1rem; line-height:1.35; color:#0f172a; }
         .accentText { color:#0ea5e9; }
@@ -485,11 +474,9 @@ export default function FinalPicksPage() {
         }
         @media (max-width:760px) {
           .container { padding:24px 18px 64px; }
-          .pageHero,.pickTop,.sectionHeaderRow { flex-direction:column; align-items:flex-start; }
-          .scoreBox { width:100%; text-align:left; }
-          .switchCard,.pickCard,.logicCard,.emptyBox { padding:20px; }
+          .pageHero,.sectionHeaderRow { flex-direction:column; align-items:flex-start; }
+          .switchCard,.logicCard,.emptyBox { padding:20px; }
           .detailBtn,.ghostBtn { width:100%; }
-          .pickCard h3 { font-size:1.45rem; }
         }
       `}</style>
     </main>
