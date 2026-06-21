@@ -43,6 +43,18 @@ kst_now = datetime.utcnow() + timedelta(hours=9)
 today = kst_now.strftime("%Y-%m-%d")
 target_year = str(kst_now.year - 1)
 
+NEGATIVE_KEYWORDS = [
+    "유상증자", "전환사채", "신주인수권부사채", "횡령", "배임",
+    "적자전환", "실적악화", "감사의견", "소송", "영업정지",
+    "상장폐지", "불성실공시", "채무", "부도", "리콜",
+]
+UNCERTAINTY_KEYWORDS = [
+    "검토중", "예정", "추진", "변경", "정정", "조회공시", "미확정",
+]
+POSITIVE_KEYWORDS = [
+    "수주", "계약체결", "실적개선", "흑자전환", "배당", "자사주", "신사업",
+]
+
 
 def normalize_krx_url(url, fallback):
     candidate = (url or fallback or "").strip()
@@ -78,7 +90,6 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-
 def load_json(path, default):
     if not path.exists():
         return default
@@ -89,13 +100,11 @@ def load_json(path, default):
             return default
 
 
-
 def http_get_json(base_url, params):
     query = urllib.parse.urlencode(params)
     url = f"{base_url}?{query}"
     with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:
         return json.loads(resp.read().decode("utf-8"))
-
 
 
 def request_json_url(url, headers=None, params=None):
@@ -124,7 +133,6 @@ def request_json_url(url, headers=None, params=None):
         raise RuntimeError(f"Invalid JSON response from {url}: {body[:300]}")
 
 
-
 def parse_amount(value):
     if value is None:
         return 0
@@ -137,7 +145,6 @@ def parse_amount(value):
         return int(float(text))
     except Exception:
         return 0
-
 
 
 def parse_number(value):
@@ -154,7 +161,6 @@ def parse_number(value):
         return None
 
 
-
 def normalize_code(value):
     if value is None:
         return ""
@@ -162,7 +168,6 @@ def normalize_code(value):
     if len(digits) >= 6:
         return digits[-6:]
     return digits.zfill(6) if digits else ""
-
 
 
 def fmt_krw(value):
@@ -175,12 +180,10 @@ def fmt_krw(value):
     return f"{sign}{n:,}원"
 
 
-
 def fmt_ratio(value, digits=1):
     if value is None:
         return "-"
     return f"{value:.{digits}f}"
-
 
 
 def pct(a, b):
@@ -189,12 +192,14 @@ def pct(a, b):
     return ((a - b) / abs(b)) * 100
 
 
-
 def safe_div(numerator, denominator):
     if not denominator:
         return None
     return numerator / denominator
 
+
+def clamp(value, min_value=0, max_value=100):
+    return max(min_value, min(max_value, value))
 
 
 def pick_field(row, exact_keys=None, contains_keys=None):
@@ -212,7 +217,6 @@ def pick_field(row, exact_keys=None, contains_keys=None):
     return None
 
 
-
 def download_corp_code_xml():
     query = urllib.parse.urlencode({"crtfc_key": OPENDART_API_KEY})
     url = f"https://opendart.fss.or.kr/api/corpCode.xml?{query}"
@@ -222,7 +226,6 @@ def download_corp_code_xml():
         xml_name = zf.namelist()[0]
         xml_bytes = zf.read(xml_name)
     return ET.fromstring(xml_bytes)
-
 
 
 def build_corp_code_map():
@@ -240,7 +243,6 @@ def build_corp_code_map():
     return mapping
 
 
-
 def krx_headers():
     return {
         "AUTH_KEY": KRX_API_KEY,
@@ -249,14 +251,12 @@ def krx_headers():
     }
 
 
-
 def recent_krx_bas_dd_candidates(days_back=RECENT_DAYS_BACK):
     base_date = (kst_now - timedelta(days=1)).date()
     return [
         (base_date - timedelta(days=offset)).strftime("%Y%m%d")
         for offset in range(days_back)
     ]
-
 
 
 def fetch_krx_rows(url, bas_dd):
@@ -313,7 +313,6 @@ def fetch_krx_rows(url, bas_dd):
     return [], errors
 
 
-
 def normalize_basic_rows(rows, market_name):
     result = []
     for row in rows:
@@ -350,7 +349,6 @@ def normalize_basic_rows(rows, market_name):
             }
         )
     return result
-
 
 
 def normalize_daily_rows(rows):
@@ -402,13 +400,12 @@ def normalize_daily_rows(rows):
     return result
 
 
-
 def build_krx_universe():
     diagnostics = []
     candidates = recent_krx_bas_dd_candidates()
-
     basic_rows = []
     basic_bas_dd = None
+
     for bas_dd in candidates:
         kospi_basic_rows, kospi_basic_errors = fetch_krx_rows(KRX_KOSPI_BASIC_URL, bas_dd)
         kosdaq_basic_rows, kosdaq_basic_errors = fetch_krx_rows(KRX_KOSDAQ_BASIC_URL, bas_dd)
@@ -438,7 +435,6 @@ def build_krx_universe():
         kosdaq_daily_rows, kosdaq_daily_errors = fetch_krx_rows(KRX_KOSDAQ_DAILY_URL, bas_dd)
         kospi_daily = normalize_daily_rows(kospi_daily_rows)
         kosdaq_daily = normalize_daily_rows(kosdaq_daily_rows)
-
         merged_daily = {}
         merged_daily.update(kospi_daily)
         merged_daily.update(kosdaq_daily)
@@ -462,7 +458,6 @@ def build_krx_universe():
         item = dict(row)
         trade_values = []
         latest_metrics = latest_daily.get(code, {})
-
         for snap in daily_snapshots:
             row_daily = snap["rows"].get(code)
             if row_daily:
@@ -503,9 +498,7 @@ def build_krx_universe():
     print(f"Using KRX daily basDd window={','.join(used_daily_dates)}")
     if daily_diagnostics:
         print("KRX daily empty-date notes: " + " || ".join(daily_diagnostics[:5]))
-
     return result
-
 
 
 def fetch_major_accounts(corp_code, year):
@@ -537,7 +530,6 @@ def fetch_major_accounts(corp_code, year):
     return [], fallback_year
 
 
-
 def pick_account(rows, names):
     for target in names:
         for row in rows:
@@ -550,7 +542,6 @@ def pick_account(rows, names):
             if target in name:
                 return row
     return {}
-
 
 
 def score_per(per):
@@ -569,7 +560,6 @@ def score_per(per):
     return 0
 
 
-
 def score_pbr(pbr):
     if pbr is None or pbr <= 0:
         return 0
@@ -586,7 +576,6 @@ def score_pbr(pbr):
     return 0
 
 
-
 def score_discount_bonus(per, pbr):
     if per is None or pbr is None or per <= 0 or pbr <= 0:
         return 0
@@ -597,7 +586,6 @@ def score_discount_bonus(per, pbr):
     if per <= 15 and pbr <= 1.5:
         return 2
     return 0
-
 
 
 def score_operating_margin(op_margin):
@@ -614,7 +602,6 @@ def score_operating_margin(op_margin):
     return 0
 
 
-
 def score_roe(roe):
     if roe > 20:
         return 10
@@ -629,14 +616,12 @@ def score_roe(roe):
     return 0
 
 
-
 def score_profit_stability(operating_income, net_income):
     if operating_income > 0 and net_income > 0:
         return 5
     if operating_income > 0 or net_income > 0:
         return 2
     return 0
-
 
 
 def score_debt_ratio(debt_ratio):
@@ -653,7 +638,6 @@ def score_debt_ratio(debt_ratio):
     return 0
 
 
-
 def score_earnings_safety(operating_income, net_income):
     if operating_income > 0 and net_income > 0:
         return 10
@@ -662,7 +646,6 @@ def score_earnings_safety(operating_income, net_income):
     if operating_income <= 0 and net_income > 0:
         return 4
     return 0
-
 
 
 def score_market_cap(market_cap):
@@ -679,7 +662,6 @@ def score_market_cap(market_cap):
     return 5
 
 
-
 def score_liquidity(avg_trade_value_5d):
     if avg_trade_value_5d < 10_0000_0000:
         return 0
@@ -690,7 +672,6 @@ def score_liquidity(avg_trade_value_5d):
     if avg_trade_value_5d < 300_0000_0000:
         return 6
     return 8
-
 
 
 def score_revenue_growth(growth):
@@ -705,7 +686,6 @@ def score_revenue_growth(growth):
     return 0
 
 
-
 def score_operating_income_growth(growth):
     if growth > 30:
         return 4
@@ -718,7 +698,6 @@ def score_operating_income_growth(growth):
     return 0
 
 
-
 def score_net_income_growth(growth):
     if growth > 30:
         return 2
@@ -727,17 +706,14 @@ def score_net_income_growth(growth):
     return 0
 
 
-
 def apply_rank_gate(total_score, debt_ratio, operating_income, net_income, equity):
     penalty = 0
     flags = []
     top_rank_eligible = True
-
     if equity <= 0:
         penalty += 40
         flags.append("자본잠식 또는 자본 0 이하")
         top_rank_eligible = False
-
     if debt_ratio >= 300:
         penalty += 30
         flags.append("부채비율 300% 이상")
@@ -746,23 +722,19 @@ def apply_rank_gate(total_score, debt_ratio, operating_income, net_income, equit
         penalty += 15
         flags.append("부채비율 200% 이상")
         top_rank_eligible = False
-
     if operating_income <= 0 and net_income <= 0:
         penalty += 10
         flags.append("영업이익/순이익 동시 부진")
     elif operating_income <= 0 or net_income <= 0:
         penalty += 5
         flags.append("이익 안정성 약함")
-
     adjusted_score = max(total_score - penalty, 0)
     return adjusted_score, penalty, flags, top_rank_eligible
-
 
 
 def extract_kospi_benchmark(rows):
     if not rows:
         return None
-
     for row in rows:
         idx_name = str(
             pick_field(
@@ -772,7 +744,6 @@ def extract_kospi_benchmark(rows):
             )
             or ""
         ).strip()
-
         close_value = parse_number(
             pick_field(
                 row,
@@ -780,7 +751,6 @@ def extract_kospi_benchmark(rows):
                 contains_keys=["clsprc", "close"],
             )
         )
-
         if close_value is not None and (
             idx_name.lower() == "kospi"
             or idx_name == "코스피"
@@ -791,7 +761,6 @@ def extract_kospi_benchmark(rows):
                 "name": idx_name or "KOSPI",
                 "close": round(close_value, 2),
             }
-
     first = rows[0]
     fallback_name = str(first.get("IDX_NM") or first.get("idxNm") or "KOSPI")
     fallback_close = parse_number(
@@ -806,9 +775,118 @@ def extract_kospi_benchmark(rows):
             "name": fallback_name,
             "close": round(fallback_close, 2),
         }
-
     return None
 
+
+def infer_sector(stock_name, market):
+    name = str(stock_name or "")
+    rules = [
+        (["반도체", "칩", "세미", "테크"], "반도체"),
+        (["배터리", "전지", "에너지솔루션", "화학"], "2차전지"),
+        (["자동차", "모비스", "타이어", "부품"], "자동차/부품"),
+        (["금융", "은행", "증권", "카드", "보험", "금융지주"], "금융"),
+        (["게임", "엔터", "콘텐츠", "미디어", "스튜디오"], "미디어/엔터"),
+        (["바이오", "제약", "헬스", "메디", "약품"], "바이오/제약"),
+        (["통신", "텔레콤"], "통신"),
+        (["건설", "시멘트", "인프라"], "건설/인프라"),
+        (["유통", "마트", "쇼핑", "커머스"], "유통/소비"),
+        (["조선", "중공업", "기계"], "산업재"),
+    ]
+    for keywords, sector_name in rules:
+        if any(keyword in name for keyword in keywords):
+            return sector_name
+    return "대형주" if market == "KOSPI" else "중소형주"
+
+
+def count_keyword_hits(texts, keywords):
+    count = 0
+    hits = []
+    for text in texts:
+        lowered = str(text).lower()
+        matched = [keyword for keyword in keywords if keyword.lower() in lowered]
+        if matched:
+            count += 1
+            hits.extend(matched)
+    return count, sorted(set(hits))
+
+
+def build_news_meta(stock):
+    texts = []
+    rank_flags = stock.get("rankMeta", {}).get("flags", [])
+    undervalue_flags = stock.get("undervalueMeta", {}).get("flags", [])
+    risk = stock.get("risk", "")
+    summary = stock.get("summary", "")
+    description = stock.get("description", "")
+    title = stock.get("riskMeta", {}).get("title", "")
+    check_point = stock.get("riskMeta", {}).get("checkPoint", "")
+
+    texts.extend(rank_flags)
+    texts.extend(undervalue_flags)
+    texts.extend([risk, summary, description, title, check_point])
+
+    negative_count, negative_hits = count_keyword_hits(texts, NEGATIVE_KEYWORDS)
+    uncertainty_count, uncertainty_hits = count_keyword_hits(texts, UNCERTAINTY_KEYWORDS)
+    positive_count, positive_hits = count_keyword_hits(texts, POSITIVE_KEYWORDS)
+
+    score = clamp(60 + positive_count * 8 - negative_count * 14 - uncertainty_count * 6)
+
+    flags = []
+    if negative_count:
+        flags.append(f"악재 {negative_count}건")
+    if uncertainty_count:
+        flags.append(f"불확실성 {uncertainty_count}건")
+    if positive_count:
+        flags.append(f"호재 {positive_count}건")
+    if not flags:
+        flags.append("눈에 띄는 뉴스 플래그 없음")
+
+    return {
+        "recentNewsCount": len([t for t in texts if t]),
+        "recentDisclosureCount": 0,
+        "negativeCount": negative_count,
+        "uncertaintyCount": uncertainty_count,
+        "positiveCount": positive_count,
+        "score": int(round(score)),
+        "flags": flags,
+        "negativeKeywords": negative_hits,
+        "uncertaintyKeywords": uncertainty_hits,
+        "positiveKeywords": positive_hits,
+    }
+
+
+def build_timing_meta(stock):
+    metrics = stock.get("metrics", {})
+    price_change_5d = float(metrics.get("priceChangeRate", 0) or 0)
+    upside = float(metrics.get("upside", 0) or 0)
+    liquidity = float(metrics.get("avgTradeValue5d", 0) or 0)
+
+    recent_spike_flag = price_change_5d >= 20
+    volume_spike_flag = liquidity >= 300_0000_0000
+    expensive_flag = upside < -20
+
+    overheat_penalty = 12 if recent_spike_flag else 0
+    expensive_penalty = 10 if expensive_flag else 0
+
+    score = clamp(
+        55 + price_change_5d * 0.8 + upside * 0.15 - overheat_penalty - expensive_penalty
+    )
+
+    reason_parts = []
+    if recent_spike_flag:
+        reason_parts.append("최근 급등 부담 존재")
+    if volume_spike_flag:
+        reason_parts.append("거래대금 충분")
+    if expensive_flag:
+        reason_parts.append("적정가 대비 고평가 부담")
+    if not reason_parts:
+        reason_parts.append("타이밍상 중립 구간")
+
+    return {
+        "score": int(round(score)),
+        "recentSpikeFlag": recent_spike_flag,
+        "volumeSpikeFlag": volume_spike_flag,
+        "reason": " · ".join(reason_parts),
+    }
 
 
 def build_stock_item(item, corp_map):
@@ -939,10 +1017,13 @@ def build_stock_item(item, corp_map):
         f"순이익 성장률 {net_income_growth:.1f}%입니다."
     )
 
-    return {
+    sector_name = infer_sector(item["name"], item["market"])
+
+    stock = {
         "code": stock_code,
         "name": item["name"],
         "market": item["market"],
+        "sector": sector_name,
         "rawTotalScore": raw_total_score,
         "totalScore": total_score,
         "valueScore": value_score,
@@ -1031,12 +1112,123 @@ def build_stock_item(item, corp_map):
         },
     }
 
+    stock["newsMeta"] = build_news_meta(stock)
+    stock["timingMeta"] = build_timing_meta(stock)
+    return stock
+
+
+def build_sector_meta_map(stocks):
+    sector_buckets = {}
+    for stock in stocks:
+        sector = stock.get("sector") or "미분류"
+        sector_buckets.setdefault(sector, []).append(stock)
+
+    sector_meta_map = {}
+    for sector, bucket in sector_buckets.items():
+        avg_return_5d = sum(float(s.get("metrics", {}).get("priceChangeRate", 0) or 0) for s in bucket) / max(len(bucket), 1)
+        avg_revenue_growth = sum(float(s.get("metrics", {}).get("revenueGrowth", 0) or 0) for s in bucket) / max(len(bucket), 1)
+        avg_liquidity = sum(float(s.get("metrics", {}).get("avgTradeValue5d", 0) or 0) for s in bucket) / max(len(bucket), 1)
+        positive_count = sum(
+            1 for s in bucket
+            if float(s.get("metrics", {}).get("priceChangeRate", 0) or 0) > 0
+        )
+
+        return_score = clamp(50 + avg_return_5d * 1.8, 0, 100)
+        growth_score = clamp(50 + avg_revenue_growth * 1.2, 0, 100)
+        liquidity_score = clamp((avg_liquidity / 300_0000_0000) * 100, 0, 100)
+        breadth_score = clamp((positive_count / max(len(bucket), 1)) * 100, 0, 100)
+
+        strength_score = round(
+            return_score * 0.35
+            + growth_score * 0.25
+            + liquidity_score * 0.25
+            + breadth_score * 0.15
+        )
+
+        sector_meta_map[sector] = {
+            "name": sector,
+            "strengthScore": int(strength_score),
+            "leaderFlag": strength_score >= 65,
+            "reason": (
+                "최근 업종 평균 수익률과 거래대금 흐름이 양호"
+                if strength_score >= 65
+                else "최근 업종 흐름이 강하지 않아 보수 해석 필요"
+            ),
+        }
+    return sector_meta_map
+
+
+def build_market_state(stocks):
+    avg_total_score = sum(float(s.get("totalScore", 0) or 0) for s in stocks) / max(len(stocks), 1)
+    avg_momentum = sum(float(s.get("metrics", {}).get("priceChangeRate", 0) or 0) for s in stocks) / max(len(stocks), 1)
+    eligible_ratio = (
+        sum(1 for s in stocks if s.get("rankMeta", {}).get("topRankEligible")) / max(len(stocks), 1)
+    )
+
+    if avg_momentum >= 2 and eligible_ratio >= 0.55:
+        return {
+            "state": "risk_on",
+            "label": "위험선호",
+            "baseFit": 65,
+            "reason": "상위 후보군의 모멘텀과 조건 통과 비율이 양호합니다.",
+        }
+    if avg_momentum <= -1 or avg_total_score < 45:
+        return {
+            "state": "risk_off",
+            "label": "방어 우위",
+            "baseFit": 44,
+            "reason": "시장 전반 흐름이 약해 보수적 접근이 필요한 구간입니다.",
+        }
+    return {
+        "state": "neutral",
+        "label": "중립",
+        "baseFit": 54,
+        "reason": "강세/약세가 뚜렷하지 않아 업종 선택이 중요합니다.",
+    }
+
+
+def build_market_context(stock, market_state, sector_meta):
+    sector_score = float(sector_meta.get("strengthScore", 50) or 50)
+    liquidity = float(stock.get("metrics", {}).get("avgTradeValue5d", 0) or 0)
+    market = str(stock.get("market", "")).upper()
+
+    liquidity_bonus = clamp((liquidity / 250_0000_0000) * 15, 0, 15)
+    market_bonus = 4 if market == "KOSPI" else 0
+
+    fit_score = clamp(market_state["baseFit"] * 0.55 + sector_score * 0.30 + liquidity_bonus + market_bonus, 0, 100)
+
+    return {
+        "marketState": market_state["state"],
+        "label": market_state["label"],
+        "fitScore": int(round(fit_score)),
+        "reason": f"{market_state['reason']} 업종 강도와 유동성을 함께 반영했습니다.",
+    }
+
+
+def attach_investment_meta(stocks):
+    sector_meta_map = build_sector_meta_map(stocks)
+    market_state = build_market_state(stocks)
+
+    for stock in stocks:
+        sector_name = stock.get("sector") or "미분류"
+        sector_meta = sector_meta_map.get(
+            sector_name,
+            {
+                "name": sector_name,
+                "strengthScore": 50,
+                "leaderFlag": False,
+                "reason": "업종 강도 데이터 없음",
+            },
+        )
+        stock["sectorMeta"] = sector_meta
+        stock["marketContext"] = build_market_context(stock, market_state, sector_meta)
+
+    return stocks
 
 
 def get_week_label(dt):
     week_no = ((dt.day - 1) // 7) + 1
     return f"{dt.year}년 {dt.month}월 {week_no}주차"
-
 
 
 def build_report_highlight(stock):
@@ -1049,7 +1241,6 @@ def build_report_highlight(stock):
     )
 
 
-
 def build_history_entry(stocks):
     top_rank_stocks = [
         s for s in stocks if s.get("rankMeta", {}).get("topRankEligible")
@@ -1060,7 +1251,6 @@ def build_history_entry(stocks):
         KRX_KOSPI_INDEX_DAILY_URL, kst_now.strftime("%Y%m%d")
     )
     benchmark = extract_kospi_benchmark(kospi_rows)
-
     if benchmark is None:
         for bas_dd in recent_krx_bas_dd_candidates():
             kospi_rows, _ = fetch_krx_rows(KRX_KOSPI_INDEX_DAILY_URL, bas_dd)
@@ -1088,7 +1278,6 @@ def build_history_entry(stocks):
             for idx, stock in enumerate(top_picks)
         ],
     }
-
 
 
 def main():
@@ -1133,12 +1322,8 @@ def main():
         reverse=True,
     )
     stocks = stocks[:MAX_STOCKS]
-    if not stocks:
-        raise RuntimeError("Merged stock list is empty after refresh.")
-    print(
-        f"refresh_target={refresh_target}, fresh={len(fresh_stocks)}, "
-        f"existing={len(existing_stocks)}, merged={len(stocks)}"
-    )
+
+    stocks = attach_investment_meta(stocks)
 
     risks = []
     for stock in stocks:
@@ -1167,7 +1352,7 @@ def main():
             "summary": "OpenDART 사업보고서와 KRX 상장종목/일별매매정보를 바탕으로 저평가·안전성·시장성을 함께 반영한 주간 리포트입니다.",
             "topPickCodes": [item["code"] for item in top_picks],
             "highlights": [build_report_highlight(item) for item in top_picks[:5]],
-            "marketNote": "이번 단계부터는 PER, PBR, 시가총액, 최근 5영업일 평균 거래대금을 함께 반영한 점수 체계로 상위 후보를 선별합니다.",
+            "marketNote": "기존 랭킹 점수에 더해 업종 강도, 뉴스 플래그, 시장 국면 적합도, 진입 타이밍 메타를 함께 생성합니다.",
             "disclaimer": "본 자료는 투자 권유가 아니라 공개 데이터 기반 정리 자료입니다.",
         }
     ]
@@ -1195,3 +1380,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+``
