@@ -402,22 +402,6 @@ export default function FinalPicksPage() {
         emptyText="현재 기준으로 표시할 종목이 없습니다."
       />
 
-      <section className="logicSection">
-        <div className="logicCard">
-          <h2>A안 / B안 제안</h2>
-          <div className="guideGrid twoCol">
-            <div className="guideItem">
-              <strong>A안: 규칙 기반 MVP</strong>
-              <span>기존 stocks.json + risks.json + 업종/뉴스 플래그 필드만으로 최종 점수를 계산합니다. 빠르게 붙일 수 있고, 현재 서비스 신뢰 회복용 1차 버전으로 적합합니다.</span>
-            </div>
-            <div className="guideItem">
-              <strong>B안: AI 해석 확장</strong>
-              <span>뉴스/공시 요약과 자연어 판정 설명까지 붙여서 왜 통과/제외됐는지 사람이 읽는 문장으로 더 정교하게 보여줍니다. MVP 이후 고도화 단계에 적합합니다.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <style jsx>{`
         .container { max-width:1180px; margin:0 auto; padding:32px 24px 80px; color:#0f172a; }
         .topLinks { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:26px; flex-wrap:wrap; }
