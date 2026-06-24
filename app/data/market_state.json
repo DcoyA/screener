@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-23T04:40:00Z",
+  "generatedAt": "2026-06-24T04:29:39Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -13,36 +13,37 @@
   "signals": {
     "count": 500,
     "eligibleRatio": 0.882,
-    "avgTotalScore": 76.75,
-    "avgUpside": 97.28,
-    "avgLiquidity5d": 20731452871.35,
+    "avgTotalScore": 76.65,
+    "avgUpside": 96.69,
+    "avgLiquidity5d": 22140944834.75,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 3,
+    "sectorSpread": 4,
     "strongSectorCounts": {
-      "대형주": 16,
-      "중소형주": 2,
-      "미디어/엔터": 2
+      "대형주": 14,
+      "중소형주": 3,
+      "미디어/엔터": 2,
+      "반도체": 1
     },
     "topPoolCodes": [
-      "091590",
-      "000240",
-      "111770",
       "041510",
+      "091590",
       "192080",
+      "111770",
       "006730",
-      "001800",
-      "267250",
       "375500",
-      "002380"
+      "267250",
+      "002380",
+      "383220",
+      "081660"
     ]
   },
   "modeScores": {
-    "stock_pick": 54.16,
-    "etf": 49.8,
+    "stock_pick": 55.08,
+    "etf": 53.47,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
@@ -58,14 +59,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 54.16,
+      "score": 55.08,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 49.8,
+      "score": 53.47,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -103,11 +104,11 @@
       "name": "DL이앤씨보통주",
       "market": "KOSPI",
       "sector": "대형주",
-      "totalScore": 76.0,
-      "upside": 55.1,
-      "avgTradeValue5d": 93420605490.0,
-      "summary": "PER 7.7배, PBR 0.5배, 시총 2.9조원, 최근 5일 평균 거래대금 934억원, 부채비율 84.4%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 76점 · 상승여력 55.1%"
+      "totalScore": 78.0,
+      "upside": 94.3,
+      "avgTradeValue5d": 70960167560.0,
+      "summary": "PER 6.2배, PBR 0.4배, 시총 2.3조원, 최근 5일 평균 거래대금 710억원, 부채비율 84.4%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 78점 · 상승여력 94.3%"
     },
     "todayAlternative": {
       "mode": "etf",
