@@ -341,7 +341,7 @@ function PickSection({ title, desc, items, emptyText }) {
                 </div>
 
                 <div className="cardActions">
-                  <Link href={`/stock/${item.code}`} className="detailBtn">종목 상세 보기</Link>
+                  <Link href={`/stock/${item.code}`} className="detailBtn">종목 상세 보기  ||  </Link>
                   <Link href={`/risk?code=${item.code}`} className="ghostBtn">리스크 확인</Link>
                 </div>
               </div>
