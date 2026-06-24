@@ -490,7 +490,7 @@ export default function AlternativePage() {
                     <div className="metricInline">상승여력 <b>{formatPercent(todayStock.upside)}</b></div>
                     <div className="metricInline">유동성 <b>{formatKrwCompact(todayStock.avgTradeValue5d)}</b></div>
                     <div className="infoBlock"><b>왜 지금 보는가</b><p>{todayStock.whyNow || todayStock.summary || "현재 기준으로 가장 균형이 좋은 종목입니다."}</p></div>
-                    <Link href={`/stock/${todayStock.code}`} className="detailBtn">종목 상세 보기</Link>
+                    <Link href={`/stock/${todayStock.code}`} className="detailBtn">종목 상세 보기2</Link>
                   </>
                 ) : <p className="emptyText">오늘의 1종목 후보가 아직 생성되지 않았습니다.</p>}
               </div>
