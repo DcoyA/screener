@@ -1,5 +1,5 @@
 export const NAV_ITEMS = [
-  { href: "/notice", label: "공지" },
+  { href: "/notice", label: "이용가이드" },
   { href: "/performance", label: "성과/백테스트" },
   { href: "/ranking", label: "랭킹" },
   { href: "/risk", label: "리스크" },
