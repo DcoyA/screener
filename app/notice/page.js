@@ -104,8 +104,7 @@ const steps = [
     id: "step2",
     step: "Step 2",
     title: "리스크에서 탈락 후보 걸러내기",
-    summary:
-      "좋아 보이는 종목을 찾기보다, 먼저 버려야 하는 종목을 찾는 단계다.",
+    summary: "좋아 보이는 종목을 찾기보다, 먼저 버려야 하는 종목을 찾는 단계다.",
     always: [
       "랭킹 상위라도 리스크가 높으면 실전 진입 전에 한 번 더 멈춰야 한다.",
       "리스크 페이지는 숫자가 좋아 보이는 함정 종목을 걸러내는 역할이 크다.",
@@ -301,9 +300,51 @@ export default function NoticePage() {
     email: false,
     example: true,
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const toggle = (key) => {
-    setOpenSteps((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggle = (key) => setOpenSteps((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const openModal = () => {
+    setIsModalOpen(true);
+    setSubmitError("");
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setIsSubmitting(false);
+    setSubmitError("");
+    if (isSubmitted) {
+      setEmail("");
+      setIsSubmitted(false);
+    }
+  };
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed) {
+      setSubmitError("이메일 주소를 입력해주세요.");
+      return;
+    }
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmed)) {
+      setSubmitError("올바른 이메일 주소를 입력해주세요.");
+      return;
+    }
+    setIsSubmitting(true);
+    setSubmitError("");
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+      setIsSubmitted(true);
+    } catch (error) {
+      setSubmitError("저장 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -318,16 +359,17 @@ export default function NoticePage() {
           <p className="badge">USER GUIDE</p>
           <h1>우량주 스카우터 사용 가이드</h1>
           <p className="heroDesc">
-            랭킹에서 후보를 찾고, 리스크를 걸러내고, 실전투자에서 현재 시장 기준 후보를 좁힌 뒤,
-            종목 상세와 뉴스 확인까지 거쳐 최종 판단하는 흐름을 안내합니다.
+            우량주 스카우터는 KRX 와 OPEN DART 에 공시된 정보를 1차로 분석하여 제공합니다<br />
+            랭킹에서 후보를 찾고, 리스크를 걸러내고, 실전투자에서 현재 시장 기준 후보를 좁힌 뒤,<br />
+            종목 상세와 뉴스 확인까지 거쳐 최종 판단하는 흐름으로 사용합니다.
           </p>
           <div className="noticeCallout">
-            이 사이트는 종목을 바로 사라고 찍어주는 곳이 아니라, 후보를 압축하고 해석을 돕는 도구입니다.
+            우량주 스카우터는 종목찍어주기 시스템이 아닌, 후보를 압축하고 해석을 돕는 도구입니다.
           </div>
           <div className="heroActions">
             <a href="#process" className="primaryBtn">사이트 이용 순서 보기</a>
             <a href="#examples" className="ghostBtn">실전 예시 보기</a>
-            <a href="#premium-email" className="ghostBtn">프리미엄 이메일 신청하기</a>
+            <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 이메일</button>
           </div>
         </div>
         <div className="heroImageCol">
@@ -341,9 +383,8 @@ export default function NoticePage() {
             <p className="sectionEyebrow">QUICK START</p>
             <h2>먼저 이것만 이해하면 됩니다</h2>
           </div>
-          <p className="sectionSideText">서비스 전체 흐름을 30초 안에 파악할 수 있게 정리했습니다.</p>
+          <p className="sectionSideText">서비스 전체 흐름 30초 만에 알기</p>
         </div>
-
         <div className="summaryGrid">
           {quickCards.map((card) => (
             <div className="summaryCard" key={card.id}>
@@ -358,11 +399,10 @@ export default function NoticePage() {
         <div className="sectionHeader">
           <div>
             <p className="sectionEyebrow">PROCESS</p>
-            <h2>실제 사용 순서는 이렇게 가면 됩니다</h2>
+            <h2>실제 사용 순서</h2>
           </div>
-          <p className="sectionSideText">아래 5단계를 기본 흐름으로 보고, 각 단계는 필요할 때만 펼쳐서 자세히 읽게 만듭니다.</p>
+          <p className="sectionSideText">5단계의 기본 흐름</p>
         </div>
-
         <div className="accordionStack">
           {steps.map((step) => {
             const isOpen = !!openSteps[step.id];
@@ -376,38 +416,28 @@ export default function NoticePage() {
                   </div>
                   <span className={`arrow ${isOpen ? "open" : ""}`}>⌄</span>
                 </button>
-
                 {isOpen ? (
                   <div className="accordionBody">
                     <div className="bodyBlock emphasis">
                       <span className="miniTitle">항상 보이는 핵심 설명</span>
                       <ul className="bulletList">
-                        {step.always.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
+                        {step.always.map((item) => <li key={item}>{item}</li>)}
                       </ul>
                     </div>
-
                     {step.details.map((detail) => (
                       <div className="bodyBlock" key={detail.title}>
                         <span className="miniTitle">{detail.title}</span>
                         <ul className="bulletList">
-                          {detail.body.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
+                          {detail.body.map((item) => <li key={item}>{item}</li>)}
                         </ul>
                       </div>
                     ))}
-
                     <div className="bottomLine">{step.conclusion}</div>
-
-                    {step.images.length ? (
+                    {step.images.length > 0 && (
                       <div className="imageGrid">
-                        {step.images.map((label) => (
-                          <ImagePlaceholder key={label} label={label} />
-                        ))}
+                        {step.images.map((label) => <ImagePlaceholder key={label} label={label} />)}
                       </div>
-                    ) : null}
+                    )}
                   </div>
                 ) : null}
               </article>
@@ -426,7 +456,6 @@ export default function NoticePage() {
             </div>
             <span className={`arrow ${openSteps.example ? "open" : ""}`}>⌄</span>
           </button>
-
           {openSteps.example ? (
             <div className="accordionBody">
               <div className="exampleGrid">
@@ -451,9 +480,7 @@ export default function NoticePage() {
                   </ol>
                 </div>
               </div>
-
               <div className="bottomLine">이 사이트는 높은 순위 종목을 그냥 사라고 하는 구조가 아니라, 단계별로 줄여가는 구조입니다.</div>
-
               <div className="imageGrid twoCol">
                 <ImagePlaceholder label="[이미지 자리 11] 예시 흐름 캡쳐 1" />
                 <ImagePlaceholder label="[이미지 자리 12] 예시 흐름 캡쳐 2" />
@@ -471,7 +498,6 @@ export default function NoticePage() {
           </div>
           <p className="sectionSideText">직접 종목을 고르는 흐름 외에도, 언제 어떤 보조 메뉴를 써야 하는지 같이 안내합니다.</p>
         </div>
-
         <div className="accordionStack">
           {menuGuides.map((menu) => {
             const isOpen = !!openSteps[menu.id];
@@ -488,9 +514,7 @@ export default function NoticePage() {
                   <div className="accordionBody">
                     <div className="bodyBlock">
                       <ul className="bulletList">
-                        {menu.body.map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
+                        {menu.body.map((item) => <li key={item}>{item}</li>)}
                       </ul>
                     </div>
                     <div className="bottomLine">{menu.conclusion}</div>
@@ -521,16 +545,59 @@ export default function NoticePage() {
       <section className="ctaSection">
         <div className="ctaCard">
           <h2>이제 바로 시작해보세요</h2>
-          <p>랭킹 → 리스크 → 실전투자 → 종목 상세 확인 흐름으로 바로 이동할 수 있게 버튼을 배치합니다.</p>
           <div className="ctaButtons">
-            <Link href="/ranking" className="primaryBtn">랭킹 보러가기</Link>
-            <Link href="/risk" className="ghostBtn">리스크 확인하기</Link>
-            <Link href="/final-picks" className="ghostBtn">실전투자 보기</Link>
-            <Link href="/alternative" className="ghostBtn">대안투자 보기</Link>
-            <Link href="/reports" className="ghostBtn">프리미엄 이메일 신청하기</Link>
+            <Link href="/ranking" className="primaryBtn">랭킹</Link>
+            <Link href="/risk" className="ghostBtn">리스크</Link>
+            <Link href="/final-picks" className="ghostBtn">실전투자</Link>
+            <Link href="/alternative" className="ghostBtn">대안투자</Link>
+            <Link href="/reports" className="ghostBtn">리포트</Link>
+            <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 리포트 신청</button>
           </div>
         </div>
       </section>
+
+      {isModalOpen && (
+        <div className="modalOverlay" onClick={closeModal}>
+          <div className="modalCard" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="closeBtn" onClick={closeModal} aria-label="팝업 닫기">×</button>
+            {!isSubmitted ? (
+              <>
+                <p className="modalBadge">리포트 구독하기</p>
+                <h3>주간 프리미엄 리포트 오픈 알림 신청</h3>
+                <p className="modalDesc">
+                  사전등록하면 무료 샘플 리포트 안내와 프리미엄 MVP 베타 오픈 소식을 먼저 보내드립니다.
+                  프리미엄은 확정 수익이 아니라 단기/중기/장기 시나리오와 체크 포인트를 제공하는 구조로 준비 중입니다.
+                </p>
+                <form className="subscribeForm" onSubmit={handleSubscribe}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="이메일 주소를 입력해주세요"
+                    required
+                  />
+                  {submitError ? <p className="errorText">{submitError}</p> : null}
+                  <div className="modalActions">
+                    <button type="button" className="ghostBtn buttonLike" onClick={closeModal}>닫기</button>
+                    <button type="submit" className="primaryBtn buttonLike" disabled={isSubmitting}>
+                      {isSubmitting ? "저장 중..." : "리포트 구독하기"}
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <div className="successBox">
+                <p className="modalBadge">신청 완료</p>
+                <h3>접수가 완료되었습니다</h3>
+                <p className="modalDesc">프리미엄 MVP 관련 소식과 샘플 리포트 안내를 이메일로 보내드릴게요.</p>
+                <div className="modalActions singleAction">
+                  <button type="button" className="primaryBtn buttonLike" onClick={closeModal}>확인</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .container {
@@ -549,7 +616,8 @@ export default function NoticePage() {
         }
         .homeBtn,
         .primaryBtn,
-        .ghostBtn {
+        .ghostBtn,
+        .buttonLike {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -558,6 +626,11 @@ export default function NoticePage() {
           text-decoration: none;
           font-weight: 800;
           transition: all 0.15s ease;
+          cursor: pointer;
+        }
+        .buttonLike {
+          appearance: none;
+          border: 0;
         }
         .homeBtn,
         .primaryBtn {
@@ -575,9 +648,7 @@ export default function NoticePage() {
         .accordionCard,
         .examplesCard,
         .warningCard,
-        .ctaCard,
-        .switchCard,
-        .logicCard {
+        .ctaCard {
           border: 1px solid #e5e7eb;
           border-radius: 28px;
           background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
@@ -593,7 +664,8 @@ export default function NoticePage() {
         .badge,
         .sectionEyebrow,
         .imageBadge,
-        .stepTag {
+        .stepTag,
+        .modalBadge {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -603,7 +675,8 @@ export default function NoticePage() {
           font-weight: 800;
         }
         .badge,
-        .sectionEyebrow {
+        .sectionEyebrow,
+        .modalBadge {
           background: #eef2ff;
           color: #4f46e5;
         }
@@ -620,10 +693,9 @@ export default function NoticePage() {
         .heroDesc,
         .sectionSideText,
         .accordionHeader p,
-        .sectionDesc,
-        .ctaCard p,
         .summaryCard p,
-        .imagePlaceholder span {
+        .imagePlaceholder span,
+        .modalDesc {
           color: #64748b;
           line-height: 1.78;
         }
@@ -654,7 +726,8 @@ export default function NoticePage() {
         }
         .sectionHeader h2,
         .warningCard h2,
-        .ctaCard h2 {
+        .ctaCard h2,
+        .modalCard h3 {
           margin: 6px 0 0;
           font-size: 1.7rem;
           letter-spacing: -0.03em;
@@ -759,8 +832,8 @@ export default function NoticePage() {
         }
         .imageGrid.twoCol,
         .exampleGrid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
           display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
         }
         .imagePlaceholder {
@@ -803,6 +876,73 @@ export default function NoticePage() {
         .arrow.open {
           transform: rotate(180deg);
         }
+        .modalOverlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.58);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 200;
+          padding: 20px;
+        }
+        .modalCard {
+          position: relative;
+          width: min(560px, 100%);
+          border: 1px solid #e5e7eb;
+          border-radius: 28px;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: 0 30px 70px rgba(15, 23, 42, 0.22);
+          padding: 28px;
+        }
+        .closeBtn {
+          position: absolute;
+          right: 16px;
+          top: 16px;
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          border: 1px solid #dbe3f0;
+          background: #fff;
+          color: #0f172a;
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+        .subscribeForm {
+          display: grid;
+          gap: 12px;
+          margin-top: 18px;
+        }
+        .subscribeForm input {
+          width: 100%;
+          height: 52px;
+          border-radius: 14px;
+          border: 1px solid #dbe3f0;
+          background: #fff;
+          color: #0f172a;
+          padding: 0 16px;
+          font-size: 1rem;
+        }
+        .modalActions {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-top: 6px;
+        }
+        .modalActions.singleAction {
+          justify-content: center;
+        }
+        .successBox {
+          display: grid;
+          gap: 12px;
+          text-align: center;
+        }
+        .errorText {
+          margin: 0;
+          color: #dc2626;
+          font-size: 0.92rem;
+          font-weight: 700;
+        }
         @media (max-width: 980px) {
           .heroCard,
           .summaryGrid,
@@ -828,13 +968,19 @@ export default function NoticePage() {
           .warningCard,
           .ctaCard,
           .heroCard,
-          .summaryCard {
+          .summaryCard,
+          .modalCard {
             padding: 20px;
           }
           .heroActions .primaryBtn,
           .heroActions .ghostBtn,
+          .heroActions .buttonLike,
           .ctaButtons .primaryBtn,
-          .ctaButtons .ghostBtn {
+          .ctaButtons .ghostBtn,
+          .ctaButtons .buttonLike,
+          .modalActions .primaryBtn,
+          .modalActions .ghostBtn,
+          .modalActions .buttonLike {
             width: 100%;
           }
         }
