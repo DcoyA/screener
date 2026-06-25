@@ -547,10 +547,10 @@ export default function NoticePage() {
           <h2>이제 바로 시작해보세요</h2>
           <div className="ctaButtons">
             <Link href="/ranking" className="primaryBtn">랭킹</Link>
-            <Link href="/risk" className="ghostBtn">리스크</Link>
-            <Link href="/final-picks" className="ghostBtn">실전투자</Link>
-            <Link href="/alternative" className="ghostBtn">대안투자</Link>
-            <Link href="/reports" className="ghostBtn">리포트</Link>
+            <Link href="/risk" className="primaryBtn">리스크</Link>
+            <Link href="/final-picks" className="primaryBtn">실전투자</Link>
+            <Link href="/alternative" className="primaryBtn">대안투자</Link>
+            <Link href="/reports" className="primaryBtn">리포트</Link>
             <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 리포트 신청</button>
           </div>
         </div>
