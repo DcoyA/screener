@@ -435,7 +435,14 @@ export default function NoticePage() {
                     <div className="bottomLine">{step.conclusion}</div>
                     {step.images.length > 0 && (
                       <div className="imageGrid">
-                        {step.images.map((label) => <ImagePlaceholder key={label} label={label} />)}
+                        {step.images.map((src) => (
+                          <img
+                            key={src}
+                            src={src}
+                            alt="가이드 이미지"
+                            className="stepImage"
+                          />
+                        ))}
                       </div>
                     )}
                   </div>
@@ -942,6 +949,14 @@ export default function NoticePage() {
           color: #0f172a;
           padding: 0 16px;
           font-size: 1rem;
+        }
+        .stepImage {
+          width: 100%;
+          height: auto;
+          display: block;
+          border-radius: 18px;
+          border: 1px solid #e5e7eb;
+          background: #fff;
         }
         .modalActions {
           display: flex;
