@@ -286,7 +286,9 @@ function StepImages({ images }) {
   return (
     <div className="imageGrid">
       {images.map((src) => (
-        <img key={src} src={src} alt="가이드 캡쳐" className="stepImage" />
+        <div className="stepImageFrame" key={src}>
+          <img src={src} alt="가이드 캡쳐" className="stepImage" />
+        </div>
       ))}
     </div>
   );
@@ -873,6 +875,18 @@ export default function NoticePage() {
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
         }
+        .stepImageFrame {
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          background: #fff;
+          padding: 10px;
+          min-height: 280px;
+          max-height: 540px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
         .imageGrid.oneCol {
           grid-template-columns: 1fr;
         }
@@ -907,6 +921,8 @@ export default function NoticePage() {
         .stepImage {
           width: 100%;
           height: auto;
+          max-height: 520px;
+          object-fit: contain;
           display: block;
           border-radius: 18px;
           border: 1px solid #e5e7eb;
@@ -1010,6 +1026,18 @@ export default function NoticePage() {
           }
           .realImage {
             max-width: 100%;
+          }
+          .imageGrid {
+            grid-template-columns: 1fr;
+          }
+        
+          .stepImageFrame {
+            min-height: 220px;
+            max-height: 460px;
+          }
+        
+          .stepImage {
+            max-height: 440px;
           }
         }
         @media (max-width: 760px) {
