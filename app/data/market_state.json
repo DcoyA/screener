@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-25T04:42:39Z",
+  "generatedAt": "2026-06-26T04:45:24Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -7,49 +7,50 @@
   },
   "header": {
     "title": "대안 투자",
-    "summary": "현재는 확신형 장세보다 확인형 장세에 가깝고, 개별주 / ETF 관점으로 보는 편이 무난합니다.",
-    "marketTone": "중립"
+    "summary": "지금은 개별주 추격보다 ETF / 개별주처럼 분산형 접근이 더 적합한 구간입니다.",
+    "marketTone": "분산 접근 우위"
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.88,
-    "avgTotalScore": 77.0,
-    "avgUpside": 113.03,
-    "avgLiquidity5d": 15834886532.1,
+    "eligibleRatio": 0.884,
+    "avgTotalScore": 77.15,
+    "avgUpside": 126.45,
+    "avgLiquidity5d": 15159895230.0,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 4,
+    "sectorSpread": 6,
     "strongSectorCounts": {
-      "대형주": 13,
+      "대형주": 11,
       "중소형주": 4,
       "미디어/엔터": 2,
-      "반도체": 1
+      "자동차/부품": 1,
+      "바이오/제약": 1
     },
     "topPoolCodes": [
       "041510",
       "192080",
       "091590",
       "111770",
+      "037710",
       "006730",
       "375500",
+      "073240",
       "267250",
-      "037710",
-      "036090",
-      "002380"
+      "036090"
     ]
   },
   "modeScores": {
-    "stock_pick": 55.28,
-    "etf": 53.47,
+    "stock_pick": 57.5,
+    "etf": 60.8,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
   "preferredModes": [
-    "개별주",
-    "ETF"
+    "ETF",
+    "개별주"
   ],
   "avoidModes": [
     "배당/방어",
@@ -59,14 +60,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 55.28,
+      "score": 57.5,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 53.47,
+      "score": 60.8,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -94,7 +95,7 @@
     "weak": []
   },
   "strategyNotes": [
-    "오늘은 개별주 / ETF 관점 우선으로 보는 편이 유리합니다.",
+    "오늘은 ETF / 개별주 관점 우선으로 보는 편이 유리합니다.",
     "최근 단기 모멘텀 지지 종목 비중이 낮아 추격형 접근은 보수적으로 보는 편이 좋습니다.",
     "오늘은 배당/방어 접근은 상대적으로 보수적으로 보는 편이 좋습니다."
   ],
@@ -106,8 +107,8 @@
       "sector": "대형주",
       "totalScore": 78.0,
       "upside": 85.5,
-      "avgTradeValue5d": 55360754460.0,
-      "summary": "PER 6.5배, PBR 0.5배, 시총 2.4조원, 최근 5일 평균 거래대금 554억원, 부채비율 84.4%입니다.",
+      "avgTradeValue5d": 48299605040.0,
+      "summary": "PER 6.5배, PBR 0.5배, 시총 2.4조원, 최근 5일 평균 거래대금 483억원, 부채비율 84.4%입니다.",
       "whyNow": "종합 조건 통과 · 총점 78점 · 상승여력 85.5%"
     },
     "todayAlternative": {
