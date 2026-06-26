@@ -95,7 +95,6 @@ const steps = [
       },
     ],
     conclusion: "랭킹은 시작점이다. 바로 매수 버튼이 아니다.",
-    images: ["/ranking001.png", "/ranking002.png"],
   },
   {
     id: "step2",
