@@ -264,13 +264,6 @@ const menuGuides = [
   },
 ];
 
-function ImagePlaceholder({ label }) {
-  return (
-    <div className="imagePlaceholder">
-    </div>
-  );
-}
-
 function StepImages({ images }) {
   if (!images?.length) return null;
   return (
