@@ -135,7 +135,6 @@ const steps = [
       },
     ],
     conclusion: "좋아 보여도 리스크가 높으면, 실전투자 전에 먼저 멈추는 게 맞습니다.",
-    images: ["/risk001.png", "/risk002.png"],
   },
   {
     id: "step3",
@@ -174,7 +173,6 @@ const steps = [
       },
     ],
     conclusion: "실전투자는 좋은 회사를 찾는 단계가 아니라, 지금 볼 만한 후보만 남기는 단계입니다.",
-    images: ["/final001.png", "/final002.png"],
   },
   {
     id: "step4",
@@ -208,7 +206,6 @@ const steps = [
       },
     ],
     conclusion: "여기까지 보고도 이해가 안 되면, 그 종목은 안 사는 게 맞습니다.",
-    images: ["/detail001.png", "/detail002.png"],
   },
   {
     id: "step5",
@@ -240,7 +237,6 @@ const menuGuides = [
       "금, 채권형, 테마형, 우주, 반도체, 배당형 등으로 분산 관점을 보고 싶을 때",
     ],
     conclusion: "대안투자는 종목을 못 고르겠을 때가 아니라, 종목보다 자산군이 더 중요할 때 보는 메뉴입니다.",
-    image: null,
   },
   {
     id: "report",
@@ -253,7 +249,6 @@ const menuGuides = [
       "매수 판단 전 참고 자료로 쓰는 게 맞다",
     ],
     conclusion: "리포트는 종목 추천서가 아니라, 시장 해석 보조 자료입니다.",
-    image: null,
   },
   {
     id: "email",
@@ -266,7 +261,6 @@ const menuGuides = [
       "어떤 메일이 오나: 이번 주 상위 후보 요약 / 리스크 경고 종목 변화 / 실전투자 후보 변화 / 시장 한 줄 코멘트 / 추가로 봐야 할 종목·테마",
     ],
     conclusion: "프리미엄 이메일은 사이트 전체를 매번 직접 보지 않아도 핵심 변화만 받아보는 기능입니다.",
-    image: null,
   },
 ];
 
@@ -497,11 +491,6 @@ export default function NoticePage() {
               </div>
 
               <div className="bottomLine">이 사이트는 높은 순위 종목을 그냥 사라고 하는 구조가 아니라, 단계별로 줄여가는 구조입니다.</div>
-
-              <div className="imageGrid twoCol">
-                <ImagePlaceholder label="[이미지 자리 11] 예시 흐름 캡쳐 1" />
-                <ImagePlaceholder label="[이미지 자리 12] 예시 흐름 캡쳐 2" />
-              </div>
             </div>
           ) : null}
         </article>
@@ -574,10 +563,10 @@ export default function NoticePage() {
           <h2>이제 바로 시작해보세요</h2>
           <div className="ctaButtons">
             <Link href="/ranking" className="primaryBtn">랭킹</Link>
-            <Link href="/risk" className="ghostBtn">리스크</Link>
-            <Link href="/final-picks" className="ghostBtn">실전투자</Link>
-            <Link href="/alternative" className="ghostBtn">대안투자</Link>
-            <Link href="/reports" className="ghostBtn">리포트</Link>
+            <Link href="/risk" className="primaryBtn">리스크</Link>
+            <Link href="/final-picks" className="primaryBtn">실전투자</Link>
+            <Link href="/alternative" className="primaryBtn">대안투자</Link>
+            <Link href="/reports" className="primaryBtn">리포트</Link>
             <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 리포트 신청</button>
           </div>
         </div>
