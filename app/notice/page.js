@@ -267,9 +267,6 @@ const menuGuides = [
 function ImagePlaceholder({ label }) {
   return (
     <div className="imagePlaceholder">
-      <div className="imageBadge">이미지 자리</div>
-      <p>{label}</p>
-      <span>여기에 실제 캡쳐 이미지를 삽입하면 됩니다</span>
     </div>
   );
 }
@@ -533,9 +530,6 @@ export default function NoticePage() {
                         <img src={menu.image} alt="메뉴 가이드 캡쳐" className="stepImage" />
                       </div>
                     ) : (
-                      <div className="imageGrid oneCol">
-                        <ImagePlaceholder label="추가 캡쳐 이미지 준비 중" />
-                      </div>
                     )}
                   </div>
                 ) : null}
