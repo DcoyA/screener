@@ -918,16 +918,8 @@ export default function NoticePage() {
           background: #e2e8f0;
           color: #475569;
         }
-        .stepImage {
-          width: 100%;
-          height: auto;
-          max-height: 520px;
-          object-fit: contain;
-          display: block;
-          border-radius: 18px;
-          border: 1px solid #e5e7eb;
-          background: #fff;
-        }
+        .stepImageFrame { border: 1px solid #e5e7eb; border-radius: 18px; background: #fff; padding: 10px; min-height: 280px; max-height: 540px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .stepImage { width: 100%; height: auto; max-height: 520px; object-fit: contain; display: block; border-radius: 12px; background: #fff; }
         .warningCard,
         .ctaCard {
           padding: 24px;
@@ -1026,6 +1018,13 @@ export default function NoticePage() {
           }
           .realImage {
             max-width: 100%;
+          }
+          .stepImageFrame {
+            min-height: 220px;
+            max-height: 460px;
+          }
+          .stepImage {
+            max-height: 440px;
           }
           .imageGrid {
             grid-template-columns: 1fr;
