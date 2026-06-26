@@ -527,16 +527,6 @@ export default function NoticePage() {
                         ))}
                       </ul>
                     </div>
-                    <div className="bottomLine">{menu.conclusion}</div>
-                    {menu.image ? (
-                      <div className="imageGrid oneCol">
-                        <img src={menu.image} alt="메뉴 가이드 캡쳐" className="stepImage" />
-                      </div>
-                    ) : (
-                      <div className="imageGrid oneCol">
-                        <ImagePlaceholder label="추가 캡쳐 이미지 준비 중" />
-                      </div>
-                    )}
                   </div>
                 ) : null}
               </article>
