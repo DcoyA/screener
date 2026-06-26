@@ -95,10 +95,7 @@ const steps = [
       },
     ],
     conclusion: "랭킹은 시작점이다. 바로 매수 버튼이 아니다.",
-    images: [
-      "/ranking001.png",
-      "/ranking002.png",
-    ],
+    images: ["/ranking001.png", "/ranking002.png"],
   },
   {
     id: "step2",
@@ -178,10 +175,7 @@ const steps = [
       },
     ],
     conclusion: "실전투자는 좋은 회사를 찾는 단계가 아니라, 지금 볼 만한 후보만 남기는 단계입니다.",
-    images: [
-      "/final001.png",
-      "/final002.png",
-    ],
+    images: ["/final001.png", "/final002.png"],
   },
   {
     id: "step4",
@@ -215,7 +209,7 @@ const steps = [
       },
     ],
     conclusion: "여기까지 보고도 이해가 안 되면, 그 종목은 안 사는 게 맞습니다.",
-    images: ["종목 상세 페이지 캡쳐", "체크포인트가 보이는 구간 확대"],
+    images: ["/detail001.png", "/detail002.png"],
   },
   {
     id: "step5",
@@ -247,7 +241,7 @@ const menuGuides = [
       "금, 채권형, 테마형, 우주, 반도체, 배당형 등으로 분산 관점을 보고 싶을 때",
     ],
     conclusion: "대안투자는 종목을 못 고르겠을 때가 아니라, 종목보다 자산군이 더 중요할 때 보는 메뉴입니다.",
-    image: "대안투자 페이지 전체 캡쳐",
+    image: null,
   },
   {
     id: "report",
@@ -260,7 +254,7 @@ const menuGuides = [
       "매수 판단 전 참고 자료로 쓰는 게 맞다",
     ],
     conclusion: "리포트는 종목 추천서가 아니라, 시장 해석 보조 자료입니다.",
-    image: "리포트 페이지 캡쳐",
+    image: null,
   },
   {
     id: "email",
@@ -273,7 +267,7 @@ const menuGuides = [
       "어떤 메일이 오나: 이번 주 상위 후보 요약 / 리스크 경고 종목 변화 / 실전투자 후보 변화 / 시장 한 줄 코멘트 / 추가로 봐야 할 종목·테마",
     ],
     conclusion: "프리미엄 이메일은 사이트 전체를 매번 직접 보지 않아도 핵심 변화만 받아보는 기능입니다.",
-    image: "프리미엄 이메일 예시 메일 캡쳐",
+    image: null,
   },
 ];
 
@@ -283,6 +277,17 @@ function ImagePlaceholder({ label }) {
       <div className="imageBadge">이미지 자리</div>
       <p>{label}</p>
       <span>여기에 실제 캡쳐 이미지를 삽입하면 됩니다</span>
+    </div>
+  );
+}
+
+function StepImages({ images }) {
+  if (!images?.length) return null;
+  return (
+    <div className="imageGrid">
+      {images.map((src) => (
+        <img key={src} src={src} alt="가이드 캡쳐" className="stepImage" />
+      ))}
     </div>
   );
 }
@@ -325,17 +330,21 @@ export default function NoticePage() {
   const handleSubscribe = async (e) => {
     e.preventDefault();
     const trimmed = email.trim();
+
     if (!trimmed) {
       setSubmitError("이메일 주소를 입력해주세요.");
       return;
     }
+
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(trimmed)) {
       setSubmitError("올바른 이메일 주소를 입력해주세요.");
       return;
     }
+
     setIsSubmitting(true);
     setSubmitError("");
+
     try {
       await new Promise((resolve) => setTimeout(resolve, 700));
       setIsSubmitted(true);
@@ -358,8 +367,10 @@ export default function NoticePage() {
           <p className="badge">USER GUIDE</p>
           <h1>우량주 스카우터 사용 가이드</h1>
           <p className="heroDesc">
-            우량주 스카우터는 KRX 와 OPEN DART 에 공시된 정보를 1차로 분석하여 제공합니다<br />
-            랭킹에서 후보를 찾고, 리스크를 걸러내고, 실전투자에서 현재 시장 기준 후보를 좁힌 뒤,<br />
+            우량주 스카우터는 KRX 와 OPEN DART 에 공시된 정보를 1차로 분석하여 제공합니다
+            <br />
+            랭킹에서 후보를 찾고, 리스크를 걸러내고, 실전투자에서 현재 시장 기준 후보를 좁힌 뒤,
+            <br />
             종목 상세와 뉴스 확인까지 거쳐 최종 판단하는 흐름으로 사용합니다.
           </p>
           <div className="noticeCallout">
@@ -415,32 +426,31 @@ export default function NoticePage() {
                   </div>
                   <span className={`arrow ${isOpen ? "open" : ""}`}>⌄</span>
                 </button>
+
                 {isOpen ? (
                   <div className="accordionBody">
                     <div className="bodyBlock emphasis">
                       <span className="miniTitle">항상 보이는 핵심 설명</span>
                       <ul className="bulletList">
-                        {step.always.map((item) => <li key={item}>{item}</li>)}
+                        {step.always.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
                       </ul>
                     </div>
+
                     {step.details.map((detail) => (
                       <div className="bodyBlock" key={detail.title}>
                         <span className="miniTitle">{detail.title}</span>
                         <ul className="bulletList">
-                          {detail.body.map((item) => <li key={item}>{item}</li>)}
+                          {detail.body.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
                         </ul>
                       </div>
                     ))}
+
                     <div className="bottomLine">{step.conclusion}</div>
-                    {step.images.length > 0 && (
-                      <div className="imageGrid">
-                        {step.images.map((src) => (
-                          <img key={src} src={src} alt="" className="stepImage" />
-                        ))}
-                      </div>
-                    )}
-                      </div>
-                    )}
+                    <StepImages images={step.images} />
                   </div>
                 ) : null}
               </article>
@@ -459,6 +469,7 @@ export default function NoticePage() {
             </div>
             <span className={`arrow ${openSteps.example ? "open" : ""}`}>⌄</span>
           </button>
+
           {openSteps.example ? (
             <div className="accordionBody">
               <div className="exampleGrid">
@@ -483,7 +494,9 @@ export default function NoticePage() {
                   </ol>
                 </div>
               </div>
+
               <div className="bottomLine">이 사이트는 높은 순위 종목을 그냥 사라고 하는 구조가 아니라, 단계별로 줄여가는 구조입니다.</div>
+
               <div className="imageGrid twoCol">
                 <ImagePlaceholder label="[이미지 자리 11] 예시 흐름 캡쳐 1" />
                 <ImagePlaceholder label="[이미지 자리 12] 예시 흐름 캡쳐 2" />
@@ -501,6 +514,7 @@ export default function NoticePage() {
           </div>
           <p className="sectionSideText">직접 종목을 고르는 흐름 외에도, 언제 어떤 보조 메뉴를 써야 하는지 같이 안내합니다.</p>
         </div>
+
         <div className="accordionStack">
           {menuGuides.map((menu) => {
             const isOpen = !!openSteps[menu.id];
@@ -513,17 +527,26 @@ export default function NoticePage() {
                   </div>
                   <span className={`arrow ${isOpen ? "open" : ""}`}>⌄</span>
                 </button>
+
                 {isOpen ? (
                   <div className="accordionBody">
                     <div className="bodyBlock">
                       <ul className="bulletList">
-                        {menu.body.map((item) => <li key={item}>{item}</li>)}
+                        {menu.body.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
                       </ul>
                     </div>
                     <div className="bottomLine">{menu.conclusion}</div>
-                    <div className="imageGrid oneCol">
-                      <ImagePlaceholder label={menu.image} />
-                    </div>
+                    {menu.image ? (
+                      <div className="imageGrid oneCol">
+                        <img src={menu.image} alt="메뉴 가이드 캡쳐" className="stepImage" />
+                      </div>
+                    ) : (
+                      <div className="imageGrid oneCol">
+                        <ImagePlaceholder label="추가 캡쳐 이미지 준비 중" />
+                      </div>
+                    )}
                   </div>
                 ) : null}
               </article>
@@ -881,6 +904,14 @@ export default function NoticePage() {
           background: #e2e8f0;
           color: #475569;
         }
+        .stepImage {
+          width: 100%;
+          height: auto;
+          display: block;
+          border-radius: 18px;
+          border: 1px solid #e5e7eb;
+          background: #fff;
+        }
         .warningCard,
         .ctaCard {
           padding: 24px;
@@ -945,14 +976,6 @@ export default function NoticePage() {
           color: #0f172a;
           padding: 0 16px;
           font-size: 1rem;
-        }
-        .stepImage {
-          width: 100%;
-          height: auto;
-          display: block;
-          border-radius: 18px;
-          border: 1px solid #e5e7eb;
-          background: #fff;
         }
         .modalActions {
           display: flex;
