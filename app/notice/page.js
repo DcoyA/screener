@@ -373,7 +373,7 @@ export default function NoticePage() {
           </div>
         </div>
         <div className="heroImageCol">
-          <ImagePlaceholder label="[이미지 자리 1] 사이트 메인 화면 전체 캡쳐" />
+          <img src="/main001.png" alt="메인 화면" className="realImage" />
         </div>
       </section>
 
