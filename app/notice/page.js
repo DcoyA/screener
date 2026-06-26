@@ -435,13 +435,10 @@ export default function NoticePage() {
                     {step.images.length > 0 && (
                       <div className="imageGrid">
                         {step.images.map((src) => (
-                          <img
-                            key={src}
-                            src={src}
-                            alt="가이드 이미지"
-                            className="stepImage"
-                          />
+                          <img key={src} src={src} alt="" className="stepImage" />
                         ))}
+                      </div>
+                    )}
                       </div>
                     )}
                   </div>
