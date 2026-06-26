@@ -547,10 +547,10 @@ export default function NoticePage() {
           <h2>이제 바로 시작해보세요</h2>
           <div className="ctaButtons">
             <Link href="/ranking" className="primaryBtn">랭킹</Link>
-            <Link href="/risk" className="primaryBtn">리스크</Link>
-            <Link href="/final-picks" className="primaryBtn">실전투자</Link>
-            <Link href="/alternative" className="primaryBtn">대안투자</Link>
-            <Link href="/reports" className="primaryBtn">리포트</Link>
+            <Link href="/risk" className="ghostBtn">리스크</Link>
+            <Link href="/final-picks" className="ghostBtn">실전투자</Link>
+            <Link href="/alternative" className="ghostBtn">대안투자</Link>
+            <Link href="/reports" className="ghostBtn">리포트</Link>
             <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 리포트 신청</button>
           </div>
         </div>
@@ -656,10 +656,29 @@ export default function NoticePage() {
         }
         .heroCard {
           display: grid;
-          grid-template-columns: 1.25fr 0.95fr;
+          grid-template-columns: minmax(0, 1.35fr) minmax(280px, 380px);
           gap: 20px;
+          align-items: center;
           padding: 28px;
           margin-bottom: 28px;
+        }
+        .heroText {
+          min-width: 0;
+        }
+        .heroImageCol {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-width: 0;
+        }
+        .realImage {
+          width: 100%;
+          max-width: 360px;
+          max-height: 440px;
+          height: auto;
+          display: block;
+          object-fit: contain;
+          border-radius: 22px;
         }
         .badge,
         .sectionEyebrow,
@@ -689,6 +708,7 @@ export default function NoticePage() {
           margin: 0 0 12px;
           font-size: clamp(2rem, 4vw, 3rem);
           letter-spacing: -0.04em;
+          word-break: keep-all;
         }
         .heroDesc,
         .sectionSideText,
@@ -950,6 +970,12 @@ export default function NoticePage() {
           .imageGrid.twoCol,
           .exampleGrid {
             grid-template-columns: 1fr;
+          }
+          .heroImageCol {
+            justify-content: center;
+          }
+          .realImage {
+            max-width: 100%;
           }
         }
         @media (max-width: 760px) {
