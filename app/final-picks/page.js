@@ -31,16 +31,10 @@ function formatCompactKrw(value) {
   return `${num.toLocaleString("ko-KR")}원`;
 }
 
-function getRiskLevelClass(level) {
-  if (level === "주의") return "riskChip high";
-  if (level === "보통") return "riskChip mid";
-  return "riskChip low";
-}
-
-function getDecisionClass(decision) {
-  if (decision === "매수 후보") return "decisionChip buy";
-  if (decision === "관찰") return "decisionChip watch";
-  return "decisionChip exclude";
+function buildRiskMap(items) {
+  const map = new Map();
+  items.forEach((item) => map.set(String(item.code), item));
+  return map;
 }
 
 function sortForBaselineRanking(items) {
@@ -48,111 +42,93 @@ function sortForBaselineRanking(items) {
     const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
     const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
     if (bEligible !== aEligible) return bEligible - aEligible;
+
     const aScore = Number(a?.totalScore ?? 0);
     const bScore = Number(b?.totalScore ?? 0);
     if (bScore !== aScore) return bScore - aScore;
+
     const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
     if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+
     return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
   });
 }
 
-function buildRiskMap(items) {
-  const map = new Map();
-  items.forEach((item) => map.set(String(item.code), item));
-  return map;
+function normalizeDecision(rawDecision) {
+  const value = String(rawDecision || "").trim().toUpperCase();
+
+  if (value === "BUY_CANDIDATE" || value === "BUY" || rawDecision === "매수 후보") {
+    return "buy";
+  }
+
+  if (value === "WATCH" || rawDecision === "관찰") {
+    return "watch";
+  }
+
+  if (value === "WAIT" || value === "WAIT_FOR_PULLBACK" || rawDecision === "대기") {
+    return "wait";
+  }
+
+  if (value === "RISKY" || rawDecision === "주의") {
+    return "risky";
+  }
+
+  if (value === "EXCLUDED" || value === "EXCLUDE" || rawDecision === "제외") {
+    return "exclude";
+  }
+
+  return "watch";
 }
 
-function riskPenaltyFromLevel(level) {
-  if (level === "주의") return 18;
-  if (level === "보통") return 8;
-  return 0;
+function getDecisionLabel(key) {
+  if (key === "buy") return "매수 후보";
+  if (key === "watch") return "관찰 후보";
+  if (key === "wait") return "대기 후보";
+  if (key === "risky") return "주의 후보";
+  return "제외 후보";
 }
 
-function computeSectorScore(stock) {
-  const explicit = Number(stock?.sectorMeta?.strengthScore ?? stock?.sectorStrengthScore ?? stock?.marketContext?.sectorStrengthScore);
-  if (Number.isFinite(explicit)) return clamp(explicit, 0, 100);
-  const momentum = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum ?? 0);
-  const revenueGrowth = Number(stock?.metrics?.revenueGrowth ?? 0);
-  return clamp(50 + momentum * 0.6 + revenueGrowth * 0.4, 0, 100);
+function getDecisionClass(key) {
+  if (key === "buy") return "decisionChip buy";
+  if (key === "watch") return "decisionChip watch";
+  if (key === "wait") return "decisionChip wait";
+  if (key === "risky") return "decisionChip risky";
+  return "decisionChip exclude";
 }
 
-function computeMarketFitScore(stock) {
-  const explicit = Number(stock?.marketContext?.fitScore ?? stock?.marketFitScore);
-  if (Number.isFinite(explicit)) return clamp(explicit, 0, 100);
-  const market = String(stock?.market || "").toUpperCase();
-  const liquidity = Number(stock?.metrics?.avgTradeValue5d ?? 0);
-  const base = market === "KOSPI" ? 58 : 52;
-  const liquidityBonus = clamp((liquidity / 250_0000_0000) * 20, 0, 20);
-  return clamp(base + liquidityBonus, 0, 100);
+function getRiskLevelClass(level) {
+  if (level === "주의") return "riskChip high";
+  if (level === "보통") return "riskChip mid";
+  return "riskChip low";
 }
 
-function computeNewsScore(stock) {
-  const explicit = Number(stock?.newsMeta?.score ?? stock?.newsScore);
-  if (Number.isFinite(explicit)) return clamp(explicit, 0, 100);
-  const positiveCount = Number(stock?.newsMeta?.positiveCount ?? 0);
-  const negativeCount = Number(stock?.newsMeta?.negativeCount ?? 0);
-  const uncertainty = Number(stock?.newsMeta?.uncertaintyCount ?? 0);
-  return clamp(60 + positiveCount * 8 - negativeCount * 14 - uncertainty * 6, 0, 100);
+function getSectorTypeLabel(type) {
+  if (type === "theme") return "테마/수급형";
+  if (type === "speculative") return "고변동형";
+  if (type === "cyclical") return "사이클형";
+  if (type === "defensive") return "방어형";
+  return "일반형";
 }
 
-function computeLiquidityScore(stock) {
-  const explicit = Number(stock?.liquidityMeta?.score ?? stock?.liquidityScore);
-  if (Number.isFinite(explicit)) return clamp(explicit, 0, 100);
-  const liquidity = Number(stock?.metrics?.avgTradeValue5d ?? 0);
-  return clamp((liquidity / 300_0000_0000) * 100, 0, 100);
-}
-
-function computeTimingScore(stock) {
-  const explicit = Number(stock?.timingMeta?.score ?? stock?.timingScore);
-  if (Number.isFinite(explicit)) return clamp(explicit, 0, 100);
-  const momentum = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum ?? 0);
-  const upside = Number(stock?.metrics?.upside ?? 0);
-  const debt = Number(stock?.metrics?.debtRatio ?? 999999);
-  const timingBase = 55 + momentum * 0.8 + upside * 0.15 - clamp((debt - 100) * 0.05, 0, 12);
-  return clamp(timingBase, 0, 100);
-}
-
-function computeWarningPenalty(stock, riskItem) {
-  let penalty = 0;
-  penalty += riskPenaltyFromLevel(riskItem?.level);
-  const debt = Number(stock?.metrics?.debtRatio ?? 0);
-  if (debt >= 200) penalty += 12;
-  else if (debt >= 150) penalty += 6;
-  const negativeCount = Number(stock?.newsMeta?.negativeCount ?? 0);
-  const uncertainty = Number(stock?.newsMeta?.uncertaintyCount ?? 0);
-  penalty += negativeCount * 5;
-  penalty += uncertainty * 3;
-  if (stock?.timingMeta?.recentSpikeFlag) penalty += 6;
-  return penalty;
-}
-
-function buildDecisionReasons(stock, riskItem, scores, decision) {
-  const reasons = [];
-  const sectorName = stock?.sector || stock?.industry || "업종 정보 없음";
-
-  if (scores.base >= 75) reasons.push(`기존 랭킹 총점이 ${Math.round(scores.base)}점으로 높습니다.`);
-  else if (scores.base >= 60) reasons.push(`기존 랭킹 기준에서는 상위 후보로 볼 수 있는 점수입니다.`);
-  else reasons.push(`기존 랭킹 점수는 높지 않지만 다른 조건까지 함께 점검했습니다.`);
-
-  if (scores.sector >= 65) reasons.push(`${sectorName} 흐름이 비교적 양호해 업종 측면 가점이 있습니다.`);
-  else if (scores.sector <= 45) reasons.push(`${sectorName} 흐름이 약해 업종 수급은 보수적으로 봐야 합니다.`);
-
-  if (scores.news >= 70) reasons.push(`최근 뉴스/공시 플래그는 비교적 무난한 편입니다.`);
-  else if (scores.news <= 45) reasons.push(`최근 뉴스 플래그상 불확실성이 있어 바로 진입하긴 부담이 있습니다.`);
-
-  if (riskItem?.level === "주의") reasons.push(`리스크 페이지 기준이 "주의"라서 최종 판단에서 감점됩니다.`);
-  else if (riskItem?.level === "보통") reasons.push(`리스크 수준이 "보통"이라 체크 포인트 확인이 필요합니다.`);
-
-  if (scores.timing >= 68) reasons.push(`타이밍/유동성 기준은 크게 무리 없는 구간입니다.`);
-  else if (scores.timing <= 45) reasons.push(`지금 진입 타이밍은 다소 아쉬워 관찰이 더 적절합니다.`);
-
-  if (decision === "매수 후보") reasons.push(`기존 랭킹 이후 조건을 한 번 더 걸렀을 때도 통과한 종목입니다.`);
-  else if (decision === "관찰") reasons.push(`기존 랭킹에서는 괜찮지만 실전 진입 전 한 번 더 관찰이 필요한 종목입니다.`);
-  else reasons.push(`랭킹 상위권일 수는 있어도 지금 바로 매수 대상으로 보긴 어렵습니다.`);
-
-  return reasons.slice(0, 4);
+function fallbackFinalPickMeta(stock) {
+  return {
+    decision: "WATCH",
+    finalScore: Number(stock?.totalScore ?? 50),
+    sectorType: "normal",
+    reasons: [
+      "아직 finalPickMeta가 생성되지 않아 기존 랭킹 정보를 임시로 표시합니다.",
+      "데이터 업데이트 워크플로우를 실행하면 실전투자 전용 판단값이 반영됩니다.",
+    ],
+    debug: {
+      baseScore: Number(stock?.totalScore ?? 0),
+      timingScore: Number(stock?.timingMeta?.score ?? 0),
+      sectorStrength: Number(stock?.sectorMeta?.strengthScore ?? 0),
+      marketFit: Number(stock?.marketContext?.fitScore ?? 0),
+      liquidityScore: Number(stock?.scoreBreakdown?.liquidityScore ?? 0),
+      marketState: stock?.marketContext?.marketState || "unknown",
+    },
+  };
 }
 
 function buildFinalPicks(stocksData, risksData) {
@@ -162,69 +138,170 @@ function buildFinalPicks(stocksData, risksData) {
 
   const evaluated = baseline.map((stock) => {
     const riskItem = riskMap.get(String(stock.code));
-    const scores = {
-      base: clamp(Number(stock?.totalScore ?? 0), 0, 100),
-      sector: computeSectorScore(stock),
-      market: computeMarketFitScore(stock),
-      news: computeNewsScore(stock),
-      liquidity: computeLiquidityScore(stock),
-      timing: computeTimingScore(stock),
-      warningPenalty: computeWarningPenalty(stock, riskItem),
-    };
-
-    const finalScore = clamp(
-      scores.base * 0.40 +
-      scores.sector * 0.12 +
-      scores.market * 0.10 +
-      scores.news * 0.12 +
-      scores.liquidity * 0.10 +
-      scores.timing * 0.16 -
-      scores.warningPenalty,
-      0,
-      100
-    );
-
-    const hasHardExclude =
-      riskItem?.level === "주의" ||
-      Number(stock?.metrics?.debtRatio ?? 0) >= 220 ||
-      Number(stock?.newsMeta?.negativeCount ?? 0) >= 2;
-
-    let decision = "관찰";
-    if (!hasHardExclude && finalScore >= 72 && scores.news >= 50 && scores.timing >= 52) decision = "매수 후보";
-    else if (hasHardExclude || finalScore < 52) decision = "제외";
+    const meta = stock?.finalPickMeta || fallbackFinalPickMeta(stock);
+    const decisionKey = normalizeDecision(meta.decision);
+    const finalScore = clamp(Number(meta.finalScore ?? stock.totalScore ?? 0), 0, 100);
+    const reasons = Array.isArray(meta.reasons) && meta.reasons.length
+      ? meta.reasons
+      : ["실전투자 판단 사유가 아직 생성되지 않았습니다."];
 
     return {
       ...stock,
-      riskItem,
-      baselineRank: rankMap.get(String(stock.code)) ?? null,
+      finalPickMeta: meta,
+      decisionKey,
+      decisionLabel: getDecisionLabel(decisionKey),
       finalScore: Math.round(finalScore),
-      decision,
+      finalReasons: reasons,
+      finalDebug: meta.debug || {},
+      finalSectorType: meta.sectorType || "normal",
+      riskItem,
+      riskLevel: riskItem?.level || stock?.riskMeta?.level || "낮음",
+      baselineRank: rankMap.get(String(stock.code)) ?? null,
       sectorName: stock?.sector || stock?.industry || "업종 미분류",
-      decisionReasons: buildDecisionReasons(stock, riskItem, scores, decision),
-      riskLevel: riskItem?.level || "낮음",
     };
   });
 
-  const groupOrder = { "매수 후보": 0, "관찰": 1, "제외": 2 };
-  const grouped = evaluated.sort((a, b) => {
-    const groupDiff = groupOrder[a.decision] - groupOrder[b.decision];
+  const groupOrder = { buy: 0, watch: 1, wait: 2, risky: 3, exclude: 4 };
+  evaluated.sort((a, b) => {
+    const groupDiff = groupOrder[a.decisionKey] - groupOrder[b.decisionKey];
     if (groupDiff !== 0) return groupDiff;
     if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
     return (a.baselineRank || 9999) - (b.baselineRank || 9999);
   });
 
   return {
-    buy: grouped.filter((item) => item.decision === "매수 후보"),
-    watch: grouped.filter((item) => item.decision === "관찰"),
-    exclude: grouped.filter((item) => item.decision === "제외"),
+    buy: evaluated.filter((item) => item.decisionKey === "buy"),
+    watch: evaluated.filter((item) => item.decisionKey === "watch"),
+    wait: evaluated.filter((item) => item.decisionKey === "wait"),
+    risky: evaluated.filter((item) => item.decisionKey === "risky"),
+    exclude: evaluated.filter((item) => item.decisionKey === "exclude"),
   };
 }
 
 const DECISION_META = {
-  buy: { title: "매수 후보", desc: "기존 랭킹 이후에도 업종·리스크·타이밍 조건을 다시 통과한 종목입니다." },
-  watch: { title: "관찰 후보", desc: "재무와 가치 측면은 괜찮지만 지금 바로 진입하기엔 확신이 부족한 종목입니다." },
-  exclude: { title: "제외 후보", desc: "랭킹에 올라와도 현재 국면에서는 실전 매수 대상으로 보기 어려운 종목입니다." },
+  buy: {
+    title: "매수 후보",
+    shortTitle: "매수",
+    desc: "finalPickMeta 기준으로 업종·타이밍·시장 적합도·리스크를 다시 통과한 후보입니다.",
+  },
+  watch: {
+    title: "관찰 후보",
+    shortTitle: "관찰",
+    desc: "기본 체력은 볼 만하지만 지금 바로 진입하기엔 확인할 조건이 남은 후보입니다.",
+  },
+  wait: {
+    title: "대기 후보",
+    shortTitle: "대기",
+    desc: "종목 자체는 버릴 정도는 아니지만 가격·타이밍·상승여력 측면에서 기다림이 필요한 후보입니다.",
+  },
+  risky: {
+    title: "주의 후보",
+    shortTitle: "주의",
+    desc: "테마성, 업종 변동성, 부채, 뉴스 플래그, 타이밍 약화 등으로 실전 매수 후보에서 강하게 보류한 종목입니다.",
+  },
+  exclude: {
+    title: "제외 후보",
+    shortTitle: "제외",
+    desc: "랭킹에 올라와도 현재 기준에서는 실전 매수 대상으로 보기 어려운 종목입니다.",
+  },
 };
+
+function MetricCard({ label, value, accent }) {
+  return (
+    <div className="metricCard">
+      <span>{label}</span>
+      <strong className={accent ? "accentText" : ""}>{value}</strong>
+    </div>
+  );
+}
+
+function ScorePill({ label, value }) {
+  const display = Number.isFinite(Number(value)) ? Math.round(Number(value)) : "-";
+  return (
+    <div className="scorePill">
+      <span>{label}</span>
+      <strong>{display}</strong>
+    </div>
+  );
+}
+
+function PickCard({ item }) {
+  const debug = item.finalDebug || {};
+
+  return (
+    <article className="pickCard">
+      <div className="cardTop">
+        <div className="titleArea">
+          <div className="chipRow">
+            <span className="rankTag">기존 랭킹 #{item.baselineRank ?? "-"}</span>
+            <span className={getDecisionClass(item.decisionKey)}>{item.decisionLabel}</span>
+            <span className={getRiskLevelClass(item.riskLevel)}>리스크 {item.riskLevel}</span>
+            <span className="smallBadge soft">{getSectorTypeLabel(item.finalSectorType)}</span>
+            {item?.rankMeta?.topRankEligible ? <span className="smallBadge info">랭킹 적격</span> : null}
+          </div>
+          <h3>{item.name}</h3>
+          <p>{item.market} · {item.code} · {item.sectorName}</p>
+        </div>
+
+        <div className={`finalScoreBox ${item.decisionKey}`}>
+          <span>실전투자 점수</span>
+          <strong>{item.finalScore}점</strong>
+        </div>
+      </div>
+
+      <div className="middlePanel">
+        <div className="metricGrid">
+          <MetricCard label="현재가" value={formatPrice(item?.metrics?.closePrice)} />
+          <MetricCard label="적정가 추정" value={formatPrice(item?.metrics?.targetPrice)} />
+          <MetricCard label="상승여력" value={formatPercent(item?.metrics?.upside)} accent />
+          <MetricCard label="거래대금" value={formatCompactKrw(item?.metrics?.avgTradeValue5d)} />
+          <MetricCard label="PER" value={item?.metrics?.per ? `${Number(item.metrics.per).toFixed(1)}배` : "-"} />
+          <MetricCard label="PBR" value={item?.metrics?.pbr ? `${Number(item.metrics.pbr).toFixed(1)}배` : "-"} />
+          <MetricCard label="부채비율" value={item?.metrics?.debtRatio ? `${Number(item.metrics.debtRatio).toFixed(1)}%` : "-"} />
+          <MetricCard label="5일 등락률" value={formatPercent(item?.metrics?.priceChangeRate)} accent />
+        </div>
+
+        <div className="reasonBox dark">
+          <span>최종 판단</span>
+          <p>
+            기존 랭킹 #{item.baselineRank ?? "-"} 후보였지만, finalPickMeta 기준으로 업종 타입·타이밍·시장 적합도·리스크를 다시 계산한 결과
+            <b> {item.decisionLabel}</b>로 분류했습니다.
+          </p>
+        </div>
+
+        <div className="reasonBox">
+          <span>판정 이유</span>
+          <ul>
+            {item.finalReasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="scoreDebugGrid">
+          <ScorePill label="랭킹" value={debug.baseScore ?? item.totalScore} />
+          <ScorePill label="타이밍" value={debug.timingScore ?? item.timingMeta?.score} />
+          <ScorePill label="업종" value={debug.sectorStrength ?? item.sectorMeta?.strengthScore} />
+          <ScorePill label="시장" value={debug.marketFit ?? item.marketContext?.fitScore} />
+          <ScorePill label="유동성" value={debug.liquidityScore} />
+        </div>
+
+        <div className="guideBox">
+          <span>읽는 법</span>
+          <p>
+            이 페이지는 랭킹 점수를 다시 계산하는 페이지가 아니라, 랭킹 후보를 실전 매수 관점에서 한 번 더 줄이는 페이지입니다.
+            따라서 랭킹 상위 종목도 테마성 업종, 타이밍 약화, 뉴스 플래그, 시장 부적합성이 있으면 주의 또는 제외로 내려갑니다.
+          </p>
+        </div>
+
+        <div className="cardActions">
+          <Link href={`/stock/${item.code}`} className="detailBtn">종목 상세 보기</Link>
+          <Link href={`/risk?code=${item.code}`} className="ghostBtn">리스크 확인</Link>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 function PickSection({ title, desc, items, emptyText }) {
   return (
@@ -240,112 +317,7 @@ function PickSection({ title, desc, items, emptyText }) {
       {items.length ? (
         <div className="pickGrid">
           {items.map((item) => (
-            <article
-              key={`${title}-${item.code}`}
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 28,
-                padding: 24,
-                background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
-                boxShadow: "0 20px 50px rgba(15,23,42,0.06)",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                  gap: 18,
-                  flexWrap: "wrap",
-                  marginBottom: 18,
-                }}
-              >
-                <div style={{ minWidth: 0, flex: "1 1 520px" }}>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-                    <span className="rankTag">기존 랭킹 #{item.baselineRank ?? "-"}</span>
-                    <span className={getDecisionClass(item.decision)}>{item.decision}</span>
-                    <span className={getRiskLevelClass(item.riskLevel)}>{item.riskLevel}</span>
-                    {item?.rankMeta?.topRankEligible ? <span className="smallBadge info">기존 종합 조건 통과</span> : null}
-                    {item?.undervalueMeta?.eligible ? <span className="smallBadge soft">저평가 후보</span> : null}
-                  </div>
-                  <h3 style={{ margin: "0 0 8px", fontSize: "1.72rem", letterSpacing: "-0.03em", wordBreak: "keep-all" }}>{item.name}</h3>
-                  <p style={{ margin: 0, color: "#64748b" }}>{item.market} · {item.code} · {item.sectorName}</p>
-                </div>
-
-                <div
-                  style={{
-                    minWidth: 160,
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 22,
-                    padding: 16,
-                    background: "#ffffff",
-                    textAlign: "right",
-                  }}
-                >
-                  <span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: ".84rem", fontWeight: 700 }}>최종 투자 점수</span>
-                  <strong style={{ display: "block", fontSize: "2rem", lineHeight: 1 }}>{item.finalScore}점</strong>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 24,
-                  background: "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)",
-                  padding: 20,
-                  boxShadow: "0 18px 40px rgba(15,23,42,0.06)",
-                }}
-              >
-                <div className="middleMetricGrid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12, marginBottom: 14 }}>
-                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff" }}>
-                    <span className="metricLabel">현재가</span>
-                    <strong className="metricValue">{formatPrice(item?.metrics?.closePrice)}</strong>
-                  </div>
-                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff" }}>
-                    <span className="metricLabel">적정가 추정</span>
-                    <strong className="metricValue">{formatPrice(item?.metrics?.targetPrice)}</strong>
-                  </div>
-                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#f8fbff" }}>
-                    <span className="metricLabel">상승여력</span>
-                    <strong className="metricValue accentText">{formatPercent(item?.metrics?.upside)}</strong>
-                  </div>
-                  <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff" }}>
-                    <span className="metricLabel">거래대금</span>
-                    <strong className="metricValue">{formatCompactKrw(item?.metrics?.avgTradeValue5d)}</strong>
-                  </div>
-                </div>
-
-                <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#f8fafc", marginBottom: 12 }}>
-                  <span className="reasonLabel">한 줄 판단</span>
-                  <p className="panelText">
-                    기존 랭킹 #{item.baselineRank ?? "-"} 후보였고, 업종 흐름·리스크·타이밍을 다시 반영한 결과 현재는
-                    <b> {item.decision}</b>로 분류했습니다.
-                  </p>
-                </div>
-
-                <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#ffffff", marginBottom: 12 }}>
-                  <span className="reasonLabel">판정 이유 핵심</span>
-                  <ul className="reasonList">
-                    {item.decisionReasons.map((reason) => (
-                      <li key={reason}>{reason}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#fbfdff" }}>
-                  <span className="reasonLabel">왜 랭킹과 최종 판단이 다를 수 있나</span>
-                  <p className="panelText">
-                    랭킹은 재무·밸류·유동성 중심의 1차 후보 생성입니다. 여기서는 여기에 업종 흐름,
-                    뉴스 플래그, 리스크 수준, 타이밍 요소를 다시 반영해 실전 후보를 압축합니다.
-                  </p>
-                </div>
-
-                <div className="cardActions">
-                  <Link href={`/stock/${item.code}`} className="detailBtn">종목 상세 보기  ||  </Link>
-                  <Link href={`/risk?code=${item.code}`} className="ghostBtn">리스크 확인</Link>
-                </div>
-              </div>
-            </article>
+            <PickCard key={`${item.decisionKey}-${item.code}`} item={item} />
           ))}
         </div>
       ) : (
@@ -360,7 +332,8 @@ function PickSection({ title, desc, items, emptyText }) {
 export default function FinalPicksPage() {
   const [selectedGroup, setSelectedGroup] = useState("buy");
   const finalPicks = useMemo(() => buildFinalPicks(stocks, risks), []);
-  const currentItems = selectedGroup === "watch" ? finalPicks.watch : selectedGroup === "exclude" ? finalPicks.exclude : finalPicks.buy;
+  const currentItems = finalPicks[selectedGroup] || [];
+  const hasFinalPickMeta = stocks.some((stock) => stock?.finalPickMeta);
 
   return (
     <main className="container">
@@ -374,22 +347,37 @@ export default function FinalPicksPage() {
           <p className="badge">FINAL PICKS</p>
           <h1>랭킹 이후, 실전 투자 후보만 한 번 더 걸러봅니다</h1>
           <p className="desc">
-            랭킹이 1차 후보를 만든다면, 여기서는 업종 흐름·리스크·뉴스 플래그·타이밍을 다시 반영해 실제로 줄여 볼 후보만 남깁니다.
+            랭킹이 1차 후보를 만든다면, 실전투자 페이지는 finalPickMeta를 기준으로 업종 성격, 시장 적합도, 타이밍, 뉴스/리스크 플래그를 다시 반영해 후보를 압축합니다.
           </p>
+          {!hasFinalPickMeta ? (
+            <div className="dataWarning">
+              아직 stocks.json에 finalPickMeta가 없습니다. 먼저 수정된 update_data.py로 데이터 업데이트 워크플로우를 실행해야 새 실전투자 로직이 완전히 반영됩니다.
+            </div>
+          ) : null}
         </div>
+
         <div className="heroInfoGrid">
-          <div className="heroInfoCard good"><span>매수 후보</span><strong>{finalPicks.buy.length}</strong></div>
-          <div className="heroInfoCard mid"><span>관찰 후보</span><strong>{finalPicks.watch.length}</strong></div>
-          <div className="heroInfoCard warn"><span>제외 후보</span><strong>{finalPicks.exclude.length}</strong></div>
+          <div className="heroInfoCard good"><span>매수</span><strong>{finalPicks.buy.length}</strong></div>
+          <div className="heroInfoCard watch"><span>관찰</span><strong>{finalPicks.watch.length}</strong></div>
+          <div className="heroInfoCard wait"><span>대기</span><strong>{finalPicks.wait.length}</strong></div>
+          <div className="heroInfoCard risky"><span>주의</span><strong>{finalPicks.risky.length}</strong></div>
+          <div className="heroInfoCard exclude"><span>제외</span><strong>{finalPicks.exclude.length}</strong></div>
         </div>
       </section>
 
       <section className="switchSection">
         <div className="switchCard">
           <div className="tabRow">
-            <button type="button" className={`tabBtn ${selectedGroup === "buy" ? "active" : ""}`} onClick={() => setSelectedGroup("buy")}>매수 후보</button>
-            <button type="button" className={`tabBtn ${selectedGroup === "watch" ? "active" : ""}`} onClick={() => setSelectedGroup("watch")}>관찰 후보</button>
-            <button type="button" className={`tabBtn ${selectedGroup === "exclude" ? "active" : ""}`} onClick={() => setSelectedGroup("exclude")}>제외 후보</button>
+            {Object.entries(DECISION_META).map(([key, meta]) => (
+              <button
+                key={key}
+                type="button"
+                className={`tabBtn ${selectedGroup === key ? "active" : ""} ${key}`}
+                onClick={() => setSelectedGroup(key)}
+              >
+                {meta.shortTitle} <span>{finalPicks[key]?.length ?? 0}</span>
+              </button>
+            ))}
           </div>
           <p className="switchDesc">현재 선택: {DECISION_META[selectedGroup].title} · {DECISION_META[selectedGroup].desc}</p>
         </div>
@@ -402,32 +390,54 @@ export default function FinalPicksPage() {
         emptyText="현재 기준으로 표시할 종목이 없습니다."
       />
 
+      <section className="logicSection">
+        <div className="logicCard">
+          <p className="badge small">LOGIC NOTE</p>
+          <h2>왜 랭킹과 실전투자 결과가 다를 수 있나</h2>
+          <div className="logicGrid">
+            <div><strong>랭킹</strong><span>재무, 밸류, 유동성 중심의 1차 후보 발굴</span></div>
+            <div><strong>실전투자</strong><span>finalPickMeta 기준으로 업종, 타이밍, 시장, 뉴스, 리스크를 재평가</span></div>
+            <div><strong>테마/엔터/고변동 업종</strong><span>점수와 타이밍이 충분히 높지 않으면 주의 또는 제외로 분류</span></div>
+            <div><strong>최종 판단</strong><span>매수 추천이 아니라 실제 검토 우선순위를 나누는 보조 도구</span></div>
+          </div>
+        </div>
+      </section>
+
       <style jsx>{`
         .container { max-width:1180px; margin:0 auto; padding:32px 24px 80px; color:#0f172a; }
         .topLinks { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:26px; flex-wrap:wrap; }
         .homeBtn { display:inline-flex; align-items:center; justify-content:center; border-radius:14px; padding:12px 16px; text-decoration:none; font-weight:800; border:1px solid #0f172a; background:#0f172a; color:#fff; }
         .badge { display:inline-flex; padding:8px 14px; border-radius:999px; background:#eef2ff; color:#4f46e5; font-size:.82rem; font-weight:800; margin:0 0 18px; }
-        h1 { margin:0 0 12px; font-size:clamp(2rem,4vw,3rem); letter-spacing:-0.04em; }
+        .badge.small { margin:0 0 10px; }
+        h1 { margin:0 0 12px; font-size:clamp(2rem,4vw,3rem); letter-spacing:-0.04em; word-break:keep-all; }
         .pageHero { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap; }
         .desc { margin:0; max-width:760px; color:#475569; line-height:1.8; font-size:1.02rem; }
-        .heroInfoGrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; min-width:320px; width:360px; }
-        .heroInfoCard { border:1px solid #e5e7eb; border-radius:20px; padding:18px; background:#fff; }
-        .heroInfoCard span { display:block; margin-bottom:10px; font-size:.86rem; font-weight:700; }
-        .heroInfoCard strong { font-size:1.7rem; }
+        .dataWarning { margin-top:16px; border:1px solid #fde68a; border-radius:18px; background:#fffbeb; color:#92400e; padding:14px 16px; font-weight:800; line-height:1.65; }
+        .heroInfoGrid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; min-width:500px; width:560px; }
+        .heroInfoCard { border:1px solid #e5e7eb; border-radius:20px; padding:16px; background:#fff; }
+        .heroInfoCard span { display:block; margin-bottom:8px; font-size:.82rem; font-weight:800; }
+        .heroInfoCard strong { font-size:1.55rem; }
         .heroInfoCard.good span,.heroInfoCard.good strong { color:#0f766e; }
-        .heroInfoCard.mid span,.heroInfoCard.mid strong { color:#b45309; }
-        .heroInfoCard.warn span,.heroInfoCard.warn strong { color:#be123c; }
+        .heroInfoCard.watch span,.heroInfoCard.watch strong { color:#b45309; }
+        .heroInfoCard.wait span,.heroInfoCard.wait strong { color:#2563eb; }
+        .heroInfoCard.risky span,.heroInfoCard.risky strong { color:#ea580c; }
+        .heroInfoCard.exclude span,.heroInfoCard.exclude strong { color:#be123c; }
         .switchSection,.pickSection,.logicSection { margin-top:26px; }
         .switchCard,.emptyBox,.logicCard { border:1px solid #e5e7eb; border-radius:28px; padding:24px; background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
         .tabRow { display:flex; gap:10px; flex-wrap:wrap; }
         .tabBtn { height:44px; padding:0 18px; border-radius:999px; border:1px solid #dbe3f0; background:#fff; color:#0f172a; font-weight:800; cursor:pointer; }
+        .tabBtn span { margin-left:6px; opacity:.72; }
         .tabBtn.active { background:#0f172a; color:#fff; border-color:#0f172a; }
-        .switchDesc { margin:14px 0 0; color:#64748b; }
+        .switchDesc { margin:14px 0 0; color:#64748b; line-height:1.7; }
         .sectionHeaderRow { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin-bottom:18px; }
-        .sectionTitle { margin:0 0 8px; font-size:1.8rem; }
+        .sectionTitle { margin:0 0 8px; font-size:1.8rem; letter-spacing:-0.03em; }
         .sectionDesc { margin:0; color:#64748b; line-height:1.72; }
         .sectionCount { display:inline-flex; align-items:center; justify-content:center; min-width:74px; height:42px; padding:0 14px; border-radius:14px; background:#0f172a; color:#fff; font-weight:800; }
         .pickGrid { display:grid; gap:18px; }
+        .pickCard { border:1px solid #e5e7eb; border-radius:28px; padding:24px; background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
+        .cardTop { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; flex-wrap:wrap; margin-bottom:18px; }
+        .titleArea { min-width:0; flex:1 1 560px; }
+        .chipRow { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
         .rankTag,.riskChip,.decisionChip,.smallBadge { display:inline-flex; align-items:center; justify-content:center; padding:7px 12px; border-radius:999px; font-size:.8rem; font-weight:800; }
         .rankTag { background:#eef2ff; color:#4f46e5; }
         .riskChip.low { background:#dcfce7; color:#15803d; }
@@ -435,31 +445,59 @@ export default function FinalPicksPage() {
         .riskChip.high { background:#fee2e2; color:#dc2626; }
         .decisionChip.buy { background:#ccfbf1; color:#0f766e; }
         .decisionChip.watch { background:#fff7ed; color:#b45309; }
+        .decisionChip.wait { background:#dbeafe; color:#2563eb; }
+        .decisionChip.risky { background:#ffedd5; color:#ea580c; }
         .decisionChip.exclude { background:#ffe4e6; color:#be123c; }
         .smallBadge.info { background:#e0f2fe; color:#0284c7; }
         .smallBadge.soft { background:#f1f5f9; color:#475569; }
-        .metricLabel { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
-        .metricValue { display:block; font-size:1.1rem; line-height:1.35; color:#0f172a; }
-        .accentText { color:#0ea5e9; }
-        .reasonLabel { display:block; margin-bottom:8px; color:#0f172a; font-size:.84rem; font-weight:800; }
-        .panelText { margin:0; color:#475569; line-height:1.78; }
-        .panelText b { color:#0f172a; }
-        .reasonList { margin:0; padding-left:18px; color:#475569; line-height:1.8; }
-        .reasonList li + li { margin-top:4px; }
+        .titleArea h3 { margin:0 0 8px; font-size:1.72rem; letter-spacing:-0.03em; word-break:keep-all; }
+        .titleArea p { margin:0; color:#64748b; }
+        .finalScoreBox { min-width:160px; border:1px solid #e5e7eb; border-radius:22px; padding:16px; background:#fff; text-align:right; }
+        .finalScoreBox span { display:block; margin-bottom:6px; color:#64748b; font-size:.84rem; font-weight:800; }
+        .finalScoreBox strong { display:block; font-size:2rem; line-height:1; }
+        .finalScoreBox.buy strong { color:#0f766e; }
+        .finalScoreBox.watch strong { color:#b45309; }
+        .finalScoreBox.wait strong { color:#2563eb; }
+        .finalScoreBox.risky strong { color:#ea580c; }
+        .finalScoreBox.exclude strong { color:#be123c; }
+        .middlePanel { border:1px solid #e5e7eb; border-radius:24px; background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%); padding:20px; box-shadow:0 18px 40px rgba(15,23,42,.06); }
+        .metricGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:14px; }
+        .metricCard { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; }
+        .metricCard span { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:800; }
+        .metricCard strong { display:block; font-size:1.08rem; line-height:1.35; color:#0f172a; }
+        .accentText { color:#0ea5e9 !important; }
+        .reasonBox { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; margin-bottom:12px; }
+        .reasonBox.dark { background:#0f172a; color:#fff; border-color:#0f172a; }
+        .reasonBox span,.guideBox span { display:block; margin-bottom:8px; font-size:.84rem; font-weight:900; }
+        .reasonBox p,.guideBox p { margin:0; color:#475569; line-height:1.78; }
+        .reasonBox.dark p { color:#e5e7eb; }
+        .reasonBox.dark b { color:#fff; }
+        .reasonBox ul { margin:0; padding-left:18px; color:#475569; line-height:1.8; }
+        .reasonBox li + li { margin-top:4px; }
+        .scoreDebugGrid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin-bottom:12px; }
+        .scorePill { border:1px solid #e5e7eb; border-radius:16px; padding:12px; background:#fbfdff; }
+        .scorePill span { display:block; margin-bottom:6px; color:#64748b; font-size:.78rem; font-weight:800; }
+        .scorePill strong { display:block; font-size:1.15rem; }
+        .guideBox { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fbfdff; }
         .cardActions { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
         .detailBtn,.ghostBtn { display:inline-flex; align-items:center; justify-content:center; height:46px; padding:0 16px; border-radius:14px; font-weight:800; text-decoration:none; border:1px solid transparent; }
         .detailBtn { background:#0f172a; color:#fff; }
         .ghostBtn { background:#fff; color:#0f172a; border-color:#dbe3f0; }
-        .guideGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-        .guideItem { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; }
-        .guideItem span { color:#64748b; line-height:1.72; }
+        .logicCard h2 { margin:0 0 16px; font-size:1.5rem; letter-spacing:-0.03em; }
+        .logicGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+        .logicGrid div { border:1px solid #e5e7eb; border-radius:18px; padding:16px; background:#fff; }
+        .logicGrid strong { display:block; margin-bottom:8px; }
+        .logicGrid span { color:#64748b; line-height:1.7; }
+        .emptyBox p { margin:0; color:#64748b; font-weight:800; }
         @media (max-width:980px) {
-          .heroInfoGrid,.guideGrid,.middleMetricGrid { grid-template-columns:1fr !important; width:100%; }
+          .heroInfoGrid,.metricGrid,.scoreDebugGrid,.logicGrid { grid-template-columns:1fr 1fr; width:100%; min-width:0; }
         }
         @media (max-width:760px) {
           .container { padding:24px 18px 64px; }
-          .pageHero,.sectionHeaderRow { flex-direction:column; align-items:flex-start; }
-          .switchCard,.logicCard,.emptyBox { padding:20px; }
+          .pageHero,.sectionHeaderRow,.topLinks { flex-direction:column; align-items:flex-start; }
+          .heroInfoGrid,.metricGrid,.scoreDebugGrid,.logicGrid { grid-template-columns:1fr; }
+          .switchCard,.logicCard,.emptyBox,.pickCard,.middlePanel { padding:20px; }
+          .finalScoreBox { width:100%; text-align:left; }
           .detailBtn,.ghostBtn { width:100%; }
         }
       `}</style>
