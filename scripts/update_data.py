@@ -786,7 +786,7 @@ def infer_sector(stock_name, market):
         (["배터리", "전지", "에너지솔루션", "화학"], "2차전지"),
         (["자동차", "모비스", "타이어", "부품"], "자동차/부품"),
         (["금융", "은행", "증권", "카드", "보험", "금융지주"], "금융"),
-        (["게임", "엔터", "콘텐츠", "미디어", "스튜디오"], "미디어/엔터"),
+        (["게임", "엔터", "콘텐츠", "미디어", "스튜디오", "에스엠", "SM", "하이브", "JYP", "와이지", "YG", "큐브", "키이스트", "디어유"], "미디어/엔터"),
         (["바이오", "제약", "헬스", "메디", "약품"], "바이오/제약"),
         (["통신", "텔레콤"], "통신"),
         (["건설", "시멘트", "인프라"], "건설/인프라"),
@@ -1206,6 +1206,188 @@ def build_market_context(stock, market_state, sector_meta):
     }
 
 
+
+# --- Practical final-pick logic v1 -----------------------------------------
+# 랭킹은 1차 후보 발굴용. finalPickMeta는 실제 매수 검토 전 2차 필터다.
+THEME_SECTOR_KEYWORDS = ["엔터", "미디어", "콘텐츠", "게임", "스튜디오", "우주항공", "에스엠", "SM", "하이브", "JYP", "와이지", "YG", "큐브", "키이스트", "디어유"]
+SPECULATIVE_SECTOR_KEYWORDS = ["바이오", "제약", "헬스", "메디", "2차전지", "배터리"]
+DEFENSIVE_SECTOR_KEYWORDS = ["은행", "보험", "통신", "담배", "음식료", "금융"]
+CYCLICAL_SECTOR_KEYWORDS = ["반도체", "자동차", "조선", "화학", "산업재", "기계", "건설"]
+
+
+def practical_sector_type(stock):
+    text = f"{stock.get('sector') or ''} {stock.get('name') or ''}"
+    if any(k in text for k in THEME_SECTOR_KEYWORDS):
+        return "theme"
+    if any(k in text for k in SPECULATIVE_SECTOR_KEYWORDS):
+        return "speculative"
+    if any(k in text for k in DEFENSIVE_SECTOR_KEYWORDS):
+        return "defensive"
+    if any(k in text for k in CYCLICAL_SECTOR_KEYWORDS):
+        return "cyclical"
+    return "normal"
+
+
+def practical_liquidity_score(avg_trade_value_5d, market_cap):
+    score = 50
+    if avg_trade_value_5d >= 300_0000_0000:
+        score += 25
+    elif avg_trade_value_5d >= 100_0000_0000:
+        score += 18
+    elif avg_trade_value_5d >= 30_0000_0000:
+        score += 10
+    elif avg_trade_value_5d >= 10_0000_0000:
+        score += 4
+    else:
+        score -= 20
+    if market_cap >= 10_0000_0000_0000:
+        score += 12
+    elif market_cap >= 1_0000_0000_0000:
+        score += 8
+    elif market_cap >= 300_0000_0000:
+        score += 4
+    elif market_cap < MIN_MARKET_CAP:
+        score -= 20
+    return clamp(score, 0, 100)
+
+
+def build_final_pick_meta(stock):
+    metrics = stock.get("metrics", {}) or {}
+    news = stock.get("newsMeta", {}) or {}
+    timing = stock.get("timingMeta", {}) or {}
+    sector_meta = stock.get("sectorMeta", {}) or {}
+    market_ctx = stock.get("marketContext", {}) or {}
+    rank_meta = stock.get("rankMeta", {}) or {}
+    reasons = []
+    hard = []
+
+    base_score = float(stock.get("totalScore", 50) or 50)
+    sector = stock.get("sector") or "미분류"
+    sector_type = practical_sector_type(stock)
+    debt = float(metrics.get("debtRatio", 0) or 0)
+    op_income = float(metrics.get("operatingIncome", 0) or 0)
+    net_income = float(metrics.get("netIncome", 0) or 0)
+    equity = float(metrics.get("equity", 0) or 0)
+    market_cap = float(metrics.get("marketCap", 0) or 0)
+    avg_value = float(metrics.get("avgTradeValue5d", 0) or 0)
+    price_change = float(metrics.get("priceChangeRate", 0) or 0)
+    per = metrics.get("per")
+    pbr = metrics.get("pbr")
+    upside = metrics.get("upside")
+    timing_score = float(timing.get("score", 50) or 50)
+    sector_strength = float(sector_meta.get("strengthScore", 50) or 50)
+    market_fit = float(market_ctx.get("fitScore", 50) or 50)
+    market_state = market_ctx.get("marketState", "neutral")
+    negative_count = int(news.get("negativeCount", 0) or 0)
+    uncertainty_count = int(news.get("uncertaintyCount", 0) or 0)
+
+    if equity <= 0:
+        hard.append("자본총계가 0 이하라 재무 안정성 확인 전까지 제외합니다.")
+    if debt >= 250:
+        hard.append("부채비율이 250% 이상으로 실전 매수 후보에서 제외합니다.")
+    if op_income <= 0 and net_income <= 0:
+        hard.append("영업이익과 순이익이 동시에 부진해 실전 매수 후보에서 제외합니다.")
+    if market_cap and market_cap < MIN_MARKET_CAP:
+        hard.append("시가총액이 1,000억 미만이라 실전 매수 후보에서 제외합니다.")
+    if avg_value and avg_value < MIN_AVG_TRADE_VALUE:
+        hard.append("최근 5일 평균 거래대금이 10억 미만이라 유동성 리스크가 큽니다.")
+    if hard:
+        return {"decision": "EXCLUDED", "finalScore": 0, "sectorType": sector_type, "reasons": hard[:5], "debug": {"baseScore": round(base_score, 1), "timingScore": round(timing_score, 1), "sectorStrength": round(sector_strength, 1), "marketFit": round(market_fit, 1)}}
+
+    liquidity_score = practical_liquidity_score(avg_value, market_cap)
+    final_score = base_score * 0.30 + timing_score * 0.25 + market_fit * 0.20 + sector_strength * 0.10 + liquidity_score * 0.15
+
+    if sector_type == "theme":
+        final_score -= 18
+        reasons.append(f"{sector} 업종은 실적보다 수급과 이벤트 영향을 크게 받을 수 있어 보수적으로 분류합니다.")
+    elif sector_type == "speculative":
+        final_score -= 25
+        reasons.append(f"{sector} 업종은 변동성이 커서 실전투자 후보에서는 강한 페널티를 적용합니다.")
+    elif sector_type == "cyclical":
+        final_score -= 6
+        reasons.append(f"{sector} 업종은 경기/사이클 영향을 받으므로 진입 타이밍을 더 확인해야 합니다.")
+    elif sector_type == "defensive":
+        final_score += 4
+        reasons.append(f"{sector} 업종은 방어 성격이 있어 시장 약세 구간에서 상대적으로 유리할 수 있습니다.")
+
+    if market_state == "risk_off":
+        if sector_type in ["theme", "speculative"]:
+            final_score -= 15
+            reasons.append("위험 회피 시장에서는 테마/고변동 업종 비중을 줄이는 쪽이 유리합니다.")
+        elif sector_type == "defensive":
+            final_score += 5
+
+    if price_change <= -5:
+        final_score -= 12
+        reasons.append("최근 주가 흐름이 약해 단기 진입은 신중해야 합니다.")
+    elif price_change >= 8:
+        final_score -= 8
+        reasons.append("단기 급등 이후 추격매수 위험이 있습니다.")
+    if timing_score < 45:
+        final_score -= 10
+        reasons.append("타이밍 점수가 낮아 실전 매수 후보로 보기 어렵습니다.")
+
+    try:
+        if per is not None and float(per) >= 30:
+            final_score -= 8
+            reasons.append("PER이 높아 기대감이 이미 반영됐을 수 있습니다.")
+    except Exception:
+        pass
+    try:
+        if pbr is not None and float(pbr) >= 3:
+            final_score -= 7
+            reasons.append("PBR이 3배 이상으로 밸류 부담이 있을 수 있습니다.")
+    except Exception:
+        pass
+    try:
+        if upside is not None:
+            up = float(upside)
+            if up < 10:
+                final_score -= 8
+                reasons.append("상승여력이 낮아 실전 매수 매력이 제한적일 수 있습니다.")
+            elif up >= 25 and sector_type not in ["theme", "speculative"]:
+                final_score += 4
+    except Exception:
+        pass
+
+    if debt >= 200:
+        final_score -= 15
+        reasons.append("부채비율이 200% 이상으로 재무 리스크 확인이 필요합니다.")
+    elif debt >= 100:
+        final_score -= 6
+        reasons.append("부채비율이 100% 이상으로 업종 특성을 함께 확인해야 합니다.")
+    if negative_count >= 2:
+        final_score -= 10
+        reasons.append("최근 부정 플래그가 여러 건 감지되어 뉴스/공시 확인이 필요합니다.")
+    elif negative_count == 1:
+        final_score -= 5
+        reasons.append("최근 부정 플래그가 있어 추가 확인이 필요합니다.")
+    if uncertainty_count >= 2:
+        final_score -= 5
+        reasons.append("불확실성 플래그가 있어 확정 공시 전까지 보수적으로 봅니다.")
+    if not rank_meta.get("topRankEligible", True):
+        final_score -= 10
+        reasons.append("랭킹 게이트에서 상위 후보 적격성이 낮게 평가됐습니다.")
+
+    final_score = max(0, min(100, round(final_score, 1)))
+    if sector_type in ["theme", "speculative"] and (final_score < 72 or timing_score < 60):
+        decision = "RISKY"
+        reasons.append("테마/고변동 업종은 점수와 타이밍이 충분히 높지 않으면 매수 후보에서 제외합니다.")
+    elif final_score >= 78 and timing_score >= 58 and market_fit >= 55:
+        decision = "BUY_CANDIDATE"
+    elif final_score >= 68:
+        decision = "WATCH"
+    elif final_score >= 58:
+        decision = "WAIT"
+    elif final_score >= 45:
+        decision = "RISKY"
+    else:
+        decision = "EXCLUDED"
+    if not reasons:
+        reasons.append("재무/유동성/시장 적합도 기준에서 큰 경고는 없지만 최종 매수 전 뉴스와 차트를 확인해야 합니다.")
+    return {"decision": decision, "finalScore": final_score, "sectorType": sector_type, "reasons": reasons[:6], "debug": {"baseScore": round(base_score, 1), "timingScore": round(timing_score, 1), "sectorStrength": round(sector_strength, 1), "marketFit": round(market_fit, 1), "liquidityScore": round(liquidity_score, 1), "marketState": market_state}}
+# ---------------------------------------------------------------------------
+
 def attach_investment_meta(stocks):
     sector_meta_map = build_sector_meta_map(stocks)
     market_state = build_market_state(stocks)
@@ -1223,6 +1405,7 @@ def attach_investment_meta(stocks):
         )
         stock["sectorMeta"] = sector_meta
         stock["marketContext"] = build_market_context(stock, market_state, sector_meta)
+        stock["finalPickMeta"] = build_final_pick_meta(stock)
 
     return stocks
 
