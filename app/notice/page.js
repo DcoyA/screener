@@ -351,9 +351,9 @@ export default function NoticePage() {
   };
 
   return (
-    <main className="container">
-      <div className="topLinks">
-        <Link href="/" className="homeBtn">홈으로 가기</Link>
+    <main style={S.page}>
+      <div style={S.topLinks}>
+        <Link href="/" style={S.homeBtn}>홈으로 가기</Link>
         <MainNav />
       </div>
 
