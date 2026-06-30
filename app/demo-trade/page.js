@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -28,6 +27,32 @@ function formatRate(value) {
 
 function normalizeSide(side) {
   return String(side || "BUY").toUpperCase();
+}
+
+function getKoreaHourMinuteFromIso(value) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const formatter = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const hour = parts.find((part) => part.type === "hour")?.value || "00";
+  const minute = parts.find((part) => part.type === "minute")?.value || "00";
+
+  return `${hour}${minute}`;
+}
+
+function candleMinuteValue(candle) {
+  const time = String(candle?.time || "");
+  if (time.length < 4) return null;
+  return time.slice(0, 4);
 }
 
 export default function DemoTradePage() {
@@ -170,8 +195,15 @@ export default function DemoTradePage() {
       });
   }, [orders, positionPrices, code, price]);
 
-  const chartData = useMemo(() => {
-    if (!candles.length) return [];
+  const chartScale = useMemo(() => {
+    if (!candles.length) {
+      return {
+        chartData: [],
+        maxPrice: 0,
+        minPrice: 0,
+        range: 1,
+      };
+    }
 
     const highs = candles.map((item) => toNumber(item.high));
     const lows = candles.map((item) => toNumber(item.low));
@@ -179,7 +211,7 @@ export default function DemoTradePage() {
     const minPrice = Math.min(...lows);
     const range = Math.max(maxPrice - minPrice, 1);
 
-    return candles.map((item) => {
+    const chartData = candles.map((item) => {
       const open = toNumber(item.open);
       const high = toNumber(item.high);
       const low = toNumber(item.low);
@@ -193,7 +225,65 @@ export default function DemoTradePage() {
 
       return { ...item, isUp, highTop, lowTop, bodyTop, bodyHeight };
     });
+
+    return {
+      chartData,
+      maxPrice,
+      minPrice,
+      range,
+    };
   }, [candles]);
+
+  const chartData = chartScale.chartData;
+
+  const selectedTradeMarkers = useMemo(() => {
+    if (!chartData.length || !orders.length) return [];
+
+    const selectedOrders = orders.filter((order) => String(order.code || "").trim() === code);
+
+    return selectedOrders
+      .map((order) => {
+        const orderMinute = getKoreaHourMinuteFromIso(order.createdAt);
+        const orderPrice = toNumber(order.price);
+
+        if (!orderMinute || !orderPrice) return null;
+
+        let nearestIndex = -1;
+        let nearestDiff = Number.POSITIVE_INFINITY;
+        const orderMinuteNumber = Number(orderMinute.slice(0, 2)) * 60 + Number(orderMinute.slice(2, 4));
+
+        chartData.forEach((candle, index) => {
+          const candleMinute = candleMinuteValue(candle);
+          if (!candleMinute) return;
+
+          const candleMinuteNumber = Number(candleMinute.slice(0, 2)) * 60 + Number(candleMinute.slice(2, 4));
+          const diff = Math.abs(candleMinuteNumber - orderMinuteNumber);
+
+          if (diff < nearestDiff) {
+            nearestDiff = diff;
+            nearestIndex = index;
+          }
+        });
+
+        if (nearestIndex < 0) return null;
+
+        const left = chartData.length > 1 ? (nearestIndex / (chartData.length - 1)) * 100 : 50;
+        const top = ((chartScale.maxPrice - orderPrice) / chartScale.range) * 100;
+        const safeTop = Math.max(4, Math.min(92, top));
+        const orderSide = normalizeSide(order.side);
+
+        return {
+          id: order.orderId || `${orderSide}-${order.createdAt}-${nearestIndex}`,
+          side: orderSide,
+          label: orderSide === "BUY" ? "BUY" : "SELL",
+          left,
+          top: safeTop,
+          price: orderPrice,
+          quantity: toNumber(order.quantity),
+        };
+      })
+      .filter(Boolean);
+  }, [orders, chartData, chartScale.maxPrice, chartScale.range, code]);
 
   const totalEvalAmount = portfolioSummary.reduce((sum, item) => sum + item.evalAmount, 0);
   const totalBuyAmount = portfolioSummary.reduce((sum, item) => sum + item.buyAmount, 0);
@@ -436,7 +526,6 @@ export default function DemoTradePage() {
     }
 
     setOrderStatus("주문 접수 중...");
-
     setTimeout(() => setOrderStatus("가상 체결 중..."), 600);
 
     setTimeout(async () => {
@@ -476,7 +565,6 @@ export default function DemoTradePage() {
 
         await loadOrders(account.accountId, account.pin);
         setReason("");
-
         setTimeout(() => setOrderStatus(""), 1200);
       } catch (error) {
         console.error(error);
@@ -534,7 +622,6 @@ export default function DemoTradePage() {
             <input style={styles.input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="종목코드 예: 005930" />
             <button style={styles.searchButton} onClick={() => fetchPrice(code, name)} disabled={loadingPrice}>{loadingPrice ? "조회중" : "조회"}</button>
           </div>
-
           <h3 style={styles.smallTitle}>인기 종목</h3>
           <div style={styles.stockList}>
             {POPULAR_STOCKS.map((stock) => (
@@ -554,9 +641,7 @@ export default function DemoTradePage() {
             </div>
             <div style={styles.priceArea}>
               <div style={styles.nowPrice}>{price ? formatWon(price) : "-"}</div>
-              <div style={toNumber(rate) >= 0 ? styles.upText : styles.downText}>
-                {change ? formatWon(change) : "-"} / {rate ? formatRate(rate) : "-"}
-              </div>
+              <div style={toNumber(rate) >= 0 ? styles.upText : styles.downText}>{change ? formatWon(change) : "-"} / {rate ? formatRate(rate) : "-"}</div>
             </div>
           </div>
 
@@ -564,11 +649,9 @@ export default function DemoTradePage() {
             <div style={styles.chartToolbar}>
               <div>
                 <strong>당일 1분봉</strong>
-                <span style={styles.chartSubText}>최근 {candles.length || 0}개 캔들</span>
+                <span style={styles.chartSubText}>최근 {candles.length || 0}개 캔들 · 체결마커 {selectedTradeMarkers.length}개</span>
               </div>
-              <button style={styles.chartRefreshButton} onClick={() => fetchMinuteChart(code)} disabled={loadingChart}>
-                {loadingChart ? "차트 조회 중" : "차트 새로고침"}
-              </button>
+              <button style={styles.chartRefreshButton} onClick={() => fetchMinuteChart(code)} disabled={loadingChart}>{loadingChart ? "차트 조회 중" : "차트 새로고침"}</button>
             </div>
 
             <div style={styles.realChart}>
@@ -581,6 +664,21 @@ export default function DemoTradePage() {
                       <div style={{ ...styles.wick, top: `${item.highTop}%`, height: `${Math.max(item.lowTop - item.highTop, 2)}%`, background: item.isUp ? "#ef4444" : "#2563eb" }} />
                       <div style={{ ...styles.realCandle, top: `${item.bodyTop}%`, height: `${item.bodyHeight}%`, background: item.isUp ? "#ef4444" : "#2563eb" }} />
                       {index % 5 === 0 && <span style={styles.timeLabel}>{item.label}</span>}
+                    </div>
+                  ))}
+
+                  {selectedTradeMarkers.map((marker) => (
+                    <div
+                      key={marker.id}
+                      style={{
+                        ...styles.tradeMarker,
+                        left: `${marker.left}%`,
+                        top: `${marker.top}%`,
+                        ...(marker.side === "BUY" ? styles.buyMarker : styles.sellMarker),
+                      }}
+                      title={`${marker.label} ${formatWon(marker.price)} / ${marker.quantity.toLocaleString()}주`}
+                    >
+                      {marker.label}
                     </div>
                   ))}
                 </div>
@@ -603,34 +701,21 @@ export default function DemoTradePage() {
             <button style={side === "BUY" ? styles.buyTabActive : styles.tabButton} onClick={() => setSide("BUY")}>매수</button>
             <button style={side === "SELL" ? styles.sellTabActive : styles.tabButton} onClick={() => setSide("SELL")}>매도</button>
           </div>
-
           <label style={styles.label}>주문가격</label>
           <input style={styles.input} value={price} onChange={(e) => setPrice(e.target.value)} placeholder="현재가" />
-
           <label style={styles.label}>수량</label>
           <input style={styles.input} type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-
           {side === "SELL" && <div style={styles.holdingInfo}>현재 보유수량: <strong>{selectedHoldingQuantity.toLocaleString()}주</strong></div>}
-
           <div style={styles.orderInfo}>
             <div><span>주문금액</span><strong>{formatWon(totalOrderAmount)}</strong></div>
             <div><span>주문 후 현금</span><strong style={estimatedCash < 0 ? styles.downText : undefined}>{formatWon(estimatedCash)}</strong></div>
           </div>
-
           <label style={styles.label}>왜 지금 사거나 팔고 싶은가?</label>
           <textarea style={styles.textarea} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 급등해서 놓칠까봐 / 랭킹 상위라서 / 손절 기준에 도달해서" />
-
           <div style={styles.twoCol}>
-            <div>
-              <label style={styles.label}>목표가</label>
-              <input style={styles.input} value={targetPrice} onChange={(e) => setTargetPrice(e.target.value)} placeholder="선택" />
-            </div>
-            <div>
-              <label style={styles.label}>손절가</label>
-              <input style={styles.input} value={stopLossPrice} onChange={(e) => setStopLossPrice(e.target.value)} placeholder="선택" />
-            </div>
+            <div><label style={styles.label}>목표가</label><input style={styles.input} value={targetPrice} onChange={(e) => setTargetPrice(e.target.value)} placeholder="선택" /></div>
+            <div><label style={styles.label}>손절가</label><input style={styles.input} value={stopLossPrice} onChange={(e) => setStopLossPrice(e.target.value)} placeholder="선택" /></div>
           </div>
-
           <label style={styles.label}>예상 보유기간</label>
           <select style={styles.input} value={holdingDays} onChange={(e) => setHoldingDays(e.target.value)}>
             <option value="1">1일</option>
@@ -639,7 +724,6 @@ export default function DemoTradePage() {
             <option value="14">14일</option>
             <option value="30">30일 이상</option>
           </select>
-
           <button style={side === "BUY" ? styles.buyButton : styles.sellButton} onClick={submitOrder}>{side === "BUY" ? "가상 매수" : "가상 매도"}</button>
           {orderStatus && <div style={styles.orderStatus}>{orderStatus}</div>}
         </aside>
@@ -651,7 +735,6 @@ export default function DemoTradePage() {
             <h2 style={styles.panelTitle}>보유종목</h2>
             <button style={styles.miniButton} onClick={() => refreshPositionPrices()} disabled={loadingPositions}>{loadingPositions ? "조회 중" : "현재가 새로고침"}</button>
           </div>
-
           {portfolioSummary.length === 0 ? (
             <div style={styles.empty}>아직 보유종목이 없습니다.</div>
           ) : (
@@ -751,11 +834,14 @@ const styles = {
   chartRefreshButton: { border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "white", borderRadius: "10px", padding: "8px 10px", fontSize: "12px", fontWeight: "800", cursor: "pointer" },
   realChart: { height: "330px", position: "relative", borderTop: "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.18)" },
   chartEmpty: { height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: "14px" },
-  candleChart: { height: "100%", display: "flex", gap: "6px", alignItems: "stretch", padding: "10px 4px 28px", boxSizing: "border-box" },
+  candleChart: { height: "100%", display: "flex", gap: "6px", alignItems: "stretch", padding: "10px 4px 28px", boxSizing: "border-box", position: "relative" },
   realCandleWrap: { flex: 1, minWidth: "8px", position: "relative" },
   wick: { position: "absolute", left: "50%", width: "2px", transform: "translateX(-50%)", borderRadius: "999px" },
   realCandle: { position: "absolute", left: "18%", right: "18%", borderRadius: "3px" },
   timeLabel: { position: "absolute", left: "50%", bottom: "-22px", transform: "translateX(-50%)", color: "#9ca3af", fontSize: "10px", whiteSpace: "nowrap" },
+  tradeMarker: { position: "absolute", transform: "translate(-50%, -50%)", zIndex: 5, borderRadius: "999px", padding: "4px 7px", color: "white", fontSize: "10px", fontWeight: "900", boxShadow: "0 4px 10px rgba(0,0,0,0.35)", pointerEvents: "auto" },
+  buyMarker: { background: "#dc2626" },
+  sellMarker: { background: "#2563eb" },
   fomoBox: { marginTop: "16px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" },
   fomoScore: { width: "64px", height: "64px", borderRadius: "999px", background: "#f59e0b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", fontWeight: "900", flex: "0 0 auto" },
   tabRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" },
