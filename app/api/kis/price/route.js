@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 
-let accessToken: string | null = null;
+let accessToken = null;
 let expiredAt = 0;
 
-// 토큰 발급 함수
 async function getAccessToken() {
   const now = Date.now();
 
@@ -11,58 +10,119 @@ async function getAccessToken() {
     return accessToken;
   }
 
-  const res = await fetch(
-    `${process.env.KIS_BASE_URL}/oauth2/tokenP`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        grant_type: "client_credentials",
-        appkey: process.env.KIS_APP_KEY,
-        appsecret: process.env.KIS_APP_SECRET,
-      }),
-    }
-  );
+  const baseUrl = process.env.KIS_BASE_URL;
+  const appKey = process.env.KIS_APP_KEY;
+  const appSecret = process.env.KIS_APP_SECRET;
+
+  if (!baseUrl || !appKey || !appSecret) {
+    throw new Error("KIS 환경변수가 설정되지 않았습니다.");
+  }
+
+  const res = await fetch(`${baseUrl}/oauth2/tokenP`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+    },
+    body: JSON.stringify({
+      grant_type: "client_credentials",
+      appkey: appKey,
+      appsecret: appSecret,
+    }),
+    cache: "no-store",
+  });
 
   const data = await res.json();
 
+  if (!res.ok || !data.access_token) {
+    console.error("KIS token error:", data);
+    throw new Error("KIS access token 발급 실패");
+  }
+
   accessToken = data.access_token;
-  expiredAt = now + data.expires_in * 1000 - 60000;
+  expiredAt = now + Number(data.expires_in || 86400) * 1000 - 60000;
 
   return accessToken;
 }
 
-// 현재가 조회
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const code = url.searchParams.get("code");
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const code = searchParams.get("code");
 
-  if (!code) {
-    return NextResponse.json({ error: "code 없음" }, { status: 400 });
-  }
+    if (!code) {
+      return NextResponse.json(
+        { ok: false, error: "종목코드 code 파라미터가 없습니다." },
+        { status: 400 }
+      );
+    }
 
-  const token = await getAccessToken();
+    const baseUrl = process.env.KIS_BASE_URL;
+    const appKey = process.env.KIS_APP_KEY;
+    const appSecret = process.env.KIS_APP_SECRET;
 
-  const res = await fetch(
-    `${process.env.KIS_BASE_URL}/uapi/domestic-stock/v1/quotations/inquire-price?FID_COND_MRKT_DIV_CODE=J&FID_INPUT_ISCD=${code}`,
-    {
+    if (!baseUrl || !appKey || !appSecret) {
+      return NextResponse.json(
+        { ok: false, error: "KIS 환경변수가 설정되지 않았습니다." },
+        { status: 500 }
+      );
+    }
+
+    const token = await getAccessToken();
+
+    const apiUrl = new URL(
+      `${baseUrl}/uapi/domestic-stock/v1/quotations/inquire-price`
+    );
+
+    apiUrl.searchParams.set("FID_COND_MRKT_DIV_CODE", "J");
+    apiUrl.searchParams.set("FID_INPUT_ISCD", code);
+
+    const res = await fetch(apiUrl.toString(), {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "appkey": process.env.KIS_APP_KEY!,
-        "appsecret": process.env.KIS_APP_SECRET!,
-        "tr_id": "FHKST01010100",
+        "Content-Type": "application/json; charset=utf-8",
+        authorization: `Bearer ${token}`,
+        appkey: appKey,
+        appsecret: appSecret,
+        tr_id: "FHKST01010100",
+        custtype: "P",
       },
+      cache: "no-store",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.rt_cd !== "0") {
+      console.error("KIS price error:", data);
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "현재가 조회 실패",
+          detail: data,
+        },
+        { status: 500 }
+      );
     }
-  );
 
-  const data = await res.json();
+    const output = data.output || {};
 
-  return NextResponse.json({
-    price: data?.output?.stck_prpr,
-    change: data?.output?.prdy_vrss,
-    rate: data?.output?.prdy_ctrt,
-  });
+    return NextResponse.json({
+      ok: true,
+      code,
+      price: output.stck_prpr,
+      change: output.prdy_vrss,
+      rate: output.prdy_ctrt,
+      name: output.hts_kor_isnm || "",
+      raw: output,
+    });
+  } catch (error) {
+    console.error("API route error:", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error.message || "서버 오류",
+      },
+      { status: 500 }
+    );
+  }
 }
