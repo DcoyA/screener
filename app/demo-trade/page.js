@@ -30,6 +30,7 @@ export default function DemoTradePage() {
   const [holdingDays, setHoldingDays] = useState("7");
 
   const [orders, setOrders] = useState([]);
+  const [positionPrices, setPositionPrices] = useState({});
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [loadingAccount, setLoadingAccount] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
@@ -81,15 +82,17 @@ export default function DemoTradePage() {
 
   const portfolioSummary = useMemo(() => {
     const map = {};
-
+  
     orders.forEach((order) => {
-      const orderCode = order.code;
-      const orderName = order.name || order.code;
+      const orderCode = String(order.code || "").trim();
+      const orderName = order.name || orderCode;
       const orderSide = order.side;
       const qty = Number(order.quantity || 0);
       const orderPrice = Number(order.price || 0);
       const amount = Number(order.amount || orderPrice * qty);
-
+  
+      if (!orderCode || !qty || !orderPrice) return;
+  
       if (!map[orderCode]) {
         map[orderCode] = {
           code: orderCode,
@@ -98,37 +101,42 @@ export default function DemoTradePage() {
           buyAmount: 0,
         };
       }
-
+  
       if (orderSide === "BUY") {
         map[orderCode].quantity += qty;
         map[orderCode].buyAmount += amount;
       }
-
+  
       if (orderSide === "SELL") {
         map[orderCode].quantity -= qty;
         map[orderCode].buyAmount -= amount;
       }
     });
-
+  
     return Object.values(map)
       .filter((item) => item.quantity > 0)
       .map((item) => {
         const avgPrice = item.quantity > 0 ? item.buyAmount / item.quantity : 0;
-        const currentPrice = item.code === code ? Number(price || avgPrice) : avgPrice;
-        const evalAmount = currentPrice * item.quantity;
+  
+        const realtimePrice =
+          Number(positionPrices[item.code]) ||
+          (item.code === code ? Number(price || 0) : 0) ||
+          avgPrice;
+  
+        const evalAmount = realtimePrice * item.quantity;
         const profitLoss = evalAmount - item.buyAmount;
         const profitRate = item.buyAmount > 0 ? (profitLoss / item.buyAmount) * 100 : 0;
-
+  
         return {
           ...item,
           avgPrice,
-          currentPrice,
+          currentPrice: realtimePrice,
           evalAmount,
           profitLoss,
           profitRate,
         };
       });
-  }, [orders, code, price]);
+  }, [orders, positionPrices, code, price]);
 
   const totalEvalAmount = portfolioSummary.reduce((sum, item) => sum + item.evalAmount, 0);
   const totalBuyAmount = portfolioSummary.reduce((sum, item) => sum + item.buyAmount, 0);
@@ -209,13 +217,50 @@ export default function DemoTradePage() {
       const data = await res.json();
 
       if (data.ok) {
-        setOrders(data.orders || []);
+        const nextOrders = data.orders || [];
+        setOrders(nextOrders);
+        await refreshPositionPrices(nextOrders);
       }
     } catch (error) {
       console.error(error);
     }
   }
 
+  async function refreshPositionPrices(targetOrders = orders) {
+    const holdingCodes = Array.from(
+      new Set(
+        targetOrders
+          .filter((order) => String(order.side || "").toUpperCase() === "BUY")
+          .map((order) => String(order.code || "").trim())
+          .filter(Boolean)
+      )
+    );
+  
+    if (holdingCodes.length === 0) {
+      setPositionPrices({});
+      return;
+    }
+  
+    const nextPrices = {};
+  
+    await Promise.all(
+      holdingCodes.map(async (holdingCode) => {
+        try {
+          const res = await fetch(`/api/kis/price?code=${encodeURIComponent(holdingCode)}`);
+          const data = await res.json();
+  
+          if (data.ok && data.price) {
+            nextPrices[holdingCode] = Number(data.price);
+          }
+        } catch (error) {
+          console.error("보유종목 현재가 조회 실패:", holdingCode, error);
+        }
+      })
+    );
+  
+    setPositionPrices(nextPrices);
+  }
+  
   async function fetchPrice(targetCode = code, targetName = name) {
     if (!targetCode) {
       alert("종목코드를 입력하세요.");
@@ -576,7 +621,12 @@ export default function DemoTradePage() {
 
       <section style={styles.bottomGrid}>
         <div style={styles.tablePanel}>
-          <h2 style={styles.panelTitle}>보유종목</h2>
+          <div style={styles.panelTitleRow}>
+            <h2 style={styles.panelTitle}>보유종목</h2>
+            <button style={styles.miniButton} onClick={() => refreshPositionPrices()}>
+              현재가 새로고침
+            </button>
+          </div>
 
           {portfolioSummary.length === 0 ? (
             <div style={styles.empty}>아직 보유종목이 없습니다.</div>
@@ -586,14 +636,22 @@ export default function DemoTradePage() {
                 <span>종목</span>
                 <span>수량</span>
                 <span>평균단가</span>
+                <span>현재가</span>
+                <span>평가금액</span>
                 <span>평가손익</span>
               </div>
 
               {portfolioSummary.map((item) => (
                 <div key={item.code} style={styles.tableRow}>
-                  <span>{item.name}</span>
+                  <span>
+                    <strong>{item.name}</strong>
+                    <br />
+                    <em style={styles.codeText}>{item.code}</em>
+                  </span>
                   <span>{item.quantity}</span>
                   <span>{Math.round(item.avgPrice).toLocaleString()}원</span>
+                  <span>{Math.round(item.currentPrice).toLocaleString()}원</span>
+                  <span>{Math.round(item.evalAmount).toLocaleString()}원</span>
                   <span style={item.profitLoss >= 0 ? styles.upText : styles.downText}>
                     {item.profitLoss >= 0 ? "+" : ""}
                     {Math.round(item.profitLoss).toLocaleString()}원
@@ -804,7 +862,7 @@ const styles = {
   panelTitle: {
     fontSize: "18px",
     fontWeight: "900",
-    margin: "0 0 14px",
+    margin: 0,
   },
   smallTitle: {
     fontSize: "13px",
@@ -1051,18 +1109,26 @@ const styles = {
   },
   tableHead: {
     display: "grid",
-    gridTemplateColumns: "1.2fr 0.6fr 1fr 1fr",
+    gridTemplateColumns: "1.3fr 0.5fr 1fr 1fr 1fr 1fr",
     padding: "10px",
     color: "#6b7280",
     fontSize: "13px",
     borderBottom: "1px solid #e5e7eb",
+    gap: "8px",
   },
   tableRow: {
     display: "grid",
-    gridTemplateColumns: "1.2fr 0.6fr 1fr 1fr",
+    gridTemplateColumns: "1.3fr 0.5fr 1fr 1fr 1fr 1fr",
     padding: "12px 10px",
     borderBottom: "1px solid #f3f4f6",
     fontSize: "14px",
+    gap: "8px",
+    alignItems: "center",
+  },
+  codeText: {
+    color: "#6b7280",
+    fontSize: "12px",
+    fontStyle: "normal",
   },
   orderList: {
     display: "grid",
@@ -1079,5 +1145,21 @@ const styles = {
   orderItemRight: {
     textAlign: "right",
     whiteSpace: "nowrap",
+  },
+  panelTitleRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "14px",
+  },
+  miniButton: {
+    border: "1px solid #d1d5db",
+    background: "white",
+    color: "#111827",
+    borderRadius: "10px",
+    padding: "7px 10px",
+    fontSize: "12px",
+    fontWeight: "800",
+    cursor: "pointer",
   },
 };
