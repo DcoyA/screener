@@ -66,6 +66,7 @@ export default function DemoTradePage() {
   const [change, setChange] = useState("");
   const [rate, setRate] = useState("");
   const [candles, setCandles] = useState([]);
+  const [quoteError, setQuoteError] = useState("");
 
   const [side, setSide] = useState("BUY");
   const [quantity, setQuantity] = useState("1");
@@ -76,8 +77,7 @@ export default function DemoTradePage() {
 
   const [orders, setOrders] = useState([]);
   const [positionPrices, setPositionPrices] = useState({});
-  const [loadingPrice, setLoadingPrice] = useState(false);
-  const [loadingChart, setLoadingChart] = useState(false);
+  const [loadingQuote, setLoadingQuote] = useState(false);
   const [loadingAccount, setLoadingAccount] = useState(false);
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
@@ -98,8 +98,7 @@ export default function DemoTradePage() {
       }
     }
 
-    fetchPrice("005930", "삼성전자");
-    fetchMinuteChart("005930");
+    fetchQuote("005930", "삼성전자");
   }, []);
 
   const totalOrderAmount = useMemo(() => toNumber(price) * toNumber(quantity), [price, quantity]);
@@ -429,43 +428,22 @@ export default function DemoTradePage() {
     setLoadingPositions(false);
   }
 
-  async function fetchMinuteChart(targetCode = code) {
-    if (!targetCode) return;
-
-    setLoadingChart(true);
-
-    try {
-      const res = await fetch(`/api/kis/minute?code=${encodeURIComponent(targetCode)}`);
-      const data = await res.json();
-
-      if (data.ok && Array.isArray(data.candles)) {
-        setCandles(data.candles);
-      } else {
-        setCandles([]);
-        console.warn("분봉 조회 실패:", data);
-      }
-    } catch (error) {
-      console.error("분봉 조회 중 오류:", error);
-      setCandles([]);
-    } finally {
-      setLoadingChart(false);
-    }
-  }
-
-  async function fetchPrice(targetCode = code, targetName = name) {
+  async function fetchQuote(targetCode = code, targetName = name) {
     if (!targetCode) {
       alert("종목코드를 입력하세요.");
       return;
     }
 
-    setLoadingPrice(true);
+    setLoadingQuote(true);
+    setQuoteError("");
 
     try {
-      const res = await fetch(`/api/kis/price?code=${encodeURIComponent(targetCode)}`);
+      const res = await fetch(`/api/kis/quote?code=${encodeURIComponent(targetCode)}`);
       const data = await res.json();
 
       if (!data.ok) {
-        alert(data.error || "현재가 조회 실패");
+        setQuoteError(data.error || "통합 시세 조회 실패");
+        console.warn("통합 시세 조회 실패:", data);
         return;
       }
 
@@ -474,20 +452,24 @@ export default function DemoTradePage() {
       setPrice(data.price || "");
       setChange(data.change || "");
       setRate(data.rate || "");
+      setCandles(Array.isArray(data.candles) ? data.candles : []);
       setPositionPrices((prev) => ({ ...prev, [targetCode]: toNumber(data.price) }));
-      fetchMinuteChart(targetCode);
+
+      if (data.minuteError) {
+        setQuoteError(data.minuteError);
+      }
     } catch (error) {
       console.error(error);
-      alert("현재가 조회 중 오류가 발생했습니다.");
+      setQuoteError("통합 시세 조회 중 오류가 발생했습니다.");
     } finally {
-      setLoadingPrice(false);
+      setLoadingQuote(false);
     }
   }
 
   function selectStock(stock) {
     setCode(stock.code);
     setName(stock.name);
-    fetchPrice(stock.code, stock.name);
+    fetchQuote(stock.code, stock.name);
   }
 
   async function submitOrder() {
@@ -620,7 +602,7 @@ export default function DemoTradePage() {
           <h2 style={styles.panelTitle}>종목 검색</h2>
           <div style={styles.searchBox}>
             <input style={styles.input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="종목코드 예: 005930" />
-            <button style={styles.searchButton} onClick={() => fetchPrice(code, name)} disabled={loadingPrice}>{loadingPrice ? "조회중" : "조회"}</button>
+            <button style={styles.searchButton} onClick={() => fetchQuote(code, name)} disabled={loadingQuote}>{loadingQuote ? "조회중" : "조회"}</button>
           </div>
           <h3 style={styles.smallTitle}>인기 종목</h3>
           <div style={styles.stockList}>
@@ -651,12 +633,14 @@ export default function DemoTradePage() {
                 <strong>당일 1분봉</strong>
                 <span style={styles.chartSubText}>최근 {candles.length || 0}개 캔들 · 체결마커 {selectedTradeMarkers.length}개</span>
               </div>
-              <button style={styles.chartRefreshButton} onClick={() => fetchMinuteChart(code)} disabled={loadingChart}>{loadingChart ? "차트 조회 중" : "차트 새로고침"}</button>
+              <button style={styles.chartRefreshButton} onClick={() => fetchQuote(code, name)} disabled={loadingQuote}>{loadingQuote ? "시세 조회 중" : "시세/차트 새로고침"}</button>
             </div>
+
+            {quoteError && <div style={styles.chartWarning}>{quoteError}</div>}
 
             <div style={styles.realChart}>
               {chartData.length === 0 ? (
-                <div style={styles.chartEmpty}>{loadingChart ? "분봉 데이터를 불러오는 중입니다." : "분봉 데이터가 없습니다."}</div>
+                <div style={styles.chartEmpty}>{loadingQuote ? "분봉 데이터를 불러오는 중입니다." : "분봉 데이터가 없습니다."}</div>
               ) : (
                 <div style={styles.candleChart}>
                   {chartData.map((item, index) => (
@@ -831,6 +815,7 @@ const styles = {
   chartPanel: { background: "#0b1220", borderRadius: "18px", padding: "16px", overflow: "hidden" },
   chartToolbar: { display: "flex", justifyContent: "space-between", alignItems: "center", color: "white", marginBottom: "12px" },
   chartSubText: { marginLeft: "8px", color: "#9ca3af", fontSize: "12px" },
+  chartWarning: { background: "rgba(245,158,11,0.14)", border: "1px solid rgba(245,158,11,0.35)", color: "#fbbf24", borderRadius: "10px", padding: "8px 10px", fontSize: "12px", marginBottom: "10px" },
   chartRefreshButton: { border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "white", borderRadius: "10px", padding: "8px 10px", fontSize: "12px", fontWeight: "800", cursor: "pointer" },
   realChart: { height: "330px", position: "relative", borderTop: "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.18)" },
   chartEmpty: { height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: "14px" },
