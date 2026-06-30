@@ -306,8 +306,15 @@ export default function DemoTradePage() {
 
         setOrderStatus("가상 체결 완료");
 
+        if (data.account && typeof data.account.cash !== "undefined") {
+          setAccount((prev) => ({
+            ...prev,
+            cash: data.account.cash,
+          }));
+        }
+        
         await loadOrders(account.accountId, account.pin);
-
+        
         setTimeout(() => {
           setOrderStatus("");
         }, 1200);
