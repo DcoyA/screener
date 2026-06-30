@@ -26,31 +26,55 @@ async function callDemoTradeApi(payload) {
   }
 }
 
+async function loadAccount(accountId, pin) {
+  if (!accountId || !pin) {
+    return {
+      ok: false,
+      error: "accountId와 pin이 필요합니다.",
+    };
+  }
+
+  return await callDemoTradeApi({
+    action: "loadAccount",
+    accountId,
+    pin,
+  });
+}
+
+// 브라우저 주소창 테스트용
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+
+    const accountId = searchParams.get("accountId");
+    const pin = searchParams.get("pin");
+
+    const data = await loadAccount(accountId, pin);
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Load account GET API error:", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error.message || "계좌 조회 실패",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// 실제 프론트 호출용
 export async function POST(request) {
   try {
     const body = await request.json();
 
-    const { accountId, pin } = body;
-
-    if (!accountId || !pin) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "accountId와 pin이 필요합니다.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const data = await callDemoTradeApi({
-      action: "loadAccount",
-      accountId,
-      pin,
-    });
+    const data = await loadAccount(body.accountId, body.pin);
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Load account API error:", error);
+    console.error("Load account POST API error:", error);
 
     return NextResponse.json(
       {
