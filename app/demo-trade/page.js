@@ -11,6 +11,24 @@ const POPULAR_STOCKS = [
   { code: "068270", name: "셀트리온" },
 ];
 
+function toNumber(value) {
+  const parsed = Number(String(value ?? "").replace(/,/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatWon(value) {
+  return `${Math.round(toNumber(value)).toLocaleString()}원`;
+}
+
+function formatRate(value) {
+  const number = toNumber(value);
+  return `${number >= 0 ? "+" : ""}${number.toFixed(2)}%`;
+}
+
+function normalizeSide(side) {
+  return String(side || "BUY").toUpperCase();
+}
+
 export default function DemoTradePage() {
   const [account, setAccount] = useState(null);
   const [loginAccountId, setLoginAccountId] = useState("");
@@ -33,6 +51,7 @@ export default function DemoTradePage() {
   const [positionPrices, setPositionPrices] = useState({});
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [loadingAccount, setLoadingAccount] = useState(false);
+  const [loadingPositions, setLoadingPositions] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
 
   useEffect(() => {
@@ -51,19 +70,19 @@ export default function DemoTradePage() {
       }
     }
 
-    fetchPrice("005930");
+    fetchPrice("005930", "삼성전자");
   }, []);
 
   const totalOrderAmount = useMemo(() => {
-    return Number(price || 0) * Number(quantity || 0);
+    return toNumber(price) * toNumber(quantity);
   }, [price, quantity]);
 
   const fomoScore = useMemo(() => {
     let score = 0;
     const text = String(reason || "").toLowerCase();
 
-    if (text.includes("급등") || text.includes("막차") || text.includes("놓칠")) score += 28;
-    if (text.includes("뉴스") || text.includes("호재")) score += 15;
+    if (text.includes("급등") || text.includes("막차") || text.includes("놓칠") || text.includes("fomo")) score += 28;
+    if (text.includes("뉴스") || text.includes("호재") || text.includes("상한가")) score += 15;
     if (!stopLossPrice) score += 20;
     if (!targetPrice) score += 10;
     if (Number(holdingDays) <= 3) score += 15;
@@ -72,61 +91,73 @@ export default function DemoTradePage() {
     return Math.min(score, 100);
   }, [reason, stopLossPrice, targetPrice, holdingDays, totalOrderAmount]);
 
-  const cash = Number(account?.cash || 0);
+  const fomoLabel = useMemo(() => {
+    if (fomoScore >= 70) return "위험";
+    if (fomoScore >= 40) return "주의";
+    return "낮음";
+  }, [fomoScore]);
 
-  const estimatedCash = useMemo(() => {
-    if (!account) return 0;
-    if (side === "BUY") return cash - totalOrderAmount;
-    return cash + totalOrderAmount;
-  }, [account, cash, side, totalOrderAmount]);
+  const cash = toNumber(account?.cash);
 
   const portfolioSummary = useMemo(() => {
     const map = {};
-  
+
     orders.forEach((order) => {
       const orderCode = String(order.code || "").trim();
       const orderName = order.name || orderCode;
-      const orderSide = order.side;
-      const qty = Number(order.quantity || 0);
-      const orderPrice = Number(order.price || 0);
-      const amount = Number(order.amount || orderPrice * qty);
-  
+      const orderSide = normalizeSide(order.side);
+      const qty = toNumber(order.quantity);
+      const orderPrice = toNumber(order.price);
+      const amount = toNumber(order.amount) || orderPrice * qty;
+
       if (!orderCode || !qty || !orderPrice) return;
-  
+
       if (!map[orderCode]) {
         map[orderCode] = {
           code: orderCode,
           name: orderName,
           quantity: 0,
           buyAmount: 0,
+          realizedProfit: 0,
         };
       }
-  
+
       if (orderSide === "BUY") {
         map[orderCode].quantity += qty;
         map[orderCode].buyAmount += amount;
       }
-  
+
       if (orderSide === "SELL") {
+        const currentQuantity = map[orderCode].quantity;
+        const currentBuyAmount = map[orderCode].buyAmount;
+        const avgPrice = currentQuantity > 0 ? currentBuyAmount / currentQuantity : 0;
+        const sellCostBasis = avgPrice * qty;
+        const sellAmount = orderPrice * qty;
+
         map[orderCode].quantity -= qty;
-        map[orderCode].buyAmount -= amount;
+        map[orderCode].buyAmount -= sellCostBasis;
+        map[orderCode].realizedProfit += sellAmount - sellCostBasis;
+
+        if (map[orderCode].quantity <= 0) {
+          map[orderCode].quantity = 0;
+          map[orderCode].buyAmount = 0;
+        }
       }
     });
-  
+
     return Object.values(map)
       .filter((item) => item.quantity > 0)
       .map((item) => {
         const avgPrice = item.quantity > 0 ? item.buyAmount / item.quantity : 0;
-  
         const realtimePrice =
-          Number(positionPrices[item.code]) ||
-          (item.code === code ? Number(price || 0) : 0) ||
+          toNumber(positionPrices[item.code]) ||
+          (item.code === code ? toNumber(price) : 0) ||
           avgPrice;
-  
+
         const evalAmount = realtimePrice * item.quantity;
         const profitLoss = evalAmount - item.buyAmount;
         const profitRate = item.buyAmount > 0 ? (profitLoss / item.buyAmount) * 100 : 0;
-  
+
         return {
           ...item,
           avgPrice,
@@ -143,6 +174,19 @@ export default function DemoTradePage() {
   const totalProfitLoss = totalEvalAmount - totalBuyAmount;
   const totalProfitRate = totalBuyAmount > 0 ? (totalProfitLoss / totalBuyAmount) * 100 : 0;
   const totalAsset = cash + totalEvalAmount;
+
+  const selectedHoldingQuantity = getHoldingQuantity(code);
+
+  const estimatedCash = useMemo(() => {
+    if (!account) return 0;
+    if (side === "BUY") return cash - totalOrderAmount;
+    return cash + totalOrderAmount;
+  }, [account, cash, side, totalOrderAmount]);
+
+  function getHoldingQuantity(targetCode) {
+    const position = portfolioSummary.find((item) => item.code === targetCode);
+    return toNumber(position?.quantity);
+  }
 
   async function createAccount() {
     setLoadingAccount(true);
@@ -161,7 +205,9 @@ export default function DemoTradePage() {
       setLoginPin(data.account.pin);
       localStorage.setItem("demoTradeAccount", JSON.stringify(data.account));
       setOrders([]);
+      setPositionPrices({});
     } catch (error) {
+      console.error(error);
       alert("가상계좌 생성 중 오류가 발생했습니다.");
     } finally {
       setLoadingAccount(false);
@@ -191,13 +237,14 @@ export default function DemoTradePage() {
       }
 
       setAccount(data.account);
-      localStorage.setItem("demoTradeAccount", JSON.stringify({
-        accountId: targetAccountId,
-        pin: targetPin,
-      }));
+      localStorage.setItem(
+        "demoTradeAccount",
+        JSON.stringify({ accountId: targetAccountId, pin: targetPin })
+      );
 
       await loadOrders(targetAccountId, targetPin);
     } catch (error) {
+      console.error(error);
       alert("가상계좌 조회 중 오류가 발생했습니다.");
     } finally {
       setLoadingAccount(false);
@@ -227,40 +274,50 @@ export default function DemoTradePage() {
   }
 
   async function refreshPositionPrices(targetOrders = orders) {
-    const holdingCodes = Array.from(
-      new Set(
-        targetOrders
-          .filter((order) => String(order.side || "").toUpperCase() === "BUY")
-          .map((order) => String(order.code || "").trim())
-          .filter(Boolean)
-      )
-    );
-  
+    const netMap = {};
+
+    targetOrders.forEach((order) => {
+      const orderCode = String(order.code || "").trim();
+      const qty = toNumber(order.quantity);
+      const orderSide = normalizeSide(order.side);
+
+      if (!orderCode || !qty) return;
+      if (!netMap[orderCode]) netMap[orderCode] = 0;
+      netMap[orderCode] += orderSide === "SELL" ? -qty : qty;
+    });
+
+    const holdingCodes = Object.entries(netMap)
+      .filter(([, qty]) => qty > 0)
+      .map(([holdingCode]) => holdingCode);
+
     if (holdingCodes.length === 0) {
       setPositionPrices({});
       return;
     }
-  
+
+    setLoadingPositions(true);
+
     const nextPrices = {};
-  
+
     await Promise.all(
       holdingCodes.map(async (holdingCode) => {
         try {
           const res = await fetch(`/api/kis/price?code=${encodeURIComponent(holdingCode)}`);
           const data = await res.json();
-  
+
           if (data.ok && data.price) {
-            nextPrices[holdingCode] = Number(data.price);
+            nextPrices[holdingCode] = toNumber(data.price);
           }
         } catch (error) {
           console.error("보유종목 현재가 조회 실패:", holdingCode, error);
         }
       })
     );
-  
+
     setPositionPrices(nextPrices);
+    setLoadingPositions(false);
   }
-  
+
   async function fetchPrice(targetCode = code, targetName = name) {
     if (!targetCode) {
       alert("종목코드를 입력하세요.");
@@ -283,7 +340,13 @@ export default function DemoTradePage() {
       setPrice(data.price || "");
       setChange(data.change || "");
       setRate(data.rate || "");
+
+      setPositionPrices((prev) => ({
+        ...prev,
+        [targetCode]: toNumber(data.price),
+      }));
     } catch (error) {
+      console.error(error);
       alert("현재가 조회 중 오류가 발생했습니다.");
     } finally {
       setLoadingPrice(false);
@@ -307,9 +370,28 @@ export default function DemoTradePage() {
       return;
     }
 
+    if (toNumber(quantity) <= 0) {
+      alert("수량은 1주 이상 입력하세요.");
+      return;
+    }
+
     if (side === "BUY" && totalOrderAmount > cash) {
       alert("가상 현금이 부족합니다.");
       return;
+    }
+
+    if (side === "SELL") {
+      const holdingQuantity = getHoldingQuantity(code);
+
+      if (holdingQuantity <= 0) {
+        alert("보유하지 않은 종목은 매도할 수 없습니다.");
+        return;
+      }
+
+      if (toNumber(quantity) > holdingQuantity) {
+        alert(`보유수량(${holdingQuantity.toLocaleString()}주)보다 많이 매도할 수 없습니다.`);
+        return;
+      }
     }
 
     setOrderStatus("주문 접수 중...");
@@ -331,8 +413,8 @@ export default function DemoTradePage() {
             side,
             code,
             name,
-            price: Number(price),
-            quantity: Number(quantity),
+            price: toNumber(price),
+            quantity: toNumber(quantity),
             reason,
             targetPrice,
             stopLossPrice,
@@ -357,13 +439,16 @@ export default function DemoTradePage() {
             cash: data.account.cash,
           }));
         }
-        
+
         await loadOrders(account.accountId, account.pin);
-        
+
+        setReason("");
+
         setTimeout(() => {
           setOrderStatus("");
         }, 1200);
       } catch (error) {
+        console.error(error);
         alert("주문 처리 중 오류가 발생했습니다.");
         setOrderStatus("");
       }
@@ -376,9 +461,7 @@ export default function DemoTradePage() {
         <div>
           <div style={styles.logo}>우량주 스카우터</div>
           <h1 style={styles.title}>가상투자 터미널</h1>
-          <p style={styles.subTitle}>
-            진짜 돈을 넣기 전, 가상계좌로 매수 판단을 먼저 검증하세요.
-          </p>
+          <p style={styles.subTitle}>진짜 돈을 넣기 전, 가상계좌로 매수 판단을 먼저 검증하세요.</p>
         </div>
 
         <div style={styles.accountBox}>
@@ -404,33 +487,29 @@ export default function DemoTradePage() {
           <input
             style={styles.loginInput}
             value={loginAccountId}
-            onChange={(e) => setLoginAccountId(e.target.value)}
+            onChange={(event) => setLoginAccountId(event.target.value)}
             placeholder="가상계좌번호 DEMO-XXXX-XXXX"
           />
           <input
             style={styles.loginInput}
             value={loginPin}
-            onChange={(e) => setLoginPin(e.target.value)}
+            onChange={(event) => setLoginPin(event.target.value)}
             placeholder="PIN 4자리"
           />
           <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>
             {loadingAccount ? "조회 중" : "계좌 불러오기"}
           </button>
-          <button style={styles.outlineButton} onClick={createAccount}>
+          <button style={styles.outlineButton} onClick={createAccount} disabled={loadingAccount}>
             새 계좌 발급
           </button>
         </div>
       </section>
 
       <section style={styles.assetGrid}>
-        <AssetCard label="총자산" value={`${totalAsset.toLocaleString()}원`} />
-        <AssetCard label="가상현금" value={`${cash.toLocaleString()}원`} />
-        <AssetCard label="평가금액" value={`${totalEvalAmount.toLocaleString()}원`} />
-        <AssetCard
-          label="전체수익률"
-          value={`${totalProfitRate >= 0 ? "+" : ""}${totalProfitRate.toFixed(2)}%`}
-          tone={totalProfitRate >= 0 ? "red" : "blue"}
-        />
+        <AssetCard label="총자산" value={formatWon(totalAsset)} />
+        <AssetCard label="가상현금" value={formatWon(cash)} />
+        <AssetCard label="평가금액" value={formatWon(totalEvalAmount)} />
+        <AssetCard label="전체수익률" value={formatRate(totalProfitRate)} tone={totalProfitRate >= 0 ? "red" : "blue"} />
       </section>
 
       <section style={styles.tradeGrid}>
@@ -441,11 +520,11 @@ export default function DemoTradePage() {
             <input
               style={styles.input}
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(event) => setCode(event.target.value)}
               placeholder="종목코드 예: 005930"
             />
-            <button style={styles.searchButton} onClick={() => fetchPrice(code, name)}>
-              {loadingPrice ? "조회" : "조회"}
+            <button style={styles.searchButton} onClick={() => fetchPrice(code, name)} disabled={loadingPrice}>
+              {loadingPrice ? "조회중" : "조회"}
             </button>
           </div>
 
@@ -476,12 +555,9 @@ export default function DemoTradePage() {
             </div>
 
             <div style={styles.priceArea}>
-              <div style={styles.nowPrice}>
-                {price ? `${Number(price).toLocaleString()}원` : "-"}
-              </div>
-              <div style={Number(rate) >= 0 ? styles.upText : styles.downText}>
-                {change ? `${Number(change).toLocaleString()}원` : "-"} /{" "}
-                {rate ? `${Number(rate).toFixed(2)}%` : "-"}
+              <div style={styles.nowPrice}>{price ? formatWon(price) : "-"}</div>
+              <div style={toNumber(rate) >= 0 ? styles.upText : styles.downText}>
+                {change ? formatWon(change) : "-"} / {rate ? formatRate(rate) : "-"}
               </div>
             </div>
           </div>
@@ -505,17 +581,13 @@ export default function DemoTradePage() {
                 );
               })}
             </div>
-            <div style={styles.chartNotice}>
-              차트는 다음 단계에서 실제 분봉/봉차트로 교체 예정
-            </div>
+            <div style={styles.chartNotice}>차트는 다음 단계에서 실제 분봉/봉차트로 교체 예정</div>
           </div>
 
           <div style={styles.fomoBox}>
             <div>
-              <strong>FOMO 위험도</strong>
-              <p>
-                매수 이유, 손절가 여부, 보유기간, 주문금액을 기준으로 충동매수 가능성을 임시 계산합니다.
-              </p>
+              <strong>FOMO 위험도 · {fomoLabel}</strong>
+              <p>매수 이유, 손절가 여부, 보유기간, 주문금액을 기준으로 충동매수 가능성을 임시 계산합니다.</p>
             </div>
             <div style={styles.fomoScore}>{fomoScore}</div>
           </div>
@@ -525,44 +597,40 @@ export default function DemoTradePage() {
           <h2 style={styles.panelTitle}>주문창</h2>
 
           <div style={styles.tabRow}>
-            <button
-              style={side === "BUY" ? styles.buyTabActive : styles.tabButton}
-              onClick={() => setSide("BUY")}
-            >
+            <button style={side === "BUY" ? styles.buyTabActive : styles.tabButton} onClick={() => setSide("BUY")}>
               매수
             </button>
-            <button
-              style={side === "SELL" ? styles.sellTabActive : styles.tabButton}
-              onClick={() => setSide("SELL")}
-            >
+            <button style={side === "SELL" ? styles.sellTabActive : styles.tabButton} onClick={() => setSide("SELL")}>
               매도
             </button>
           </div>
 
           <label style={styles.label}>주문가격</label>
-          <input
-            style={styles.input}
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="현재가"
-          />
+          <input style={styles.input} value={price} onChange={(event) => setPrice(event.target.value)} placeholder="현재가" />
 
           <label style={styles.label}>수량</label>
           <input
             style={styles.input}
             type="number"
+            min="1"
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            onChange={(event) => setQuantity(event.target.value)}
           />
+
+          {side === "SELL" && (
+            <div style={styles.holdingInfo}>
+              현재 보유수량: <strong>{selectedHoldingQuantity.toLocaleString()}주</strong>
+            </div>
+          )}
 
           <div style={styles.orderInfo}>
             <div>
               <span>주문금액</span>
-              <strong>{totalOrderAmount.toLocaleString()}원</strong>
+              <strong>{formatWon(totalOrderAmount)}</strong>
             </div>
             <div>
               <span>주문 후 현금</span>
-              <strong>{estimatedCash.toLocaleString()}원</strong>
+              <strong style={estimatedCash < 0 ? styles.downText : undefined}>{formatWon(estimatedCash)}</strong>
             </div>
           </div>
 
@@ -570,37 +638,28 @@ export default function DemoTradePage() {
           <textarea
             style={styles.textarea}
             value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            onChange={(event) => setReason(event.target.value)}
             placeholder="예: 급등해서 놓칠까봐 / 랭킹 상위라서 / 손절 기준에 도달해서"
           />
 
           <div style={styles.twoCol}>
             <div>
               <label style={styles.label}>목표가</label>
-              <input
-                style={styles.input}
-                value={targetPrice}
-                onChange={(e) => setTargetPrice(e.target.value)}
-                placeholder="선택"
-              />
+              <input style={styles.input} value={targetPrice} onChange={(event) => setTargetPrice(event.target.value)} placeholder="선택" />
             </div>
             <div>
               <label style={styles.label}>손절가</label>
               <input
                 style={styles.input}
                 value={stopLossPrice}
-                onChange={(e) => setStopLossPrice(e.target.value)}
+                onChange={(event) => setStopLossPrice(event.target.value)}
                 placeholder="선택"
               />
             </div>
           </div>
 
           <label style={styles.label}>예상 보유기간</label>
-          <select
-            style={styles.input}
-            value={holdingDays}
-            onChange={(e) => setHoldingDays(e.target.value)}
-          >
+          <select style={styles.input} value={holdingDays} onChange={(event) => setHoldingDays(event.target.value)}>
             <option value="1">1일</option>
             <option value="3">3일</option>
             <option value="7">7일</option>
@@ -608,10 +667,7 @@ export default function DemoTradePage() {
             <option value="30">30일 이상</option>
           </select>
 
-          <button
-            style={side === "BUY" ? styles.buyButton : styles.sellButton}
-            onClick={submitOrder}
-          >
+          <button style={side === "BUY" ? styles.buyButton : styles.sellButton} onClick={submitOrder}>
             {side === "BUY" ? "가상 매수" : "가상 매도"}
           </button>
 
@@ -623,8 +679,8 @@ export default function DemoTradePage() {
         <div style={styles.tablePanel}>
           <div style={styles.panelTitleRow}>
             <h2 style={styles.panelTitle}>보유종목</h2>
-            <button style={styles.miniButton} onClick={() => refreshPositionPrices()}>
-              현재가 새로고침
+            <button style={styles.miniButton} onClick={() => refreshPositionPrices()} disabled={loadingPositions}>
+              {loadingPositions ? "조회 중" : "현재가 새로고침"}
             </button>
           </div>
 
@@ -648,16 +704,15 @@ export default function DemoTradePage() {
                     <br />
                     <em style={styles.codeText}>{item.code}</em>
                   </span>
-                  <span>{item.quantity}</span>
-                  <span>{Math.round(item.avgPrice).toLocaleString()}원</span>
-                  <span>{Math.round(item.currentPrice).toLocaleString()}원</span>
-                  <span>{Math.round(item.evalAmount).toLocaleString()}원</span>
+                  <span>{item.quantity.toLocaleString()}</span>
+                  <span>{formatWon(item.avgPrice)}</span>
+                  <span>{formatWon(item.currentPrice)}</span>
+                  <span>{formatWon(item.evalAmount)}</span>
                   <span style={item.profitLoss >= 0 ? styles.upText : styles.downText}>
                     {item.profitLoss >= 0 ? "+" : ""}
-                    {Math.round(item.profitLoss).toLocaleString()}원
+                    {formatWon(item.profitLoss)}
                     <br />
-                    {item.profitRate >= 0 ? "+" : ""}
-                    {item.profitRate.toFixed(2)}%
+                    {formatRate(item.profitRate)}
                   </span>
                 </div>
               ))}
@@ -666,7 +721,7 @@ export default function DemoTradePage() {
         </div>
 
         <div style={styles.tablePanel}>
-          <h2 style={styles.panelTitle}>주문/체결 내역</h2>
+          <h2 style={styles.panelTitleWithMargin}>주문/체결 내역</h2>
 
           {orders.length === 0 ? (
             <div style={styles.empty}>주문 내역이 없습니다.</div>
@@ -675,15 +730,15 @@ export default function DemoTradePage() {
               {[...orders].reverse().map((order) => (
                 <div key={order.orderId} style={styles.orderItem}>
                   <div>
-                    <strong>
-                      {order.side === "BUY" ? "매수" : "매도"} {order.name || order.code}
+                    <strong style={normalizeSide(order.side) === "BUY" ? styles.upText : styles.downText}>
+                      {normalizeSide(order.side) === "BUY" ? "매수" : "매도"} {order.name || order.code}
                     </strong>
                     <p>{order.reason || "매매 사유 없음"}</p>
                   </div>
                   <div style={styles.orderItemRight}>
-                    <strong>{Number(order.amount || 0).toLocaleString()}원</strong>
+                    <strong>{formatWon(order.amount)}</strong>
                     <p>
-                      {Number(order.price || 0).toLocaleString()}원 × {order.quantity}주
+                      {formatWon(order.price)} × {toNumber(order.quantity).toLocaleString()}주
                     </p>
                   </div>
                 </div>
@@ -720,8 +775,7 @@ const styles = {
     padding: "24px",
     background: "#f3f4f6",
     color: "#111827",
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif",
     minHeight: "100vh",
   },
   topBar: {
@@ -864,6 +918,11 @@ const styles = {
     fontWeight: "900",
     margin: 0,
   },
+  panelTitleWithMargin: {
+    fontSize: "18px",
+    fontWeight: "900",
+    margin: "0 0 14px",
+  },
   smallTitle: {
     fontSize: "13px",
     color: "#6b7280",
@@ -991,6 +1050,7 @@ const styles = {
     justifyContent: "center",
     fontSize: "26px",
     fontWeight: "900",
+    flex: "0 0 auto",
   },
   tabRow: {
     display: "grid",
@@ -1030,6 +1090,16 @@ const styles = {
     fontWeight: "800",
     color: "#374151",
     margin: "12px 0 6px",
+  },
+  holdingInfo: {
+    marginTop: "8px",
+    padding: "10px 12px",
+    background: "#eff6ff",
+    border: "1px solid #bfdbfe",
+    borderRadius: "12px",
+    color: "#1d4ed8",
+    fontSize: "13px",
+    fontWeight: "800",
   },
   orderInfo: {
     marginTop: "12px",
@@ -1095,6 +1165,7 @@ const styles = {
     border: "1px solid #e5e7eb",
     borderRadius: "20px",
     padding: "18px",
+    overflowX: "auto",
   },
   empty: {
     padding: "30px",
@@ -1106,6 +1177,7 @@ const styles = {
   table: {
     display: "grid",
     gap: "8px",
+    minWidth: "760px",
   },
   tableHead: {
     display: "grid",
