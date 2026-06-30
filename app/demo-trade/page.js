@@ -386,3 +386,691 @@ export default function DemoTradePage() {
           <h2 style={styles.panelTitle}>종목 검색</h2>
 
           <div style={styles.searchBox}>
+            <input
+              style={styles.input}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="종목코드 예: 005930"
+            />
+            <button style={styles.searchButton} onClick={() => fetchPrice(code, name)}>
+              {loadingPrice ? "조회" : "조회"}
+            </button>
+          </div>
+
+          <h3 style={styles.smallTitle}>인기 종목</h3>
+
+          <div style={styles.stockList}>
+            {POPULAR_STOCKS.map((stock) => (
+              <button
+                key={stock.code}
+                style={{
+                  ...styles.stockButton,
+                  ...(stock.code === code ? styles.stockButtonActive : {}),
+                }}
+                onClick={() => selectStock(stock)}
+              >
+                <span>{stock.name}</span>
+                <em>{stock.code}</em>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <section style={styles.centerPanel}>
+          <div style={styles.quoteHeader}>
+            <div>
+              <div style={styles.stockName}>{name || code}</div>
+              <div style={styles.stockCode}>{code}</div>
+            </div>
+
+            <div style={styles.priceArea}>
+              <div style={styles.nowPrice}>
+                {price ? `${Number(price).toLocaleString()}원` : "-"}
+              </div>
+              <div style={Number(rate) >= 0 ? styles.upText : styles.downText}>
+                {change ? `${Number(change).toLocaleString()}원` : "-"} /{" "}
+                {rate ? `${Number(rate).toFixed(2)}%` : "-"}
+              </div>
+            </div>
+          </div>
+
+          <div style={styles.fakeChart}>
+            <div style={styles.chartGrid}>
+              {Array.from({ length: 34 }).map((_, index) => {
+                const height = 30 + ((index * 17) % 120);
+                const isUp = index % 3 !== 0;
+
+                return (
+                  <div key={index} style={styles.candleWrap}>
+                    <div
+                      style={{
+                        ...styles.candle,
+                        height,
+                        background: isUp ? "#ef4444" : "#2563eb",
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div style={styles.chartNotice}>
+              차트는 다음 단계에서 실제 분봉/봉차트로 교체 예정
+            </div>
+          </div>
+
+          <div style={styles.fomoBox}>
+            <div>
+              <strong>FOMO 위험도</strong>
+              <p>
+                매수 이유, 손절가 여부, 보유기간, 주문금액을 기준으로 충동매수 가능성을 임시 계산합니다.
+              </p>
+            </div>
+            <div style={styles.fomoScore}>{fomoScore}</div>
+          </div>
+        </section>
+
+        <aside style={styles.orderPanel}>
+          <h2 style={styles.panelTitle}>주문창</h2>
+
+          <div style={styles.tabRow}>
+            <button
+              style={side === "BUY" ? styles.buyTabActive : styles.tabButton}
+              onClick={() => setSide("BUY")}
+            >
+              매수
+            </button>
+            <button
+              style={side === "SELL" ? styles.sellTabActive : styles.tabButton}
+              onClick={() => setSide("SELL")}
+            >
+              매도
+            </button>
+          </div>
+
+          <label style={styles.label}>주문가격</label>
+          <input
+            style={styles.input}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="현재가"
+          />
+
+          <label style={styles.label}>수량</label>
+          <input
+            style={styles.input}
+            type="number"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+          />
+
+          <div style={styles.orderInfo}>
+            <div>
+              <span>주문금액</span>
+              <strong>{totalOrderAmount.toLocaleString()}원</strong>
+            </div>
+            <div>
+              <span>주문 후 현금</span>
+              <strong>{estimatedCash.toLocaleString()}원</strong>
+            </div>
+          </div>
+
+          <label style={styles.label}>왜 지금 사거나 팔고 싶은가?</label>
+          <textarea
+            style={styles.textarea}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="예: 급등해서 놓칠까봐 / 랭킹 상위라서 / 손절 기준에 도달해서"
+          />
+
+          <div style={styles.twoCol}>
+            <div>
+              <label style={styles.label}>목표가</label>
+              <input
+                style={styles.input}
+                value={targetPrice}
+                onChange={(e) => setTargetPrice(e.target.value)}
+                placeholder="선택"
+              />
+            </div>
+            <div>
+              <label style={styles.label}>손절가</label>
+              <input
+                style={styles.input}
+                value={stopLossPrice}
+                onChange={(e) => setStopLossPrice(e.target.value)}
+                placeholder="선택"
+              />
+            </div>
+          </div>
+
+          <label style={styles.label}>예상 보유기간</label>
+          <select
+            style={styles.input}
+            value={holdingDays}
+            onChange={(e) => setHoldingDays(e.target.value)}
+          >
+            <option value="1">1일</option>
+            <option value="3">3일</option>
+            <option value="7">7일</option>
+            <option value="14">14일</option>
+            <option value="30">30일 이상</option>
+          </select>
+
+          <button
+            style={side === "BUY" ? styles.buyButton : styles.sellButton}
+            onClick={submitOrder}
+          >
+            {side === "BUY" ? "가상 매수" : "가상 매도"}
+          </button>
+
+          {orderStatus && <div style={styles.orderStatus}>{orderStatus}</div>}
+        </aside>
+      </section>
+
+      <section style={styles.bottomGrid}>
+        <div style={styles.tablePanel}>
+          <h2 style={styles.panelTitle}>보유종목</h2>
+
+          {portfolioSummary.length === 0 ? (
+            <div style={styles.empty}>아직 보유종목이 없습니다.</div>
+          ) : (
+            <div style={styles.table}>
+              <div style={styles.tableHead}>
+                <span>종목</span>
+                <span>수량</span>
+                <span>평균단가</span>
+                <span>평가손익</span>
+              </div>
+
+              {portfolioSummary.map((item) => (
+                <div key={item.code} style={styles.tableRow}>
+                  <span>{item.name}</span>
+                  <span>{item.quantity}</span>
+                  <span>{Math.round(item.avgPrice).toLocaleString()}원</span>
+                  <span style={item.profitLoss >= 0 ? styles.upText : styles.downText}>
+                    {item.profitLoss >= 0 ? "+" : ""}
+                    {Math.round(item.profitLoss).toLocaleString()}원
+                    <br />
+                    {item.profitRate >= 0 ? "+" : ""}
+                    {item.profitRate.toFixed(2)}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={styles.tablePanel}>
+          <h2 style={styles.panelTitle}>주문/체결 내역</h2>
+
+          {orders.length === 0 ? (
+            <div style={styles.empty}>주문 내역이 없습니다.</div>
+          ) : (
+            <div style={styles.orderList}>
+              {[...orders].reverse().map((order) => (
+                <div key={order.orderId} style={styles.orderItem}>
+                  <div>
+                    <strong>
+                      {order.side === "BUY" ? "매수" : "매도"} {order.name || order.code}
+                    </strong>
+                    <p>{order.reason || "매매 사유 없음"}</p>
+                  </div>
+                  <div style={styles.orderItemRight}>
+                    <strong>{Number(order.amount || 0).toLocaleString()}원</strong>
+                    <p>
+                      {Number(order.price || 0).toLocaleString()}원 × {order.quantity}주
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function AssetCard({ label, value, tone }) {
+  return (
+    <div style={styles.assetCard}>
+      <div style={styles.assetLabel}>{label}</div>
+      <div
+        style={{
+          ...styles.assetValue,
+          ...(tone === "red" ? styles.upText : {}),
+          ...(tone === "blue" ? styles.downText : {}),
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  page: {
+    maxWidth: "1440px",
+    margin: "0 auto",
+    padding: "24px",
+    background: "#f3f4f6",
+    color: "#111827",
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif",
+    minHeight: "100vh",
+  },
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "20px",
+    alignItems: "stretch",
+    marginBottom: "16px",
+  },
+  logo: {
+    fontSize: "14px",
+    fontWeight: "800",
+    color: "#0369a1",
+    marginBottom: "6px",
+  },
+  title: {
+    margin: 0,
+    fontSize: "34px",
+    fontWeight: "900",
+  },
+  subTitle: {
+    margin: "8px 0 0",
+    color: "#4b5563",
+  },
+  accountBox: {
+    minWidth: "260px",
+    background: "#111827",
+    color: "white",
+    borderRadius: "18px",
+    padding: "18px",
+    boxShadow: "0 10px 26px rgba(15,23,42,0.16)",
+  },
+  accountLine: {
+    fontSize: "13px",
+    color: "#9ca3af",
+    marginBottom: "8px",
+  },
+  accountId: {
+    fontSize: "20px",
+    fontWeight: "900",
+    letterSpacing: "-0.02em",
+  },
+  accountPin: {
+    marginTop: "8px",
+    color: "#fbbf24",
+    fontWeight: "800",
+  },
+  loginPanel: {
+    background: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "18px",
+    padding: "14px",
+    marginBottom: "16px",
+  },
+  loginGroup: {
+    display: "grid",
+    gridTemplateColumns: "1.5fr 0.8fr auto auto",
+    gap: "10px",
+  },
+  loginInput: {
+    border: "1px solid #d1d5db",
+    borderRadius: "12px",
+    padding: "12px 14px",
+    fontSize: "14px",
+  },
+  primaryButton: {
+    border: 0,
+    background: "#2563eb",
+    color: "white",
+    borderRadius: "12px",
+    padding: "12px 16px",
+    fontWeight: "800",
+    cursor: "pointer",
+  },
+  darkButton: {
+    border: 0,
+    background: "#111827",
+    color: "white",
+    borderRadius: "12px",
+    padding: "12px 16px",
+    fontWeight: "800",
+    cursor: "pointer",
+  },
+  outlineButton: {
+    border: "1px solid #d1d5db",
+    background: "white",
+    color: "#111827",
+    borderRadius: "12px",
+    padding: "12px 16px",
+    fontWeight: "800",
+    cursor: "pointer",
+  },
+  assetGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "14px",
+    marginBottom: "16px",
+  },
+  assetCard: {
+    background: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "18px",
+    padding: "18px",
+  },
+  assetLabel: {
+    color: "#6b7280",
+    fontSize: "13px",
+    marginBottom: "8px",
+  },
+  assetValue: {
+    fontSize: "24px",
+    fontWeight: "900",
+  },
+  tradeGrid: {
+    display: "grid",
+    gridTemplateColumns: "260px 1fr 340px",
+    gap: "16px",
+    alignItems: "stretch",
+  },
+  leftPanel: {
+    background: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "20px",
+    padding: "18px",
+  },
+  centerPanel: {
+    background: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "20px",
+    padding: "18px",
+  },
+  orderPanel: {
+    background: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "20px",
+    padding: "18px",
+  },
+  panelTitle: {
+    fontSize: "18px",
+    fontWeight: "900",
+    margin: "0 0 14px",
+  },
+  smallTitle: {
+    fontSize: "13px",
+    color: "#6b7280",
+    margin: "18px 0 8px",
+  },
+  searchBox: {
+    display: "flex",
+    gap: "8px",
+  },
+  input: {
+    width: "100%",
+    border: "1px solid #d1d5db",
+    borderRadius: "12px",
+    padding: "11px 12px",
+    fontSize: "14px",
+    boxSizing: "border-box",
+  },
+  searchButton: {
+    border: 0,
+    background: "#0f766e",
+    color: "white",
+    borderRadius: "12px",
+    padding: "0 14px",
+    fontWeight: "800",
+    cursor: "pointer",
+  },
+  stockList: {
+    display: "grid",
+    gap: "8px",
+  },
+  stockButton: {
+    border: "1px solid #e5e7eb",
+    background: "#f9fafb",
+    borderRadius: "14px",
+    padding: "12px",
+    display: "flex",
+    justifyContent: "space-between",
+    cursor: "pointer",
+    fontWeight: "800",
+  },
+  stockButtonActive: {
+    borderColor: "#2563eb",
+    background: "#eff6ff",
+    color: "#1d4ed8",
+  },
+  quoteHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "1px solid #e5e7eb",
+    paddingBottom: "16px",
+    marginBottom: "16px",
+  },
+  stockName: {
+    fontSize: "26px",
+    fontWeight: "900",
+  },
+  stockCode: {
+    color: "#6b7280",
+    marginTop: "4px",
+  },
+  priceArea: {
+    textAlign: "right",
+  },
+  nowPrice: {
+    fontSize: "32px",
+    fontWeight: "900",
+  },
+  upText: {
+    color: "#dc2626",
+  },
+  downText: {
+    color: "#2563eb",
+  },
+  fakeChart: {
+    height: "360px",
+    background: "#0b1220",
+    borderRadius: "18px",
+    padding: "20px",
+    position: "relative",
+    overflow: "hidden",
+  },
+  chartGrid: {
+    height: "280px",
+    display: "flex",
+    alignItems: "flex-end",
+    gap: "9px",
+    borderBottom: "1px solid rgba(255,255,255,0.18)",
+  },
+  candleWrap: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-end",
+  },
+  candle: {
+    width: "62%",
+    borderRadius: "4px 4px 0 0",
+  },
+  chartNotice: {
+    position: "absolute",
+    left: "20px",
+    bottom: "18px",
+    color: "#9ca3af",
+    fontSize: "13px",
+  },
+  fomoBox: {
+    marginTop: "16px",
+    background: "#fffbeb",
+    border: "1px solid #fde68a",
+    borderRadius: "16px",
+    padding: "16px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  fomoScore: {
+    width: "64px",
+    height: "64px",
+    borderRadius: "999px",
+    background: "#f59e0b",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "26px",
+    fontWeight: "900",
+  },
+  tabRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "8px",
+    marginBottom: "14px",
+  },
+  tabButton: {
+    border: "1px solid #d1d5db",
+    background: "#f9fafb",
+    borderRadius: "12px",
+    padding: "12px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+  buyTabActive: {
+    border: "1px solid #ef4444",
+    background: "#fee2e2",
+    color: "#dc2626",
+    borderRadius: "12px",
+    padding: "12px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+  sellTabActive: {
+    border: "1px solid #2563eb",
+    background: "#dbeafe",
+    color: "#2563eb",
+    borderRadius: "12px",
+    padding: "12px",
+    fontWeight: "900",
+    cursor: "pointer",
+  },
+  label: {
+    display: "block",
+    fontSize: "13px",
+    fontWeight: "800",
+    color: "#374151",
+    margin: "12px 0 6px",
+  },
+  orderInfo: {
+    marginTop: "12px",
+    background: "#f9fafb",
+    borderRadius: "14px",
+    padding: "12px",
+    display: "grid",
+    gap: "8px",
+  },
+  textarea: {
+    width: "100%",
+    minHeight: "86px",
+    border: "1px solid #d1d5db",
+    borderRadius: "12px",
+    padding: "11px 12px",
+    fontSize: "14px",
+    resize: "vertical",
+    boxSizing: "border-box",
+  },
+  twoCol: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "10px",
+  },
+  buyButton: {
+    width: "100%",
+    border: 0,
+    background: "#dc2626",
+    color: "white",
+    borderRadius: "14px",
+    padding: "15px",
+    fontSize: "16px",
+    fontWeight: "900",
+    marginTop: "16px",
+    cursor: "pointer",
+  },
+  sellButton: {
+    width: "100%",
+    border: 0,
+    background: "#2563eb",
+    color: "white",
+    borderRadius: "14px",
+    padding: "15px",
+    fontSize: "16px",
+    fontWeight: "900",
+    marginTop: "16px",
+    cursor: "pointer",
+  },
+  orderStatus: {
+    marginTop: "12px",
+    textAlign: "center",
+    fontWeight: "900",
+    color: "#0f766e",
+  },
+  bottomGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "16px",
+    marginTop: "16px",
+  },
+  tablePanel: {
+    background: "white",
+    border: "1px solid #e5e7eb",
+    borderRadius: "20px",
+    padding: "18px",
+  },
+  empty: {
+    padding: "30px",
+    background: "#f9fafb",
+    borderRadius: "14px",
+    color: "#6b7280",
+    textAlign: "center",
+  },
+  table: {
+    display: "grid",
+    gap: "8px",
+  },
+  tableHead: {
+    display: "grid",
+    gridTemplateColumns: "1.2fr 0.6fr 1fr 1fr",
+    padding: "10px",
+    color: "#6b7280",
+    fontSize: "13px",
+    borderBottom: "1px solid #e5e7eb",
+  },
+  tableRow: {
+    display: "grid",
+    gridTemplateColumns: "1.2fr 0.6fr 1fr 1fr",
+    padding: "12px 10px",
+    borderBottom: "1px solid #f3f4f6",
+    fontSize: "14px",
+  },
+  orderList: {
+    display: "grid",
+    gap: "10px",
+  },
+  orderItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: "14px",
+    background: "#f9fafb",
+    borderRadius: "14px",
+    padding: "14px",
+  },
+  orderItemRight: {
+    textAlign: "right",
+    whiteSpace: "nowrap",
+  },
+};
