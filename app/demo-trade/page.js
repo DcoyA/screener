@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import MainNav from "../components/MainNav";
 
 const POPULAR_STOCKS = [
   { code: "005930", name: "삼성전자" },
@@ -523,9 +526,19 @@ export default function DemoTradePage() {
     <main style={styles.page}>
       <style>{responsiveCss}</style>
 
+      <header style={styles.demoHeader} className="dt-demo-header">
+        <Link href="/" style={styles.demoBrand} aria-label="우량주 스카우터 홈으로 이동">
+          <Image src="/logo.png" alt="우량주 스카우터 로고" width={32} height={32} style={styles.demoLogo} priority />
+          <span style={styles.demoBrandText}>우량주 스카우터</span>
+        </Link>
+        <nav style={styles.demoNavWrap} className="dt-demo-nav-wrap" aria-label="주요 메뉴">
+          <MainNav className="dt-demo-nav" />
+        </nav>
+      </header>
+
       <section style={styles.topBar} className="dt-topbar">
         <div>
-          <div style={styles.logo}>우량주 스카우터</div>
+          <div style={styles.logo}>모의투자 Beta</div>
           <h1 style={styles.title}>가상투자 터미널</h1>
           <p style={styles.subTitle}>처음부터 내 돈으로 투자하기 부담되죠? 가상계좌로 매수 판단을 먼저 검증해보세요.<br/>모든 계좌에는 1억의 가상현금이 지급됩니다.  <br/>계좌번호와 PIN을 저장해두면 언제든 내역을 이어볼 수 있습니다.</p>
         </div>
@@ -774,6 +787,9 @@ const responsiveCss = `
   }
   @media (max-width: 768px) {
     main { padding: 16px !important; }
+    .dt-demo-header { align-items: flex-start !important; }
+    .dt-demo-nav-wrap { width: 100% !important; justify-content: flex-start !important; overflow-x: auto; padding-bottom: 4px; }
+    .dt-demo-nav { width: max-content; min-width: max-content; }
     .dt-topbar { flex-direction: column !important; }
     .dt-account-box { width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
     .dt-login-panel { grid-template-columns: 1fr 1fr !important; }
@@ -798,6 +814,11 @@ const responsiveCss = `
 
 const styles = {
   page: { maxWidth: "1440px", margin: "0 auto", padding: "24px", background: "#f3f4f6", color: "#111827", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif", minHeight: "100vh", overflowX: "hidden" },
+  demoHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", marginBottom: "28px", flexWrap: "wrap" },
+  demoBrand: { display: "inline-flex", alignItems: "center", gap: "10px", textDecoration: "none", color: "#0f172a" },
+  demoLogo: { width: "32px", height: "32px", objectFit: "contain" },
+  demoBrandText: { fontSize: "1.05rem", fontWeight: "900", letterSpacing: "-0.02em" },
+  demoNavWrap: { display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px", flexWrap: "wrap" },
   topBar: { display: "flex", justifyContent: "space-between", gap: "20px", alignItems: "stretch", marginBottom: "16px" },
   logo: { fontSize: "14px", fontWeight: "800", color: "#0369a1", marginBottom: "6px" },
   title: { margin: 0, fontSize: "34px", fontWeight: "900" },
