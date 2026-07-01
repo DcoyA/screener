@@ -31,7 +31,6 @@ function normalizeSide(side) {
 
 function getKoreaHourMinuteFromIso(value) {
   if (!value) return null;
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
 
@@ -45,7 +44,6 @@ function getKoreaHourMinuteFromIso(value) {
   const parts = formatter.formatToParts(date);
   const hour = parts.find((part) => part.type === "hour")?.value || "00";
   const minute = parts.find((part) => part.type === "minute")?.value || "00";
-
   return `${hour}${minute}`;
 }
 
@@ -60,8 +58,11 @@ export default function DemoTradePage() {
   const [loginAccountId, setLoginAccountId] = useState("");
   const [loginPin, setLoginPin] = useState("");
 
+  const [searchCode, setSearchCode] = useState("005930");
   const [code, setCode] = useState("005930");
   const [name, setName] = useState("삼성전자");
+  const [selectedPopularCode, setSelectedPopularCode] = useState("005930");
+
   const [price, setPrice] = useState("");
   const [change, setChange] = useState("");
   const [rate, setRate] = useState("");
@@ -83,22 +84,25 @@ export default function DemoTradePage() {
   const [orderStatus, setOrderStatus] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem("demoTradeAccount");
+    async function initializePage() {
+      await fetchQuote("005930", "삼성전자", "popular");
 
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed?.accountId && parsed?.pin) {
-          setLoginAccountId(parsed.accountId);
-          setLoginPin(parsed.pin);
-          loadAccount(parsed.accountId, parsed.pin);
+      const saved = localStorage.getItem("demoTradeAccount");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed?.accountId && parsed?.pin) {
+            setLoginAccountId(parsed.accountId);
+            setLoginPin(parsed.pin);
+            await loadAccount(parsed.accountId, parsed.pin);
+          }
+        } catch (error) {
+          console.error(error);
         }
-      } catch (error) {
-        console.error(error);
       }
     }
 
-    fetchQuote("005930", "삼성전자");
+    initializePage();
   }, []);
 
   const totalOrderAmount = useMemo(() => toNumber(price) * toNumber(quantity), [price, quantity]);
@@ -175,10 +179,7 @@ export default function DemoTradePage() {
       .filter((item) => item.quantity > 0)
       .map((item) => {
         const avgPrice = item.quantity > 0 ? item.buyAmount / item.quantity : 0;
-        const realtimePrice =
-          toNumber(positionPrices[item.code]) ||
-          (item.code === code ? toNumber(price) : 0) ||
-          avgPrice;
+        const realtimePrice = toNumber(positionPrices[item.code]) || (item.code === code ? toNumber(price) : 0) || avgPrice;
         const evalAmount = realtimePrice * item.quantity;
         const profitLoss = evalAmount - item.buyAmount;
         const profitRate = item.buyAmount > 0 ? (profitLoss / item.buyAmount) * 100 : 0;
@@ -196,12 +197,7 @@ export default function DemoTradePage() {
 
   const chartScale = useMemo(() => {
     if (!candles.length) {
-      return {
-        chartData: [],
-        maxPrice: 0,
-        minPrice: 0,
-        range: 1,
-      };
+      return { chartData: [], maxPrice: 0, minPrice: 0, range: 1 };
     }
 
     const highs = candles.map((item) => toNumber(item.high));
@@ -225,12 +221,7 @@ export default function DemoTradePage() {
       return { ...item, isUp, highTop, lowTop, bodyTop, bodyHeight };
     });
 
-    return {
-      chartData,
-      maxPrice,
-      minPrice,
-      range,
-    };
+    return { chartData, maxPrice, minPrice, range };
   }, [candles]);
 
   const chartData = chartScale.chartData;
@@ -244,7 +235,6 @@ export default function DemoTradePage() {
       .map((order) => {
         const orderMinute = getKoreaHourMinuteFromIso(order.createdAt);
         const orderPrice = toNumber(order.price);
-
         if (!orderMinute || !orderPrice) return null;
 
         let nearestIndex = -1;
@@ -304,16 +294,13 @@ export default function DemoTradePage() {
 
   async function createAccount() {
     setLoadingAccount(true);
-
     try {
       const res = await fetch("/api/demo/account/create");
       const data = await res.json();
-
       if (!data.ok) {
         alert(data.error || "가상계좌 생성 실패");
         return;
       }
-
       setAccount(data.account);
       setLoginAccountId(data.account.accountId);
       setLoginPin(data.account.pin);
@@ -331,25 +318,19 @@ export default function DemoTradePage() {
   async function loadAccount(accountIdParam, pinParam) {
     const targetAccountId = accountIdParam || loginAccountId;
     const targetPin = pinParam || loginPin;
-
     if (!targetAccountId || !targetPin) {
       alert("가상계좌번호와 PIN을 입력하세요.");
       return;
     }
 
     setLoadingAccount(true);
-
     try {
-      const res = await fetch(
-        `/api/demo/account/load?accountId=${encodeURIComponent(targetAccountId)}&pin=${encodeURIComponent(targetPin)}`
-      );
+      const res = await fetch(`/api/demo/account/load?accountId=${encodeURIComponent(targetAccountId)}&pin=${encodeURIComponent(targetPin)}`);
       const data = await res.json();
-
       if (!data.ok) {
         alert(data.error || "가상계좌 불러오기 실패");
         return;
       }
-
       setAccount(data.account);
       localStorage.setItem("demoTradeAccount", JSON.stringify({ accountId: targetAccountId, pin: targetPin }));
       await loadOrders(targetAccountId, targetPin);
@@ -364,15 +345,11 @@ export default function DemoTradePage() {
   async function loadOrders(accountIdParam, pinParam) {
     const targetAccountId = accountIdParam || account?.accountId || loginAccountId;
     const targetPin = pinParam || account?.pin || loginPin;
-
     if (!targetAccountId || !targetPin) return;
 
     try {
-      const res = await fetch(
-        `/api/demo/order/list?accountId=${encodeURIComponent(targetAccountId)}&pin=${encodeURIComponent(targetPin)}`
-      );
+      const res = await fetch(`/api/demo/order/list?accountId=${encodeURIComponent(targetAccountId)}&pin=${encodeURIComponent(targetPin)}`);
       const data = await res.json();
-
       if (data.ok) {
         const nextOrders = data.orders || [];
         setOrders(nextOrders);
@@ -385,12 +362,10 @@ export default function DemoTradePage() {
 
   async function refreshPositionPrices(targetOrders = orders) {
     const netMap = {};
-
     targetOrders.forEach((order) => {
       const orderCode = String(order.code || "").trim();
       const qty = toNumber(order.quantity);
       const orderSide = normalizeSide(order.side);
-
       if (!orderCode || !qty) return;
       if (!netMap[orderCode]) netMap[orderCode] = 0;
       netMap[orderCode] += orderSide === "SELL" ? -qty : qty;
@@ -406,30 +381,25 @@ export default function DemoTradePage() {
     }
 
     setLoadingPositions(true);
-
     const nextPrices = {};
 
-    await Promise.all(
-      holdingCodes.map(async (holdingCode) => {
-        try {
-          const res = await fetch(`/api/kis/price?code=${encodeURIComponent(holdingCode)}`);
-          const data = await res.json();
-
-          if (data.ok && data.price) {
-            nextPrices[holdingCode] = toNumber(data.price);
-          }
-        } catch (error) {
-          console.error("보유종목 현재가 조회 실패:", holdingCode, error);
-        }
-      })
-    );
+    for (const holdingCode of holdingCodes) {
+      try {
+        const res = await fetch(`/api/kis/quote?code=${encodeURIComponent(holdingCode)}`);
+        const data = await res.json();
+        if (data.ok && data.price) nextPrices[holdingCode] = toNumber(data.price);
+      } catch (error) {
+        console.error("보유종목 현재가 조회 실패:", holdingCode, error);
+      }
+    }
 
     setPositionPrices(nextPrices);
     setLoadingPositions(false);
   }
 
-  async function fetchQuote(targetCode = code, targetName = name) {
-    if (!targetCode) {
+  async function fetchQuote(targetCode = code, targetName = "", source = "manual") {
+    const cleanCode = String(targetCode || "").trim();
+    if (!cleanCode) {
       alert("종목코드를 입력하세요.");
       return;
     }
@@ -438,38 +408,40 @@ export default function DemoTradePage() {
     setQuoteError("");
 
     try {
-      const res = await fetch(`/api/kis/quote?code=${encodeURIComponent(targetCode)}`);
+      const res = await fetch(`/api/kis/quote?code=${encodeURIComponent(cleanCode)}`);
       const data = await res.json();
 
       if (!data.ok) {
-        setQuoteError(data.error || "통합 시세 조회 실패");
+        setQuoteError("현재 시세를 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
         console.warn("통합 시세 조회 실패:", data);
         return;
       }
 
-      setCode(targetCode);
-      setName(data.name || targetName || targetCode);
+      const resolvedName = data.name || targetName || cleanCode;
+      setCode(cleanCode);
+      setSearchCode(cleanCode);
+      setName(resolvedName);
       setPrice(data.price || "");
       setChange(data.change || "");
       setRate(data.rate || "");
       setCandles(Array.isArray(data.candles) ? data.candles : []);
-      setPositionPrices((prev) => ({ ...prev, [targetCode]: toNumber(data.price) }));
+      setPositionPrices((prev) => ({ ...prev, [cleanCode]: toNumber(data.price) }));
+      setSelectedPopularCode(source === "popular" ? cleanCode : "");
 
       if (data.minuteError) {
-        setQuoteError(data.minuteError);
+        console.warn("분봉 조회 실패:", data.minuteError);
       }
     } catch (error) {
       console.error(error);
-      setQuoteError("통합 시세 조회 중 오류가 발생했습니다.");
+      setQuoteError("현재 시세를 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
     } finally {
       setLoadingQuote(false);
     }
   }
 
   function selectStock(stock) {
-    setCode(stock.code);
-    setName(stock.name);
-    fetchQuote(stock.code, stock.name);
+    setSearchCode(stock.code);
+    fetchQuote(stock.code, stock.name, "popular");
   }
 
   async function submitOrder() {
@@ -477,30 +449,24 @@ export default function DemoTradePage() {
       alert("먼저 가상계좌를 생성하거나 불러오세요.");
       return;
     }
-
     if (!code || !price || !quantity) {
       alert("종목, 현재가, 수량을 확인하세요.");
       return;
     }
-
     if (toNumber(quantity) <= 0) {
       alert("수량은 1주 이상 입력하세요.");
       return;
     }
-
     if (side === "BUY" && totalOrderAmount > cash) {
       alert("가상 현금이 부족합니다.");
       return;
     }
-
     if (side === "SELL") {
       const holdingQuantity = getHoldingQuantity(code);
-
       if (holdingQuantity <= 0) {
         alert("보유하지 않은 종목은 매도할 수 없습니다.");
         return;
       }
-
       if (toNumber(quantity) > holdingQuantity) {
         alert(`보유수량(${holdingQuantity.toLocaleString()}주)보다 많이 매도할 수 없습니다.`);
         return;
@@ -532,7 +498,6 @@ export default function DemoTradePage() {
         });
 
         const data = await res.json();
-
         if (!data.ok) {
           alert(data.error || "주문 저장 실패");
           setOrderStatus("");
@@ -540,11 +505,9 @@ export default function DemoTradePage() {
         }
 
         setOrderStatus("가상 체결 완료");
-
         if (data.account && typeof data.account.cash !== "undefined") {
           setAccount((prev) => ({ ...prev, cash: data.account.cash }));
         }
-
         await loadOrders(account.accountId, account.pin);
         setReason("");
         setTimeout(() => setOrderStatus(""), 1200);
@@ -558,14 +521,16 @@ export default function DemoTradePage() {
 
   return (
     <main style={styles.page}>
-      <section style={styles.topBar}>
+      <style>{responsiveCss}</style>
+
+      <section style={styles.topBar} className="dt-topbar">
         <div>
           <div style={styles.logo}>우량주 스카우터</div>
           <h1 style={styles.title}>가상투자 터미널</h1>
           <p style={styles.subTitle}>진짜 돈을 넣기 전, 가상계좌로 매수 판단을 먼저 검증하세요.</p>
         </div>
 
-        <div style={styles.accountBox}>
+        <div style={styles.accountBox} className="dt-account-box">
           {account ? (
             <>
               <div style={styles.accountLine}>가상계좌</div>
@@ -583,31 +548,49 @@ export default function DemoTradePage() {
         </div>
       </section>
 
-      <section style={styles.loginPanel}>
-        <input style={styles.loginInput} value={loginAccountId} onChange={(e) => setLoginAccountId(e.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
-        <input style={styles.loginInput} value={loginPin} onChange={(e) => setLoginPin(e.target.value)} placeholder="PIN 4자리" />
-        <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>{loadingAccount ? "조회 중" : "계좌 불러오기"}</button>
+      <section style={styles.loginPanel} className="dt-login-panel">
+        <input style={styles.loginInput} value={loginAccountId} onChange={(event) => setLoginAccountId(event.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
+        <input style={styles.loginInput} value={loginPin} onChange={(event) => setLoginPin(event.target.value)} placeholder="PIN 4자리" />
+        <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>계좌 불러오기</button>
         <button style={styles.outlineButton} onClick={createAccount} disabled={loadingAccount}>새 계좌 발급</button>
       </section>
 
-      <section style={styles.assetGrid}>
+      <section style={styles.assetGrid} className="dt-asset-grid">
         <AssetCard label="총자산" value={formatWon(totalAsset)} />
         <AssetCard label="가상현금" value={formatWon(cash)} />
         <AssetCard label="평가금액" value={formatWon(totalEvalAmount)} />
         <AssetCard label="전체수익률" value={formatRate(totalProfitRate)} tone={totalProfitRate >= 0 ? "red" : "blue"} />
       </section>
 
-      <section style={styles.tradeGrid}>
+      <section style={styles.tradeGrid} className="dt-trade-grid">
         <aside style={styles.leftPanel}>
           <h2 style={styles.panelTitle}>종목 검색</h2>
           <div style={styles.searchBox}>
-            <input style={styles.input} value={code} onChange={(e) => setCode(e.target.value)} placeholder="종목코드 예: 005930" />
-            <button style={styles.searchButton} onClick={() => fetchQuote(code, name)} disabled={loadingQuote}>{loadingQuote ? "조회중" : "조회"}</button>
+            <input
+              style={styles.input}
+              value={searchCode}
+              onChange={(event) => {
+                setSearchCode(event.target.value);
+                setSelectedPopularCode("");
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") fetchQuote(searchCode, "", "manual");
+              }}
+              placeholder="종목코드 예: 005930"
+            />
+            <button style={styles.searchButton} onClick={() => fetchQuote(searchCode, "", "manual")} disabled={loadingQuote}>
+              {loadingQuote ? "조회중" : "조회"}
+            </button>
           </div>
+
           <h3 style={styles.smallTitle}>인기 종목</h3>
           <div style={styles.stockList}>
             {POPULAR_STOCKS.map((stock) => (
-              <button key={stock.code} style={{ ...styles.stockButton, ...(stock.code === code ? styles.stockButtonActive : {}) }} onClick={() => selectStock(stock)}>
+              <button
+                key={stock.code}
+                style={{ ...styles.stockButton, ...(selectedPopularCode === stock.code ? styles.stockButtonActive : {}) }}
+                onClick={() => selectStock(stock)}
+              >
                 <span>{stock.name}</span>
                 <em>{stock.code}</em>
               </button>
@@ -616,7 +599,7 @@ export default function DemoTradePage() {
         </aside>
 
         <section style={styles.centerPanel}>
-          <div style={styles.quoteHeader}>
+          <div style={styles.quoteHeader} className="dt-quote-header">
             <div>
               <div style={styles.stockName}>{name || code}</div>
               <div style={styles.stockCode}>{code}</div>
@@ -628,17 +611,17 @@ export default function DemoTradePage() {
           </div>
 
           <div style={styles.chartPanel}>
-            <div style={styles.chartToolbar}>
+            <div style={styles.chartToolbar} className="dt-chart-toolbar">
               <div>
                 <strong>당일 1분봉</strong>
                 <span style={styles.chartSubText}>최근 {candles.length || 0}개 캔들 · 체결마커 {selectedTradeMarkers.length}개</span>
               </div>
-              <button style={styles.chartRefreshButton} onClick={() => fetchQuote(code, name)} disabled={loadingQuote}>{loadingQuote ? "시세 조회 중" : "시세/차트 새로고침"}</button>
+              <button style={styles.chartRefreshButton} onClick={() => fetchQuote(code, name)} disabled={loadingQuote}>{loadingQuote ? "조회 중" : "시세/차트 새로고침"}</button>
             </div>
 
             {quoteError && <div style={styles.chartWarning}>{quoteError}</div>}
 
-            <div style={styles.realChart}>
+            <div style={styles.realChart} className="dt-real-chart">
               {chartData.length === 0 ? (
                 <div style={styles.chartEmpty}>{loadingQuote ? "분봉 데이터를 불러오는 중입니다." : "분봉 데이터가 없습니다."}</div>
               ) : (
@@ -670,7 +653,7 @@ export default function DemoTradePage() {
             </div>
           </div>
 
-          <div style={styles.fomoBox}>
+          <div style={styles.fomoBox} className="dt-fomo-box">
             <div>
               <strong>FOMO 위험도 · {fomoLabel}</strong>
               <p>매수 이유, 손절가 여부, 보유기간, 주문금액을 기준으로 충동매수 가능성을 임시 계산합니다.</p>
@@ -685,47 +668,56 @@ export default function DemoTradePage() {
             <button style={side === "BUY" ? styles.buyTabActive : styles.tabButton} onClick={() => setSide("BUY")}>매수</button>
             <button style={side === "SELL" ? styles.sellTabActive : styles.tabButton} onClick={() => setSide("SELL")}>매도</button>
           </div>
+
           <label style={styles.label}>주문가격</label>
-          <input style={styles.input} value={price} onChange={(e) => setPrice(e.target.value)} placeholder="현재가" />
+          <input style={styles.input} value={price} onChange={(event) => setPrice(event.target.value)} placeholder="현재가" />
+
           <label style={styles.label}>수량</label>
-          <input style={styles.input} type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          <input style={styles.input} type="number" min="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} />
+
           {side === "SELL" && <div style={styles.holdingInfo}>현재 보유수량: <strong>{selectedHoldingQuantity.toLocaleString()}주</strong></div>}
+
           <div style={styles.orderInfo}>
             <div><span>주문금액</span><strong>{formatWon(totalOrderAmount)}</strong></div>
             <div><span>주문 후 현금</span><strong style={estimatedCash < 0 ? styles.downText : undefined}>{formatWon(estimatedCash)}</strong></div>
           </div>
+
           <label style={styles.label}>왜 지금 사거나 팔고 싶은가?</label>
-          <textarea style={styles.textarea} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="예: 급등해서 놓칠까봐 / 랭킹 상위라서 / 손절 기준에 도달해서" />
+          <textarea style={styles.textarea} value={reason} onChange={(event) => setReason(event.target.value)} placeholder="예: 급등해서 놓칠까봐 / 랭킹 상위라서 / 손절 기준에 도달해서" />
+
           <div style={styles.twoCol}>
-            <div><label style={styles.label}>목표가</label><input style={styles.input} value={targetPrice} onChange={(e) => setTargetPrice(e.target.value)} placeholder="선택" /></div>
-            <div><label style={styles.label}>손절가</label><input style={styles.input} value={stopLossPrice} onChange={(e) => setStopLossPrice(e.target.value)} placeholder="선택" /></div>
+            <div><label style={styles.label}>목표가</label><input style={styles.input} value={targetPrice} onChange={(event) => setTargetPrice(event.target.value)} placeholder="선택" /></div>
+            <div><label style={styles.label}>손절가</label><input style={styles.input} value={stopLossPrice} onChange={(event) => setStopLossPrice(event.target.value)} placeholder="선택" /></div>
           </div>
+
           <label style={styles.label}>예상 보유기간</label>
-          <select style={styles.input} value={holdingDays} onChange={(e) => setHoldingDays(e.target.value)}>
+          <select style={styles.input} value={holdingDays} onChange={(event) => setHoldingDays(event.target.value)}>
             <option value="1">1일</option>
             <option value="3">3일</option>
             <option value="7">7일</option>
             <option value="14">14일</option>
             <option value="30">30일 이상</option>
           </select>
+
           <button style={side === "BUY" ? styles.buyButton : styles.sellButton} onClick={submitOrder}>{side === "BUY" ? "가상 매수" : "가상 매도"}</button>
           {orderStatus && <div style={styles.orderStatus}>{orderStatus}</div>}
         </aside>
       </section>
 
-      <section style={styles.bottomGrid}>
+      <section style={styles.bottomGrid} className="dt-bottom-grid">
         <div style={styles.tablePanel}>
           <div style={styles.panelTitleRow}>
             <h2 style={styles.panelTitle}>보유종목</h2>
             <button style={styles.miniButton} onClick={() => refreshPositionPrices()} disabled={loadingPositions}>{loadingPositions ? "조회 중" : "현재가 새로고침"}</button>
           </div>
+
           {portfolioSummary.length === 0 ? (
             <div style={styles.empty}>아직 보유종목이 없습니다.</div>
           ) : (
-            <div style={styles.table}>
-              <div style={styles.tableHead}><span>종목</span><span>수량</span><span>평균단가</span><span>현재가</span><span>평가금액</span><span>평가손익</span></div>
+            <div style={styles.table} className="dt-position-table">
+              <div style={styles.tableHead} className="dt-position-head"><span>종목</span><span>수량</span><span>평균단가</span><span>현재가</span><span>평가금액</span><span>평가손익</span></div>
               {portfolioSummary.map((item) => (
-                <div key={item.code} style={styles.tableRow}>
+                <div key={item.code} style={styles.tableRow} className="dt-position-row">
                   <span><strong>{item.name}</strong><br /><em style={styles.codeText}>{item.code}</em></span>
                   <span>{item.quantity.toLocaleString()}</span>
                   <span>{formatWon(item.avgPrice)}</span>
@@ -745,7 +737,7 @@ export default function DemoTradePage() {
           ) : (
             <div style={styles.orderList}>
               {[...orders].reverse().map((order) => (
-                <div key={order.orderId} style={styles.orderItem}>
+                <div key={order.orderId} style={styles.orderItem} className="dt-order-item">
                   <div>
                     <strong style={normalizeSide(order.side) === "BUY" ? styles.upText : styles.downText}>{normalizeSide(order.side) === "BUY" ? "매수" : "매도"} {order.name || order.code}</strong>
                     <p>{order.reason || "매매 사유 없음"}</p>
@@ -773,38 +765,69 @@ function AssetCard({ label, value, tone }) {
   );
 }
 
+const responsiveCss = `
+  body { overflow-x: hidden; }
+  @media (max-width: 1100px) {
+    .dt-trade-grid { grid-template-columns: 240px 1fr !important; }
+    .dt-trade-grid > aside:last-child { grid-column: 1 / -1; }
+    .dt-bottom-grid { grid-template-columns: 1fr !important; }
+  }
+  @media (max-width: 768px) {
+    main { padding: 16px !important; }
+    .dt-topbar { flex-direction: column !important; }
+    .dt-account-box { width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+    .dt-login-panel { grid-template-columns: 1fr 1fr !important; }
+    .dt-asset-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .dt-trade-grid { grid-template-columns: 1fr !important; }
+    .dt-quote-header { align-items: flex-start !important; gap: 12px; }
+    .dt-real-chart { height: 280px !important; }
+    .dt-chart-toolbar { flex-direction: column !important; align-items: flex-start !important; gap: 8px; }
+    .dt-position-table { min-width: 0 !important; }
+    .dt-position-head, .dt-position-row { grid-template-columns: 1.1fr 0.45fr 0.9fr 0.9fr !important; }
+    .dt-position-head span:nth-child(5), .dt-position-row span:nth-child(5) { display: none; }
+    .dt-position-head span:nth-child(3), .dt-position-row span:nth-child(3) { display: none; }
+  }
+  @media (max-width: 520px) {
+    .dt-login-panel { grid-template-columns: 1fr !important; }
+    .dt-asset-grid { grid-template-columns: 1fr !important; }
+    .dt-real-chart { height: 240px !important; }
+    .dt-position-head, .dt-position-row { grid-template-columns: 1fr 0.45fr 0.9fr 0.9fr !important; font-size: 12px !important; }
+    .dt-order-item { flex-direction: column !important; }
+  }
+`;
+
 const styles = {
-  page: { maxWidth: "1440px", margin: "0 auto", padding: "24px", background: "#f3f4f6", color: "#111827", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif", minHeight: "100vh" },
+  page: { maxWidth: "1440px", margin: "0 auto", padding: "24px", background: "#f3f4f6", color: "#111827", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif", minHeight: "100vh", overflowX: "hidden" },
   topBar: { display: "flex", justifyContent: "space-between", gap: "20px", alignItems: "stretch", marginBottom: "16px" },
   logo: { fontSize: "14px", fontWeight: "800", color: "#0369a1", marginBottom: "6px" },
   title: { margin: 0, fontSize: "34px", fontWeight: "900" },
-  subTitle: { margin: "8px 0 0", color: "#4b5563" },
+  subTitle: { margin: "8px 0 0", color: "#4b5563", lineHeight: 1.55 },
   accountBox: { minWidth: "260px", background: "#111827", color: "white", borderRadius: "18px", padding: "18px", boxShadow: "0 10px 26px rgba(15,23,42,0.16)" },
   accountLine: { fontSize: "13px", color: "#9ca3af", marginBottom: "8px" },
   accountId: { fontSize: "20px", fontWeight: "900", letterSpacing: "-0.02em" },
   accountPin: { marginTop: "8px", color: "#fbbf24", fontWeight: "800" },
   loginPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "18px", padding: "14px", marginBottom: "16px", display: "grid", gridTemplateColumns: "1.5fr 0.8fr auto auto", gap: "10px" },
-  loginInput: { border: "1px solid #d1d5db", borderRadius: "12px", padding: "12px 14px", fontSize: "14px" },
-  primaryButton: { border: 0, background: "#2563eb", color: "white", borderRadius: "12px", padding: "12px 16px", fontWeight: "800", cursor: "pointer" },
-  darkButton: { border: 0, background: "#111827", color: "white", borderRadius: "12px", padding: "12px 16px", fontWeight: "800", cursor: "pointer" },
-  outlineButton: { border: "1px solid #d1d5db", background: "white", color: "#111827", borderRadius: "12px", padding: "12px 16px", fontWeight: "800", cursor: "pointer" },
-  assetGrid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px", marginBottom: "16px" },
-  assetCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: "18px", padding: "18px" },
+  loginInput: { border: "1px solid #d1d5db", borderRadius: "12px", padding: "12px 14px", fontSize: "14px", minWidth: 0 },
+  primaryButton: { border: 0, background: "#2563eb", color: "white", borderRadius: "12px", padding: "12px 16px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap" },
+  darkButton: { border: 0, background: "#111827", color: "white", borderRadius: "12px", padding: "12px 16px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap" },
+  outlineButton: { border: "1px solid #d1d5db", background: "white", color: "#111827", borderRadius: "12px", padding: "12px 16px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap" },
+  assetGrid: { display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "14px", marginBottom: "16px" },
+  assetCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: "18px", padding: "18px", minWidth: 0 },
   assetLabel: { color: "#6b7280", fontSize: "13px", marginBottom: "8px" },
-  assetValue: { fontSize: "24px", fontWeight: "900" },
-  tradeGrid: { display: "grid", gridTemplateColumns: "260px 1fr 340px", gap: "16px", alignItems: "stretch" },
-  leftPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px" },
-  centerPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px" },
-  orderPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px" },
+  assetValue: { fontSize: "24px", fontWeight: "900", wordBreak: "keep-all" },
+  tradeGrid: { display: "grid", gridTemplateColumns: "260px minmax(0, 1fr) 340px", gap: "16px", alignItems: "stretch" },
+  leftPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", minWidth: 0 },
+  centerPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", minWidth: 0 },
+  orderPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", minWidth: 0 },
   panelTitle: { fontSize: "18px", fontWeight: "900", margin: 0 },
   panelTitleWithMargin: { fontSize: "18px", fontWeight: "900", margin: "0 0 14px" },
   smallTitle: { fontSize: "13px", color: "#6b7280", margin: "18px 0 8px" },
-  searchBox: { display: "flex", gap: "8px" },
-  input: { width: "100%", border: "1px solid #d1d5db", borderRadius: "12px", padding: "11px 12px", fontSize: "14px", boxSizing: "border-box" },
-  searchButton: { border: 0, background: "#0f766e", color: "white", borderRadius: "12px", padding: "0 14px", fontWeight: "800", cursor: "pointer" },
+  searchBox: { display: "grid", gridTemplateColumns: "1fr 48px", gap: "8px" },
+  input: { width: "100%", border: "1px solid #d1d5db", borderRadius: "12px", padding: "11px 12px", fontSize: "14px", boxSizing: "border-box", minWidth: 0 },
+  searchButton: { border: 0, background: "#0f766e", color: "white", borderRadius: "12px", padding: "0 10px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap", wordBreak: "keep-all", minWidth: "48px" },
   stockList: { display: "grid", gap: "8px" },
   stockButton: { border: "1px solid #e5e7eb", background: "#f9fafb", borderRadius: "14px", padding: "12px", display: "flex", justifyContent: "space-between", cursor: "pointer", fontWeight: "800" },
-  stockButtonActive: { borderColor: "#2563eb", background: "#eff6ff", color: "#1d4ed8" },
+  stockButtonActive: { borderColor: "#2563eb", background: "#eff6ff", color: "#1d4ed8", boxShadow: "inset 0 0 0 1px #2563eb" },
   quoteHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e5e7eb", paddingBottom: "16px", marginBottom: "16px" },
   stockName: { fontSize: "26px", fontWeight: "900" },
   stockCode: { color: "#6b7280", marginTop: "4px" },
@@ -816,18 +839,18 @@ const styles = {
   chartToolbar: { display: "flex", justifyContent: "space-between", alignItems: "center", color: "white", marginBottom: "12px" },
   chartSubText: { marginLeft: "8px", color: "#9ca3af", fontSize: "12px" },
   chartWarning: { background: "rgba(245,158,11,0.14)", border: "1px solid rgba(245,158,11,0.35)", color: "#fbbf24", borderRadius: "10px", padding: "8px 10px", fontSize: "12px", marginBottom: "10px" },
-  chartRefreshButton: { border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "white", borderRadius: "10px", padding: "8px 10px", fontSize: "12px", fontWeight: "800", cursor: "pointer" },
+  chartRefreshButton: { border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.08)", color: "white", borderRadius: "10px", padding: "8px 10px", fontSize: "12px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap" },
   realChart: { height: "330px", position: "relative", borderTop: "1px solid rgba(255,255,255,0.08)", borderBottom: "1px solid rgba(255,255,255,0.18)" },
   chartEmpty: { height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: "14px" },
   candleChart: { height: "100%", display: "flex", gap: "6px", alignItems: "stretch", padding: "10px 4px 28px", boxSizing: "border-box", position: "relative" },
-  realCandleWrap: { flex: 1, minWidth: "8px", position: "relative" },
+  realCandleWrap: { flex: 1, minWidth: "6px", position: "relative" },
   wick: { position: "absolute", left: "50%", width: "2px", transform: "translateX(-50%)", borderRadius: "999px" },
   realCandle: { position: "absolute", left: "18%", right: "18%", borderRadius: "3px" },
   timeLabel: { position: "absolute", left: "50%", bottom: "-22px", transform: "translateX(-50%)", color: "#9ca3af", fontSize: "10px", whiteSpace: "nowrap" },
   tradeMarker: { position: "absolute", transform: "translate(-50%, -50%)", zIndex: 5, borderRadius: "999px", padding: "4px 7px", color: "white", fontSize: "10px", fontWeight: "900", boxShadow: "0 4px 10px rgba(0,0,0,0.35)", pointerEvents: "auto" },
   buyMarker: { background: "#dc2626" },
   sellMarker: { background: "#2563eb" },
-  fomoBox: { marginTop: "16px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center" },
+  fomoBox: { marginTop: "16px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" },
   fomoScore: { width: "64px", height: "64px", borderRadius: "999px", background: "#f59e0b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", fontWeight: "900", flex: "0 0 auto" },
   tabRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" },
   tabButton: { border: "1px solid #d1d5db", background: "#f9fafb", borderRadius: "12px", padding: "12px", fontWeight: "900", cursor: "pointer" },
@@ -842,15 +865,15 @@ const styles = {
   sellButton: { width: "100%", border: 0, background: "#2563eb", color: "white", borderRadius: "14px", padding: "15px", fontSize: "16px", fontWeight: "900", marginTop: "16px", cursor: "pointer" },
   orderStatus: { marginTop: "12px", textAlign: "center", fontWeight: "900", color: "#0f766e" },
   bottomGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginTop: "16px" },
-  tablePanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", overflowX: "auto" },
+  tablePanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", overflowX: "hidden", minWidth: 0 },
   empty: { padding: "30px", background: "#f9fafb", borderRadius: "14px", color: "#6b7280", textAlign: "center" },
-  table: { display: "grid", gap: "8px", minWidth: "760px" },
-  tableHead: { display: "grid", gridTemplateColumns: "1.3fr 0.5fr 1fr 1fr 1fr 1fr", padding: "10px", color: "#6b7280", fontSize: "13px", borderBottom: "1px solid #e5e7eb", gap: "8px" },
-  tableRow: { display: "grid", gridTemplateColumns: "1.3fr 0.5fr 1fr 1fr 1fr 1fr", padding: "12px 10px", borderBottom: "1px solid #f3f4f6", fontSize: "14px", gap: "8px", alignItems: "center" },
+  table: { display: "grid", gap: "8px", minWidth: 0 },
+  tableHead: { display: "grid", gridTemplateColumns: "1.1fr 0.45fr 0.9fr 0.9fr 0.9fr 0.9fr", padding: "10px", color: "#6b7280", fontSize: "13px", borderBottom: "1px solid #e5e7eb", gap: "8px" },
+  tableRow: { display: "grid", gridTemplateColumns: "1.1fr 0.45fr 0.9fr 0.9fr 0.9fr 0.9fr", padding: "12px 10px", borderBottom: "1px solid #f3f4f6", fontSize: "13px", gap: "8px", alignItems: "center" },
   codeText: { color: "#6b7280", fontSize: "12px", fontStyle: "normal" },
   orderList: { display: "grid", gap: "10px" },
   orderItem: { display: "flex", justifyContent: "space-between", gap: "14px", background: "#f9fafb", borderRadius: "14px", padding: "14px" },
   orderItemRight: { textAlign: "right", whiteSpace: "nowrap" },
   panelTitleRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" },
-  miniButton: { border: "1px solid #d1d5db", background: "white", color: "#111827", borderRadius: "10px", padding: "7px 10px", fontSize: "12px", fontWeight: "800", cursor: "pointer" },
+  miniButton: { border: "1px solid #d1d5db", background: "white", color: "#111827", borderRadius: "10px", padding: "7px 10px", fontSize: "12px", fontWeight: "800", cursor: "pointer", whiteSpace: "nowrap" },
 };
