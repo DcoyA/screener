@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-30T04:30:09Z",
+  "generatedAt": "2026-07-01T04:58:43Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -7,49 +7,50 @@
   },
   "header": {
     "title": "대안 투자",
-    "summary": "현재는 확신형 장세보다 확인형 장세에 가깝고, 개별주 / ETF 관점으로 보는 편이 무난합니다.",
-    "marketTone": "중립"
+    "summary": "지금은 개별주 추격보다 ETF / 개별주처럼 분산형 접근이 더 적합한 구간입니다.",
+    "marketTone": "분산 접근 우위"
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.878,
-    "avgTotalScore": 77.05,
-    "avgUpside": 134.22,
-    "avgLiquidity5d": 17732505112.55,
+    "eligibleRatio": 0.884,
+    "avgTotalScore": 78.15,
+    "avgUpside": 143.13,
+    "avgLiquidity5d": 18262253207.0,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 4,
+    "sectorSpread": 7,
     "strongSectorCounts": {
-      "대형주": 11,
-      "중소형주": 6,
+      "대형주": 9,
+      "중소형주": 5,
       "미디어/엔터": 2,
-      "자동차/부품": 1
+      "자동차/부품": 1,
+      "바이오/제약": 1
     },
     "topPoolCodes": [
-      "073240",
+      "009970",
       "041510",
-      "192080",
       "037710",
-      "111770",
-      "006730",
-      "375500",
-      "267250",
       "091590",
+      "111770",
+      "073240",
+      "192080",
+      "006730",
+      "267250",
       "036090"
     ]
   },
   "modeScores": {
-    "stock_pick": 55.26,
-    "etf": 53.47,
+    "stock_pick": 58.22,
+    "etf": 64.47,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
   "preferredModes": [
-    "개별주",
-    "ETF"
+    "ETF",
+    "개별주"
   ],
   "avoidModes": [
     "배당/방어",
@@ -59,14 +60,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 55.26,
+      "score": 58.22,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 53.47,
+      "score": 64.47,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -94,7 +95,7 @@
     "weak": []
   },
   "strategyNotes": [
-    "오늘은 개별주 / ETF 관점 우선으로 보는 편이 유리합니다.",
+    "오늘은 ETF / 개별주 관점 우선으로 보는 편이 유리합니다.",
     "최근 단기 모멘텀 지지 종목 비중이 낮아 추격형 접근은 보수적으로 보는 편이 좋습니다.",
     "오늘은 배당/방어 접근은 상대적으로 보수적으로 보는 편이 좋습니다."
   ],
@@ -104,11 +105,11 @@
       "name": "광주신세계보통주",
       "market": "KOSPI",
       "sector": "대형주",
-      "totalScore": 79.0,
-      "upside": 38.8,
-      "avgTradeValue5d": 77981357735.0,
-      "summary": "PER 8.6배, PBR 0.4배, 시총 3844억원, 최근 5일 평균 거래대금 780억원, 부채비율 46.0%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 79점 · 상승여력 38.8%"
+      "totalScore": 81.0,
+      "upside": 56.3,
+      "avgTradeValue5d": 84412013360.0,
+      "summary": "PER 7.7배, PBR 0.4배, 시총 3413억원, 최근 5일 평균 거래대금 844억원, 부채비율 46.0%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 81점 · 상승여력 56.3%"
     },
     "todayAlternative": {
       "mode": "etf",
