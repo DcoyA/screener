@@ -42,14 +42,8 @@ function normalizeMinuteItem(item) {
 async function getAccessToken() {
   const now = Date.now();
 
-  if (accessToken && now < expiredAt) {
-    return accessToken;
-  }
-
-  // 같은 서버 인스턴스 안에서 tokenP 중복 호출 방지
-  if (tokenPromise) {
-    return tokenPromise;
-  }
+  if (accessToken && now < expiredAt) return accessToken;
+  if (tokenPromise) return tokenPromise;
 
   tokenPromise = (async () => {
     const baseUrl = process.env.KIS_BASE_URL;
@@ -62,9 +56,7 @@ async function getAccessToken() {
 
     const res = await fetch(`${baseUrl}/oauth2/tokenP`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         grant_type: "client_credentials",
         appkey: appKey,
@@ -73,12 +65,7 @@ async function getAccessToken() {
       cache: "no-store",
     });
 
-    let data = {};
-    try {
-      data = await res.json();
-    } catch (error) {
-      data = {};
-    }
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok || !data.access_token) {
       console.error("KIS token error:", data);
@@ -94,6 +81,93 @@ async function getAccessToken() {
     return await tokenPromise;
   } finally {
     tokenPromise = null;
+  }
+}
+
+async function fetchNaverBasic(code) {
+  const apiUrl = `https://m.stock.naver.com/api/stock/${encodeURIComponent(code)}/basic`;
+
+  const res = await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Mozilla/5.0 compatible; DemoTradeBot/1.0",
+    },
+    cache: "no-store",
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || !data || !data.stockName) {
+    console.error("Naver basic fallback error:", data);
+    throw new Error("대체 시세 조회 실패");
+  }
+
+  return {
+    ok: true,
+    source: "NAVER_BASIC",
+    name: data.stockName || "",
+    price: toNumber(data.closePrice),
+    change: toNumber(data.compareToPreviousClosePrice),
+    rate: toNumber(data.fluctuationsRatio),
+    marketStatus: data.marketStatus || "",
+    localTradedAt: data.localTradedAt || "",
+    raw: data,
+  };
+}
+
+async function fetchNaverDailyCandles(code) {
+  const today = new Date();
+  const end = new Date(today.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const start = new Date(end);
+  start.setDate(start.getDate() - 45);
+
+  const fmt = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}${m}${d}`;
+  };
+
+  const apiUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${encodeURIComponent(code)}&requestType=1&startTime=${fmt(start)}&endTime=${fmt(end)}&timeframe=day`;
+
+  try {
+    const res = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        Accept: "text/plain,*/*",
+        "User-Agent": "Mozilla/5.0 compatible; DemoTradeBot/1.0",
+      },
+      cache: "no-store",
+    });
+
+    const text = await res.text();
+    const normalized = text.trim().replace(/'/g, '"');
+    const rows = JSON.parse(normalized);
+
+    if (!Array.isArray(rows) || rows.length <= 1) return [];
+
+    return rows
+      .slice(1)
+      .filter((row) => Array.isArray(row) && row.length >= 6)
+      .slice(-30)
+      .map((row) => {
+        const date = String(row[0] || "").replace(/-/g, "");
+        return {
+          date,
+          time: date,
+          label: date.length === 8 ? `${date.slice(4, 6)}/${date.slice(6, 8)}` : date,
+          open: toNumber(row[1]),
+          high: toNumber(row[2]),
+          low: toNumber(row[3]),
+          close: toNumber(row[4]),
+          volume: toNumber(row[5]),
+        };
+      })
+      .filter((item) => item.close > 0);
+  } catch (error) {
+    console.warn("Naver daily candle fallback failed:", error);
+    return [];
   }
 }
 
@@ -160,108 +234,13 @@ async function fetchKisMinute({ baseUrl, token, appKey, appSecret, code }) {
 
   if (!res.ok || data.rt_cd !== "0") {
     console.warn("KIS minute error:", data);
-    return {
-      candles: [],
-      minuteError: data.msg1 || "분봉 조회 실패",
-    };
+    return { candles: [], minuteError: data.msg1 || "분봉 조회 실패" };
   }
 
   const output2 = Array.isArray(data.output2) ? data.output2 : [];
   const candles = output2.map(normalizeMinuteItem).filter((item) => item.close > 0).reverse();
 
-  return {
-    candles,
-    minuteError: "",
-  };
-}
-
-async function fetchNaverBasic(code) {
-  const apiUrl = `https://m.stock.naver.com/api/stock/${encodeURIComponent(code)}/basic`;
-
-  const res = await fetch(apiUrl, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "Mozilla/5.0 compatible; DemoTradeBot/1.0",
-    },
-    cache: "no-store",
-  });
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok || !data || !data.stockName) {
-    console.error("Naver basic fallback error:", data);
-    throw new Error("대체 시세 조회 실패");
-  }
-
-  return {
-    ok: true,
-    source: "NAVER_BASIC",
-    name: data.stockName || "",
-    price: toNumber(data.closePrice),
-    change: toNumber(data.compareToPreviousClosePrice),
-    rate: toNumber(data.fluctuationsRatio),
-    marketStatus: data.marketStatus || "",
-    localTradedAt: data.localTradedAt || "",
-    raw: data,
-  };
-}
-
-async function fetchNaverDailyCandles(code) {
-  // KIS 분봉 실패 시 차트 영역이 완전히 비는 것을 줄이기 위한 일봉 fallback.
-  // page.js에서는 동일 OHLC 형식이면 캔들로 그릴 수 있다.
-  const today = new Date();
-  const end = new Date(today.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
-  const start = new Date(end);
-  start.setDate(start.getDate() - 45);
-
-  const fmt = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}${m}${d}`;
-  };
-
-  const apiUrl = `https://api.finance.naver.com/siseJson.naver?symbol=${encodeURIComponent(code)}&requestType=1&startTime=${fmt(start)}&endTime=${fmt(end)}&timeframe=day`;
-
-  try {
-    const res = await fetch(apiUrl, {
-      method: "GET",
-      headers: {
-        Accept: "text/plain,*/*",
-        "User-Agent": "Mozilla/5.0 compatible; DemoTradeBot/1.0",
-      },
-      cache: "no-store",
-    });
-
-    const text = await res.text();
-    const normalized = text.trim().replace(/'/g, '"');
-    const rows = JSON.parse(normalized);
-
-    if (!Array.isArray(rows) || rows.length <= 1) return [];
-
-    return rows
-      .slice(1)
-      .filter((row) => Array.isArray(row) && row.length >= 6)
-      .slice(-30)
-      .map((row) => {
-        const date = String(row[0] || "").replace(/-/g, "");
-        return {
-          date,
-          time: date,
-          label: date.length === 8 ? `${date.slice(4, 6)}/${date.slice(6, 8)}` : date,
-          open: toNumber(row[1]),
-          high: toNumber(row[2]),
-          low: toNumber(row[3]),
-          close: toNumber(row[4]),
-          volume: toNumber(row[5]),
-        };
-      })
-      .filter((item) => item.close > 0);
-  } catch (error) {
-    console.warn("Naver daily candle fallback failed:", error);
-    return [];
-  }
+  return { candles, minuteError: "" };
 }
 
 async function getKisQuote(code) {
@@ -277,11 +256,27 @@ async function getKisQuote(code) {
   const priceData = await fetchKisPrice({ baseUrl, token, appKey, appSecret, code });
   const minuteData = await fetchKisMinute({ baseUrl, token, appKey, appSecret, code });
 
+  // 핵심 보정: KIS는 가격은 성공해도 hts_kor_isnm 이름이 빈 값인 경우가 있다.
+  // 이 경우 종목코드가 화면 제목으로 표시되므로 네이버 basic으로 이름만 보강한다.
+  let resolvedName = priceData.name;
+  let nameSource = "KIS";
+
+  if (!resolvedName) {
+    try {
+      const naverName = await fetchNaverBasic(code);
+      resolvedName = naverName.name || "";
+      nameSource = "NAVER_BASIC";
+    } catch (error) {
+      console.warn("Name fallback failed:", error.message);
+    }
+  }
+
   return {
     ok: true,
     source: "KIS",
     code,
-    name: priceData.name,
+    name: resolvedName || code,
+    nameSource,
     price: priceData.price,
     change: priceData.change,
     rate: priceData.rate,
@@ -297,10 +292,7 @@ export async function GET(request) {
 
   if (!code || code.length !== 6) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: "종목코드 code는 6자리 숫자여야 합니다.",
-      },
+      { ok: false, error: "종목코드 code는 6자리 숫자여야 합니다." },
       { status: 400 }
     );
   }
@@ -319,7 +311,8 @@ export async function GET(request) {
         ok: true,
         source: naverPrice.source,
         code,
-        name: naverPrice.name,
+        name: naverPrice.name || code,
+        nameSource: "NAVER_BASIC",
         price: naverPrice.price,
         change: naverPrice.change,
         rate: naverPrice.rate,
