@@ -527,7 +527,7 @@ export default function DemoTradePage() {
         <div>
           <div style={styles.logo}>우량주 스카우터</div>
           <h1 style={styles.title}>가상투자 터미널</h1>
-          <p style={styles.subTitle}>진짜 돈을 넣기 전, 가상계좌로 매수 판단을 먼저 검증하세요.</p>
+          <p style={styles.subTitle}>처음부터 내 돈으로 투자하기 부담되죠?<br/>가상계좌로 매수 판단을 먼저 검증해보세요.<br/>모든 계좌에는 1억의 가상현금이 지급됩니다.  <br/>계좌번호와 PIN을 저장해두면 언제든 내역을 이어볼 수 있습니다.</p>
         </div>
 
         <div style={styles.accountBox} className="dt-account-box">
