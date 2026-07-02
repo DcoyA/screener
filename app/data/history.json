@@ -1,5 +1,135 @@
 [
   {
+    "snapshotDate": "2026-07-02",
+    "weekLabel": "2026년 7월 1주차",
+    "benchmark": {
+      "name": "코스피",
+      "close": 8303.41
+    },
+    "top10": [
+      {
+        "rank": 1,
+        "code": "009970",
+        "name": "영원무역홀딩스보통주",
+        "market": "KOSPI",
+        "selectedPrice": 168200,
+        "totalScore": 84,
+        "rawTotalScore": 84,
+        "targetPrice": 561800,
+        "upside": 234.0,
+        "momentum": 3.13
+      },
+      {
+        "rank": 2,
+        "code": "037710",
+        "name": "광주신세계보통주",
+        "market": "KOSPI",
+        "selectedPrice": 43500,
+        "totalScore": 81,
+        "rawTotalScore": 81,
+        "targetPrice": 69960,
+        "upside": 60.8,
+        "momentum": -2.79
+      },
+      {
+        "rank": 3,
+        "code": "073240",
+        "name": "금호타이어보통주",
+        "market": "KOSPI",
+        "selectedPrice": 5060,
+        "totalScore": 80,
+        "rawTotalScore": 80,
+        "targetPrice": 15739,
+        "upside": 211.0,
+        "momentum": 3.69
+      },
+      {
+        "rank": 4,
+        "code": "041510",
+        "name": "에스엠엔터테인먼트",
+        "market": "KOSDAQ",
+        "selectedPrice": 73400,
+        "totalScore": 80,
+        "rawTotalScore": 80,
+        "targetPrice": 188356,
+        "upside": 156.6,
+        "momentum": 3.67
+      },
+      {
+        "rank": 5,
+        "code": "192080",
+        "name": "더블유게임즈보통주",
+        "market": "KOSPI",
+        "selectedPrice": 65000,
+        "totalScore": 80,
+        "rawTotalScore": 80,
+        "targetPrice": 101907,
+        "upside": 56.8,
+        "momentum": 2.04
+      },
+      {
+        "rank": 6,
+        "code": "111770",
+        "name": "영원무역보통주",
+        "market": "KOSPI",
+        "selectedPrice": 74200,
+        "totalScore": 79,
+        "rawTotalScore": 79,
+        "targetPrice": 115433,
+        "upside": 55.6,
+        "momentum": 2.2
+      },
+      {
+        "rank": 7,
+        "code": "006730",
+        "name": "서부티엔디",
+        "market": "KOSDAQ",
+        "selectedPrice": 10290,
+        "totalScore": 79,
+        "rawTotalScore": 79,
+        "targetPrice": 21475,
+        "upside": 108.7,
+        "momentum": 6.63
+      },
+      {
+        "rank": 8,
+        "code": "375500",
+        "name": "DL이앤씨보통주",
+        "market": "KOSPI",
+        "selectedPrice": 66800,
+        "totalScore": 78,
+        "rawTotalScore": 78,
+        "targetPrice": 114806,
+        "upside": 71.9,
+        "momentum": 4.21
+      },
+      {
+        "rank": 9,
+        "code": "267250",
+        "name": "에이치디현대보통주",
+        "market": "KOSPI",
+        "selectedPrice": 210000,
+        "totalScore": 77,
+        "rawTotalScore": 77,
+        "targetPrice": 558350,
+        "upside": 165.9,
+        "momentum": 5.26
+      },
+      {
+        "rank": 10,
+        "code": "067900",
+        "name": "와이엔텍",
+        "market": "KOSDAQ",
+        "selectedPrice": 6620,
+        "totalScore": 77,
+        "rawTotalScore": 77,
+        "targetPrice": 20061,
+        "upside": 203.0,
+        "momentum": 3.76
+      }
+    ]
+  },
+  {
     "snapshotDate": "2026-07-01",
     "weekLabel": "2026년 7월 1주차",
     "benchmark": {
