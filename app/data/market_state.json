@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T04:33:32Z",
+  "generatedAt": "2026-07-08T03:47:04Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,38 +12,39 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.882,
-    "avgTotalScore": 77.9,
-    "avgUpside": 146.47,
-    "avgLiquidity5d": 17518629129.65,
+    "eligibleRatio": 0.88,
+    "avgTotalScore": 78.4,
+    "avgUpside": 150.13,
+    "avgLiquidity5d": 20209703845.0,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 4,
+    "sectorSpread": 5,
     "strongSectorCounts": {
-      "대형주": 13,
+      "대형주": 12,
       "중소형주": 4,
       "미디어/엔터": 2,
-      "자동차/부품": 1
+      "자동차/부품": 1,
+      "산업재": 1
     },
     "topPoolCodes": [
       "046940",
       "009970",
+      "037710",
       "041510",
       "192080",
-      "037710",
-      "006730",
       "073240",
+      "375500",
+      "439260",
       "010960",
-      "091590",
-      "267250"
+      "091590"
     ]
   },
   "modeScores": {
-    "stock_pick": 55.98,
-    "etf": 53.47,
+    "stock_pick": 57.29,
+    "etf": 57.13,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
@@ -59,14 +60,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 55.98,
+      "score": 57.29,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 53.47,
+      "score": 57.13,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -104,11 +105,11 @@
       "name": "우원개발",
       "market": "KOSDAQ",
       "sector": "중소형주",
-      "totalScore": 89.0,
-      "upside": 656.4,
-      "avgTradeValue5d": 28748905335.0,
-      "summary": "PER 1.6배, PBR 0.5배, 시총 761억원, 최근 5일 평균 거래대금 287억원, 부채비율 68.5%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 89점 · 상승여력 656.4%"
+      "totalScore": 91.0,
+      "upside": 725.0,
+      "avgTradeValue5d": 31575947955.0,
+      "summary": "PER 1.5배, PBR 0.4배, 시총 698억원, 최근 5일 평균 거래대금 316억원, 부채비율 68.5%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 91점 · 상승여력 725.0%"
     },
     "todayAlternative": {
       "mode": "etf",
