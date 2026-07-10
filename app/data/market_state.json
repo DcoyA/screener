@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T04:41:10Z",
+  "generatedAt": "2026-07-10T04:17:13Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,10 +12,10 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.884,
-    "avgTotalScore": 78.6,
-    "avgUpside": 164.5,
-    "avgLiquidity5d": 20284277840.75,
+    "eligibleRatio": 0.878,
+    "avgTotalScore": 78.8,
+    "avgUpside": 157.65,
+    "avgLiquidity5d": 20036872322.35,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
@@ -23,8 +23,8 @@
     "investorPositiveRatio": 0,
     "sectorSpread": 5,
     "strongSectorCounts": {
-      "대형주": 11,
-      "중소형주": 5,
+      "대형주": 12,
+      "중소형주": 4,
       "미디어/엔터": 2,
       "자동차/부품": 1,
       "산업재": 1
@@ -32,18 +32,18 @@
     "topPoolCodes": [
       "046940",
       "009970",
-      "037710",
       "041510",
-      "192080",
-      "006730",
+      "037710",
       "073240",
+      "192080",
+      "091590",
+      "006730",
       "002380",
-      "439260",
-      "010960"
+      "439260"
     ]
   },
   "modeScores": {
-    "stock_pick": 57.54,
+    "stock_pick": 57.52,
     "etf": 57.13,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
@@ -60,7 +60,7 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 57.54,
+      "score": 57.52,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
@@ -105,11 +105,11 @@
       "name": "우원개발",
       "market": "KOSDAQ",
       "sector": "중소형주",
-      "totalScore": 91.0,
-      "upside": 816.4,
-      "avgTradeValue5d": 32536243581.0,
-      "summary": "PER 1.3배, PBR 0.4배, 시총 628억원, 최근 5일 평균 거래대금 325억원, 부채비율 68.5%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 91점 · 상승여력 816.4%"
+      "totalScore": 89.0,
+      "upside": 800.9,
+      "avgTradeValue5d": 26612536973.0,
+      "summary": "PER 1.3배, PBR 0.4배, 시총 639억원, 최근 5일 평균 거래대금 266억원, 부채비율 68.5%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 89점 · 상승여력 800.9%"
     },
     "todayAlternative": {
       "mode": "etf",
