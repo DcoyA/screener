@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T04:17:13Z",
+  "generatedAt": "2026-07-13T04:01:43Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -7,50 +7,50 @@
   },
   "header": {
     "title": "대안 투자",
-    "summary": "현재는 확신형 장세보다 확인형 장세에 가깝고, 개별주 / ETF 관점으로 보는 편이 무난합니다.",
-    "marketTone": "중립"
+    "summary": "지금은 개별주 추격보다 ETF / 개별주처럼 분산형 접근이 더 적합한 구간입니다.",
+    "marketTone": "분산 접근 우위"
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.878,
-    "avgTotalScore": 78.8,
-    "avgUpside": 157.65,
-    "avgLiquidity5d": 20036872322.35,
+    "eligibleRatio": 0.872,
+    "avgTotalScore": 78.4,
+    "avgUpside": 140.42,
+    "avgLiquidity5d": 22569771256.6,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 5,
+    "sectorSpread": 6,
     "strongSectorCounts": {
       "대형주": 12,
-      "중소형주": 4,
+      "중소형주": 3,
       "미디어/엔터": 2,
-      "자동차/부품": 1,
-      "산업재": 1
+      "산업재": 1,
+      "자동차/부품": 1
     },
     "topPoolCodes": [
       "046940",
       "009970",
       "041510",
-      "037710",
-      "073240",
       "192080",
+      "037710",
       "091590",
-      "006730",
+      "000240",
       "002380",
-      "439260"
+      "439260",
+      "010960"
     ]
   },
   "modeScores": {
-    "stock_pick": 57.52,
-    "etf": 57.13,
+    "stock_pick": 58.06,
+    "etf": 60.8,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
   "preferredModes": [
-    "개별주",
-    "ETF"
+    "ETF",
+    "개별주"
   ],
   "avoidModes": [
     "배당/방어",
@@ -60,14 +60,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 57.52,
+      "score": 58.06,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 57.13,
+      "score": 60.8,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -95,21 +95,21 @@
     "weak": []
   },
   "strategyNotes": [
-    "오늘은 개별주 / ETF 관점 우선으로 보는 편이 유리합니다.",
+    "오늘은 ETF / 개별주 관점 우선으로 보는 편이 유리합니다.",
     "최근 단기 모멘텀 지지 종목 비중이 낮아 추격형 접근은 보수적으로 보는 편이 좋습니다.",
     "오늘은 배당/방어 접근은 상대적으로 보수적으로 보는 편이 좋습니다."
   ],
   "today": {
     "todayStock": {
-      "code": "046940",
-      "name": "우원개발",
-      "market": "KOSDAQ",
-      "sector": "중소형주",
-      "totalScore": 89.0,
-      "upside": 800.9,
-      "avgTradeValue5d": 26612536973.0,
-      "summary": "PER 1.3배, PBR 0.4배, 시총 639억원, 최근 5일 평균 거래대금 266억원, 부채비율 68.5%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 89점 · 상승여력 800.9%"
+      "code": "037710",
+      "name": "광주신세계보통주",
+      "market": "KOSPI",
+      "sector": "대형주",
+      "totalScore": 79.0,
+      "upside": 40.5,
+      "avgTradeValue5d": 44800675380.0,
+      "summary": "PER 8.5배, PBR 0.4배, 시총 3798억원, 최근 5일 평균 거래대금 448억원, 부채비율 46.0%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 79점 · 상승여력 40.5%"
     },
     "todayAlternative": {
       "mode": "etf",
