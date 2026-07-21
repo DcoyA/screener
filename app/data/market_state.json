@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T04:18:17Z",
+  "generatedAt": "2026-07-21T04:00:50Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,10 +12,10 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.86,
-    "avgTotalScore": 77.95,
-    "avgUpside": 120.33,
-    "avgLiquidity5d": 14126551188.8,
+    "eligibleRatio": 0.866,
+    "avgTotalScore": 77.85,
+    "avgUpside": 131.69,
+    "avgLiquidity5d": 11760652400.5,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
@@ -33,17 +33,17 @@
       "041510",
       "009970",
       "192080",
-      "037710",
       "073240",
-      "091590",
+      "037710",
       "006730",
+      "091590",
       "002380",
       "439260",
       "078930"
     ]
   },
   "modeScores": {
-    "stock_pick": 56.4,
+    "stock_pick": 56.5,
     "etf": 57.13,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
@@ -60,7 +60,7 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 56.4,
+      "score": 56.5,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
@@ -101,15 +101,15 @@
   ],
   "today": {
     "todayStock": {
-      "code": "037710",
-      "name": "광주신세계보통주",
+      "code": "078930",
+      "name": "GS보통주",
       "market": "KOSPI",
       "sector": "대형주",
-      "totalScore": 81.0,
-      "upside": 61.4,
-      "avgTradeValue5d": 31245655565.0,
-      "summary": "PER 7.4배, PBR 0.4배, 시총 3306억원, 최근 5일 평균 거래대금 312억원, 부채비율 46.0%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 81점 · 상승여력 61.4%"
+      "totalScore": 77.0,
+      "upside": 61.2,
+      "avgTradeValue5d": 39979257150.0,
+      "summary": "PER 7.4배, PBR 0.4배, 시총 7.7조원, 최근 5일 평균 거래대금 400억원, 부채비율 86.0%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 77점 · 상승여력 61.2%"
     },
     "todayAlternative": {
       "mode": "etf",
