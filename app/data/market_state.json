@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T05:17:04Z",
+  "generatedAt": "2026-07-23T03:46:23Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,10 +12,10 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.872,
-    "avgTotalScore": 78.05,
-    "avgUpside": 137.73,
-    "avgLiquidity5d": 10432216188.45,
+    "eligibleRatio": 0.876,
+    "avgTotalScore": 77.1,
+    "avgUpside": 117.94,
+    "avgLiquidity5d": 10433707941.4,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
@@ -31,19 +31,19 @@
     },
     "topPoolCodes": [
       "041510",
-      "009970",
       "192080",
       "073240",
       "037710",
-      "091590",
       "006730",
-      "002380",
-      "439260",
-      "078930"
+      "091590",
+      "078930",
+      "267250",
+      "111770",
+      "375500"
     ]
   },
   "modeScores": {
-    "stock_pick": 56.81,
+    "stock_pick": 56.24,
     "etf": 57.13,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
@@ -60,7 +60,7 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 56.81,
+      "score": 56.24,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
@@ -106,10 +106,10 @@
       "market": "KOSPI",
       "sector": "대형주",
       "totalScore": 77.0,
-      "upside": 62.5,
-      "avgTradeValue5d": 34371111080.0,
-      "summary": "PER 7.4배, PBR 0.4배, 시총 7.7조원, 최근 5일 평균 거래대금 344억원, 부채비율 86.0%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 77점 · 상승여력 62.5%"
+      "upside": 59.3,
+      "avgTradeValue5d": 33149737270.0,
+      "summary": "PER 7.5배, PBR 0.4배, 시총 7.8조원, 최근 5일 평균 거래대금 331억원, 부채비율 86.0%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 77점 · 상승여력 59.3%"
     },
     "todayAlternative": {
       "mode": "etf",
