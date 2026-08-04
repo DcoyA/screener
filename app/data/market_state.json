@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-03T04:11:16Z",
+  "generatedAt": "2026-08-04T03:40:22Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -7,44 +7,44 @@
   },
   "header": {
     "title": "대안 투자",
-    "summary": "지금은 개별주 추격보다 ETF / 개별주처럼 분산형 접근이 더 적합한 구간입니다.",
-    "marketTone": "분산 접근 우위"
+    "summary": "현재는 확신형 장세보다 확인형 장세에 가깝고, ETF / 개별주 관점으로 보는 편이 무난합니다.",
+    "marketTone": "중립"
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.872,
+    "eligibleRatio": 0.87,
     "avgTotalScore": 78.25,
-    "avgUpside": 144.75,
-    "avgLiquidity5d": 12177398950.85,
+    "avgUpside": 145.19,
+    "avgLiquidity5d": 12790315589.05,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 6,
+    "sectorSpread": 5,
     "strongSectorCounts": {
-      "대형주": 10,
-      "중소형주": 5,
+      "대형주": 12,
+      "중소형주": 4,
       "미디어/엔터": 2,
       "산업재": 1,
       "자동차/부품": 1
     },
     "topPoolCodes": [
       "009970",
-      "041510",
       "192080",
       "091590",
+      "067160",
+      "041510",
       "006730",
-      "003100",
       "002380",
+      "383220",
       "439260",
-      "078930",
-      "267250"
+      "078930"
     ]
   },
   "modeScores": {
-    "stock_pick": 57.96,
-    "etf": 60.8,
+    "stock_pick": 56.9,
+    "etf": 57.13,
     "dividend_defensive": 34.0,
     "high_risk": 14.4
   },
@@ -60,14 +60,14 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 57.96,
+      "score": 56.9,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 60.8,
+      "score": 57.13,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
@@ -106,10 +106,10 @@
       "market": "KOSPI",
       "sector": "대형주",
       "totalScore": 77.0,
-      "upside": 50.7,
-      "avgTradeValue5d": 50304599280.0,
-      "summary": "PER 8.0배, PBR 0.4배, 시총 8.3조원, 최근 5일 평균 거래대금 503억원, 부채비율 86.0%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 77점 · 상승여력 50.7%"
+      "upside": 58.5,
+      "avgTradeValue5d": 49543893010.0,
+      "summary": "PER 7.6배, PBR 0.4배, 시총 7.9조원, 최근 5일 평균 거래대금 495억원, 부채비율 86.0%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 77점 · 상승여력 58.5%"
     },
     "todayAlternative": {
       "mode": "etf",
