@@ -73,6 +73,7 @@ export default function PerformancePage() {
   const [selectedSnapshotDate, setSelectedSnapshotDate] = useState(
     history[1]?.snapshotDate || history[0]?.snapshotDate || null
   );
+  const [visibleWeeksCount, setVisibleWeeksCount] = useState(10);
 
   const currentPriceMap = useMemo(
     () => Object.fromEntries(stocks.map((item) => [item.code, item.metrics?.closePrice ?? null])),
@@ -402,7 +403,7 @@ export default function PerformancePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {performanceData.weeklyRows.map((row) => (
+                  {performanceData.weeklyRows.slice(0, visibleWeeksCount).map((row) => (
                     <tr key={row.snapshotDate}>
                       <td>{row.snapshotDate}</td>
                       <td>
@@ -422,6 +423,34 @@ export default function PerformancePage() {
                 </tbody>
               </table>
             </div>
+            {performanceData.weeklyRows.length > 10 && (
+              <div style={{ display: "flex", justifyContent: "center", gap: 8, margin: "14px 0" }}>
+                {visibleWeeksCount < performanceData.weeklyRows.length && (
+                  <button
+                    type="button"
+                    className="detailBtn"
+                    onClick={() =>
+                      setVisibleWeeksCount((prev) =>
+                        Math.min(prev + 10, performanceData.weeklyRows.length)
+                      )
+                    }
+                  >
+                    더보기 (
+                    {Math.min(visibleWeeksCount, performanceData.weeklyRows.length)}/
+                    {performanceData.weeklyRows.length}주차)
+                  </button>
+                )}
+                {visibleWeeksCount > 10 && (
+                  <button
+                    type="button"
+                    className="detailBtn"
+                    onClick={() => setVisibleWeeksCount(10)}
+                  >
+                    접기
+                  </button>
+                )}
+              </div>
+            )}
             <p className="tableNote">
               ※ KOSPI 비교값은 각 스냅샷에 저장된 benchmark.close와 최신 스냅샷의 benchmark.close를 비교해 계산합니다.
               <br />
