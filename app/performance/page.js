@@ -44,7 +44,10 @@ function getToneClass(value) {
   return "toneNeutral";
 }
 
-function getRowStatusLabel(returnRate, benchmarkReturn) {
+function getRowStatusLabel(returnRate, benchmarkReturn, options = {}) {
+  const { hasCurrentPrice = true, isLatestSnapshot = false } = options;
+  if (isLatestSnapshot) return { text: "집계 중", className: "statusBadge neutral" };
+  if (!hasCurrentPrice) return { text: "데이터 없음", className: "statusBadge neutral" };
   const r = Number(returnRate);
   const b = Number(benchmarkReturn);
   if (!Number.isFinite(r)) return { text: "결과 확인 중", className: "statusBadge neutral" };
@@ -67,10 +70,12 @@ function safeNumber(value, fallback = null) {
 export default function PerformancePage() {
   const latestDate = history[0]?.snapshotDate || "-";
   const latestBenchmarkClose = Number(history[0]?.benchmark?.close);
-  const [selectedSnapshotDate, setSelectedSnapshotDate] = useState(history[0]?.snapshotDate || null);
+  const [selectedSnapshotDate, setSelectedSnapshotDate] = useState(
+    history[1]?.snapshotDate || history[0]?.snapshotDate || null
+  );
 
   const currentPriceMap = useMemo(
-    () => Object.fromEntries(stocks.map((item) => [item.code, item.metrics?.closePrice || 0])),
+    () => Object.fromEntries(stocks.map((item) => [item.code, item.metrics?.closePrice ?? null])),
     []
   );
 
@@ -81,10 +86,14 @@ export default function PerformancePage() {
 
   const performanceData = useMemo(() => {
     const weeklyRows = history.map((entry) => {
+      const isLatestSnapshot = entry.snapshotDate === latestDate;
       const picks = (entry.top10 || []).map((pick) => {
         const currentStock = stockMap[pick.code];
-        const currentPrice = Number(currentPriceMap[pick.code] || 0);
-        const returnRate = calcReturnRate(pick.selectedPrice, currentPrice);
+        const rawCurrentPrice = currentPriceMap[pick.code];
+        const currentPriceNum = Number(rawCurrentPrice);
+        const hasCurrentPrice = Number.isFinite(currentPriceNum) && currentPriceNum > 0;
+        const currentPrice = hasCurrentPrice ? currentPriceNum : null;
+        const returnRate = hasCurrentPrice ? calcReturnRate(pick.selectedPrice, currentPrice) : null;
         const benchmarkBase = Number(entry?.benchmark?.close);
         const benchmarkReturnForPick = calcReturnRate(benchmarkBase, latestBenchmarkClose);
         const excessReturnForPick =
@@ -95,6 +104,8 @@ export default function PerformancePage() {
         return {
           ...pick,
           currentPrice,
+          hasCurrentPrice,
+          isLatestSnapshot,
           returnRate,
           benchmarkReturnForPick,
           excessReturnForPick,
@@ -139,13 +150,15 @@ export default function PerformancePage() {
         winRate,
         bestReturn,
         worstReturn,
+        isLatestSnapshot,
       };
     });
 
-    const allPicks = weeklyRows.flatMap((row) => row.picks);
+    const matureRows = weeklyRows.filter((row) => !row.isLatestSnapshot);
+    const allPicks = matureRows.flatMap((row) => row.picks);
     const allReturns = allPicks.map((item) => item.returnRate).filter((v) => Number.isFinite(v));
-    const benchmarkReturns = weeklyRows.map((row) => row.benchmarkReturn).filter((v) => Number.isFinite(v));
-    const excessReturns = weeklyRows.map((row) => row.excessReturn).filter((v) => Number.isFinite(v));
+    const benchmarkReturns = matureRows.map((row) => row.benchmarkReturn).filter((v) => Number.isFinite(v));
+    const excessReturns = matureRows.map((row) => row.excessReturn).filter((v) => Number.isFinite(v));
     const overallAvg = allReturns.length ? allReturns.reduce((a, b) => a + b, 0) / allReturns.length : null;
     const overallWinRate = allReturns.length ? (allReturns.filter((v) => v > 0).length / allReturns.length) * 100 : null;
     const overallBest = allReturns.length ? Math.max(...allReturns) : null;
@@ -157,9 +170,9 @@ export default function PerformancePage() {
       .filter((item) => Number.isFinite(item.returnRate))
       .sort((a, b) => b.returnRate - a.returnRate);
 
-    const selectedWeek = weeklyRows.find((row) => row.snapshotDate === selectedSnapshotDate) || weeklyRows[0] || null;
+    const selectedWeek = weeklyRows.find((row) => row.snapshotDate === selectedSnapshotDate) || matureRows[0] || weeklyRows[0] || null;
 
-    const chartRows = [...weeklyRows]
+    const chartRows = [...matureRows]
       .slice()
       .reverse()
       .map((row) => ({
@@ -194,7 +207,7 @@ export default function PerformancePage() {
       selectedWeekSortedPicks,
       chartRows,
       controversialPick,
-      totalSnapshots: weeklyRows.length,
+      totalSnapshots: matureRows.length,
       totalPicks: allPicks.length,
       overallAvg,
       overallWinRate,
@@ -205,7 +218,7 @@ export default function PerformancePage() {
       bestPicks: sortedByReturn.slice(0, 3),
       worstPicks: [...sortedByReturn].reverse().slice(0, 3),
     };
-  }, [currentPriceMap, latestBenchmarkClose, selectedSnapshotDate, stockMap]);
+  }, [currentPriceMap, latestBenchmarkClose, latestDate, selectedSnapshotDate, stockMap]);
 
   const selectedWeek = performanceData.selectedWeek;
   const controversialPick = performanceData.controversialPick;
@@ -320,7 +333,7 @@ export default function PerformancePage() {
             <div className="kpiCard">
               <span className="kpiLabel">스냅샷 수</span>
               <strong>{performanceData.totalSnapshots}</strong>
-              <p>누적 기록된 주차 수</p>
+              <p>성과 집계가 끝난 주차 수 (오늘 추천은 제외)</p>
             </div>
             <div className="kpiCard">
               <span className="kpiLabel">누적 종목 수</span>
@@ -392,12 +405,15 @@ export default function PerformancePage() {
                   {performanceData.weeklyRows.map((row) => (
                     <tr key={row.snapshotDate}>
                       <td>{row.snapshotDate}</td>
-                      <td>{row.weekLabel}</td>
-                      <td className={getToneClass(row.avgReturn)}>{formatPercent(row.avgReturn)}</td>
+                      <td>
+                        {row.weekLabel}
+                        {row.isLatestSnapshot ? <span className="statusBadge neutral" style={{ marginLeft: 8 }}>집계 중</span> : null}
+                      </td>
+                      <td className={getToneClass(row.avgReturn)}>{row.isLatestSnapshot ? "집계 중" : formatPercent(row.avgReturn)}</td>
                       <td className={getToneClass(row.benchmarkReturn)}>{formatPercent(row.benchmarkReturn)}</td>
-                      <td className={getToneClass(row.excessReturn)}>{formatPercent(row.excessReturn)}</td>
-                      <td>{formatPercent(row.winRate)}</td>
-                      <td>{formatPercent(row.bestReturn)} / {formatPercent(row.worstReturn)}</td>
+                      <td className={getToneClass(row.excessReturn)}>{row.isLatestSnapshot ? "-" : formatPercent(row.excessReturn)}</td>
+                      <td>{row.isLatestSnapshot ? "-" : formatPercent(row.winRate)}</td>
+                      <td>{row.isLatestSnapshot ? "-" : `${formatPercent(row.bestReturn)} / ${formatPercent(row.worstReturn)}`}</td>
                       <td>
                         <button type="button" className={`detailBtn ${selectedSnapshotDate === row.snapshotDate ? "active" : ""}`} onClick={() => setSelectedSnapshotDate(row.snapshotDate)}>보기</button>
                       </td>
@@ -406,7 +422,11 @@ export default function PerformancePage() {
                 </tbody>
               </table>
             </div>
-            <p className="tableNote">※ KOSPI 비교값은 각 스냅샷에 저장된 benchmark.close와 최신 스냅샷의 benchmark.close를 비교해 계산합니다.</p>
+            <p className="tableNote">
+              ※ KOSPI 비교값은 각 스냅샷에 저장된 benchmark.close와 최신 스냅샷의 benchmark.close를 비교해 계산합니다.
+              <br />
+              ※ &lsquo;집계 중&rsquo;은 오늘 처음 추천되어 아직 성과를 판단할 시간이 지나지 않은 상태입니다. &lsquo;데이터 없음&rsquo;은 상장폐지·코드 변경 등으로 현재가를 찾을 수 없는 경우입니다.
+            </p>
           </div>
         </section>
 
@@ -447,7 +467,10 @@ export default function PerformancePage() {
                     </thead>
                     <tbody>
                       {selectedWeek.picks.map((pick) => {
-                        const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn);
+                        const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn, {
+                          hasCurrentPrice: pick.hasCurrentPrice,
+                          isLatestSnapshot: selectedWeek.isLatestSnapshot,
+                        });
                         return (
                           <tr key={`${selectedWeek.snapshotDate}-${pick.code}`}>
                             <td>{pick.rank}</td>
@@ -459,9 +482,9 @@ export default function PerformancePage() {
                             </td>
                             <td><span className={status.className}>{status.text}</span></td>
                             <td>{formatPrice(pick.selectedPrice)}</td>
-                            <td>{formatPrice(pick.currentPrice)}</td>
-                            <td className={getToneClass(pick.returnRate)}>{formatPercent(pick.returnRate)}</td>
-                            <td className={getToneClass(pick.excessReturnForPick)}>{formatPercent(pick.excessReturnForPick)}</td>
+                            <td>{pick.hasCurrentPrice ? formatPrice(pick.currentPrice) : "데이터 없음"}</td>
+                            <td className={getToneClass(pick.returnRate)}>{pick.hasCurrentPrice ? formatPercent(pick.returnRate) : "-"}</td>
+                            <td className={getToneClass(pick.excessReturnForPick)}>{pick.hasCurrentPrice ? formatPercent(pick.excessReturnForPick) : "-"}</td>
                             <td>{formatPrice(pick.targetPrice)}</td>
                             <td className={getToneClass(pick.upside)}>{formatPercent(pick.upside)}</td>
                             <td className={getToneClass(pick.currentUpside)}>{formatPercent(pick.currentUpside)}</td>
@@ -484,7 +507,10 @@ export default function PerformancePage() {
                 </div>
                 <div className="trustGrid">
                   {performanceData.selectedWeekSortedPicks.slice(0, 4).map((pick) => {
-                    const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn);
+                    const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn, {
+                      hasCurrentPrice: pick.hasCurrentPrice,
+                      isLatestSnapshot: selectedWeek.isLatestSnapshot,
+                    });
                     return (
                       <div className="trustItem" key={`${pick.code}-${pick.rank}`}>
                         <div className="trustItemTop">
