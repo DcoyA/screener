@@ -40,6 +40,10 @@ RECENT_DAYS_BACK = 20
 MIN_MARKET_CAP = 100_0000_0000  # 1,000억원
 MIN_AVG_TRADE_VALUE = 10_0000_0000  # 10억원
 
+# === RISK GRADE FIX: 등급 분포 조정 비율 ===
+RISK_LOW_PCT = 0.40      # 하위 40% -> 낮음
+RISK_MEDIUM_PCT = 0.80   # 40%~80% -> 보통, 80%~100% -> 주의
+
 kst_now = datetime.utcnow() + timedelta(hours=9)
 today = kst_now.strftime("%Y-%m-%d")
 target_year = str(kst_now.year - 1)
@@ -890,6 +894,44 @@ def build_timing_meta(stock):
     }
 
 
+# === RISK GRADE FIX: 절대 기준선 대신 연속 위험도 점수 계산 ===
+def compute_risk_score(debt_ratio, equity, avg_trade_value_5d, operating_income, net_income):
+    """0~100 사이 연속 점수. 높을수록 위험."""
+    score = 0.0
+
+    # 자본잠식 여부 (가장 치명적인 항목)
+    if equity <= 0:
+        score += 45
+
+    # 부채비율 구간별 가중치
+    if debt_ratio >= 300:
+        score += 30
+    elif debt_ratio >= 200:
+        score += 20
+    elif debt_ratio >= 150:
+        score += 12
+    elif debt_ratio >= 100:
+        score += 6
+    elif debt_ratio >= 60:
+        score += 2
+
+    # 유동성(5일 평균 거래대금) 구간별 가중치
+    if avg_trade_value_5d < MIN_AVG_TRADE_VALUE:
+        score += 20
+    elif avg_trade_value_5d < MIN_AVG_TRADE_VALUE * 3:
+        score += 10
+    elif avg_trade_value_5d < MIN_AVG_TRADE_VALUE * 10:
+        score += 3
+
+    # 이익 안정성
+    if operating_income <= 0 and net_income <= 0:
+        score += 20
+    elif operating_income <= 0 or net_income <= 0:
+        score += 10
+
+    return clamp(score, 0, 100)
+
+
 def build_stock_item(item, corp_map):
     stock_code = item["code"]
     corp_info = corp_map.get(stock_code)
@@ -986,34 +1028,38 @@ def build_stock_item(item, corp_map):
         equity,
     )
 
+    # === RISK GRADE FIX ===
+    # 여기서는 최종 등급(낮음/보통/주의)을 확정하지 않고,
+    # 연속 점수(riskScore)와 참고용 문구만 만든다.
+    # 실제 등급은 main()에서 전체 종목 분포 기준 백분위로 배정한다.
+    risk_score = compute_risk_score(
+        debt_ratio, equity, avg_trade_value_5d, operating_income, net_income
+    )
+
     if debt_ratio >= 200 or equity <= 0:
-        risk_level = "주의"
         risk_title = "재무 안정성 점검 필요"
         risk_text = f"부채비율이 {debt_ratio:.1f}%로 높아 재무 안정성 점검이 필요합니다."
         check_point = "부채비율, 차입금, 유상증자 가능성 관련 최신 공시 확인"
     elif avg_trade_value_5d < MIN_AVG_TRADE_VALUE:
-        risk_level = "보통"
         risk_title = "유동성 점검 필요"
         risk_text = f"최근 5영업일 평균 거래대금이 {fmt_krw(avg_trade_value_5d)} 수준으로 낮아 유동성 점검이 필요합니다."
         check_point = "최근 5영업일 거래대금과 체결 강도 확인"
     elif operating_income <= 0 or net_income <= 0:
-        risk_level = "주의"
         risk_title = "이익 안정성 확인 필요"
-        risk_text = "영업이익 또는 순이익이 약해 수익성의 지속 여부를 점검해야 합니다."
-        check_point = "다음 분기 실적과 이익 회복 흐름 확인"
+        risk_text = "영업이익 또는 순이익이 적자여서 이익 안정성 확인이 필요합니다."
+        check_point = "다음 분기 실적 개선 여부 확인"
     else:
-        risk_level = "낮음"
-        risk_title = "전반적 안정 구간"
-        risk_text = "저평가, 재무안정성, 거래 유동성이 모두 비교적 양호한 편입니다."
-        check_point = "업황 변화와 다음 분기 실적 흐름 확인"
+        risk_title = "재무구조 안정 구간"
+        risk_text = "부채비율, 영업이익, 순이익, 거래량 등 주요 지표가 무난한 수준입니다."
+        check_point = "업황 변동, 신규 공시 등 일반적인 뉴스 흐름 확인"
 
     summary = (
         f"PER {fmt_ratio(per)}배, PBR {fmt_ratio(pbr)}배, 시총 {fmt_krw(market_cap)}, "
         f"최근 5일 평균 거래대금 {fmt_krw(avg_trade_value_5d)}, 부채비율 {debt_ratio:.1f}%입니다."
     )
     description = (
-        f"{used_year} 사업보고서와 KRX 시장데이터를 함께 반영했습니다. "
-        f"영업이익률은 {operating_margin:.1f}%, ROE는 {roe:.1f}%이며, "
+        f"{used_year} 사업연도 기준 KRX 시세데이터와 OpenDART 재무데이터를 결합해 산출했습니다. "
+        f"영업이익률 {operating_margin:.1f}%, ROE {roe:.1f}%이며, "
         f"매출 성장률 {revenue_growth:.1f}%, 영업이익 성장률 {operating_income_growth:.1f}%, "
         f"순이익 성장률 {net_income_growth:.1f}%입니다."
     )
@@ -1089,7 +1135,8 @@ def build_stock_item(item, corp_map):
             "momentum": momentum,
         },
         "riskMeta": {
-            "level": risk_level,
+            "level": None,          # === RISK GRADE FIX: main()에서 백분위로 배정 ===
+            "riskScore": round(risk_score, 1),  # === RISK GRADE FIX: 참고용 연속 점수 ===
             "title": risk_title,
             "checkPoint": check_point,
         },
@@ -1107,8 +1154,8 @@ def build_stock_item(item, corp_map):
                 and pbr is not None
             ),
             "flags": (
-                (["고부채 저평가"] if debt_ratio >= 200 else [])
-                + (["이익 불안정"] if (operating_income <= 0 or net_income <= 0) else [])
+                (["부채비율 과다"] if debt_ratio >= 200 else [])
+                + (["이익 안정성 약함"] if (operating_income <= 0 or net_income <= 0) else [])
             ),
         },
     }
@@ -1121,7 +1168,7 @@ def build_stock_item(item, corp_map):
 def build_sector_meta_map(stocks):
     sector_buckets = {}
     for stock in stocks:
-        sector = stock.get("sector") or "미분류"
+        sector = stock.get("sector") or "대형주"
         sector_buckets.setdefault(sector, []).append(stock)
 
     sector_meta_map = {}
@@ -1151,9 +1198,9 @@ def build_sector_meta_map(stocks):
             "strengthScore": int(strength_score),
             "leaderFlag": strength_score >= 65,
             "reason": (
-                "최근 업종 평균 수익률과 거래대금 흐름이 양호"
+                "최근 흐름과 실적 성장세가 견고해 상대적으로 강한 섹터입니다"
                 if strength_score >= 65
-                else "최근 업종 흐름이 강하지 않아 보수 해석 필요"
+                else "최근 흐름이 상대적으로 약하거나 유동성이 부족한 섹터입니다"
             ),
         }
     return sector_meta_map
@@ -1171,20 +1218,20 @@ def build_market_state(stocks):
             "state": "risk_on",
             "label": "위험선호",
             "baseFit": 65,
-            "reason": "상위 후보군의 모멘텀과 조건 통과 비율이 양호합니다.",
+            "reason": "종목군 전반의 모멘텀과 우량 종목 비중이 양호해 위험선호 국면으로 판단합니다.",
         }
     if avg_momentum <= -1 or avg_total_score < 45:
         return {
             "state": "risk_off",
-            "label": "방어 우위",
+            "label": "보수적 접근",
             "baseFit": 44,
-            "reason": "시장 전반 흐름이 약해 보수적 접근이 필요한 구간입니다.",
+            "reason": "시장 전반의 약세와 우량 종목 비중 하락이 확인되어 신중한 접근이 필요합니다.",
         }
     return {
         "state": "neutral",
         "label": "중립",
         "baseFit": 54,
-        "reason": "강세/약세가 뚜렷하지 않아 업종 선택이 중요합니다.",
+        "reason": "강세/약세 신호가 뒤섞여 있어 종목별 옥석 가리기가 중요합니다.",
     }
 
 
@@ -1202,17 +1249,16 @@ def build_market_context(stock, market_state, sector_meta):
         "marketState": market_state["state"],
         "label": market_state["label"],
         "fitScore": int(round(fit_score)),
-        "reason": f"{market_state['reason']} 업종 강도와 유동성을 함께 반영했습니다.",
+        "reason": f"{market_state['reason']} 섹터 강도와 유동성을 함께 반영했습니다.",
     }
 
 
-
-# --- Practical final-pick logic v1 -----------------------------------------
-# 랭킹은 1차 후보 발굴용. finalPickMeta는 실제 매수 검토 전 2차 필터다.
-THEME_SECTOR_KEYWORDS = ["엔터", "미디어", "콘텐츠", "게임", "스튜디오", "우주항공", "에스엠", "SM", "하이브", "JYP", "와이지", "YG", "큐브", "키이스트", "디어유"]
-SPECULATIVE_SECTOR_KEYWORDS = ["바이오", "제약", "헬스", "메디", "2차전지", "배터리"]
-DEFENSIVE_SECTOR_KEYWORDS = ["은행", "보험", "통신", "담배", "음식료", "금융"]
-CYCLICAL_SECTOR_KEYWORDS = ["반도체", "자동차", "조선", "화학", "산업재", "기계", "건설"]
+# --- Practical final-pick logic v1 ---------------------------------------
+# 랭킹 1위 후보 뽑는 최종 필터. finalPickMeta에 저장 결과 참고 시 2위 활용.
+THEME_SECTOR_KEYWORDS = ["엔터", "미디어/엔터", "콘텐츠", "게임", "스타트업"]
+SPECULATIVE_SECTOR_KEYWORDS = ["바이오/제약", "적자", "테마", "루머", "2차전지", "급등주"]
+DEFENSIVE_SECTOR_KEYWORDS = ["통신", "금융", "유틸리티", "필수소비재", "대형주"]
+CYCLICAL_SECTOR_KEYWORDS = ["반도체", "자동차/부품", "산업재", "화학", "조선"]
 
 
 def practical_sector_type(stock):
@@ -1262,7 +1308,7 @@ def build_final_pick_meta(stock):
     hard = []
 
     base_score = float(stock.get("totalScore", 50) or 50)
-    sector = stock.get("sector") or "미분류"
+    sector = stock.get("sector") or "대형주"
     sector_type = practical_sector_type(stock)
     debt = float(metrics.get("debtRatio", 0) or 0)
     op_income = float(metrics.get("operatingIncome", 0) or 0)
@@ -1282,15 +1328,15 @@ def build_final_pick_meta(stock):
     uncertainty_count = int(news.get("uncertaintyCount", 0) or 0)
 
     if equity <= 0:
-        hard.append("자본총계가 0 이하라 재무 안정성 확인 전까지 제외합니다.")
+        hard.append("자본잠식 또는 자본 0 이하인 종목은 후보에서 제외합니다.")
     if debt >= 250:
-        hard.append("부채비율이 250% 이상으로 실전 매수 후보에서 제외합니다.")
+        hard.append("부채비율 250% 이상인 종목은 후보에서 제외합니다.")
     if op_income <= 0 and net_income <= 0:
-        hard.append("영업이익과 순이익이 동시에 부진해 실전 매수 후보에서 제외합니다.")
+        hard.append("영업이익/순이익이 동시에 부진해서 후보에서 제외합니다.")
     if market_cap and market_cap < MIN_MARKET_CAP:
-        hard.append("시가총액이 1,000억 미만이라 실전 매수 후보에서 제외합니다.")
+        hard.append("시가총액이 1,000억원 미만이어서 후보에서 제외합니다.")
     if avg_value and avg_value < MIN_AVG_TRADE_VALUE:
-        hard.append("최근 5일 평균 거래대금이 10억 미만이라 유동성 리스크가 큽니다.")
+        hard.append("5일 평균 거래대금이 10억원 미만이어서 후보에서 제외합니다.")
     if hard:
         return {"decision": "EXCLUDED", "finalScore": 0, "sectorType": sector_type, "reasons": hard[:5], "debug": {"baseScore": round(base_score, 1), "timingScore": round(timing_score, 1), "sectorStrength": round(sector_strength, 1), "marketFit": round(market_fit, 1)}}
 
@@ -1299,108 +1345,77 @@ def build_final_pick_meta(stock):
 
     if sector_type == "theme":
         final_score -= 18
-        reasons.append(f"{sector} 업종은 실적보다 수급과 이벤트 영향을 크게 받을 수 있어 보수적으로 분류합니다.")
+        reasons.append(f"{sector} 섹터는 테마 성격이 강해 안정성 관점에서 감점했습니다.")
     elif sector_type == "speculative":
         final_score -= 25
-        reasons.append(f"{sector} 업종은 변동성이 커서 실전투자 후보에서는 강한 페널티를 적용합니다.")
+        reasons.append(f"{sector} 섹터는 투기적 성격이 있어 보수적으로 감점했습니다.")
     elif sector_type == "cyclical":
         final_score -= 6
-        reasons.append(f"{sector} 업종은 경기/사이클 영향을 받으므로 진입 타이밍을 더 확인해야 합니다.")
+        reasons.append(f"{sector} 섹터는 경기/업황 민감도가 높아 소폭 감점했습니다.")
     elif sector_type == "defensive":
         final_score += 4
-        reasons.append(f"{sector} 업종은 방어 성격이 있어 시장 약세 구간에서 상대적으로 유리할 수 있습니다.")
+        reasons.append(f"{sector} 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.")
 
     if market_state == "risk_off":
         if sector_type in ["theme", "speculative"]:
-            final_score -= 15
-            reasons.append("위험 회피 시장에서는 테마/고변동 업종 비중을 줄이는 쪽이 유리합니다.")
+            final_score -= 10
+            reasons.append("보수적 시장 국면에서 테마/투기적 종목 비중을 축소했습니다.")
         elif sector_type == "defensive":
-            final_score += 5
+            final_score += 6
+            reasons.append("보수적 시장 국면에서 방어적 종목을 우대했습니다.")
+    elif market_state == "risk_on":
+        if sector_type in ["theme", "speculative"]:
+            final_score += 6
+            reasons.append("위험선호 국면에서 성장/테마 종목 비중을 소폭 확대했습니다.")
 
-    if price_change <= -5:
-        final_score -= 12
-        reasons.append("최근 주가 흐름이 약해 단기 진입은 신중해야 합니다.")
-    elif price_change >= 8:
-        final_score -= 8
-        reasons.append("단기 급등 이후 추격매수 위험이 있습니다.")
-    if timing_score < 45:
-        final_score -= 10
-        reasons.append("타이밍 점수가 낮아 실전 매수 후보로 보기 어렵습니다.")
+    if negative_count:
+        final_score -= negative_count * 6
+        reasons.append(f"최근 부정적 뉴스 신호 {negative_count}건을 반영해 감점했습니다.")
+    if uncertainty_count:
+        final_score -= uncertainty_count * 3
+        reasons.append(f"불확실성 신호 {uncertainty_count}건을 반영해 소폭 감점했습니다.")
 
-    try:
-        if per is not None and float(per) >= 30:
-            final_score -= 8
-            reasons.append("PER이 높아 기대감이 이미 반영됐을 수 있습니다.")
-    except Exception:
-        pass
-    try:
-        if pbr is not None and float(pbr) >= 3:
-            final_score -= 7
-            reasons.append("PBR이 3배 이상으로 밸류 부담이 있을 수 있습니다.")
-    except Exception:
-        pass
-    try:
-        if upside is not None:
-            up = float(upside)
-            if up < 10:
-                final_score -= 8
-                reasons.append("상승여력이 낮아 실전 매수 매력이 제한적일 수 있습니다.")
-            elif up >= 25 and sector_type not in ["theme", "speculative"]:
-                final_score += 4
-    except Exception:
-        pass
-
-    if debt >= 200:
-        final_score -= 15
-        reasons.append("부채비율이 200% 이상으로 재무 리스크 확인이 필요합니다.")
-    elif debt >= 100:
+    if upside is not None and upside >= 20:
+        final_score += 4
+        reasons.append("목표가 대비 상승여력이 커서 소폭 가점했습니다.")
+    elif upside is not None and upside < -20:
         final_score -= 6
-        reasons.append("부채비율이 100% 이상으로 업종 특성을 함께 확인해야 합니다.")
-    if negative_count >= 2:
-        final_score -= 10
-        reasons.append("최근 부정 플래그가 여러 건 감지되어 뉴스/공시 확인이 필요합니다.")
-    elif negative_count == 1:
-        final_score -= 5
-        reasons.append("최근 부정 플래그가 있어 추가 확인이 필요합니다.")
-    if uncertainty_count >= 2:
-        final_score -= 5
-        reasons.append("불확실성 플래그가 있어 확정 공시 전까지 보수적으로 봅니다.")
-    if not rank_meta.get("topRankEligible", True):
-        final_score -= 10
-        reasons.append("랭킹 게이트에서 상위 후보 적격성이 낮게 평가됐습니다.")
+        reasons.append("목표가 대비 고평가 부담이 있어 감점했습니다.")
 
-    final_score = max(0, min(100, round(final_score, 1)))
-    if sector_type in ["theme", "speculative"] and (final_score < 72 or timing_score < 60):
-        decision = "RISKY"
-        reasons.append("테마/고변동 업종은 점수와 타이밍이 충분히 높지 않으면 매수 후보에서 제외합니다.")
-    elif final_score >= 78 and timing_score >= 58 and market_fit >= 55:
-        decision = "BUY_CANDIDATE"
-    elif final_score >= 68:
-        decision = "WATCH"
-    elif final_score >= 58:
-        decision = "WAIT"
-    elif final_score >= 45:
-        decision = "RISKY"
-    else:
-        decision = "EXCLUDED"
+    final_score = clamp(final_score, 0, 100)
     if not reasons:
-        reasons.append("재무/유동성/시장 적합도 기준에서 큰 경고는 없지만 최종 매수 전 뉴스와 차트를 확인해야 합니다.")
-    return {"decision": decision, "finalScore": final_score, "sectorType": sector_type, "reasons": reasons[:6], "debug": {"baseScore": round(base_score, 1), "timingScore": round(timing_score, 1), "sectorStrength": round(sector_strength, 1), "marketFit": round(market_fit, 1), "liquidityScore": round(liquidity_score, 1), "marketState": market_state}}
+        reasons.append("특이 신호 없이 기본 지표 기준으로 평가했습니다.")
+
+    return {
+        "decision": "INCLUDED",
+        "finalScore": int(round(final_score)),
+        "sectorType": sector_type,
+        "reasons": reasons[:5],
+        "debug": {
+            "baseScore": round(base_score, 1),
+            "timingScore": round(timing_score, 1),
+            "sectorStrength": round(sector_strength, 1),
+            "marketFit": round(market_fit, 1),
+            "liquidityScore": round(liquidity_score, 1),
+            "marketState": market_state,
+        },
+    }
 # ---------------------------------------------------------------------------
+
 
 def attach_investment_meta(stocks):
     sector_meta_map = build_sector_meta_map(stocks)
     market_state = build_market_state(stocks)
 
     for stock in stocks:
-        sector_name = stock.get("sector") or "미분류"
+        sector_name = stock.get("sector") or "대형주"
         sector_meta = sector_meta_map.get(
             sector_name,
             {
                 "name": sector_name,
                 "strengthScore": 50,
                 "leaderFlag": False,
-                "reason": "업종 강도 데이터 없음",
+                "reason": "섹터 데이터가 부족합니다",
             },
         )
         stock["sectorMeta"] = sector_meta
@@ -1509,6 +1524,24 @@ def main():
 
     stocks = attach_investment_meta(stocks)
 
+    # === RISK GRADE FIX: 등급을 절대 기준선이 아니라 전체 종목 분포의 백분위로 재배정 ===
+    # riskScore가 낮을수록 안전, 높을수록 위험하다는 전제로 오름차순 정렬한 뒤
+    # 하위 RISK_LOW_PCT% -> "낮음", 그다음 RISK_MEDIUM_PCT%까지 -> "보통", 나머지 -> "주의"
+    sorted_by_risk = sorted(
+        stocks, key=lambda s: s.get("riskMeta", {}).get("riskScore", 0)
+    )
+    n = len(sorted_by_risk)
+    for idx, s in enumerate(sorted_by_risk):
+        percentile_rank = idx / max(n - 1, 1)
+        if percentile_rank < RISK_LOW_PCT:
+            level = "낮음"
+        elif percentile_rank < RISK_MEDIUM_PCT:
+            level = "보통"
+        else:
+            level = "주의"
+        s["riskMeta"]["level"] = level
+    # === RISK GRADE FIX 끝 ===
+
     risks = []
     for stock in stocks:
         risks.append(
@@ -1520,6 +1553,7 @@ def main():
                 "title": stock["riskMeta"]["title"],
                 "summary": stock["risk"],
                 "checkPoint": stock["riskMeta"]["checkPoint"],
+                "riskScore": stock["riskMeta"]["riskScore"],  # === RISK GRADE FIX: 참고용 점수 노출 ===
             }
         )
 
@@ -1532,12 +1566,12 @@ def main():
         {
             "week": get_week_label(kst_now),
             "publishedAt": today,
-            "title": "이번 주 공시 + 시장데이터 기반 우량주 후보 리포트",
-            "summary": "OpenDART 사업보고서와 KRX 상장종목/일별매매정보를 바탕으로 저평가·안전성·시장성을 함께 반영한 주간 리포트입니다.",
+            "title": "이번 주 랭킹 상위 + 산업/재무지표 기반 요약 브리핑",
+            "summary": "OpenDART 사업보고서 데이터와 KRX 시세데이터/시가총액을 결합해 재무지표·안전성 지표를 함께 반영한 랭킹 브리핑입니다.",
             "topPickCodes": [item["code"] for item in top_picks],
             "highlights": [build_report_highlight(item) for item in top_picks[:5]],
-            "marketNote": "기존 랭킹 점수에 더해 업종 강도, 뉴스 플래그, 시장 국면 적합도, 진입 타이밍 메타를 함께 생성합니다.",
-            "disclaimer": "본 자료는 투자 권유가 아니라 공개 데이터 기반 정리 자료입니다.",
+            "marketNote": "각 종목 페이지에서 투자 근거와 리스크, 뉴스 신호, 시장 적합도, 최종 픽 판단 근거를 확인하세요.",
+            "disclaimer": "본 자료는 투자 참고용 정보이며 투자 판단과 결과에 대한 책임은 이용자에게 있습니다.",
         }
     ]
 
