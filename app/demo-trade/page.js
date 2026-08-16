@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import MainNav from "../components/MainNav";
 import { createSupabaseBrowserClient } from "../lib/supabase/client";
-import { getMyDemoAccountLink, saveMyDemoAccountLink, resetMyDemoAccountLink } from "../lib/demoAccount";
 import { getWishlist } from "../lib/wishlist";
 
 const POPULAR_STOCKS = [
