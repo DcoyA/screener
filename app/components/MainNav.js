@@ -1,15 +1,34 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { NAV_ITEMS } from "../config/nav-items";
 
 export default function MainNav({ className = "" }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [openGroupId, setOpenGroupId] = useState(null);
+  const rootRef = useRef(null);
+
   const safeItems = Array.isArray(NAV_ITEMS) ? NAV_ITEMS.filter(Boolean) : [];
+
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (rootRef.current && !rootRef.current.contains(event.target)) {
+        setOpenGroupId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    setOpenGroupId(null);
+  }, [pathname]);
 
   const handleMove = (href) => {
     if (!href || href === "#") return;
+    setOpenGroupId(null);
     try {
       router.push(href);
     } catch (err) {
@@ -17,20 +36,72 @@ export default function MainNav({ className = "" }) {
     }
   };
 
+  const isGroupActive = (group) => {
+    return Array.isArray(group.items) && group.items.some((item) => item.href === pathname);
+  };
+
   return (
-    <nav className={className} aria-label="메인 메뉴">
+    <nav className={className} aria-label="메인 메뉴" ref={rootRef}>
       <div className="navRow">
-        {safeItems.map((item) => {
-          const href = item?.href || "#";
-          const label = item?.label || "메뉴";
+        {safeItems.map((entry) => {
+          if (entry.type === "group") {
+            const active = isGroupActive(entry);
+            const open = openGroupId === entry.id;
+
+            return (
+              <div key={entry.id} className="navGroup">
+                <button
+                  type="button"
+                  className={active ? "navLink navGroupTrigger active" : "navLink navGroupTrigger"}
+                  aria-expanded={open}
+                  onClick={() => setOpenGroupId(open ? null : entry.id)}
+                >
+                  {entry.label}
+                  <span className={open ? "navCaret navCaretOpen" : "navCaret"}>▾</span>
+                </button>
+
+                {open && (
+                  <div className="navDropdown" role="menu">
+                    {entry.items.map((item, index) => {
+                      const itemActive = pathname === item.href;
+                      return (
+                        <button
+                          key={item.href}
+                          type="button"
+                          role="menuitem"
+                          className={itemActive ? "navDropdownItem active" : "navDropdownItem"}
+                          onClick={() => handleMove(item.href)}
+                        >
+                          <span className="navDropdownLabel">{item.label}</span>
+                          {item.desc ? <span className="navDropdownDesc">{item.desc}</span> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          const href = entry.href || "#";
+          const label = entry.label || "메뉴";
           const isActive = pathname === href;
+          const isMuted = entry.type === "muted";
 
           return (
             <button
               key={href}
               type="button"
               onClick={() => handleMove(href)}
-              className={isActive ? "navLink active" : "navLink"}
+              className={
+                isMuted
+                  ? isActive
+                    ? "navLink navLinkMuted active"
+                    : "navLink navLinkMuted"
+                  : isActive
+                  ? "navLink active"
+                  : "navLink"
+              }
               aria-current={isActive ? "page" : undefined}
             >
               {label}
@@ -47,6 +118,9 @@ export default function MainNav({ className = "" }) {
           flex-wrap: wrap;
           position: relative;
           z-index: 10;
+        }
+        .navGroup {
+          position: relative;
         }
         .navLink {
           display: inline-flex;
@@ -76,6 +150,70 @@ export default function MainNav({ className = "" }) {
           border-color: #0f172a;
           color: #ffffff;
         }
+        .navLinkMuted {
+          background: transparent;
+          border-color: transparent;
+          color: #94a3b8;
+          font-weight: 600;
+          font-size: 0.85rem;
+        }
+        .navLinkMuted:hover {
+          background: #f1f5f9;
+          color: #64748b;
+        }
+        .navGroupTrigger {
+          gap: 6px;
+        }
+        .navCaret {
+          font-size: 0.7rem;
+          transition: transform 0.15s ease;
+        }
+        .navCaretOpen {
+          transform: rotate(180deg);
+        }
+        .navDropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 0;
+          min-width: 220px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          z-index: 30;
+        }
+        .navDropdownItem {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 2px;
+          width: 100%;
+          text-align: left;
+          padding: 8px 12px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+        }
+        .navDropdownItem:hover {
+          background: #f8fafc;
+        }
+        .navDropdownItem.active {
+          background: #eef2ff;
+        }
+        .navDropdownLabel {
+          font-weight: 800;
+          font-size: 0.9rem;
+          color: #1e293b;
+        }
+        .navDropdownDesc {
+          font-size: 0.76rem;
+          color: #94a3b8;
+        }
         @media (max-width: 640px) {
           .navRow {
             gap: 8px;
@@ -84,6 +222,10 @@ export default function MainNav({ className = "" }) {
             min-height: 38px;
             padding: 0 12px;
             font-size: 0.88rem;
+          }
+          .navDropdown {
+            left: auto;
+            right: 0;
           }
         }
       `}</style>
