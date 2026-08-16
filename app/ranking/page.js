@@ -5,6 +5,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
+import WishlistButton from "../components/WishlistButton";
 
 const VIEW_CONFIG = {
   total: {
@@ -644,6 +645,9 @@ function RankingPageContent() {
                       <div>
                         <h3>{stock.name}</h3>
                         <p className="stockMeta">{stock.market} · {stock.code}</p>
+                        <div style={{ marginTop: 8 }}>
+                          <WishlistButton code={stock.code} name={stock.name} size="sm" />
+                        </div>
                       </div>
                     </div>
                     <div className="scoreWrap">
