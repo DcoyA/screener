@@ -20,7 +20,10 @@ export default function WishlistButton({ code, name, size = "md" }) {
     event.preventDefault();
     event.stopPropagation();
     toggleWishlist(code, name);
-    setActive((prev) => !prev);
+    // setActive는 여기서 직접 건드리지 않습니다.
+    // toggleWishlist -> saveWishlist가 쏘는 이벤트를 useEffect의
+    // subscribeWishlist 콜백이 받아서 localStorage 실제값 기준으로
+    // active를 다시 계산해줍니다.
   };
 
   const baseStyle = {
