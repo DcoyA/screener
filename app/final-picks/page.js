@@ -7,14 +7,22 @@ import stocks from "../data/stocks.json";
 import risks from "../data/risks.json";
 import MainNav from "../components/MainNav";
 import WishlistButton from "../components/WishlistButton";
+import { getUnifiedGrade, GRADE_META, GRADE_ORDER } from "../lib/grade";
 
-const GROUPS = {
-  buy: { title: "매수 후보", short: "매수", color: "#0f766e", bg: "#ccfbf1", desc: "업종·타이밍·시장 적합도·리스크를 다시 통과한 후보입니다." },
-  watch: { title: "관찰 후보", short: "관찰", color: "#b45309", bg: "#fff7ed", desc: "기본 체력은 볼 만하지만 지금 바로 진입하기엔 확인할 조건이 남은 후보입니다." },
-  wait: { title: "대기 후보", short: "대기", color: "#2563eb", bg: "#dbeafe", desc: "가격·타이밍·상승여력 측면에서 기다림이 필요한 후보입니다." },
-  risky: { title: "주의 후보", short: "주의", color: "#ea580c", bg: "#ffedd5", desc: "테마성, 변동성, 뉴스 플래그, 타이밍 약화 등으로 강하게 보류한 종목입니다." },
-  exclude: { title: "제외 후보", short: "제외", color: "#be123c", bg: "#ffe4e6", desc: "랭킹에 올라와도 현재 기준에서는 실전 매수 대상으로 보기 어려운 종목입니다." },
+const GROUP_DESC = {
+  S: "재무·타이밍·리스크를 모두 다시 통과한 후보입니다.",
+  A: "기본 체력은 볼 만하지만 지금 바로 진입하기엔 확인할 조건이 남은 후보입니다.",
+  B: "가격·타이밍·상승여력 측면에서 기다림이 필요한 후보입니다.",
+  C: "테마성, 변동성, 뉴스 플래그, 타이밍 약화 등으로 강하게 보류한 종목입니다.",
+  D: "랭킹에 올라와도 현재 기준에서는 실전 매수 대상으로 보기 어려운 종목입니다.",
 };
+
+const GROUPS = Object.fromEntries(
+  GRADE_ORDER.map((code) => [
+    code,
+    { title: GRADE_META[code].label, short: GRADE_META[code].label.slice(0, 2), color: GRADE_META[code].color, bg: GRADE_META[code].bg, desc: GROUP_DESC[code] },
+  ])
+);
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -49,16 +57,6 @@ function sortForBaselineRanking(items) {
     if (scoreDiff) return scoreDiff;
     return Number(b?.metrics?.avgTradeValue5d || 0) - Number(a?.metrics?.avgTradeValue5d || 0);
   });
-}
-
-function normalizeDecision(raw) {
-  const value = String(raw || "").trim().toUpperCase();
-  if (value === "BUY_CANDIDATE" || value === "BUY" || raw === "매수 후보") return "buy";
-  if (value === "WATCH" || raw === "관찰") return "watch";
-  if (value === "WAIT" || value === "WAIT_FOR_PULLBACK" || raw === "대기") return "wait";
-  if (value === "RISKY" || raw === "주의") return "risky";
-  if (value === "EXCLUDED" || value === "EXCLUDE" || raw === "제외") return "exclude";
-  return "watch";
 }
 
 function getSectorTypeLabel(type) {
@@ -101,13 +99,14 @@ function buildFinalPicks(stocksData, risksData) {
 
   const evaluated = ranked.map((stock) => {
     const meta = stock?.finalPickMeta || fallbackFinalPickMeta(stock);
-    const decisionKey = normalizeDecision(meta.decision);
+    const grade = getUnifiedGrade(stock);
     const riskItem = riskMap.get(String(stock.code));
     return {
       ...stock,
       meta,
-      decisionKey,
-      decision: GROUPS[decisionKey],
+      decisionKey: grade.code,
+      decision: GROUPS[grade.code],
+      unifiedGrade: grade,
       finalScore: Math.round(clamp(Number(meta.finalScore ?? stock.totalScore ?? 0), 0, 100)),
       reasons: Array.isArray(meta.reasons) && meta.reasons.length ? meta.reasons : ["실전투자 판단 사유가 아직 없습니다."],
       debug: meta.debug || {},
@@ -116,6 +115,16 @@ function buildFinalPicks(stocksData, risksData) {
       riskLevel: riskItem?.level || stock?.riskMeta?.level || "낮음",
     };
   });
+  
+  const order = Object.fromEntries(GRADE_ORDER.map((code, idx) => [code, idx]));
+  evaluated.sort((a, b) => {
+    const group = order[a.decisionKey] - order[b.decisionKey];
+    if (group) return group;
+    if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+    return (a.baselineRank || 9999) - (b.baselineRank || 9999);
+  });
+
+return Object.fromEntries(GRADE_ORDER.map((code) => [code, evaluated.filter((item) => item.decisionKey === code)]));
 
   const order = { buy: 0, watch: 1, wait: 2, risky: 3, exclude: 4 };
   evaluated.sort((a, b) => {
