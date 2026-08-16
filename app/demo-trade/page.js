@@ -130,7 +130,7 @@ function DemoTradeContent() {
   
     initializePage();
   
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const user = session?.user || null;
       setAuthUser(user);
       if (user) {
