@@ -78,9 +78,6 @@ export default function MainNav({ className = "" }) {
                         </button>
                       );
                     })}
-                    <span className="navAuthSlot">
-                      <AuthButton />
-                    </span>
                   </div>
                 )}
               </div>
@@ -112,6 +109,13 @@ export default function MainNav({ className = "" }) {
             </button>
           );
         })}
+        <span className="navAuthSlot">
+          <AuthButton />
+        </span>
+      </div>
+
+      <style jsx>{`
+
       </div>
 
       <style jsx>{`
