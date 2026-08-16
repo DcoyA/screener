@@ -115,10 +115,6 @@ export default function MainNav({ className = "" }) {
       </div>
 
       <style jsx>{`
-
-      </div>
-
-      <style jsx>{`
         .navRow {
           display: flex;
           align-items: center;
