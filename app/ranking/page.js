@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import stocks from "../data/stocks.json";
-const scorePresentation = getScorePresentation(stock, activeView);
-const unifiedGrade = getUnifiedGrade(stock);
 import MainNav from "../components/MainNav";
 import WishlistButton from "../components/WishlistButton";
+import { getUnifiedGrade } from "../lib/grade";
+import GradeBadge from "../components/GradeBadge";
 
 const VIEW_CONFIG = {
   total: {
@@ -638,6 +638,7 @@ function RankingPageContent() {
               const displayRank = rankMap.get(String(stock.code)) ?? "-";
 
               const scorePresentation = getScorePresentation(stock, activeView);
+              const unifiedGrade = getUnifiedGrade(stock);
 
               return (
                 <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
