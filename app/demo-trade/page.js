@@ -743,6 +743,14 @@ function DemoTradeContent() {
             <div>
               <div style={styles.stockName}>{name || code}</div>
               <div style={styles.stockCode}>{code}</div>
+              {code && (
+                <Link
+                  href={`/stock/${code}`}
+                  style={{ display: "inline-block", marginTop: "6px", fontSize: "13px", fontWeight: 800, color: "#0369a1", textDecoration: "none" }}
+                >
+                  종목 상세 진단 보기 →
+                </Link>
+              )}
             </div>
             <div style={styles.priceArea}>
               <div style={styles.nowPrice}>{price ? formatWon(price) : "-"}</div>
