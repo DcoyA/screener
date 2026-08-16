@@ -588,6 +588,20 @@ function DemoTradeContent() {
               <div style={styles.accountId}>{account.accountId}</div>
               <div style={styles.accountPin}>PIN {account.pin}</div>
               <button style={styles.miniCopyButton} onClick={() => copyAccountInfo(account)}>계좌정보 복사</button>
+              <button
+                style={styles.linkButton}
+                onClick={() => {
+                  setAccount(null);
+                  setOrders([]);
+                  setPositionPrices({});
+                  setLoginAccountId("");
+                  setLoginPin("");
+                  setShowLoginForm(true);
+                  localStorage.removeItem("demoTradeAccount");
+                }}
+              >
+                다른 계좌로 전환
+              </button>
             </>
           ) : (
             <>
