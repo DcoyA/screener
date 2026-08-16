@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import MainNav from "../components/MainNav";
 import { createSupabaseBrowserClient } from "../lib/supabase/client";
 import { getMyDemoAccountLink, saveMyDemoAccountLink, resetMyDemoAccountLink } from "../lib/demoAccount";
+import { getWishlist } from "../lib/wishlist";
 
 const POPULAR_STOCKS = [
   { code: "005930", name: "삼성전자" },
@@ -103,6 +104,7 @@ function DemoTradeContent() {
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
   const [pendingAccountAck, setPendingAccountAck] = useState(false);
+  const [wishlistStocks, setWishlistStocks] = useState([]);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
@@ -120,8 +122,11 @@ function DemoTradeContent() {
       const { data } = await supabase.auth.getUser();
       const user = data.user || null;
       setAuthUser(user);
-      if (user) await ensureAccountForUser();
-    }
+      if (user) {
+        await ensureAccountForUser();
+        const list = await getWishlist();
+        setWishlistStocks(list);
+      }
   
     initializePage();
   
@@ -129,11 +134,15 @@ function DemoTradeContent() {
       const user = session?.user || null;
       setAuthUser(user);
       if (user) {
-        ensureAccountForUser();
+        await ensureAccountForUser();
+        const list = await getWishlist();
+        setWishlistStocks(list);
+      }
       } else {
         setAccount(null);
         setOrders([]);
         setPositionPrices({});
+        setWishlistStocks([]);
       }
     });
   
@@ -696,6 +705,37 @@ function DemoTradeContent() {
                 <em>{stock.code}</em>
               </button>
             ))}
+            {wishlistStocks.length > 0 && (
+              <div style={{ marginTop: "12px" }}>
+                <div style={{ fontSize: "13px", color: "#64748b", fontWeight: 800, marginBottom: "8px" }}>
+                  내 관심종목
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {wishlistStocks.map((item) => (
+                    <button
+                      key={item.code}
+                      type="button"
+                      onClick={() => {
+                        setSearchCode(item.code);
+                        fetchQuote(item.code, item.name, "manual");
+                      }}
+                      style={{
+                        padding: "8px 14px",
+                        borderRadius: "999px",
+                        border: item.code === code ? "1px solid #111827" : "1px solid #dbe3f0",
+                        background: item.code === code ? "#111827" : "#fff",
+                        color: item.code === code ? "#fff" : "#334155",
+                        fontWeight: 800,
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ★ {item.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </aside>
 
