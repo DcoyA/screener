@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import stocks from "../../data/stocks.json";
 import WishlistButton from "../../components/WishlistButton";
+import { getUnifiedGrade } from "../../lib/grade";
+import GradeBadge from "../../components/GradeBadge";
 
 const SCORE_META = [
   {
@@ -759,6 +761,8 @@ function buildScenarioTexts(stock) {
 export default async function StockDetailPage({ params }) {
   const { code } = await params;
   const stock = stocks.find((item) => item.code === code);
+  const summaryBlock = buildQuickConclusion(stock);
+  const unifiedGrade = getUnifiedGrade(stock);
 
   if (!stock) {
     notFound();
@@ -803,13 +807,13 @@ export default async function StockDetailPage({ params }) {
               <h2 style={styles.quickSummaryTitle}>한눈에 보는 종목 해석</h2>
             </div>
             <div style={styles.chipRow}>
+              <GradeBadge grade={unifiedGrade} />
               {summaryBlock.chips.map((chip, idx) => (
-                <span key={`${chip.text}-${idx}`} style={getBadgeStyle(chip.kind)}>
-                  {chip.text}
-                </span>
+                <span key={`${chip.text}-${idx}`} style={getBadgeStyle(chip.kind)}>{chip.text}</span>
               ))}
             </div>
           </div>
+          <div style={styles.quickSummaryTop}>
           <p style={styles.quickSummaryLead}>{summaryBlock.stance}</p>
           <div style={styles.chipRow}>
             <span style={getBadgeStyle("value")}>{summaryBlock.summary}</span>
