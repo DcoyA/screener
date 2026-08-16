@@ -28,5 +28,6 @@ export const NAV_ITEMS = [
   },
   { id: "demo-trade", type: "single", href: "/demo-trade", label: "모의투자" },
   { id: "alternative", type: "single", href: "/alternative", label: "ETF" },
+  { id: "wishlist", type: "single", href: "/wishlist", label: "관심종목" },
   { id: "notice", type: "muted", href: "/notice", label: "이용가이드" },
 ];
