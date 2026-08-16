@@ -119,7 +119,7 @@ export default function HomePage() {
           <MainNav className="mainNav" />
         </header>
 
-        <HeroSection updatedAt={updatedAt} />
+        <HeroSection updatedAt={updatedAt} stocks={stocks} />
 
         <SubscribeSection
           isModalOpen={isModalOpen}
@@ -386,6 +386,118 @@ export default function HomePage() {
           gap: 16px;
           margin: 56px 0 22px;
           flex-wrap: wrap;
+        }
+        .searchBarForm {
+          margin-top: 24px;
+          max-width: 640px;
+        }
+        .searchBarWrap {
+          position: relative;
+        }
+        .searchBarInput {
+          width: 100%;
+          height: 58px;
+          border-radius: 16px;
+          border: 1px solid #cbd5e1;
+          padding: 0 110px 0 20px;
+          font-size: 1.02rem;
+          outline: none;
+          box-sizing: border-box;
+          background: #ffffff;
+          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+        }
+        .searchBarInput:focus {
+          border-color: #4f46e5;
+          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+        }
+        .searchBarBtn {
+          position: absolute;
+          right: 8px;
+          top: 8px;
+          height: 42px;
+          padding: 0 20px;
+          border-radius: 12px;
+          border: none;
+          background: #0f172a;
+          color: #ffffff;
+          font-weight: 800;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+        .searchBarBtn:hover {
+          background: #111827;
+        }
+        .searchDropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          left: 0;
+          right: 0;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+          overflow: hidden;
+          z-index: 20;
+        }
+        .searchResultList {
+          list-style: none;
+          margin: 0;
+          padding: 6px;
+          max-height: 320px;
+          overflow-y: auto;
+        }
+        .searchResultItem {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          border-radius: 12px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          text-align: left;
+          font-size: 0.95rem;
+          transition: background 0.15s ease;
+        }
+        .searchResultItem:hover {
+          background: #f8fafc;
+        }
+        .searchResultName {
+          font-weight: 800;
+          color: #0f172a;
+        }
+        .searchResultCode {
+          color: #64748b;
+          font-size: 0.85rem;
+        }
+        .searchResultMarket {
+          margin-left: auto;
+          display: inline-flex;
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: #eef2ff;
+          color: #4f46e5;
+          font-size: 0.75rem;
+          font-weight: 800;
+        }
+        .searchNoResult {
+          margin: 0;
+          padding: 18px;
+          color: #64748b;
+          font-size: 0.92rem;
+          text-align: center;
+        }
+        @media (max-width: 640px) {
+          .searchBarInput {
+            padding-right: 90px;
+            height: 54px;
+          }
+          .searchBarBtn {
+            height: 38px;
+            padding: 0 14px;
+            font-size: 0.9rem;
+          }
         }
         .compactHeader {
           margin-top: 0;
