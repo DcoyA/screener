@@ -78,14 +78,14 @@ export default function MainNav({ className = "" }) {
                         </button>
                       );
                     })}
+                    <span className="navAuthSlot">
+                      <AuthButton />
+                    </span>
                   </div>
                 )}
               </div>
             );
           }
-          <span className="navAuthSlot">
-            <AuthButton />
-          </span>
 
           const href = entry.href || "#";
           const label = entry.label || "메뉴";
