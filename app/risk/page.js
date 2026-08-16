@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import risks from "../data/risks.json";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
+import WishlistButton from "../components/WishlistButton";
 
 const RISK_FILTER_CONFIG = {
   all: { label: "전체", title: "전체 리스크" },
@@ -300,6 +301,9 @@ function RiskPageContent() {
                       <h3>{renderHighlightedName(item.name, searchTerm)}</h3>
                       <p className="codeText">종목코드 {item.code}</p>
                       <p className="priceText">최근 종가 {currentPrice}</p>
+                      <div style={{ marginTop: 10 }}>
+                        <WishlistButton code={item.code} name={item.name} size="sm" />
+                      </div>
                     </div>
                     <span className={getRiskClass(item.level)}>{item.level}</span>
                   </div>
