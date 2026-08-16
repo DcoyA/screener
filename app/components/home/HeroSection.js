@@ -135,7 +135,7 @@ export default function HeroSection({ updatedAt, stocks = [] }) {
             <span className="heroPoint">장기: 저평가와 재무 구조 중심</span>
           </div>
           <div className="heroActions">
-            <Link className="primaryBtn" href="/ranking">
+            <Link className="primaryBtn" href="/search?tab=ranking">
               상위 랭킹 보기
             </Link>
             <Link className="secondaryBtn" href="/reports">
