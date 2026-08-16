@@ -126,21 +126,6 @@ function buildFinalPicks(stocksData, risksData) {
 
 return Object.fromEntries(GRADE_ORDER.map((code) => [code, evaluated.filter((item) => item.decisionKey === code)]));
 
-  const order = { buy: 0, watch: 1, wait: 2, risky: 3, exclude: 4 };
-  evaluated.sort((a, b) => {
-    const group = order[a.decisionKey] - order[b.decisionKey];
-    if (group) return group;
-    if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
-    return (a.baselineRank || 9999) - (b.baselineRank || 9999);
-  });
-
-  return {
-    buy: evaluated.filter((item) => item.decisionKey === "buy"),
-    watch: evaluated.filter((item) => item.decisionKey === "watch"),
-    wait: evaluated.filter((item) => item.decisionKey === "wait"),
-    risky: evaluated.filter((item) => item.decisionKey === "risky"),
-    exclude: evaluated.filter((item) => item.decisionKey === "exclude"),
-  };
 }
 
 const S = {
@@ -252,7 +237,7 @@ function PickCard({ item }) {
 }
 
 export default function FinalPicksPage() {
-  const [selectedGroup, setSelectedGroup] = useState("watch");
+  const [selectedGroup, setSelectedGroup] = useState("A");
   const finalPicks = useMemo(() => buildFinalPicks(stocks, risks), []);
   const current = finalPicks[selectedGroup] || [];
   const hasFinalPickMeta = stocks.some((stock) => stock?.finalPickMeta);
