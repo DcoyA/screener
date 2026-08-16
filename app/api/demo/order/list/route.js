@@ -1,55 +1,44 @@
+// app/api/demo/order/list/route.js
 import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "../../../../lib/supabase/server";
 import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
 
-async function loadOrders(accountId, pin) {
-  try {
-    if (!accountId || !pin) return { ok: false, error: "accountId와 pin이 필요합니다." };
+export async function GET() {
+  const supabaseServer = await createSupabaseServerClient();
+  const { data: userData } = await supabaseServer.auth.getUser();
+  const user = userData.user;
+  if (!user) return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
 
-    const supabase = createSupabaseAdminClient();
-    const { data: account, error: accError } = await supabase
-      .from("virtual_accounts")
-      .select("id")
-      .eq("account_no", accountId)
-      .eq("pin", pin)
-      .maybeSingle();
+  const supabase = createSupabaseAdminClient();
 
-    if (accError) return { ok: false, error: `계좌 확인 실패: ${accError.message}` };
-    if (!account) return { ok: false, error: "계좌를 찾을 수 없습니다." };
+  const { data: account, error: accError } = await supabase
+    .from("virtual_accounts")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
 
-    const { data: rows, error } = await supabase
-      .from("virtual_transactions")
-      .select("*")
-      .eq("account_id", account.id)
-      .order("executed_at", { ascending: true });
+  if (accError) return NextResponse.json({ ok: false, error: `계정 확인 실패: ${accError.message}` }, { status: 500 });
+  if (!account) return NextResponse.json({ ok: false, error: "가상계좌를 찾을 수 없습니다." });
 
-    if (error) return { ok: false, error: `주문 목록 조회 실패: ${error.message}` };
+  const { data: rows, error } = await supabase
+    .from("virtual_transactions")
+    .select("*")
+    .eq("account_id", account.id)
+    .order("executed_at", { ascending: true });
 
-    const orders = (rows || []).map((row) => ({
-      orderId: row.id,
-      code: row.code,
-      name: row.name,
-      side: row.side === "buy" ? "BUY" : "SELL",
-      price: row.price,
-      quantity: row.quantity,
-      amount: row.amount,
-      reason: row.reason,
-      createdAt: row.executed_at,
-    }));
+  if (error) return NextResponse.json({ ok: false, error: `주문 목록 조회 실패: ${error.message}` }, { status: 500 });
 
-    return { ok: true, orders };
-  } catch (error) {
-    console.error("order/list fatal error:", error);
-    return { ok: false, error: `서버 오류: ${error.message}` };
-  }
+  const orders = (rows || []).map((row) => ({
+    orderId: row.id, code: row.code, name: row.name,
+    side: row.side === "buy" ? "BUY" : "SELL",
+    price: row.price, quantity: row.quantity, amount: row.amount,
+    reason: row.reason, createdAt: row.executed_at,
+  }));
+
+  return NextResponse.json({ ok: true, orders });
 }
 
-export async function GET(request) {
-  const { searchParams } = new URL(request.url);
-  const data = await loadOrders(searchParams.get("accountId"), searchParams.get("pin"));
-  return NextResponse.json(data);
-}
-export async function POST(request) {
-  const body = await request.json();
-  const data = await loadOrders(body.accountId, body.pin);
-  return NextResponse.json(data);
+export async function POST() {
+  return GET();
 }
