@@ -6,6 +6,14 @@ import Image from "next/image";
 import stocks from "./data/stocks.json";
 import notices from "./data/notices.json";
 import MainNav from "./components/MainNav";
+import HeroSection from "./components/home/HeroSection";
+import SubscribeSection from "./components/home/SubscribeSection";
+import StrategySection from "./components/home/StrategySection";
+import AvoidSection from "./components/home/AvoidSection";
+import BridgeSection from "./components/home/BridgeSection";
+import QuickLinksSection from "./components/home/QuickLinksSection";
+import NoticePreview from "./components/home/NoticePreview";
+import { buildStrategyCards, buildAvoidSummary } from "./lib/homeData";
 
 const SUBSCRIBE_ENDPOINT =
   "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
@@ -29,191 +37,6 @@ function createUnsubscribeToken(emailValue) {
   const safeEmail = emailValue.toLowerCase().replace(/[^a-z0-9]/gi, "");
   const randomPart = Math.random().toString(36).slice(2, 10);
   return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
-}
-
-function formatPrice(value) {
-  const num = Number(value || 0);
-  if (!num) return "-";
-  return `${num.toLocaleString("ko-KR")}원`;
-}
-
-function formatPercent(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
-}
-
-function formatKrwCompact(value) {
-  const num = Number(value || 0);
-  if (!num) return "-";
-  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
-  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
-  return `${num.toLocaleString("ko-KR")}원`;
-}
-
-function getUpsideClass(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "upsideLine";
-  if (num > 0) return "upsideLine upsidePositive";
-  if (num < 0) return "upsideLine upsideNegative";
-  return "upsideLine upsideNeutral";
-}
-
-function sortForShortTerm(items) {
-  return [...items].sort((a, b) => {
-    const aMomentum = Number(a?.metrics?.priceChangeRate ?? a?.metrics?.momentum ?? 0);
-    const bMomentum = Number(b?.metrics?.priceChangeRate ?? b?.metrics?.momentum ?? 0);
-    if (bMomentum !== aMomentum) return bMomentum - aMomentum;
-    const aUpside = Number(a?.metrics?.upside ?? -999999);
-    const bUpside = Number(b?.metrics?.upside ?? -999999);
-    if (bUpside !== aUpside) return bUpside - aUpside;
-    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
-    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
-    return bLiquidity - aLiquidity;
-  });
-}
-
-function sortForAnnual(items) {
-  return [...items].sort((a, b) => {
-    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
-    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
-    if (bEligible !== aEligible) return bEligible - aEligible;
-    const aScore = Number(a?.totalScore ?? 0);
-    const bScore = Number(b?.totalScore ?? 0);
-    if (bScore !== aScore) return bScore - aScore;
-    const aGrowth = Number(a?.metrics?.operatingIncomeGrowth ?? 0) + Number(a?.metrics?.revenueGrowth ?? 0);
-    const bGrowth = Number(b?.metrics?.operatingIncomeGrowth ?? 0) + Number(b?.metrics?.revenueGrowth ?? 0);
-    if (bGrowth !== aGrowth) return bGrowth - aGrowth;
-    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
-    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
-    return bLiquidity - aLiquidity;
-  });
-}
-
-function sortForLongTerm(items) {
-  return [...items]
-    .filter((item) => item?.undervalueMeta?.eligible)
-    .sort((a, b) => {
-      const aValue = Number(a?.valueScore ?? 0);
-      const bValue = Number(b?.valueScore ?? 0);
-      if (bValue !== aValue) return bValue - aValue;
-      const aDebt = Number(a?.metrics?.debtRatio ?? 999999);
-      const bDebt = Number(b?.metrics?.debtRatio ?? 999999);
-      if (aDebt !== bDebt) return aDebt - bDebt;
-      const aRoe = Number(a?.metrics?.roe ?? -999999);
-      const bRoe = Number(b?.metrics?.roe ?? -999999);
-      return bRoe - aRoe;
-    });
-}
-
-function buildReasonLine(parts, fallback) {
-  const output = parts.filter(Boolean);
-  return output.length ? output.join(" · ") : fallback;
-}
-
-function buildShortReason(stock) {
-  return buildReasonLine(
-    [
-      Number.isFinite(Number(stock?.metrics?.priceChangeRate)) ? `최근 흐름 ${formatPercent(stock?.metrics?.priceChangeRate)}` : null,
-      Number.isFinite(Number(stock?.metrics?.upside)) ? `상승여력 ${formatPercent(stock?.metrics?.upside)}` : null,
-      stock?.metrics?.avgTradeValue5d ? `유동성 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)}` : null,
-      (stock?.rankMeta?.flags || [])[0] || null,
-    ],
-    "단기 흐름과 거래가 붙는지 중심으로 다시 보는 후보입니다."
-  );
-}
-
-function buildAnnualReason(stock) {
-  return buildReasonLine(
-    [
-      stock?.rankMeta?.topRankEligible ? "안정성 조건 통과" : null,
-      Number(stock?.totalScore ?? 0) ? `총점 ${Number(stock.totalScore).toFixed(0)}점` : null,
-      Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth)) ? `영업이익 성장 ${formatPercent(stock?.metrics?.operatingIncomeGrowth)}` : null,
-      Number.isFinite(Number(stock?.metrics?.revenueGrowth)) ? `매출 성장 ${formatPercent(stock?.metrics?.revenueGrowth)}` : null,
-    ],
-    "연간 보유 관점에서 무난하게 가져갈 수 있는 후보입니다."
-  );
-}
-
-function buildLongReason(stock) {
-  return buildReasonLine(
-    [
-      Number(stock?.valueScore ?? 0) ? `가치 점수 ${Number(stock.valueScore).toFixed(0)}점` : null,
-      Number.isFinite(Number(stock?.metrics?.debtRatio)) ? `부채비율 ${formatPercent(stock?.metrics?.debtRatio)}` : null,
-      Number.isFinite(Number(stock?.metrics?.roe)) ? `ROE ${formatPercent(stock?.metrics?.roe)}` : null,
-      Number.isFinite(Number(stock?.metrics?.pbr)) ? `PBR ${Number(stock.metrics.pbr).toFixed(2)}배` : null,
-    ],
-    "장기 보유 관점에서 가격보다 구조를 먼저 보는 후보입니다."
-  );
-}
-
-function buildAvoidSummary(items) {
-  const highDebt = items.filter((item) => Number(item?.metrics?.debtRatio ?? 0) >= 200).length;
-  const weakLiquidity = items.filter((item) => Number(item?.metrics?.avgTradeValue5d ?? 0) < 10_0000_0000).length;
-  const unstable = items.filter(
-    (item) => Number(item?.metrics?.operatingIncome ?? 0) <= 0 || Number(item?.metrics?.netIncome ?? 0) <= 0
-  ).length;
-
-  return [
-    {
-      label: "고부채",
-      count: highDebt,
-      desc: "저평가처럼 보여도 재무가 불안한 타입",
-      href: "/ranking?risk=highDebt",
-    },
-    {
-      label: "저유동성",
-      count: weakLiquidity,
-      desc: "점수 대비 실제 거래가 약한 타입",
-      href: "/ranking?risk=lowLiquidity",
-    },
-    {
-      label: "이익 불안정",
-      count: unstable,
-      desc: "영업이익/순이익 흐름이 약한 타입",
-      href: "/ranking?risk=unstableEarnings",
-    },
-  ];
-}
-
-function buildStrategyCards(items) {
-  const shortTerm = sortForShortTerm(items)[0] || null;
-  const annual = sortForAnnual(items)[0] || null;
-  const longTerm = sortForLongTerm(items)[0] || null;
-
-  return [
-    {
-      key: "short",
-      badge: "1주~1개월",
-      title: "단기 투자에 좋은 후보",
-      desc: "최근 흐름, 거래대금, 상승여력을 같이 봐서 지금 당장 반응 가능한 쪽을 고릅니다.",
-      stock: shortTerm,
-      reason: shortTerm ? buildShortReason(shortTerm) : "단기 관점 후보가 아직 부족합니다.",
-      actionLabel: "단기 흐름 더 보기",
-      actionHref: "/ranking?view=short",
-    },
-    {
-      key: "annual",
-      badge: "6개월~1년",
-      title: "연간 투자에 좋은 후보",
-      desc: "종합 점수, 실적 안정성, 성장 흐름을 묶어서 올해 안에 다시 볼 만한 종목을 고릅니다.",
-      stock: annual,
-      reason: annual ? buildAnnualReason(annual) : "연간 관점 후보가 아직 부족합니다.",
-      actionLabel: "연간 투자 더 보기",
-      actionHref: "/ranking?view=annual",
-    },
-    {
-      key: "long",
-      badge: "1년 이상",
-      title: "장기 투자에 좋은 후보",
-      desc: "저평가와 재무 안정성 기준으로, 당장보다 구조를 보고 들고 갈 만한 종목을 고릅니다.",
-      stock: longTerm,
-      reason: longTerm ? buildLongReason(longTerm) : "장기 관점 후보가 아직 부족합니다.",
-      actionLabel: "장기 투자 더 보기",
-      actionHref: "/ranking?view=long",
-    },
-  ];
 }
 
 export default function HomePage() {
@@ -296,246 +119,29 @@ export default function HomePage() {
           <MainNav className="mainNav" />
         </header>
 
-        <section className="hero">
-          <div className="heroTop">
-            <div className="heroMain">
-              <p className="badge">OFFICIAL DATA LIVE</p>
-              <h1>종목을 발굴하려면, <br />데이터부터 분석해야 한다</h1>
-              <p className="desc">
-                메인에서는 데이터 기반으로 접근 방식을 정리합니다.<br />
-                단기 / 연간 / 장기 관점을 나눠서, 같은 종목도 지금은 어떻게 봐야 하는지 다르게 보여줍니다.<br />
-                종목을 자세히 보고 싶다면 랭킹 페이지에서 확인하세요.
-              </p>
-              <div className="heroPointRow">
-                <span className="heroPoint">단기: 흐름과 거래대금 중심</span>
-                <span className="heroPoint">연간: 점수와 실적 안정성 중심</span>
-                <span className="heroPoint">장기: 저평가와 재무 구조 중심</span>
-              </div>
-              <div className="heroActions">
-                <Link className="primaryBtn" href="/ranking">
-                  상위 랭킹 보기
-                </Link>
-                <Link className="secondaryBtn" href="/reports">
-                  이번 주 리포트 보기
-                </Link>
-              </div>
-            </div>
+        <HeroSection updatedAt={updatedAt} />
 
-            <aside className="updateBox" aria-label="업데이트 날짜">
-              <span className="updateLabel">업데이트</span>
-              <strong>{updatedAt}</strong>
-              <p className="updateDesc">최근 자동 수집 및 분석 반영일</p>
-            </aside>
+        <SubscribeSection
+          isModalOpen={isModalOpen}
+          email={email}
+          setEmail={setEmail}
+          isSubmitted={isSubmitted}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
+          openModal={openModal}
+          closeModal={closeModal}
+          handleSubscribe={handleSubscribe}
+        />
 
-            <div className="heroCharacter" aria-hidden="true">
-              <div className="heroCharacterGlow" />
-              <Image
-                src="/vegeta-style.png"
-                alt=""
-                fill
-                className="heroCharacterImage"
-                priority
-              />
-            </div>
-          </div>
-        </section>
+        <StrategySection strategyCards={strategyCards} />
 
-        <section className="subscribeSection">
-          <div className="subscribeCard">
-            <p className="subscribeEyebrow">PREMIUM MVP WAITLIST</p>
-            <h2>주간 프리미엄 리포트 사전등록</h2>
-            <p className="subscribeDesc">
-              현재는 무료 공개 구간을 먼저 완성하면서, 프리미엄 MVP를 함께 준비하고 있습니다.
-              <br />
-              사전등록하면 <strong>상위 후보 주간 리포트 샘플</strong>과
-              <strong> 프리미엄 베타 오픈 소식</strong>을 먼저 받아볼 수 있습니다.
-              <br />
-              (프리미엄은 확정 수익률 안내가 아니라, 단기/중기/장기 시나리오와 체크 포인트를 제공하는 구조입니다.)
-            </p>
-            <div className="subscribeActions">
-              <a
-                href="/sample-report.html"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="secondaryBtn"
-              >
-                샘플 리포트 보기
-              </a>
-              <button type="button" className="primaryBtn" onClick={openModal}>
-                리포트 구독하기
-              </button>
-            </div>
-          </div>
-        </section>
-                  
-        <section className="strategySection">
-          <div className="sectionHeaderRow">
-            <div>
-              <h2 className="sectionTitle">오늘의 투자 전략 3가지</h2>
-              <p className="sectionDesc">
-                종합/저평가 같은 기술적 기준보다, 지금 시장에서 실제로 어떻게 들고 갈지에 맞춘 관점으로 나눴습니다.
-              </p>
-            </div>
-          </div>
+        <AvoidSection avoidSummary={avoidSummary} />
 
-          <div className="strategyGrid">
-            {strategyCards.map((section) => (
-              <div className="strategyCard" key={section.key}>
-                <div className="strategyHeader">
-                  <span className="strategyBadge">{section.badge}</span>
-                  <Link href={section.actionHref} className="miniActionLink">
-                    {section.actionLabel}
-                  </Link>
-                </div>
-                <h3>{section.title}</h3>
-                <p className="strategyDesc">{section.desc}</p>
+        <BridgeSection />
 
-                {section.stock ? (
-                  <>
-                    <div className="strategyStockTop">
-                      <div>
-                        <h4>{section.stock.name}</h4>
-                        <p className="stockCode">{section.stock.market} · {section.stock.code}</p>
-                      </div>
-                      <div className="scoreChip">총점 {Number(section.stock.totalScore || 0).toFixed(0)}점</div>
-                    </div>
+        <QuickLinksSection />
 
-                    <div className="candidatePriceMeta strategyMetaGrid">
-                      <div className="candidatePriceItem">
-                        <span className="candidatePriceLabel">최근 종가</span>
-                        <strong className="priceLine">{formatPrice(section.stock.metrics?.closePrice)}</strong>
-                      </div>
-                      <div className="candidatePriceItem">
-                        <span className="candidatePriceLabel">적정가 추정</span>
-                        <strong className="targetLine">{formatPrice(section.stock.metrics?.targetPrice)}</strong>
-                      </div>
-                    </div>
-
-                    <p className={getUpsideClass(section.stock.metrics?.upside)}>
-                      상승여력 {formatPercent(section.stock.metrics?.upside)}
-                    </p>
-
-                    <div className="reasonBox">
-                      <span className="reasonLabel">왜 이 관점에서 보나</span>
-                      <p>{section.reason}</p>
-                    </div>
-
-                    <p className="summaryText short">{section.stock.summary}</p>
-                    <Link className="linkBtn" href={`/stock/${section.stock.code}`}>
-                      종목 상세 보기
-                    </Link>
-                  </>
-                ) : (
-                  <div className="emptyStateBox">
-                    <p>현재 기준으로 이 관점에 맞는 후보가 충분하지 않습니다.</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="avoidSection">
-          <div className="avoidCard">
-            <div className="sectionHeaderRow compactHeader">
-              <div>
-                <h2 className="sectionTitle">오늘은 피해야 할 타입</h2>
-                <p className="sectionDesc">
-                  추천만 보여주면 오해가 생기니까, 지금 시장에서 같이 조심해야 할 타입도 따로 분리했습니다.
-                </p>
-              </div>
-            </div>
-            <div className="avoidGrid">
-              {avoidSummary.map((item) => (
-                <Link href={item.href} className="avoidItem clickable" key={item.label}>
-                  <strong>{item.label}</strong>
-                  <span>{item.count}개 포착</span>
-                  <p>{item.desc}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bridgeSection">
-          <div className="bridgeCard">
-            <div className="bridgeHeader">
-              <div>
-                <p className="bridgeBadge">FREE → PREMIUM</p>
-                <h2>무료에서 검증하고, 프리미엄에서 행동합니다</h2>
-                <p className="bridgeDesc">
-                  무료 페이지는 “왜 추천 / 왜 제외 / 실제 결과”를 검증하는 영역입니다.
-                  프리미엄은 그 위에 <strong>행동 가능한 주간 시나리오</strong>를 얹는 구조로 준비 중입니다.
-                </p>
-              </div>
-            </div>
-            <div className="bridgeGrid">
-              <div className="bridgeItem">
-                <span className="bridgeItemLabel">무료에서 보는 것</span>
-                <ul>
-                  <li>종합/저평가/상승여력 랭킹</li>
-                  <li>리스크 체크 포인트</li>
-                  <li>상세페이지 해석</li>
-                  <li>성과/백테스트 공개</li>
-                </ul>
-              </div>
-              <div className="bridgeItem premium">
-                <span className="bridgeItemLabel">프리미엄에서 추가될 것</span>
-                <ul>
-                  <li>단기 · 중기 · 장기 시나리오</li>
-                  <li>왜 지금 보는지 / 무엇이 틀리면 철회할지</li>
-                  <li>핵심 후보 정리 + 후속 추적</li>
-                  <li>주간 프리미엄 리포트</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="quickLinksSection">
-          <div className="quickLinksCard">
-            <h2>서비스 바로가기</h2>
-            <div className="quickLinksGrid">
-              <Link href="/notice" className="quickLinkItem">
-                <strong>📢 공지</strong>
-                <span>사이트 업데이트 안내</span>
-              </Link>
-              <Link href="/performance" className="quickLinkItem">
-                <strong>📈 성과/백테스트</strong>
-                <span>추천종목 실제 투자결과</span>
-              </Link>
-              <Link href="/ranking" className="quickLinkItem">
-                <strong>🏆 랭킹</strong>
-                <span>AI 점수 기준 상위 종목 보기</span>
-              </Link>
-              <Link href="/risk" className="quickLinkItem">
-                <strong>⚠️ 리스크</strong>
-                <span>주의 종목과 체크포인트 확인</span>
-              </Link>
-              <Link href="/reports" className="quickLinkItem">
-                <strong>📝 리포트</strong>
-                <span>주간 요약과 핵심 후보 정리</span>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {latestNotice ? (
-          <section className="noticePreviewSection">
-            <div className="noticePreviewWrap">
-              <Link href="/notice" className="noticePreviewCard">
-                <div className="noticePreviewTopLine">
-                  <span className="noticePreviewBadge">📢 업데이트 안내</span>
-                  <span className="noticePreviewDate">{latestNotice.date}</span>
-                </div>
-                <div className="noticePreviewBody">
-                  <h2>{latestNotice.title}</h2>
-                  <p className="noticePreviewText">{latestNotice.content}</p>
-                </div>
-              </Link>
-            </div>
-          </section>
-        ) : null}
+        <NoticePreview latestNotice={latestNotice} />
       </main>
 
       <footer className="footer">
@@ -545,63 +151,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {isModalOpen && (
-        <div className="modalOverlay" onClick={closeModal}>
-          <div className="modalCard" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="closeBtn"
-              onClick={closeModal}
-              aria-label="팝업 닫기"
-            >
-              ×
-            </button>
-            {!isSubmitted ? (
-              <>
-                <p className="modalBadge">리포트 구독하기</p>
-                <h3>주간 프리미엄 리포트 오픈 알림 신청</h3>
-                <p className="modalDesc">
-                  사전등록하면 무료 샘플 리포트 안내와 프리미엄 MVP 베타 오픈 소식을 먼저 보내드립니다.
-                  프리미엄은 확정 수익이 아니라 단기/중기/장기 시나리오와 체크 포인트를 제공하는 구조로 준비 중입니다.
-                </p>
-                <form className="subscribeForm" onSubmit={handleSubscribe}>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="이메일 주소를 입력해주세요"
-                    required
-                  />
-                  {submitError ? <p className="errorText">{submitError}</p> : null}
-                  <div className="modalActions">
-                    <button type="button" className="ghostBtn" onClick={closeModal}>
-                      닫기
-                    </button>
-                    <button type="submit" className="primaryBtn" disabled={isSubmitting}>
-                      {isSubmitting ? "저장 중..." : "리포트 구독하기"}
-                    </button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <div className="successBox">
-                <p className="modalBadge">신청 완료</p>
-                <h3>접수가 완료되었습니다</h3>
-                <p className="modalDesc">
-                  프리미엄 MVP 관련 소식과 샘플 리포트 안내를 이메일로 보내드릴게요.
-                </p>
-                <div className="modalActions singleAction">
-                  <button type="button" className="primaryBtn" onClick={closeModal}>
-                    확인
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <style jsx>{`
+      <style jsx global>{`
         .container {
           max-width: 1180px;
           margin: 0 auto;
