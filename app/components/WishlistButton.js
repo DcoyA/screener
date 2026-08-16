@@ -36,7 +36,7 @@ export default function WishlistButton({ code, name, size = "md" }) {
     event.preventDefault();
     event.stopPropagation();
     if (busy) return;
-
+  
     const user = await getCurrentUser();
     if (!user) {
       const confirmed = window.confirm("관심종목은 로그인 후 저장할 수 있어요. 카카오로 로그인할까요?");
@@ -48,11 +48,16 @@ export default function WishlistButton({ code, name, size = "md" }) {
       }
       return;
     }
-
+  
+    const previous = active;
+    setActive(!previous);
     setBusy(true);
+  
     const result = await toggleWishlist(code, name);
-    if (result.ok) {
-      setActive((prev) => !prev);
+  
+    if (!result.ok) {
+      setActive(previous);
+      alert("관심종목 저장에 실패했습니다. 다시 시도해주세요.");
     }
     setBusy(false);
   };
