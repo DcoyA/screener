@@ -1,5 +1,6 @@
 "use client";
 
+import AuthButton from "./AuthButton";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { NAV_ITEMS } from "../config/nav-items";
