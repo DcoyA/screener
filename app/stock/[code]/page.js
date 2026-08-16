@@ -81,6 +81,20 @@ const styles = {
     background: "#fff",
     color: "#0f172a",
   },
+  demoTradeCta: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "6px",
+    borderRadius: "14px",
+    padding: "10px 16px",
+    textDecoration: "none",
+    fontWeight: 800,
+    border: "1px solid #0f172a",
+    background: "#0f172a",
+    color: "#fff",
+    fontSize: "0.88rem",
+  },
   pageHero: { marginBottom: "28px" },
   marketBadge: {
     display: "inline-flex",
@@ -781,7 +795,7 @@ export default async function StockDetailPage({ params }) {
   return (
     <main style={styles.container}>
       <div style={styles.topLinks}>
-        <Link href="/ranking" style={styles.backBtn}>
+        <Link href="/search?tab=ranking" style={styles.backBtn}>
           ← 랭킹으로 돌아가기
         </Link>
       </div>
@@ -794,7 +808,15 @@ export default async function StockDetailPage({ params }) {
             <p style={styles.stockCode}>종목코드 {stock.code}</p>
             <p style={styles.summaryText}>{stock.summary}</p>
           </div>
-          <WishlistButton code={stock.code} name={stock.name} />
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+            <WishlistButton code={stock.code} name={stock.name} />
+            <Link
+              href={`/demo-trade?code=${stock.code}&name=${encodeURIComponent(stock.name)}`}
+              style={styles.demoTradeCta}
+            >
+              🧪 가상매수 체험하기
+            </Link>
+          </div>
         </div>
       </section>
 
