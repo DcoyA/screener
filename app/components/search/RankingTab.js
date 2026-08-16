@@ -1,0 +1,583 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import stocks from "../../data/stocks.json";
+import WishlistButton from "../WishlistButton";
+import { getUnifiedGrade } from "../../lib/grade";
+import GradeBadge from "../GradeBadge";
+
+const VIEW_CONFIG = {
+  total: { label: "종합", title: "종합 랭킹", desc: "기본 조건 통과 여부와 총점을 함께 반영한 기본 랭킹입니다." },
+  undervalue: { label: "저평가", title: "저평가 랭킹", desc: "가치 점수 중심으로 보되, 부채비율이 낮은 순서를 우선 반영합니다." },
+  upside: { label: "상승여력", title: "상승여력 랭킹", desc: "적정가 추정 대비 괴리가 큰 종목을 우선 보여주는 관점입니다." },
+  short: { label: "단기 투자", title: "단기 투자에 좋은 후보", desc: "최근 흐름, 거래대금, 상승여력을 같이 봐서 지금 당장 반응 가능한 쪽을 우선 정렬합니다." },
+  annual: { label: "연간 투자", title: "연간 투자에 좋은 후보", desc: "종합 점수, 실적 안정성, 성장 흐름을 묶어서 올해 안에 다시 볼 만한 순서로 정렬합니다." },
+  long: { label: "장기 투자", title: "장기 투자에 좋은 후보", desc: "저평가와 재무 안정성 중심으로, 당장보다 구조를 보고 들고 갈 만한 종목을 보여줍니다." },
+};
+
+const RISK_CONFIG = {
+  all: { label: "전체", title: "전체 종목", desc: "추가 위험 필터 없이 현재 보기 기준 전체를 보여줍니다." },
+  highDebt: { label: "고부채", title: "고부채 타입", desc: "부채비율이 높아 저평가처럼 보여도 재무 리스크를 먼저 확인해야 하는 종목입니다." },
+  lowLiquidity: { label: "저유동성", title: "저유동성 타입", desc: "점수는 나쁘지 않아도 실제 거래가 약해 체결/수급 측면에서 보수적으로 봐야 하는 종목입니다." },
+  unstableEarnings: { label: "이익 불안정", title: "이익 불안정 타입", desc: "영업이익 또는 순이익 흐름이 약해, 실적 지속성을 먼저 확인해야 하는 종목입니다." },
+};
+
+function formatPrice(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return "-";
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+function formatPercent(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  const sign = num > 0 ? "+" : "";
+  return `${sign}${num.toFixed(1)}%`;
+}
+function formatKrwCompact(value) {
+  const num = Number(value || 0);
+  if (!num) return "-";
+  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
+  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
+  return `${num.toLocaleString("ko-KR")}원`;
+}
+function debtRatioForUndervalue(item) {
+  const explicit = Number(item?.undervalueMeta?.sortDebtRatio);
+  if (Number.isFinite(explicit)) return explicit;
+  const fallback = Number(item?.metrics?.debtRatio);
+  return Number.isFinite(fallback) ? fallback : 999999;
+}
+function isHighDebt(item) {
+  return Number(item?.metrics?.debtRatio ?? 0) >= 200;
+}
+function isLowLiquidity(item) {
+  return Number(item?.metrics?.avgTradeValue5d ?? 0) < 10_0000_0000;
+}
+function isUnstableEarnings(item) {
+  return Number(item?.metrics?.operatingIncome ?? 0) <= 0 || Number(item?.metrics?.netIncome ?? 0) <= 0;
+}
+
+function sortTotal(items) {
+  return [...items].sort((a, b) => {
+    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
+    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
+    if (bEligible !== aEligible) return bEligible - aEligible;
+    const aScore = Number(a?.totalScore ?? 0);
+    const bScore = Number(b?.totalScore ?? 0);
+    if (bScore !== aScore) return bScore - aScore;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+  });
+}
+function sortUndervalue(items) {
+  return [...items]
+    .filter((item) => item?.undervalueMeta?.eligible)
+    .sort((a, b) => {
+      const aValue = Number(a?.valueScore ?? 0);
+      const bValue = Number(b?.valueScore ?? 0);
+      if (bValue !== aValue) return bValue - aValue;
+      const aDebt = debtRatioForUndervalue(a);
+      const bDebt = debtRatioForUndervalue(b);
+      if (aDebt !== bDebt) return aDebt - bDebt;
+      const aUp = Number(a?.metrics?.upside ?? -999999);
+      const bUp = Number(b?.metrics?.upside ?? -999999);
+      if (bUp !== aUp) return bUp - aUp;
+      const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+      const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+      if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+      return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+    });
+}
+function sortUpside(items) {
+  return [...items].sort((a, b) => {
+    const aUp = Number(a?.metrics?.upside ?? -999999);
+    const bUp = Number(b?.metrics?.upside ?? -999999);
+    if (bUp !== aUp) return bUp - aUp;
+    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
+    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
+    if (bEligible !== aEligible) return bEligible - aEligible;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+  });
+}
+function sortShort(items) {
+  return [...items].sort((a, b) => {
+    const aMomentum = Number(a?.metrics?.priceChangeRate ?? a?.metrics?.momentum ?? 0);
+    const bMomentum = Number(b?.metrics?.priceChangeRate ?? b?.metrics?.momentum ?? 0);
+    if (bMomentum !== aMomentum) return bMomentum - aMomentum;
+    const aUp = Number(a?.metrics?.upside ?? -999999);
+    const bUp = Number(b?.metrics?.upside ?? -999999);
+    if (bUp !== aUp) return bUp - aUp;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.totalScore ?? 0) - Number(a?.totalScore ?? 0);
+  });
+}
+function sortAnnual(items) {
+  return [...items].sort((a, b) => {
+    const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
+    const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
+    if (bEligible !== aEligible) return bEligible - aEligible;
+    const aScore = Number(a?.totalScore ?? 0);
+    const bScore = Number(b?.totalScore ?? 0);
+    if (bScore !== aScore) return bScore - aScore;
+    const aGrowth = Number(a?.metrics?.operatingIncomeGrowth ?? 0) + Number(a?.metrics?.revenueGrowth ?? 0);
+    const bGrowth = Number(b?.metrics?.operatingIncomeGrowth ?? 0) + Number(b?.metrics?.revenueGrowth ?? 0);
+    if (bGrowth !== aGrowth) return bGrowth - aGrowth;
+    const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
+    const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
+    if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
+    return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+  });
+}
+function sortLong(items) {
+  return [...items]
+    .filter((item) => item?.undervalueMeta?.eligible)
+    .sort((a, b) => {
+      const aValue = Number(a?.valueScore ?? 0);
+      const bValue = Number(b?.valueScore ?? 0);
+      if (bValue !== aValue) return bValue - aValue;
+      const aDebt = Number(a?.metrics?.debtRatio ?? 999999);
+      const bDebt = Number(b?.metrics?.debtRatio ?? 999999);
+      if (aDebt !== bDebt) return aDebt - bDebt;
+      const aRoe = Number(a?.metrics?.roe ?? -999999);
+      const bRoe = Number(b?.metrics?.roe ?? -999999);
+      if (bRoe !== aRoe) return bRoe - aRoe;
+      return Number(b?.metrics?.marketCap ?? 0) - Number(a?.metrics?.marketCap ?? 0);
+    });
+}
+
+function buildSortedStocks(items, view) {
+  if (view === "upside") return sortUpside(items);
+  if (view === "undervalue") return sortUndervalue(items);
+  if (view === "short") return sortShort(items);
+  if (view === "annual") return sortAnnual(items);
+  if (view === "long") return sortLong(items);
+  return sortTotal(items);
+}
+function applyRiskFilter(items, risk) {
+  if (risk === "highDebt") return items.filter(isHighDebt);
+  if (risk === "lowLiquidity") return items.filter(isLowLiquidity);
+  if (risk === "unstableEarnings") return items.filter(isUnstableEarnings);
+  return items;
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+function computeShortSuitability(stock) {
+  const momentum = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum ?? 0);
+  const upside = Number(stock?.metrics?.upside ?? 0);
+  const liquidity = Number(stock?.metrics?.avgTradeValue5d ?? 0);
+  const momentumScore = clamp(((momentum + 10) / 40) * 40, 0, 40);
+  const upsideScore = clamp(((upside + 30) / 80) * 25, 0, 25);
+  const liquidityScore = clamp((liquidity / 300_0000_0000) * 35, 0, 35);
+  return Math.round(momentumScore + upsideScore + liquidityScore);
+}
+function computeAnnualSuitability(stock) {
+  return clamp(Math.round(Number(stock?.totalScore ?? 0)), 0, 100);
+}
+function computeLongSuitability(stock) {
+  const valueScore = Number(stock?.valueScore ?? 0);
+  const debtRatio = Number(stock?.metrics?.debtRatio ?? 999999);
+  const roe = Number(stock?.metrics?.roe ?? 0);
+  const valuePart = clamp((valueScore / 30) * 45, 0, 45);
+  const debtPart = clamp(((200 - debtRatio) / 200) * 25, 0, 25);
+  const roePart = clamp((roe / 20) * 30, 0, 30);
+  return Math.round(valuePart + debtPart + roePart);
+}
+function getScorePresentation(stock, activeView) {
+  if (activeView === "short") {
+    return { label: "단기 적합도", valueText: `${computeShortSuitability(stock)} / 100`, tooltip: "예상 수익률이 아니라 최근 흐름·유동성·상승여력 조합을 반영한 단기 관점 적합도 점수입니다." };
+  }
+  if (activeView === "annual") {
+    return { label: "연간 적합도", valueText: `${computeAnnualSuitability(stock)} / 100`, tooltip: "예상 수익률이 아니라 종합 점수·실적 안정성·성장 흐름을 반영한 연간 관점 적합도 점수입니다." };
+  }
+  if (activeView === "long") {
+    return { label: "장기 적합도", valueText: `${computeLongSuitability(stock)} / 100`, tooltip: "예상 수익률이 아니라 가치 점수·재무 안정성·ROE를 반영한 장기 관점 적합도 점수입니다." };
+  }
+  if (activeView === "undervalue") {
+    return { label: "가치 점수", valueText: `${Math.round(Number(stock?.valueScore ?? 0))}점`, tooltip: "가치 점수는 저평가 관점에서의 내부 점수이며 예상 수익률을 의미하지 않습니다." };
+  }
+  if (activeView === "upside") {
+    return { label: "상승여력", valueText: formatPercent(stock?.metrics?.upside), tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다." };
+  }
+  return { label: "종합 점수", valueText: `${Math.round(Number(stock?.totalScore ?? 0))}점`, tooltip: "종합 점수는 안정성·가치·시장성 등을 함께 반영한 내부 점수이며 예상 수익률을 의미하지 않습니다." };
+}
+function buildOneLineReason(stock, activeView) {
+  const parts = [];
+  const valueScore = Number(stock?.valueScore ?? 0);
+  const totalScore = Number(stock?.totalScore ?? 0);
+  const upside = Number(stock?.metrics?.upside);
+  const debtRatio = Number(stock?.metrics?.debtRatio);
+  const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
+  const rankFlags = stock?.rankMeta?.flags || [];
+  const undervalueFlags = stock?.undervalueMeta?.flags || [];
+
+  if (activeView === "total") {
+    if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
+    if (totalScore >= 70) parts.push(`총점 ${totalScore}점`);
+    if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (rankPenalty > 0) parts.push(`패널티 ${rankPenalty}`);
+    if (rankFlags.length) parts.push(rankFlags[0]);
+  } else if (activeView === "undervalue") {
+    if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
+    if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
+    if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (undervalueFlags.length) parts.push(undervalueFlags[0]);
+  } else if (activeView === "upside") {
+    if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (stock?.rankMeta?.topRankEligible) parts.push("종합 조건 통과");
+    if (rankFlags.length) parts.push(rankFlags[0]);
+  } else if (activeView === "short") {
+    const rate = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum);
+    if (Number.isFinite(rate)) parts.push(`최근 흐름 ${formatPercent(rate)}`);
+    if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
+    if (Number(stock?.metrics?.avgTradeValue5d ?? 0) > 0) parts.push(`유동성 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)}`);
+  } else if (activeView === "annual") {
+    if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
+    if (totalScore > 0) parts.push(`총점 ${totalScore}점`);
+    if (Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth))) parts.push(`영업이익 성장 ${formatPercent(stock?.metrics?.operatingIncomeGrowth)}`);
+    if (Number.isFinite(Number(stock?.metrics?.revenueGrowth))) parts.push(`매출 성장 ${formatPercent(stock?.metrics?.revenueGrowth)}`);
+  } else if (activeView === "long") {
+    if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
+    if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
+    if (Number.isFinite(Number(stock?.metrics?.roe))) parts.push(`ROE ${formatPercent(stock?.metrics?.roe)}`);
+    if (Number.isFinite(Number(stock?.metrics?.pbr))) parts.push(`PBR ${Number(stock.metrics.pbr).toFixed(2)}배`);
+  }
+  if (!parts.length) return "현재 수치 조합을 기준으로 상대 비교된 결과입니다.";
+  return parts.join(" · ");
+}
+function buildWarningLine(stock, activeView, activeRisk) {
+  const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
+  const rankFlags = stock?.rankMeta?.flags || [];
+  const undervalueFlags = stock?.undervalueMeta?.flags || [];
+  const debtRatio = Number(stock?.metrics?.debtRatio);
+  const upside = Number(stock?.metrics?.upside);
+
+  if (activeRisk === "highDebt") return `부채비율 ${formatPercent(debtRatio)} 수준이라 저평가처럼 보여도 재무 리스크를 먼저 확인해야 합니다.`;
+  if (activeRisk === "lowLiquidity") return `최근 5일 평균 거래대금 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)} 수준이라 체결/수급은 보수적으로 봐야 합니다.`;
+  if (activeRisk === "unstableEarnings") return "영업이익 또는 순이익 흐름이 약해, 다음 실적 발표와 회복 가능성을 우선 확인해야 합니다.";
+
+  if (activeView === "total" || activeView === "annual") {
+    if (rankPenalty > 0) return `종합 해석에는 패널티 ${rankPenalty}점이 반영됩니다.`;
+    if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
+    return "실적·재무·수급 변화에 따라 종합 조건 통과 여부가 바뀔 수 있습니다.";
+  }
+  if (activeView === "undervalue" || activeView === "long") {
+    if (undervalueFlags.length) return `주의 포인트: ${undervalueFlags[0]}`;
+    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
+    return "가치 점수가 높아도 재무 안정성 해석은 별도로 확인해야 합니다.";
+  }
+  if (Number.isFinite(upside) && upside <= 0) return "현재 적정가 추정 기준 즉각적인 상승여력은 크지 않을 수 있습니다.";
+  if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
+  return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
+}
+
+export default function RankingTab() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const requestedView = (searchParams.get("view") || "").trim();
+  const requestedRisk = (searchParams.get("risk") || "").trim();
+  const initialView = VIEW_CONFIG[requestedView] ? requestedView : "total";
+  const initialRisk = RISK_CONFIG[requestedRisk] ? requestedRisk : "all";
+
+  const [activeView, setActiveView] = useState(initialView);
+  const [activeRisk, setActiveRisk] = useState(initialRisk);
+  const [query, setQuery] = useState("");
+
+  const updateRoute = (nextView, nextRisk) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "ranking");
+    params.delete("view");
+    params.delete("risk");
+    if (nextView && nextView !== "total") params.set("view", nextView);
+    if (nextRisk && nextRisk !== "all") params.set("risk", nextRisk);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleViewChange = (nextView) => {
+    setActiveView(nextView);
+    updateRoute(nextView, activeRisk);
+  };
+  const handleRiskChange = (nextRisk) => {
+    setActiveRisk(nextRisk);
+    updateRoute(activeView, nextRisk);
+  };
+  const handleQuickCardClick = (kind) => {
+    if (kind === "total") { setActiveView("total"); setActiveRisk("all"); updateRoute("total", "all"); return; }
+    if (kind === "undervalue") { setActiveView("undervalue"); setActiveRisk("all"); updateRoute("undervalue", "all"); return; }
+    if (kind === "highDebt") { setActiveRisk("highDebt"); updateRoute(activeView, "highDebt"); return; }
+    if (kind === "unstableEarnings") { setActiveRisk("unstableEarnings"); updateRoute(activeView, "unstableEarnings"); }
+  };
+
+  useEffect(() => { setActiveView(initialView); }, [initialView]);
+  useEffect(() => { setActiveRisk(initialRisk); }, [initialRisk]);
+
+  const sortedStocks = useMemo(() => buildSortedStocks(stocks, activeView), [activeView]);
+  const filteredByRisk = useMemo(() => applyRiskFilter(sortedStocks, activeRisk), [sortedStocks, activeRisk]);
+  const rankMap = useMemo(() => new Map(filteredByRisk.map((item, index) => [String(item.code), index + 1])), [filteredByRisk]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return filteredByRisk;
+    return filteredByRisk.filter((item) =>
+      String(item.name || "").toLowerCase().includes(q) || String(item.code || "").toLowerCase().includes(q)
+    );
+  }, [filteredByRisk, query]);
+
+  const topEligibleCount = useMemo(() => stocks.filter((item) => item?.rankMeta?.topRankEligible).length, []);
+  const undervalueEligibleCount = useMemo(() => stocks.filter((item) => item?.undervalueMeta?.eligible).length, []);
+  const highDebtCount = useMemo(() => stocks.filter(isHighDebt).length, []);
+  const lowLiquidityCount = useMemo(() => stocks.filter(isLowLiquidity).length, []);
+  const unstableEarningsCount = useMemo(() => stocks.filter(isUnstableEarnings).length, []);
+
+  const activeViewMeta = VIEW_CONFIG[activeView] || VIEW_CONFIG.total;
+  const activeRiskMeta = RISK_CONFIG[activeRisk] || RISK_CONFIG.all;
+
+  return (
+    <>
+      <section className="rtHero">
+        <div>
+          <h2>{activeViewMeta.title}</h2>
+          <p className="rtDesc">
+            {activeViewMeta.desc}<br />
+            {activeRisk !== "all" ? `현재는 "${activeRiskMeta.title}" 필터가 적용된 리스트를 보고 있습니다.` : "아래 퀵 선택 또는 필터 바에서 바로 원하는 보기로 이동할 수 있습니다."}
+          </p>
+        </div>
+        <div className="heroMeta">
+          <div className="quickStatGrid">
+            <button type="button" className={`quickStatCard ${activeView === "total" && activeRisk === "all" ? "active" : ""}`} onClick={() => handleQuickCardClick("total")}>
+              <span className="quickLabel">종합 우선 후보</span>
+              <strong>{topEligibleCount}종목</strong>
+            </button>
+            <button type="button" className={`quickStatCard ${activeView === "undervalue" && activeRisk === "all" ? "active" : ""}`} onClick={() => handleQuickCardClick("undervalue")}>
+              <span className="quickLabel">저평가 후보</span>
+              <strong>{undervalueEligibleCount}종목</strong>
+            </button>
+            <button type="button" className={`quickStatCard warn ${activeRisk === "highDebt" ? "active" : ""}`} onClick={() => handleQuickCardClick("highDebt")}>
+              <span className="quickLabel">고부채</span>
+              <strong>{highDebtCount}종목</strong>
+            </button>
+            <button type="button" className={`quickStatCard warn ${activeRisk === "unstableEarnings" ? "active" : ""}`} onClick={() => handleQuickCardClick("unstableEarnings")}>
+              <span className="quickLabel">이익 불안정</span>
+              <strong>{unstableEarningsCount}종목</strong>
+            </button>
+          </div>
+          <div className="metaCard light fullSearchCard">
+            <span className="metaLabel">검색</span>
+            <input className="searchInput" placeholder="종목명 / 종목코드" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <p className="searchGuide">현재 보기 결과 {filtered.length}개 / 저유동성 종목 {lowLiquidityCount}개</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="guideSection">
+        <div className="guideCard compact">
+          <div className="guideHeader"><h3>보기 전환</h3></div>
+          <div className="controlPanel">
+            <div className="controlBlock">
+              <span className="groupLabel">기본 랭킹</span>
+              <div className="chipRow">
+                {[["total", "종합"], ["undervalue", "저평가"], ["upside", "상승여력"]].map(([key, label]) => (
+                  <button key={key} type="button" className={`filterChip ${activeView === key ? "active" : ""}`} onClick={() => handleViewChange(key)}>{label}</button>
+                ))}
+              </div>
+            </div>
+            <div className="controlBlock">
+              <span className="groupLabel">전략별 보기</span>
+              <div className="chipRow">
+                {[["short", "단기 투자"], ["annual", "연간 투자"], ["long", "장기 투자"]].map(([key, label]) => (
+                  <button key={key} type="button" className={`filterChip alt ${activeView === key ? "active" : ""}`} onClick={() => handleViewChange(key)}>{label}</button>
+                ))}
+              </div>
+            </div>
+            <div className="controlBlock">
+              <span className="groupLabel">피해야 할 타입 필터</span>
+              <div className="chipRow">
+                {[["all", "전체"], ["highDebt", "고부채"], ["lowLiquidity", "저유동성"], ["unstableEarnings", "이익 불안정"]].map(([key, label]) => (
+                  <button key={key} type="button" className={`filterChip risk ${activeRisk === key ? "active" : ""}`} onClick={() => handleRiskChange(key)}>{label}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="statusSection">
+        <div className="statusCard">
+          <div><strong>현재 보기</strong><p>{activeViewMeta.title} · {activeRiskMeta.title}</p></div>
+          <span>{filtered.length}개 노출</span>
+        </div>
+      </section>
+
+      <section className="listSection">
+        <div className="listGrid">
+          {filtered.map((stock) => {
+            const eligible = !!stock?.rankMeta?.topRankEligible;
+            const rankFlags = stock?.rankMeta?.flags || [];
+            const undervalueFlags = stock?.undervalueMeta?.flags || [];
+            const penalty = Number(stock?.rankMeta?.penalty || 0);
+            const displayRank = rankMap.get(String(stock.code)) ?? "-";
+            const scorePresentation = getScorePresentation(stock, activeView);
+            const unifiedGrade = getUnifiedGrade(stock);
+
+            return (
+              <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
+                <div className="cardTop">
+                  <div className="rankWrap">
+                    <span className="rankBadge">#{displayRank}</span>
+                    <div>
+                      <h3>{stock.name}</h3>
+                      <p className="stockMeta">{stock.market} · {stock.code}</p>
+                      <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <GradeBadge grade={unifiedGrade} size="sm" />
+                        <WishlistButton code={stock.code} name={stock.name} size="sm" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="scoreWrap">
+                    <div className="scoreLabelRow">
+                      <span className="scoreLabel">{scorePresentation.label}</span>
+                      <span className="tooltipTrigger" tabIndex={0} aria-label={scorePresentation.tooltip}>i
+                        <span className="tooltipBubble">{scorePresentation.tooltip}</span>
+                      </span>
+                    </div>
+                    <strong>{scorePresentation.valueText}</strong>
+                    {activeView === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
+                      <span className="rawScore">원점수 {stock.rawTotalScore}</span>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="metricRow">
+                  <div className="metricBox"><span>현재가</span><strong>{formatPrice(stock?.metrics?.closePrice)}</strong></div>
+                  <div className="metricBox"><span>적정가 추정</span><strong>{formatPrice(stock?.metrics?.targetPrice)}</strong></div>
+                  <div className="metricBox"><span>상승여력</span><strong className="sky">{formatPercent(stock?.metrics?.upside)}</strong></div>
+                  <div className="metricBox"><span>부채비율</span><strong>{formatPercent(stock?.metrics?.debtRatio)}</strong></div>
+                </div>
+
+                <div className="badgeRow">
+                  {(activeView === "total" || activeView === "annual") ? (
+                    eligible ? <span className="smallBadge good">종합 상위 후보</span> : <span className="smallBadge warn">종합 상위 제외</span>
+                  ) : null}
+                  {(activeView === "undervalue" || activeView === "long") && stock?.undervalueMeta?.eligible ? <span className="smallBadge info">저평가 후보</span> : null}
+                  {activeRisk === "highDebt" ? <span className="smallBadge warn">고부채</span> : null}
+                  {activeRisk === "lowLiquidity" ? <span className="smallBadge muted">저유동성</span> : null}
+                  {activeRisk === "unstableEarnings" ? <span className="smallBadge soft">이익 불안정</span> : null}
+                  {(activeView === "total" || activeView === "annual") && penalty > 0 ? <span className="smallBadge muted">패널티 {penalty}</span> : null}
+                  {(activeView === "total" || activeView === "annual" || activeView === "short") && rankFlags.map((flag) => (
+                    <span className="smallBadge soft" key={flag}>{flag}</span>
+                  ))}
+                  {(activeView === "undervalue" || activeView === "long") && undervalueFlags.map((flag) => (
+                    <span className="smallBadge soft" key={flag}>{flag}</span>
+                  ))}
+                </div>
+
+                <div className="reasonCard goodCard">
+                  <span className="reasonLabel">왜 이 리스트에 있나</span>
+                  <p>{buildOneLineReason(stock, activeView)}</p>
+                </div>
+                <div className="reasonCard warnCard">
+                  <span className="reasonLabel">무엇을 조심해야 하나</span>
+                  <p>{buildWarningLine(stock, activeView, activeRisk)}</p>
+                </div>
+
+                <p className="summary">{stock.summary}</p>
+
+                <div className="linkRow">
+                  <Link href={`/search?tab=risk&code=${stock.code}#risk-${stock.code}`} className="riskBtn">리스크 보기</Link>
+                  <Link href={`/stock/${stock.code}`} className="detailBtn">상세 보기</Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <style jsx>{`
+        .rtHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
+        .rtHero h2 { margin: 0 0 12px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; }
+        .rtDesc { margin: 0; max-width: 700px; color: #475569; line-height: 1.8; font-size: 0.98rem; }
+        .heroMeta { display: grid; gap: 12px; min-width: 300px; width: 320px; }
+        .quickStatGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .quickStatCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.05); text-align: left; cursor: pointer; transition: all .18s ease; }
+        .quickStatCard:hover { transform: translateY(-1px); border-color: #cbd5e1; background: #fbfdff; }
+        .quickStatCard.warn { background: #fffdfa; }
+        .quickStatCard.active { border-color: #0f172a; box-shadow: 0 0 0 2px rgba(15,23,42,.08); }
+        .quickLabel { display: block; margin-bottom: 10px; color: #64748b; font-size: .88rem; font-weight: 700; }
+        .quickStatCard strong { font-size: 1.8rem; letter-spacing: -0.04em; }
+        .metaCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.05); }
+        .metaCard.light { background: #f8fbff; }
+        .metaLabel { display: block; margin-bottom: 8px; color: #64748b; font-size: .88rem; font-weight: 700; }
+        .searchInput { width: 100%; height: 44px; border-radius: 12px; border: 1px solid #dbe3f0; padding: 0 14px; font-size: .95rem; box-sizing: border-box; }
+        .searchGuide { margin: 10px 0 0; color: #64748b; font-size: .9rem; }
+        .guideSection, .statusSection, .listSection { margin-top: 22px; }
+        .guideCard, .statusCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,.06); }
+        .guideCard.compact { padding: 22px; }
+        .guideHeader h3 { margin: 0 0 16px; font-size: 1.25rem; }
+        .controlPanel { display: grid; gap: 18px; }
+        .controlBlock { display: grid; gap: 10px; }
+        .groupLabel { color: #64748b; font-size: .82rem; font-weight: 800; }
+        .chipRow { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filterChip { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 700; font-size: .88rem; cursor: pointer; color: #475569; }
+        .filterChip.active { background: #0f172a; border-color: #0f172a; color: #fff; }
+        .filterChip.risk.active { background: #dc2626; border-color: #dc2626; }
+        .statusCard { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 20px 24px; }
+        .statusCard strong { display: block; margin-bottom: 4px; }
+        .statusCard p { margin: 0; color: #64748b; }
+        .listGrid { display: grid; gap: 16px; }
+        .stockCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: #fff; box-shadow: 0 20px 50px rgba(15,23,42,.05); }
+        .cardTop { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+        .rankWrap { display: flex; gap: 12px; align-items: flex-start; }
+        .rankBadge { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; height: 42px; border-radius: 14px; background: #eef2ff; color: #4f46e5; font-weight: 900; flex-shrink: 0; }
+        .rankWrap h3 { margin: 0 0 4px; font-size: 1.3rem; letter-spacing: -0.03em; }
+        .stockMeta { margin: 0; color: #64748b; font-size: .88rem; font-weight: 700; }
+        .scoreWrap { text-align: right; }
+        .scoreLabelRow { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-bottom: 6px; }
+        .scoreLabel { color: #64748b; font-size: .82rem; font-weight: 700; }
+        .tooltipTrigger { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb; font-size: .68rem; cursor: help; }
+        .tooltipBubble { position: absolute; right: 0; top: 22px; width: 220px; background: #0f172a; color: #fff; padding: 10px 12px; border-radius: 10px; font-size: .78rem; line-height: 1.5; display: none; z-index: 10; text-align: left; }
+        .tooltipTrigger:hover .tooltipBubble, .tooltipTrigger:focus .tooltipBubble { display: block; }
+        .scoreWrap strong { font-size: 1.5rem; letter-spacing: -0.03em; }
+        .rawScore { display: block; color: #94a3b8; font-size: .78rem; margin-top: 2px; }
+        .metricRow { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+        .metricBox { border: 1px solid #eef2f7; border-radius: 14px; padding: 12px; background: #fbfdff; }
+        .metricBox span { display: block; color: #94a3b8; font-size: .76rem; margin-bottom: 4px; }
+        .metricBox strong { font-size: .98rem; }
+        .metricBox strong.sky { color: #0ea5e9; }
+        .badgeRow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .smallBadge { display: inline-flex; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800; }
+        .smallBadge.good { background: #dcfce7; color: #15803d; }
+        .smallBadge.warn { background: #fee2e2; color: #dc2626; }
+        .smallBadge.info { background: #dbeafe; color: #2563eb; }
+        .smallBadge.muted { background: #f1f5f9; color: #64748b; }
+        .smallBadge.soft { background: #fef3c7; color: #b45309; }
+        .reasonCard { border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+        .reasonCard.goodCard { background: #f8fbff; }
+        .reasonCard.warnCard { background: #fffdfa; }
+        .reasonLabel { display: block; margin-bottom: 6px; font-size: .8rem; font-weight: 800; }
+        .reasonCard p { margin: 0; color: #475569; line-height: 1.7; }
+        .summary { margin: 0 0 16px; color: #64748b; line-height: 1.7; font-size: .92rem; }
+        .linkRow { display: flex; gap: 10px; flex-wrap: wrap; }
+        .riskBtn, .detailBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; padding: 10px 16px; font-weight: 800; text-decoration: none; font-size: .88rem; }
+        .riskBtn { background: #fff; border: 1px solid #dbe3f0; color: #0f172a; }
+        .detailBtn { background: #0f172a; color: #fff; }
+        @media (max-width: 900px) {
+          .rtHero { flex-direction: column; }
+          .heroMeta { width: 100%; }
+          .metricRow { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        }
+      `}</style>
+    </>
+  );
+}
