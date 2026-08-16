@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import stocks from "../data/stocks.json";
 import risks from "../data/risks.json";
 import MainNav from "../components/MainNav";
+import WishlistButton from "../components/WishlistButton";
 
 const GROUPS = {
   buy: { title: "매수 후보", short: "매수", color: "#0f766e", bg: "#ccfbf1", desc: "업종·타이밍·시장 적합도·리스크를 다시 통과한 후보입니다." },
@@ -182,6 +183,9 @@ function PickCard({ item }) {
           </div>
           <h3 style={{ margin: "0 0 8px", fontSize: "1.72rem", letterSpacing: "-0.03em", wordBreak: "keep-all" }}>{item.name}</h3>
           <p style={{ margin: 0, color: "#64748b" }}>{item.market} · {item.code} · {item.sector || "업종 미분류"}</p>
+          <div style={{ marginTop: 10 }}>
+            <WishlistButton code={item.code} name={item.name} size="sm" />
+          </div>
         </div>
 
         <div style={{ minWidth: 170, border: "1px solid #e5e7eb", borderRadius: 22, padding: 16, background: "#fff", textAlign: "right" }}>
