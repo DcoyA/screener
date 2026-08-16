@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import MainNav from "../components/MainNav";
 
 const POPULAR_STOCKS = [
@@ -21,6 +22,19 @@ function toNumber(value) {
 
 function formatWon(value) {
   return `${Math.round(toNumber(value)).toLocaleString()}원`;
+}
+
+function copyAccountInfo(accountObj) {
+  if (!accountObj) return;
+  const text = `계좌번호: ${accountObj.accountId}\nPIN: ${accountObj.pin}`;
+  if (navigator?.clipboard?.writeText) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => alert("계좌 정보를 복사했습니다. 안전한 곳에 보관하세요."))
+      .catch(() => alert(text));
+  } else {
+    alert(text);
+  }
 }
 
 function formatRate(value) {
@@ -56,7 +70,8 @@ function candleMinuteValue(candle) {
   return time.slice(0, 4);
 }
 
-export default function DemoTradePage() {
+function DemoTradeContent() {
+  const searchParams = useSearchParams();
   const [account, setAccount] = useState(null);
   const [loginAccountId, setLoginAccountId] = useState("");
   const [loginPin, setLoginPin] = useState("");
@@ -85,12 +100,22 @@ export default function DemoTradePage() {
   const [loadingAccount, setLoadingAccount] = useState(false);
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
+  const [pendingAccountAck, setPendingAccountAck] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
   useEffect(() => {
     async function initializePage() {
-      await fetchQuote("005930", "삼성전자", "popular");
+      const deepLinkCode = searchParams.get("code");
+      const deepLinkName = searchParams.get("name") || "";
+      if (deepLinkCode) {
+        setSearchCode(deepLinkCode);
+        await fetchQuote(deepLinkCode, deepLinkName, "manual");
+      } else {
+        await fetchQuote("005930", "삼성전자", "popular");
+      }
 
       const saved = localStorage.getItem("demoTradeAccount");
+
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -129,6 +154,18 @@ export default function DemoTradePage() {
     if (fomoScore >= 40) return "주의";
     return "낮음";
   }, [fomoScore]);
+
+  const [showFomoTip, setShowFomoTip] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!localStorage.getItem("demoTradeSeenFomoTip")) setShowFomoTip(true);
+  }, []);
+  
+  function dismissFomoTip() {
+    setShowFomoTip(false);
+    localStorage.setItem("demoTradeSeenFomoTip", "1");
+  }
 
   const cash = toNumber(account?.cash);
 
@@ -310,6 +347,7 @@ export default function DemoTradePage() {
       localStorage.setItem("demoTradeAccount", JSON.stringify(data.account));
       setOrders([]);
       setPositionPrices({});
+      setPendingAccountAck(true);
     } catch (error) {
       console.error(error);
       alert("가상계좌 생성 중 오류가 발생했습니다.");
@@ -549,24 +587,76 @@ export default function DemoTradePage() {
               <div style={styles.accountLine}>가상계좌</div>
               <div style={styles.accountId}>{account.accountId}</div>
               <div style={styles.accountPin}>PIN {account.pin}</div>
+              <button style={styles.miniCopyButton} onClick={() => copyAccountInfo(account)}>계좌정보 복사</button>
             </>
           ) : (
             <>
               <div style={styles.accountLine}>가상계좌 없음</div>
               <button style={styles.primaryButton} onClick={createAccount} disabled={loadingAccount}>
-                {loadingAccount ? "생성 중" : "가상계좌 생성"}
+                {loadingAccount ? "생성 중" : "1억으로 시작하기"}
+              </button>
+              <button style={styles.linkButton} onClick={() => setShowLoginForm((prev) => !prev)}>
+                이미 계좌가 있나요?
               </button>
             </>
           )}
         </div>
       </section>
 
-      <section style={styles.loginPanel} className="dt-login-panel">
-        <input style={styles.loginInput} value={loginAccountId} onChange={(event) => setLoginAccountId(event.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
-        <input style={styles.loginInput} value={loginPin} onChange={(event) => setLoginPin(event.target.value)} placeholder="PIN 4자리" />
-        <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>계좌 불러오기</button>
-        <button style={styles.outlineButton} onClick={createAccount} disabled={loadingAccount}>새 계좌 발급</button>
-      </section>
+      {pendingAccountAck && account && (
+        <section style={styles.ackCard}>
+          <div style={styles.ackTitle}>⚠️ 계좌 정보를 꼭 저장하세요</div>
+          <p style={styles.ackText}>
+            이 계좌번호와 PIN은 지금만 보여드립니다. 잃어버리면 복구할 수 없으니
+            스크린샷이나 메모로 꼭 보관해 주세요.
+          </p>
+          <div style={styles.ackAccountBox}>
+            <span>{account.accountId}</span>
+            <span>PIN {account.pin}</span>
+          </div>
+          <div style={styles.ackButtonRow}>
+            <button style={styles.outlineButton} onClick={() => copyAccountInfo(account)}>복사하기</button>
+            <button style={styles.primaryButton} onClick={() => setPendingAccountAck(false)}>저장했어요, 시작할게요</button>
+          </div>
+        </section>
+      )}
+
+      {!account && showLoginForm && (
+        <section style={styles.loginPanel} className="dt-login-panel">
+          <input style={styles.loginInput} value={loginAccountId} onChange={(event) => setLoginAccountId(event.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
+          <input style={styles.loginInput} value={loginPin} onChange={(event) => setLoginPin(event.target.value)} placeholder="PIN 4자리" />
+          <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>계좌 불러오기</button>
+          <p style={styles.loginHint}>계좌번호와 PIN은 최초 생성 시 한 번만 표시되며, 분실 시 복구할 수 없습니다.</p>
+        </section>
+      )}
+
+      {pendingAccountAck && account && (
+        <section style={styles.ackCard}>
+          <div style={styles.ackTitle}>⚠️ 계좌 정보를 꼭 저장하세요</div>
+          <p style={styles.ackText}>
+            이 계좌번호와 PIN은 지금만 보여드립니다. 잃어버리면 복구할 수 없으니
+            스크린샷이나 메모로 꼭 보관해 주세요.
+          </p>
+          <div style={styles.ackAccountBox}>
+            <span>{account.accountId}</span>
+            <span>PIN {account.pin}</span>
+          </div>
+          <div style={styles.ackButtonRow}>
+            <button style={styles.outlineButton} onClick={() => copyAccountInfo(account)}>복사하기</button>
+            <button style={styles.primaryButton} onClick={() => setPendingAccountAck(false)}>저장했어요, 시작할게요</button>
+          </div>
+        </section>
+      )}
+
+      {!account && showLoginForm && (
+        <section style={styles.loginPanel} className="dt-login-panel">
+          <input style={styles.loginInput} value={loginAccountId} onChange={(event) => setLoginAccountId(event.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
+          <input style={styles.loginInput} value={loginPin} onChange={(event) => setLoginPin(event.target.value)} placeholder="PIN 4자리" />
+          <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>계좌 불러오기</button>
+          <p style={styles.loginHint}>계좌번호와 PIN은 최초 생성 시 한 번만 표시되며, 분실 시 복구할 수 없습니다.</p>
+        </section>
+      )}
+
 
       <section style={styles.assetGrid} className="dt-asset-grid">
         <AssetCard label="총자산" value={formatWon(totalAsset)} />
@@ -666,6 +756,16 @@ export default function DemoTradePage() {
             </div>
           </div>
 
+          {showFomoTip && (
+            <div style={styles.fomoTip}>
+              <p>
+                FOMO 위험도는 매수 사유, 손절가 설정 여부, 보유기간, 주문금액을 기준으로
+                충동매수 가능성을 계산해요. 실전 투자에서도 손절가·목표가를 미리 정하는 습관을 연습해보세요.
+              </p>
+              <button style={styles.miniButton} onClick={dismissFomoTip}>확인했어요</button>
+            </div>
+          )}
+
           <div style={styles.fomoBox} className="dt-fomo-box">
             <div>
               <strong>FOMO 위험도 · {fomoLabel}</strong>
@@ -677,6 +777,15 @@ export default function DemoTradePage() {
 
         <aside style={styles.orderPanel}>
           <h2 style={styles.panelTitle}>주문창</h2>
+          {!account && (
+            <div style={styles.orderLockOverlay}>
+              <p>가상계좌를 만들면 바로 주문해볼 수 있어요.</p>
+              <button style={styles.primaryButton} onClick={createAccount} disabled={loadingAccount}>
+                {loadingAccount ? "생성 중" : "1억으로 시작하기"}
+              </button>
+            </div>
+          )}
+          <div style={!account ? styles.orderPanelDisabled : undefined}>
           <div style={styles.tabRow}>
             <button style={side === "BUY" ? styles.buyTabActive : styles.tabButton} onClick={() => setSide("BUY")}>매수</button>
             <button style={side === "SELL" ? styles.sellTabActive : styles.tabButton} onClick={() => setSide("SELL")}>매도</button>
@@ -714,6 +823,7 @@ export default function DemoTradePage() {
 
           <button style={side === "BUY" ? styles.buyButton : styles.sellButton} onClick={submitOrder}>{side === "BUY" ? "가상 매수" : "가상 매도"}</button>
           {orderStatus && <div style={styles.orderStatus}>{orderStatus}</div>}
+          </div>
         </aside>
       </section>
 
@@ -778,6 +888,14 @@ function AssetCard({ label, value, tone }) {
   );
 }
 
+export default function DemoTradePage() {
+  return (
+    <Suspense fallback={null}>
+      <DemoTradeContent />
+    </Suspense>
+  );
+}
+
 const responsiveCss = `
   body { overflow-x: hidden; }
   @media (max-width: 1100px) {
@@ -824,6 +942,17 @@ const styles = {
   title: { margin: 0, fontSize: "34px", fontWeight: "900" },
   subTitle: { margin: "8px 0 0", color: "#4b5563", lineHeight: 1.55 },
   accountBox: { minWidth: "260px", background: "#111827", color: "white", borderRadius: "18px", padding: "18px", boxShadow: "0 10px 26px rgba(15,23,42,0.16)" },
+  miniCopyButton: { marginTop: "8px", fontSize: "12px", padding: "6px 10px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: "#e5e7eb", cursor: "pointer" },
+  linkButton: { marginTop: "8px", fontSize: "13px", background: "none", border: "none", color: "#0369a1", textDecoration: "underline", cursor: "pointer", padding: 0 },
+  ackCard: { background: "#fff7ed", border: "1px solid #fdba74", borderRadius: "16px", padding: "20px", marginBottom: "16px" },
+  ackTitle: { fontWeight: 900, fontSize: "16px", marginBottom: "8px", color: "#9a3412" },
+  ackText: { margin: "0 0 12px", color: "#78350f", lineHeight: 1.5, fontSize: "14px" },
+  ackAccountBox: { display: "flex", gap: "16px", fontWeight: 800, fontFamily: "monospace", background: "#fff", border: "1px dashed #fb923c", borderRadius: "10px", padding: "10px 14px", marginBottom: "12px", flexWrap: "wrap" },
+  ackButtonRow: { display: "flex", gap: "10px", flexWrap: "wrap" },
+  loginHint: { gridColumn: "1 / -1", fontSize: "12px", color: "#94a3b8", margin: "4px 0 0" },
+  orderLockOverlay: { position: "absolute", inset: 0, background: "rgba(255,255,255,0.92)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", textAlign: "center", padding: "24px", zIndex: 5, borderRadius: "18px" },
+  orderPanelDisabled: { opacity: 0.35, pointerEvents: "none", filter: "grayscale(0.3)" },
+  fomoTip: { background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "12px", padding: "12px 16px", marginBottom: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", fontSize: "13px", color: "#1e3a8a" },
   accountLine: { fontSize: "13px", color: "#9ca3af", marginBottom: "8px" },
   accountId: { fontSize: "20px", fontWeight: "900", letterSpacing: "-0.02em" },
   accountPin: { marginTop: "8px", color: "#fbbf24", fontWeight: "800" },
@@ -839,7 +968,7 @@ const styles = {
   tradeGrid: { display: "grid", gridTemplateColumns: "260px minmax(0, 1fr) 340px", gap: "16px", alignItems: "stretch" },
   leftPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", minWidth: 0 },
   centerPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", minWidth: 0 },
-  orderPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", minWidth: 0 },
+  orderPanel: { background: "white", border: "1px solid #e5e7eb", borderRadius: "20px", padding: "18px", position: "relative", minWidth: 0 },
   panelTitle: { fontSize: "18px", fontWeight: "900", margin: 0 },
   panelTitleWithMargin: { fontSize: "18px", fontWeight: "900", margin: "0 0 14px" },
   smallTitle: { fontSize: "13px", color: "#6b7280", margin: "18px 0 8px" },
