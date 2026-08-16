@@ -288,9 +288,8 @@ function RiskPageContent() {
         <section className="listSection">
           <div className="riskList">
             {filteredRisks.map((item) => {
-              const currentPrice = formatPrice(stockPriceMap[item.code]);
+              const currentPrice = formatPrice(stockMap[item.code]?.metrics?.closePrice);
               const unifiedGrade = getUnifiedGrade(stockMap[item.code]);
-              const isFocused = highlightedCode && String(highlightedCode) === String(item.code);
               const isFocused = highlightedCode && String(highlightedCode) === String(item.code);
 
               return (
