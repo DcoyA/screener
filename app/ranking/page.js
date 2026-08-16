@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import stocks from "../data/stocks.json";
+const scorePresentation = getScorePresentation(stock, activeView);
+const unifiedGrade = getUnifiedGrade(stock);
 import MainNav from "../components/MainNav";
 import WishlistButton from "../components/WishlistButton";
 
@@ -645,7 +647,8 @@ function RankingPageContent() {
                       <div>
                         <h3>{stock.name}</h3>
                         <p className="stockMeta">{stock.market} · {stock.code}</p>
-                        <div style={{ marginTop: 8 }}>
+                        <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          <GradeBadge grade={unifiedGrade} size="sm" />
                           <WishlistButton code={stock.code} name={stock.name} size="sm" />
                         </div>
                       </div>
