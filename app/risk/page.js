@@ -7,6 +7,8 @@ import risks from "../data/risks.json";
 import stocks from "../data/stocks.json";
 import MainNav from "../components/MainNav";
 import WishlistButton from "../components/WishlistButton";
+import { getUnifiedGrade } from "../lib/grade";
+import GradeBadge from "../components/GradeBadge";
 
 const RISK_FILTER_CONFIG = {
   all: { label: "전체", title: "전체 리스크" },
@@ -85,8 +87,8 @@ function RiskPageContent() {
   const updatedAt = risks[0]?.date || "-";
   const normalizedSearchTerm = normalizeKeyword(searchTerm);
 
-  const stockPriceMap = useMemo(() => {
-    return Object.fromEntries(stocks.map((item) => [item.code, item.metrics?.closePrice || 0]));
+  const stockMap = useMemo(() => {
+    return Object.fromEntries(stocks.map((item) => [item.code, item]));
   }, []);
 
   useEffect(() => {
@@ -287,6 +289,8 @@ function RiskPageContent() {
           <div className="riskList">
             {filteredRisks.map((item) => {
               const currentPrice = formatPrice(stockPriceMap[item.code]);
+              const unifiedGrade = getUnifiedGrade(stockMap[item.code]);
+              const isFocused = highlightedCode && String(highlightedCode) === String(item.code);
               const isFocused = highlightedCode && String(highlightedCode) === String(item.code);
 
               return (
@@ -301,7 +305,8 @@ function RiskPageContent() {
                       <h3>{renderHighlightedName(item.name, searchTerm)}</h3>
                       <p className="codeText">종목코드 {item.code}</p>
                       <p className="priceText">최근 종가 {currentPrice}</p>
-                      <div style={{ marginTop: 10 }}>
+                      <div style={{ marginTop: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <GradeBadge grade={unifiedGrade} size="sm" />
                         <WishlistButton code={item.code} name={item.name} size="sm" />
                       </div>
                     </div>
