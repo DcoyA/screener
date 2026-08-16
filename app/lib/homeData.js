@@ -127,19 +127,19 @@ export function buildAvoidSummary(items) {
       label: "고부채",
       count: highDebt,
       desc: "저평가처럼 보여도 재무가 불안한 타입",
-      href: "/ranking?risk=highDebt",
+      href: "/search?tab=ranking&risk=highDebt",
     },
     {
       label: "저유동성",
       count: weakLiquidity,
       desc: "점수 대비 실제 거래가 약한 타입",
-      href: "/ranking?risk=lowLiquidity",
+      href: "/search?tab=ranking&risk=lowLiquidity",
     },
     {
       label: "이익 불안정",
       count: unstable,
       desc: "영업이익/순이익 흐름이 약한 타입",
-      href: "/ranking?risk=unstableEarnings",
+      href: "/search?tab=ranking&risk=unstableEarnings",
     },
   ];
 }
@@ -158,7 +158,7 @@ export function buildStrategyCards(items) {
       stock: shortTerm,
       reason: shortTerm ? buildShortReason(shortTerm) : "단기 관점 후보가 아직 부족합니다.",
       actionLabel: "단기 흐름 더 보기",
-      actionHref: "/ranking?view=short",
+      actionHref: "/search?tab=ranking&view=short",
     },
     {
       key: "annual",
@@ -168,7 +168,7 @@ export function buildStrategyCards(items) {
       stock: annual,
       reason: annual ? buildAnnualReason(annual) : "연간 관점 후보가 아직 부족합니다.",
       actionLabel: "연간 투자 더 보기",
-      actionHref: "/ranking?view=annual",
+      actionHref: "/search?tab=ranking&view=annual",
     },
     {
       key: "long",
@@ -178,7 +178,7 @@ export function buildStrategyCards(items) {
       stock: longTerm,
       reason: longTerm ? buildLongReason(longTerm) : "장기 관점 후보가 아직 부족합니다.",
       actionLabel: "장기 투자 더 보기",
-      actionHref: "/ranking?view=long",
+      actionHref: "/search?tab=ranking&view=long",
     },
   ];
 }
