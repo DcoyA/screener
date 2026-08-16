@@ -1,11 +1,10 @@
-# .github/workflows/sync-supabase.yml
 name: Sync stocks.json to Supabase
 on:
   push:
     branches: [main]
     paths:
       - "app/data/stocks.json"
-  workflow_dispatch: {}   # 수동 재실행용
+  workflow_dispatch: {}
 
 jobs:
   ingest:
@@ -15,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
+      - run: npm install @supabase/supabase-js
       - run: node scripts/ingest-daily-snapshot.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
