@@ -151,32 +151,18 @@ function DemoTradeContent() {
   async function ensureAccountForUser() {
     setLoadingAccount(true);
     try {
-      const link = await getMyDemoAccountLink();
-      if (link) {
-        await loadAccount(link.accountId, link.pin);
-      } else {
-        await createAccountForCurrentUser();
+      const res = await fetch("/api/demo/account/ensure");
+      const data = await res.json();
+      if (!data.ok) {
+        alert(data.error || "가상계좌 조회/생성 실패");
+        return;
       }
+      setAccount({ accountId: data.account.accountNo, cash: data.account.cash });
+      setOrders([]);
+      setPositionPrices({});
     } finally {
       setLoadingAccount(false);
     }
-  }
-  
-  async function createAccountForCurrentUser() {
-    const res = await fetch("/api/demo/account/create");
-    const data = await res.json();
-    if (!data.ok) {
-      alert(data.error || "가상계좌 생성 실패");
-      return;
-    }
-    const saveResult = await saveMyDemoAccountLink(data.account.accountId, data.account.pin);
-    if (!saveResult.ok) {
-      alert("계좌 연결 저장에 실패했습니다. 새로고침 후 다시 시도해주세요.");
-      return;
-    }
-    setAccount(data.account);
-    setOrders([]);
-    setPositionPrices({});
   }
   
   async function handleKakaoLogin() {
