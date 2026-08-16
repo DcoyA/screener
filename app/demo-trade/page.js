@@ -127,7 +127,7 @@ function DemoTradeContent() {
         const list = await getWishlist();
         setWishlistStocks(list);
       }
-  
+    }
     initializePage();
   
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
