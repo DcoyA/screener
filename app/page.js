@@ -14,6 +14,7 @@ import BridgeSection from "./components/home/BridgeSection";
 import QuickLinksSection from "./components/home/QuickLinksSection";
 import NoticePreview from "./components/home/NoticePreview";
 import { buildStrategyCards, buildAvoidSummary } from "./lib/homeData";
+import PortfolioSummaryCard from "./components/home/PortfolioSummaryCard";
 
 const SUBSCRIBE_ENDPOINT =
   "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
@@ -120,6 +121,7 @@ export default function HomePage() {
         </header>
 
         <HeroSection updatedAt={updatedAt} stocks={stocks} />
+        <PortfolioSummaryCard />
 
         <SubscribeSection
           isModalOpen={isModalOpen}
