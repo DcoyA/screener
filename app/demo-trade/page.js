@@ -137,7 +137,6 @@ function DemoTradeContent() {
         await ensureAccountForUser();
         const list = await getWishlist();
         setWishlistStocks(list);
-      }
       } else {
         setAccount(null);
         setOrders([]);
