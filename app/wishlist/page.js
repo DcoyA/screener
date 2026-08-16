@@ -107,7 +107,7 @@ export default function WishlistPage() {
             <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: "1.02rem", fontWeight: 700 }}>
               아직 관심종목이 없습니다. 랭킹이나 종목 상세 페이지에서 ☆ 버튼을 눌러 추가해보세요.
             </p>
-            <Link href="/ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "#0f172a", color: "#fff" }}>
+            <Link href="/search?tab=ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "#0f172a", color: "#fff" }}>
               랭킹 보러 가기
             </Link>
           </div>
