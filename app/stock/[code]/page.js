@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import stocks from "../../data/stocks.json";
+import WishlistButton from "../../components/WishlistButton";
 
 const SCORE_META = [
   {
@@ -783,11 +784,14 @@ export default async function StockDetailPage({ params }) {
       </div>
 
       <section style={styles.pageHero}>
-        <div>
-          <p style={styles.marketBadge}>{stock.market}</p>
-          <h1 style={styles.h1}>{stock.name}</h1>
-          <p style={styles.stockCode}>종목코드 {stock.code}</p>
-          <p style={styles.summaryText}>{stock.summary}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <p style={styles.marketBadge}>{stock.market}</p>
+            <h1 style={styles.h1}>{stock.name}</h1>
+            <p style={styles.stockCode}>종목코드 {stock.code}</p>
+            <p style={styles.summaryText}>{stock.summary}</p>
+          </div>
+          <WishlistButton code={stock.code} name={stock.name} />
         </div>
       </section>
 
