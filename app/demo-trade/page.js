@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import MainNav from "../components/MainNav";
+import { createSupabaseBrowserClient } from "../lib/supabase/client";
+import { getMyDemoAccountLink, saveMyDemoAccountLink, resetMyDemoAccountLink } from "../lib/demoAccount";
 
 const POPULAR_STOCKS = [
   { code: "005930", name: "삼성전자" },
@@ -73,8 +75,8 @@ function candleMinuteValue(candle) {
 function DemoTradeContent() {
   const searchParams = useSearchParams();
   const [account, setAccount] = useState(null);
-  const [loginAccountId, setLoginAccountId] = useState("");
-  const [loginPin, setLoginPin] = useState("");
+  const [authUser, setAuthUser] = useState(null);
+  const [resetting, setResetting] = useState(false);
 
   const [searchCode, setSearchCode] = useState("005930");
   const [code, setCode] = useState("005930");
@@ -101,9 +103,10 @@ function DemoTradeContent() {
   const [loadingPositions, setLoadingPositions] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
   const [pendingAccountAck, setPendingAccountAck] = useState(false);
-  const [showLoginForm, setShowLoginForm] = useState(false);
 
   useEffect(() => {
+    const supabase = createSupabaseBrowserClient();
+  
     async function initializePage() {
       const deepLinkCode = searchParams.get("code");
       const deepLinkName = searchParams.get("name") || "";
@@ -113,22 +116,68 @@ function DemoTradeContent() {
       } else {
         await fetchQuote("005930", "삼성전자", "popular");
       }
-
-      const saved = localStorage.getItem("demoTradeAccount");
-
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed?.accountId && parsed?.pin) {
-            setLoginAccountId(parsed.accountId);
-            setLoginPin(parsed.pin);
-            await loadAccount(parsed.accountId, parsed.pin);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
+  
+      const { data } = await supabase.auth.getUser();
+      const user = data.user || null;
+      setAuthUser(user);
+      if (user) await ensureAccountForUser();
     }
+  
+    initializePage();
+  
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user || null;
+      setAuthUser(user);
+      if (user) {
+        ensureAccountForUser();
+      } else {
+        setAccount(null);
+        setOrders([]);
+        setPositionPrices({});
+      }
+    });
+  
+    return () => listener.subscription.unsubscribe();
+  }, []);
+  
+  async function ensureAccountForUser() {
+    setLoadingAccount(true);
+    try {
+      const link = await getMyDemoAccountLink();
+      if (link) {
+        await loadAccount(link.accountId, link.pin);
+      } else {
+        await createAccountForCurrentUser();
+      }
+    } finally {
+      setLoadingAccount(false);
+    }
+  }
+  
+  async function createAccountForCurrentUser() {
+    const res = await fetch("/api/demo/account/create");
+    const data = await res.json();
+    if (!data.ok) {
+      alert(data.error || "가상계좌 생성 실패");
+      return;
+    }
+    const saveResult = await saveMyDemoAccountLink(data.account.accountId, data.account.pin);
+    if (!saveResult.ok) {
+      alert("계좌 연결 저장에 실패했습니다. 새로고침 후 다시 시도해주세요.");
+      return;
+    }
+    setAccount(data.account);
+    setOrders([]);
+    setPositionPrices({});
+  }
+  
+  async function handleKakaoLogin() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${window.location.pathname}` },
+    });
+  }
 
     initializePage();
   }, []);
@@ -586,63 +635,36 @@ function DemoTradeContent() {
             <>
               <div style={styles.accountLine}>가상계좌</div>
               <div style={styles.accountId}>{account.accountId}</div>
-              <div style={styles.accountPin}>PIN {account.pin}</div>
-              <button style={styles.miniCopyButton} onClick={() => copyAccountInfo(account)}>계좌정보 복사</button>
+              <div style={styles.accountPin}>현금 {formatWon(account.cash)}</div>
               <button
                 style={styles.linkButton}
-                onClick={() => {
-                  setAccount(null);
-                  setOrders([]);
-                  setPositionPrices({});
-                  setLoginAccountId("");
-                  setLoginPin("");
-                  setShowLoginForm(true);
-                  localStorage.removeItem("demoTradeAccount");
+                disabled={resetting}
+                onClick={async () => {
+                  const confirmed = window.confirm(
+                    "가상계좌를 초기화하면 보유종목과 주문 내역이 모두 사라지고, 현금 1억으로 새 계좌가 만들어집니다. 계속할까요?"
+                  );
+                  if (!confirmed) return;
+                  setResetting(true);
+                  await resetMyDemoAccountLink();
+                  await createAccountForCurrentUser();
+                  setResetting(false);
                 }}
               >
-                다른 계좌로 전환
+                {resetting ? "초기화 중..." : "가상계좌 초기화"}
               </button>
             </>
+          ) : authUser ? (
+            <div style={styles.accountLine}>계좌를 불러오는 중입니다...</div>
           ) : (
             <>
-              <div style={styles.accountLine}>가상계좌 없음</div>
-              <button style={styles.primaryButton} onClick={createAccount} disabled={loadingAccount}>
-                {loadingAccount ? "생성 중" : "1억으로 시작하기"}
-              </button>
-              <button style={styles.linkButton} onClick={() => setShowLoginForm((prev) => !prev)}>
-                이미 계좌가 있나요?
+              <div style={styles.accountLine}>로그인이 필요합니다</div>
+              <button style={styles.primaryButton} onClick={handleKakaoLogin}>
+                카카오로 로그인하고 시작하기
               </button>
             </>
           )}
         </div>
       </section>
-
-      {pendingAccountAck && account && (
-        <section style={styles.ackCard}>
-          <div style={styles.ackTitle}>⚠️ 계좌 정보를 꼭 저장하세요</div>
-          <p style={styles.ackText}>
-            이 계좌번호와 PIN은 지금만 보여드립니다. 잃어버리면 복구할 수 없으니
-            스크린샷이나 메모로 꼭 보관해 주세요.
-          </p>
-          <div style={styles.ackAccountBox}>
-            <span>{account.accountId}</span>
-            <span>PIN {account.pin}</span>
-          </div>
-          <div style={styles.ackButtonRow}>
-            <button style={styles.outlineButton} onClick={() => copyAccountInfo(account)}>복사하기</button>
-            <button style={styles.primaryButton} onClick={() => setPendingAccountAck(false)}>저장했어요, 시작할게요</button>
-          </div>
-        </section>
-      )}
-
-      {!account && showLoginForm && (
-        <section style={styles.loginPanel} className="dt-login-panel">
-          <input style={styles.loginInput} value={loginAccountId} onChange={(event) => setLoginAccountId(event.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
-          <input style={styles.loginInput} value={loginPin} onChange={(event) => setLoginPin(event.target.value)} placeholder="PIN 4자리" />
-          <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>계좌 불러오기</button>
-          <p style={styles.loginHint}>계좌번호와 PIN은 최초 생성 시 한 번만 표시되며, 분실 시 복구할 수 없습니다.</p>
-        </section>
-      )}
 
       <section style={styles.tradeGrid} className="dt-trade-grid">
         <aside style={styles.leftPanel}>
@@ -758,10 +780,16 @@ function DemoTradeContent() {
           <h2 style={styles.panelTitle}>주문창</h2>
           {!account && (
             <div style={styles.orderLockOverlay}>
-              <p>가상계좌를 만들면 바로 주문해볼 수 있어요.</p>
-              <button style={styles.primaryButton} onClick={createAccount} disabled={loadingAccount}>
-                {loadingAccount ? "생성 중" : "1억으로 시작하기"}
-              </button>
+              {authUser ? (
+                <p>계좌를 불러오는 중입니다...</p>
+              ) : (
+                <>
+                  <p>로그인하면 가상계좌가 자동으로 만들어져요.</p>
+                  <button style={styles.primaryButton} onClick={handleKakaoLogin}>
+                    카카오로 로그인하기
+                  </button>
+                </>
+              )}
             </div>
           )}
           <div style={!account ? styles.orderPanelDisabled : undefined}>
