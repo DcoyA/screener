@@ -1,4 +1,3 @@
-// app/api/demo/order/create/route.js
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../../lib/supabase/server";
 import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
@@ -7,7 +6,7 @@ async function handleOrder(body) {
   const { side, code, name, price, quantity, reason } = body;
 
   if (!code || !price || !quantity) {
-    return NextResponse.json({ ok: false, error: "종목코드, 가격, 수량을 확인해주세요." }, { status: 400 });
+    return { status: 400, body: { ok: false, error: "종목코드, 가격, 수량을 확인해주세요." } };
   }
 
   const supabaseServer = await createSupabaseServerClient();
@@ -15,7 +14,7 @@ async function handleOrder(body) {
   const user = userData.user;
 
   if (!user) {
-    return NextResponse.json({ ok: false, error: "로그인이 필요합니다." }, { status: 401 });
+    return { status: 401, body: { ok: false, error: "로그인이 필요합니다." } };
   }
 
   const supabase = createSupabaseAdminClient();
@@ -30,26 +29,38 @@ async function handleOrder(body) {
   });
 
   if (error) {
-    return NextResponse.json({ ok: false, error: error.message || "주문 처리 실패" }, { status: 400 });
+    return { status: 400, body: { ok: false, error: error.message || "주문 처리 실패" } };
   }
 
   const result = Array.isArray(data) ? data[0] : data;
 
-  return NextResponse.json({
-    ok: true,
-    order: { code, name, side: (side || "BUY").toUpperCase(), price: Number(price), quantity: Number(quantity), amount: Number(price) * Number(quantity), reason: reason || "" },
-    account: { accountId: result?.accountNo, cash: result?.cashBalance },
-  });
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      order: {
+        code,
+        name: name || "",
+        side: (side || "BUY").toUpperCase(),
+        price: Number(price),
+        quantity: Number(quantity),
+        amount: Number(price) * Number(quantity),
+        reason: reason || "",
+      },
+      account: { accountId: result?.accountNo, cash: result?.cashBalance },
+    },
+  };
 }
 
 export async function POST(request) {
   const body = await request.json();
-  return handleOrder(body);
+  const result = await handleOrder(body);
+  return NextResponse.json(result.body, { status: result.status });
 }
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  return handleOrder({
+  const result = await handleOrder({
     side: searchParams.get("side") || "BUY",
     code: searchParams.get("code"),
     name: searchParams.get("name") || "",
@@ -57,4 +68,5 @@ export async function GET(request) {
     quantity: searchParams.get("quantity"),
     reason: searchParams.get("reason") || "",
   });
+  return NextResponse.json(result.body, { status: result.status });
 }
