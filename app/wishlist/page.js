@@ -6,7 +6,7 @@ import stocks from "../data/stocks.json";
 import risks from "../data/risks.json";
 import MainNav from "../components/MainNav";
 import WishlistButton from "../components/WishlistButton";
-import { getWishlist, subscribeWishlist } from "../lib/wishlist";
+import { getWishlist } from "../lib/wishlist";
 
 function formatPrice(value) {
   const num = Number(value || 0);
@@ -35,9 +35,7 @@ export default function WishlistPage() {
 
   useEffect(() => {
     setMounted(true);
-    setWishlistEntries(getWishlist());
-    const unsubscribe = subscribeWishlist((list) => setWishlistEntries(list));
-    return unsubscribe;
+    getWishlist().then((list) => setWishlistEntries(list));
   }, []);
 
   const wishlistStocks = useMemo(() => {
