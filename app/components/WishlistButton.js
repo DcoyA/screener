@@ -1,29 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { isInWishlist, toggleWishlist, subscribeWishlist } from "../lib/wishlist";
+import { getCurrentUser, isInWishlist, toggleWishlist } from "../lib/wishlist";
+import { createSupabaseBrowserClient } from "../lib/supabase/client";
 
 export default function WishlistButton({ code, name, size = "md" }) {
   const [active, setActive] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const supabase = createSupabaseBrowserClient();
 
   useEffect(() => {
+    let ignore = false;
     setMounted(true);
-    setActive(isInWishlist(code));
-    const unsubscribe = subscribeWishlist(() => setActive(isInWishlist(code)));
-    return unsubscribe;
+
+    isInWishlist(code).then((result) => {
+      if (!ignore) setActive(result);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      isInWishlist(code).then((result) => {
+        if (!ignore) setActive(result);
+      });
+    });
+
+    return () => {
+      ignore = true;
+      listener.subscription.unsubscribe();
+    };
   }, [code]);
 
   if (!mounted) return null;
 
-  const handleClick = (event) => {
+  const handleClick = async (event) => {
     event.preventDefault();
     event.stopPropagation();
-    toggleWishlist(code, name);
-    // setActive는 여기서 직접 건드리지 않습니다.
-    // toggleWishlist -> saveWishlist가 쏘는 이벤트를 useEffect의
-    // subscribeWishlist 콜백이 받아서 localStorage 실제값 기준으로
-    // active를 다시 계산해줍니다.
+    if (busy) return;
+
+    const user = await getCurrentUser();
+    if (!user) {
+      const confirmed = window.confirm("관심종목은 로그인 후 저장할 수 있어요. 카카오로 로그인할까요?");
+      if (confirmed) {
+        await supabase.auth.signInWithOAuth({
+          provider: "kakao",
+          options: { redirectTo: `${window.location.origin}/auth/callback?next=${window.location.pathname}` },
+        });
+      }
+      return;
+    }
+
+    setBusy(true);
+    const result = await toggleWishlist(code, name);
+    if (result.ok) {
+      setActive((prev) => !prev);
+    }
+    setBusy(false);
   };
 
   const baseStyle = {
@@ -36,13 +67,14 @@ export default function WishlistButton({ code, name, size = "md" }) {
     background: active ? "#fffbeb" : "#ffffff",
     color: active ? "#b45309" : "#334155",
     fontWeight: 800,
-    cursor: "pointer",
+    cursor: busy ? "wait" : "pointer",
     padding: size === "sm" ? "6px 10px" : "10px 14px",
     fontSize: size === "sm" ? "0.78rem" : "0.88rem",
+    opacity: busy ? 0.6 : 1,
   };
 
   return (
-    <button type="button" onClick={handleClick} style={baseStyle} aria-pressed={active}>
+    <button type="button" onClick={handleClick} style={baseStyle} aria-pressed={active} disabled={busy}>
       <span>{active ? "★" : "☆"}</span>
       <span>{active ? "관심종목" : "관심추가"}</span>
     </button>
