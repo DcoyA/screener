@@ -1,0 +1,15 @@
+# .github/workflows/sync-supabase-watchdog.yml
+name: Verify today's snapshot exists
+on:
+  schedule:
+    - cron: "0 8 * * 1-5"   # 평일 UTC 08:00 = KST 17:00
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node scripts/verify-today-ingested.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
