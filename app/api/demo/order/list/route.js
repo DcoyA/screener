@@ -1,87 +1,49 @@
 import { NextResponse } from "next/server";
-
-async function callDemoTradeApi(payload) {
-  const apiUrl = process.env.DEMO_TRADE_API_URL;
-
-  if (!apiUrl) {
-    throw new Error("DEMO_TRADE_API_URL 환경변수가 설정되지 않았습니다.");
-  }
-
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8",
-    },
-    body: JSON.stringify(payload),
-    cache: "no-store",
-  });
-
-  const text = await res.text();
-
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    console.error("Apps Script raw response:", text);
-    throw new Error("Apps Script 응답 파싱 실패");
-  }
-}
+import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
 
 async function loadOrders(accountId, pin) {
-  if (!accountId || !pin) {
-    return {
-      ok: false,
-      error: "accountId와 pin이 필요합니다.",
-    };
-  }
+  if (!accountId || !pin) return { ok: false, error: "accountId와 pin이 필요합니다." };
 
-  return await callDemoTradeApi({
-    action: "loadOrders",
-    accountId,
-    pin,
-  });
+  const supabase = createSupabaseAdminClient();
+  const { data: account, error: accError } = await supabase
+    .from("virtual_accounts")
+    .select("id")
+    .eq("account_no", accountId)
+    .eq("pin", pin)
+    .maybeSingle();
+
+  if (accError || !account) return { ok: false, error: "계좌를 찾을 수 없습니다." };
+
+  const { data: rows, error } = await supabase
+    .from("virtual_transactions")
+    .select("*")
+    .eq("account_id", account.id)
+    .order("executed_at", { ascending: true });
+
+  if (error) return { ok: false, error: "주문 목록 조회 실패" };
+
+  const orders = (rows || []).map((row) => ({
+    code: row.code,
+    name: row.name,
+    side: row.side === "buy" ? "BUY" : "SELL",
+    price: row.price,
+    quantity: row.quantity,
+    amount: row.amount,
+    reason: row.reason,
+    executedAt: row.executed_at,
+  }));
+
+  return { ok: true, orders };
 }
 
-// 브라우저 주소창 테스트용
 export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-
-    const accountId = searchParams.get("accountId");
-    const pin = searchParams.get("pin");
-
-    const data = await loadOrders(accountId, pin);
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Load orders GET API error:", error);
-
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error.message || "주문 목록 조회 실패",
-      },
-      { status: 500 }
-    );
-  }
+  const { searchParams } = new URL(request.url);
+  const data = await loadOrders(searchParams.get("accountId"), searchParams.get("pin"));
+  return NextResponse.json(data);
 }
 
-// 실제 프론트 호출용
 export async function POST(request) {
-  try {
-    const body = await request.json();
-
-    const data = await loadOrders(body.accountId, body.pin);
-
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error("Load orders POST API error:", error);
-
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error.message || "주문 목록 조회 실패",
-      },
-      { status: 500 }
-    );
-  }
+  const body = await request.json();
+  const data = await loadOrders(body.accountId, body.pin);
+  return NextResponse.json(data);
 }
