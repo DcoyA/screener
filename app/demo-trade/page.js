@@ -644,41 +644,6 @@ function DemoTradeContent() {
         </section>
       )}
 
-      {pendingAccountAck && account && (
-        <section style={styles.ackCard}>
-          <div style={styles.ackTitle}>⚠️ 계좌 정보를 꼭 저장하세요</div>
-          <p style={styles.ackText}>
-            이 계좌번호와 PIN은 지금만 보여드립니다. 잃어버리면 복구할 수 없으니
-            스크린샷이나 메모로 꼭 보관해 주세요.
-          </p>
-          <div style={styles.ackAccountBox}>
-            <span>{account.accountId}</span>
-            <span>PIN {account.pin}</span>
-          </div>
-          <div style={styles.ackButtonRow}>
-            <button style={styles.outlineButton} onClick={() => copyAccountInfo(account)}>복사하기</button>
-            <button style={styles.primaryButton} onClick={() => setPendingAccountAck(false)}>저장했어요, 시작할게요</button>
-          </div>
-        </section>
-      )}
-
-      {!account && showLoginForm && (
-        <section style={styles.loginPanel} className="dt-login-panel">
-          <input style={styles.loginInput} value={loginAccountId} onChange={(event) => setLoginAccountId(event.target.value)} placeholder="가상계좌번호 DEMO-XXXX-XXXX" />
-          <input style={styles.loginInput} value={loginPin} onChange={(event) => setLoginPin(event.target.value)} placeholder="PIN 4자리" />
-          <button style={styles.darkButton} onClick={() => loadAccount()} disabled={loadingAccount}>계좌 불러오기</button>
-          <p style={styles.loginHint}>계좌번호와 PIN은 최초 생성 시 한 번만 표시되며, 분실 시 복구할 수 없습니다.</p>
-        </section>
-      )}
-
-
-      <section style={styles.assetGrid} className="dt-asset-grid">
-        <AssetCard label="총자산" value={formatWon(totalAsset)} />
-        <AssetCard label="가상현금" value={formatWon(cash)} />
-        <AssetCard label="평가금액" value={formatWon(totalEvalAmount)} />
-        <AssetCard label="전체수익률" value={formatRate(totalProfitRate)} tone={totalProfitRate >= 0 ? "red" : "blue"} />
-      </section>
-
       <section style={styles.tradeGrid} className="dt-trade-grid">
         <aside style={styles.leftPanel}>
           <h2 style={styles.panelTitle}>종목 검색</h2>
