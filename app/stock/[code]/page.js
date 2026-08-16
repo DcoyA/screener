@@ -774,7 +774,6 @@ export default async function StockDetailPage({ params }) {
   const rawTotalScore = stock?.rawTotalScore ?? stock?.totalScore ?? 0;
   const totalScore = stock?.totalScore ?? 0;
   const undervalueEligible = !!stock?.undervalueMeta?.eligible;
-  const summaryBlock = buildQuickConclusion(stock);
   const positivePoints = buildPositivePoints(stock);
   const riskPoints = buildRiskPoints(stock);
   const scenarios = buildScenarioTexts(stock);
@@ -818,6 +817,7 @@ export default async function StockDetailPage({ params }) {
           <div style={styles.chipRow}>
             <span style={getBadgeStyle("value")}>{summaryBlock.summary}</span>
           </div>
+        </div>
         </div>
       </section>
 
