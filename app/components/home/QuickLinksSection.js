@@ -14,11 +14,11 @@ export default function QuickLinksSection() {
             <strong>📈 성과/백테스트</strong>
             <span>추천종목 실제 투자결과</span>
           </Link>
-          <Link href="/ranking" className="quickLinkItem">
+          <Link href="/search?tab=ranking" className="quickLinkItem">
             <strong>🏆 랭킹</strong>
             <span>AI 점수 기준 상위 종목 보기</span>
           </Link>
-          <Link href="/risk" className="quickLinkItem">
+          <Link href="/search?tab=risk" className="quickLinkItem">
             <strong>⚠️ 리스크</strong>
             <span>주의 종목과 체크포인트 확인</span>
           </Link>
