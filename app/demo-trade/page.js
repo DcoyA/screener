@@ -179,9 +179,6 @@ function DemoTradeContent() {
     });
   }
 
-    initializePage();
-  }, []);
-
   const totalOrderAmount = useMemo(() => toNumber(price) * toNumber(quantity), [price, quantity]);
 
   const fomoScore = useMemo(() => {
