@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import notices from "./data/notices.json";
-import MainNav from "./components/MainNav";
-import HeroSection from "./components/home/HeroSection";
-import SubscribeSection from "./components/home/SubscribeSection";
-import StrategySection from "./components/home/StrategySection";
-import AvoidSection from "./components/home/AvoidSection";
-import BridgeSection from "./components/home/BridgeSection";
-import QuickLinksSection from "./components/home/QuickLinksSection";
-import NoticePreview from "./components/home/NoticePreview";
-import { buildStrategyCards, buildAvoidSummary } from "./lib/homeData";
-import PortfolioSummaryCard from "./components/home/PortfolioSummaryCard";
+import MainNav from "../MainNav";
+import HeroSection from "./HeroSection";
+import SubscribeSection from "./SubscribeSection";
+import StrategySection from "./StrategySection";
+import AvoidSection from "./AvoidSection";
+import BridgeSection from "./BridgeSection";
+import QuickLinksSection from "./QuickLinksSection";
+import NoticePreview from "./NoticePreview";
+import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
+import PortfolioSummaryCard from "./PortfolioSummaryCard";
 
 const SUBSCRIBE_ENDPOINT =
   "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
@@ -39,7 +38,7 @@ function createUnsubscribeToken(emailValue) {
   return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
 }
 
-export default function HomePage() {
+export default function HomeClient({ stocks, notices }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
