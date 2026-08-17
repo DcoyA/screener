@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../../lib/supabase/server";
 import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
+import { getGradeCodeForOrder } from "../../../../lib/gradeLookup";
 
 async function handleOrder(body) {
   const { side, code, name, price, quantity, reason } = body;
@@ -17,6 +18,8 @@ async function handleOrder(body) {
     return { status: 401, body: { ok: false, error: "로그인이 필요합니다." } };
   }
 
+  const gradeCode = await getGradeCodeForOrder(code);
+
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.rpc("execute_virtual_order", {
     p_user_id: user.id,
@@ -26,6 +29,7 @@ async function handleOrder(body) {
     p_price: Number(price),
     p_quantity: Number(quantity),
     p_reason: reason || "",
+    p_grade_code: gradeCode,
   });
 
   if (error) {
@@ -46,6 +50,7 @@ async function handleOrder(body) {
         quantity: Number(quantity),
         amount: Number(price) * Number(quantity),
         reason: reason || "",
+        gradeCode,
       },
       account: { accountId: result?.accountNo, cash: result?.cashBalance },
     },
