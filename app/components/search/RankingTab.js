@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import stocks from "../../data/stocks.json";
 import WishlistButton from "../WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../GradeBadge";
@@ -281,7 +280,7 @@ function buildWarningLine(stock, activeView, activeRisk) {
   return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
 }
 
-export default function RankingTab() {
+export default function RankingTab({ stocks }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
