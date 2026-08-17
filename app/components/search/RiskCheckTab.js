@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import risks from "../../data/risks.json";
-import stocks from "../../data/stocks.json";
 import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../../components/GradeBadge";
@@ -66,7 +64,7 @@ function buildCheckPointGuide(item) {
   return "최근 공시, 실적, 업황 변화 여부를 함께 확인하세요.";
 }
 
-function RiskCheckTabContent() {
+function RiskCheckTabContent({ stocks, risks }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -441,10 +439,10 @@ function RiskCheckTabFallback() {
   return <p style={{ color: "#64748b", fontWeight: 700 }}>리스크 체크 화면을 불러오는 중...</p>;
 }
 
-export default function RiskCheckTab() {
+export default function RiskCheckTab({ stocks, risks }) {
   return (
     <Suspense fallback={<RiskCheckTabFallback />}>
-      <RiskCheckTabContent />
+      <RiskCheckTabContent stocks={stocks} risks={risks} />
     </Suspense>
   );
 }
