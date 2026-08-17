@@ -45,7 +45,7 @@ export default function ScoreAccordion({ groups, scoreBreakdown }) {
                 >
                   {signal.label}
                 </span>
-                <span style={{ color: "#94a3b8", fontSize: "0.85rem" }}>{isOpen ? "接기 ▲" : "자세히 ▼"}</span>
+                <span style={{ color: "#94a3b8", fontSize: "0.85rem" }}>{isOpen ? "접기 ▲" : "자세히 ▼"}</span>
               </span>
             </button>
 
