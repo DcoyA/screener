@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import stocks from "../../data/stocks.json";
-import risks from "../../data/risks.json";
 import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade, GRADE_META, GRADE_ORDER } from "../../lib/grade";
 
@@ -230,7 +228,7 @@ function PickCard({ item }) {
   );
 }
 
-export default function FinalPicksTab() {
+export default function FinalPicksTab({ stocks, risks }) {
   const [selectedGroup, setSelectedGroup] = useState("A");
   const finalPicks = useMemo(() => buildFinalPicks(stocks, risks), []);
   const current = finalPicks[selectedGroup] || [];
