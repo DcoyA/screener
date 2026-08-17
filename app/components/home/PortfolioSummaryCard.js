@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "../../lib/supabase/client";
-import { getMyDemoAccountLink } from "../../lib/demoAccount";
 
 function toNumber(value) {
   const parsed = Number(String(value ?? "").replace(/,/g, ""));
@@ -68,31 +67,22 @@ export default function PortfolioSummaryCard() {
       }
 
       try {
-        const link = await getMyDemoAccountLink();
-        if (!link) {
-          if (isMounted) setStatus("guest");
-          return;
-        }
-
-        const loadRes = await fetch(
-          `/api/demo/account/load?accountId=${encodeURIComponent(link.accountId)}&pin=${encodeURIComponent(link.pin)}`
-        );
-        const loadData = await loadRes.json();
-        if (!loadData.ok) {
+        // 세션 기반: accountId/pin 링크 없이 로그인 사용자의 가상계좌를 직접 조회(없으면 생성)한다.
+        const accountRes = await fetch("/api/demo/account/ensure");
+        const accountData = await accountRes.json();
+        if (!accountData.ok) {
           if (isMounted) setStatus("error");
           return;
         }
 
-        const orderRes = await fetch(
-          `/api/demo/order/list?accountId=${encodeURIComponent(link.accountId)}&pin=${encodeURIComponent(link.pin)}`
-        );
+        const orderRes = await fetch("/api/demo/order/list");
         const orderData = await orderRes.json();
         const orders = orderData.ok ? orderData.orders || [] : [];
         const { holdingsCount, totalBuyAmount } = summarizeHoldings(orders);
 
         if (!isMounted) return;
         setSummary({
-          cash: toNumber(loadData.account?.cash),
+          cash: toNumber(accountData.account?.cash),
           holdingsCount,
           totalBuyAmount,
         });
