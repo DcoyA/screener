@@ -622,15 +622,29 @@ function DemoTradeContent() {
                 style={styles.linkButton}
                 disabled={resetting}
                 onClick={async () => {
-                  const confirmed = window.confirm(
-                    "가상계좌를 초기화하면 보유종목과 주문 내역이 모두 사라지고, 현금 1억으로 새 계좌가 만들어집니다. 계속할까요?"
-                  );
-                  if (!confirmed) return;
-                  setResetting(true);
-                  await resetMyDemoAccountLink();
-                  await createAccountForCurrentUser();
-                  setResetting(false);
-                }}
+                  onClick={async () => {
+                    const confirmed = window.confirm(
+                      "계좌를 초기화하면 기존 가상계좌 데이터가 삭제됩니다. 현금 1억원부터 다시 시작하려면 확인을 눌러주세요. 초기화하시겠습니까?"
+                    );
+                    if (!confirmed) return;
+                    setResetting(true);
+                    try {
+                      const res = await fetch("/api/demo/account/reset", { method: "POST" });
+                      const data = await res.json();
+                      if (!data.ok) {
+                        alert(data.error || "계좌 초기화 실패");
+                        return;
+                      }
+                      setAccount({ accountId: data.account.accountNo, cash: data.account.cash });
+                      setOrders([]);
+                      setPositionPrices({});
+                    } catch (error) {
+                      console.error(error);
+                      alert("계좌 초기화 중 문제가 발생했습니다.");
+                    } finally {
+                      setResetting(false);
+                    }
+                  }}
               >
                 {resetting ? "초기화 중..." : "가상계좌 초기화"}
               </button>
