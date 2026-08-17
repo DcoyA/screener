@@ -422,13 +422,11 @@ function DemoTradeContent() {
     }
   }
 
-  async function loadOrders(accountIdParam, pinParam) {
-    const targetAccountId = accountIdParam || account?.accountId || loginAccountId;
-    const targetPin = pinParam || account?.pin || loginPin;
-    if (!targetAccountId || !targetPin) return;
-
+  async function loadOrders() {
+    if (!account?.accountId) return;
+  
     try {
-      const res = await fetch(`/api/demo/order/list?accountId=${encodeURIComponent(targetAccountId)}&pin=${encodeURIComponent(targetPin)}`);
+      const res = await fetch("/api/demo/order/list");
       const data = await res.json();
       if (data.ok) {
         const nextOrders = data.orders || [];
@@ -525,20 +523,20 @@ function DemoTradeContent() {
   }
 
   async function submitOrder() {
-    if (!account?.accountId || !account?.pin) {
+    if (!account?.accountId) {
       alert("먼저 가상계좌를 생성하거나 불러오세요.");
       return;
     }
     if (!code || !price || !quantity) {
-      alert("종목, 현재가, 수량을 확인하세요.");
+      alert("종목, 현재가, 수량을 확인해주세요.");
       return;
     }
     if (toNumber(quantity) <= 0) {
-      alert("수량은 1주 이상 입력하세요.");
+      alert("수량은 1주 이상 입력해주세요.");
       return;
     }
     if (side === "BUY" && totalOrderAmount > cash) {
-      alert("가상 현금이 부족합니다.");
+      alert("가용 현금보다 큰 주문입니다.");
       return;
     }
     if (side === "SELL") {
@@ -548,52 +546,46 @@ function DemoTradeContent() {
         return;
       }
       if (toNumber(quantity) > holdingQuantity) {
-        alert(`보유수량(${holdingQuantity.toLocaleString()}주)보다 많이 매도할 수 없습니다.`);
+        alert(`보유 수량(${holdingQuantity.toLocaleString()}주)보다 많이 매도할 수 없습니다.`);
         return;
       }
     }
-
+  
     setOrderStatus("주문 접수 중...");
-    setTimeout(() => setOrderStatus("가상 체결 중..."), 600);
-
+    setTimeout(() => setOrderStatus("가격 체결 중..."), 600);
+  
     setTimeout(async () => {
       try {
         const res = await fetch("/api/demo/order/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            accountId: account.accountId,
-            pin: account.pin,
             side,
             code,
             name,
             price: toNumber(price),
             quantity: toNumber(quantity),
             reason,
-            targetPrice,
-            stopLossPrice,
-            holdingDays,
-            fomoScore,
           }),
         });
-
+  
         const data = await res.json();
         if (!data.ok) {
-          alert(data.error || "주문 저장 실패");
+          alert(data.error || "주문 처리 실패");
           setOrderStatus("");
           return;
         }
-
-        setOrderStatus("가상 체결 완료");
+  
+        setOrderStatus("주문 체결 완료");
         if (data.account && typeof data.account.cash !== "undefined") {
           setAccount((prev) => ({ ...prev, cash: data.account.cash }));
         }
-        await loadOrders(account.accountId, account.pin);
+        await loadOrders();
         setReason("");
         setTimeout(() => setOrderStatus(""), 1200);
       } catch (error) {
         console.error(error);
-        alert("주문 처리 중 오류가 발생했습니다.");
+        alert("주문 처리 중 문제가 발생했습니다.");
         setOrderStatus("");
       }
     }, 1200);
