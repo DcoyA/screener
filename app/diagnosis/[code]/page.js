@@ -60,6 +60,12 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(1)}%`;
 }
 
+function formatRatio(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  return `${num.toFixed(1)}%`;
+}
+
 function Metric({ label, value, accent }) {
   return (
     <div style={{ border: "1px solid #e5e7eb", borderRadius: 16, padding: 16, background: "#fff" }}>
@@ -112,7 +118,7 @@ export default async function DiagnosisPage({ params }) {
         <Metric label="현재가" value={formatPrice(stock.currentPrice)} />
         <Metric label="적정가 추정" value={formatPrice(stock.targetPrice)} />
         <Metric label="상승여력" value={formatPercent(stock.upside)} accent />
-        <Metric label="부채비율" value={formatPercent(stock.debtRatio)} />
+        <Metric label="부채비율" value={formatRatio(stock.debtRatio)} />
       </section>
 
       {holding && (
