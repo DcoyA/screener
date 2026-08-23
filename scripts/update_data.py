@@ -17,6 +17,7 @@ stocks_path = DATA_DIR / "stocks.json"
 risks_path = DATA_DIR / "risks.json"
 reports_path = DATA_DIR / "reports.json"
 history_path = DATA_DIR / "history.json"
+sector_map_path = DATA_DIR / "sector_map.json"
 
 OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
 KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
@@ -43,6 +44,33 @@ MIN_AVG_TRADE_VALUE = 10_0000_0000  # 10억원
 # === RISK GRADE FIX: 등급 분포 조정 비율 ===
 RISK_LOW_PCT = 0.40      # 하위 40% -> 낮음
 RISK_MEDIUM_PCT = 0.80   # 40%~80% -> 보통, 80%~100% -> 주의
+
+# === FAIR VALUE V2 ===
+# 이익 정규화: net_income/operating_income 비율로 가중 보간.
+# 1.2 이하는 원본 그대로, 2.0 이상은 operating_income*0.78, 그 사이는 선형 보간.
+# operating_income<=0이면 정규화 미적용(원본 유지).
+NORMALIZATION_TAX_MULTIPLIER = 0.78
+NORMALIZATION_BLEND_LOW = 1.2
+NORMALIZATION_BLEND_HIGH = 2.0
+
+# 목표 PER 부분회귀: target_per = per + λ*(섹터중앙값PER - per)
+# 섹터는 sector_map.json의 induty_code 2자리 중분류. 표본 5개 미만이면 λ를 낮추고,
+# 섹터 매칭 자체가 안 되면 전체 시장 중앙값을 기준으로 λ를 낮춰 적용한다.
+REGRESSION_LAMBDA_FULL = 0.3
+REGRESSION_LAMBDA_LOW = 0.15
+MIN_SECTOR_SAMPLE = 5
+
+# 상승여력 표시 캡(계산값 자체는 캡 없이 보존, 표시용 필드만 자름)
+UPSIDE_CAP_HIGH = 80.0
+UPSIDE_CAP_LOW = -40.0
+
+# 등급 백분위 컷오프 (INCLUDED 종목 기준, decision==EXCLUDED는 항상 D)
+GRADE_S_PCT = 0.07
+GRADE_A_PCT = 0.25
+GRADE_B_PCT = 0.65
+
+MODEL_VERSION = "v2"
+# === FAIR VALUE V2 끝 ===
 
 kst_now = datetime.utcnow() + timedelta(hours=9)
 today = kst_now.strftime("%Y-%m-%d")
@@ -103,6 +131,63 @@ def load_json(path, default):
             return json.load(f)
         except Exception:
             return default
+
+
+def load_sector_map():
+    """scripts/build_sector_map.py가 만든 app/data/sector_map.json을 로드한다.
+    파일이 없거나 비어있어도 파이프라인 전체가 죽으면 안 되므로 빈 dict로 폴백한다
+    (이 경우 모든 종목이 fair-value v2의 "섹터 매칭 실패" 경로로 빠져 시장 전체
+    중앙값 기준으로 처리된다)."""
+    data = load_json(sector_map_path, {})
+    if isinstance(data, dict) and isinstance(data.get("items"), dict):
+        return data["items"]
+    return {}
+
+
+SECTOR_MAP = load_sector_map()
+
+
+def normalize_net_income(operating_income, net_income):
+    """이익 정규화(fair-value v2). operating_income<=0이면 정규화하지 않고
+    원본을 그대로 반환한다. 그 외에는 ratio=net/op 기준으로
+    [NORMALIZATION_BLEND_LOW, NORMALIZATION_BLEND_HIGH] 구간에서 원본과
+    operating_income*NORMALIZATION_TAX_MULTIPLIER 사이를 선형 보간한다.
+    min()으로 항상 원본 이하로만 움직이도록 보장한다(정규화가 원본보다
+    커지는 방향으로 작동하는 경우를 원천 차단).
+    반환값: (normalized_net_income, weight, applied)"""
+    if operating_income is None or operating_income <= 0 or not net_income:
+        return net_income, 0.0, False
+
+    ratio = net_income / operating_income
+    if ratio <= NORMALIZATION_BLEND_LOW:
+        weight = 0.0
+    elif ratio >= NORMALIZATION_BLEND_HIGH:
+        weight = 1.0
+    else:
+        weight = (ratio - NORMALIZATION_BLEND_LOW) / (
+            NORMALIZATION_BLEND_HIGH - NORMALIZATION_BLEND_LOW
+        )
+
+    blended = net_income * (1 - weight) + (
+        operating_income * NORMALIZATION_TAX_MULTIPLIER
+    ) * weight
+    normalized = min(blended, net_income)
+    applied = abs(normalized - net_income) > 1e-6
+    return normalized, weight, applied
+
+
+def percentile_stats(values):
+    """정렬된 값 목록에서 p25/p50/p75(순위기반, nearest-rank)와 표본 수를 계산한다."""
+    if not values:
+        return None
+    s = sorted(values)
+    n = len(s)
+
+    def _p(p):
+        idx = min(n - 1, max(0, round((p / 100) * (n - 1))))
+        return s[idx]
+
+    return {"p25": _p(25), "p50": _p(50), "p75": _p(75), "n": n}
 
 
 def http_get_json(base_url, params):
@@ -975,16 +1060,22 @@ def build_stock_item(item, corp_map):
     net_income_growth = pct(net_income, net_income_prev) if net_income_prev else 0.0
     roe = (net_income / equity * 100) if equity > 0 else 0.0
 
-    per = None
-    if market_cap > 0 and net_income > 0:
-        per = market_cap / net_income
+    normalized_net_income, normalization_weight, normalization_applied = normalize_net_income(
+        operating_income, net_income
+    )
 
-    target_per = 12
+    per = None
+    if market_cap > 0 and normalized_net_income and normalized_net_income > 0:
+        per = market_cap / normalized_net_income
+
+    # target_price/targetPriceLow/High/upside(섹터 부분회귀 기반, fair-value v2)는
+    # 이 시점엔 계산할 수 없다 — 섹터 중앙값 PER은 전체 종목이 다 모여야 알 수
+    # 있는 population 통계이기 때문에, main()에서 전체 종목 리스트를 만든 뒤
+    # 일괄 채운다. 여기서는 자리만 만들어둔다.
     target_price = None
+    target_price_low = None
+    target_price_high = None
     upside = None
-    if per is not None and per > 0 and close_price > 0:
-        target_price = int(close_price * (target_per / per))
-        upside = (target_price - close_price) / close_price * 100
 
     momentum = round(item.get("priceChangeRate", 0), 2)
 
@@ -1065,12 +1156,19 @@ def build_stock_item(item, corp_map):
     )
 
     sector_name = infer_sector(item["name"], item["market"])
+    # fair-value v2: 목표 PER 부분회귀에 쓰는 섹터는 infer_sector()의 키워드
+    # 분류(sector_name, sectorMeta/타이밍용으로 계속 씀)가 아니라
+    # sector_map.json의 KSIC 중분류다. build_sector_map.py를 먼저 돌려야
+    # 채워진다 — 없으면 None이고, main()에서 시장 전체 중앙값 폴백으로 처리된다.
+    sector_code = (SECTOR_MAP.get(stock_code) or {}).get("ksic_중분류")
 
     stock = {
         "code": stock_code,
         "name": item["name"],
         "market": item["market"],
         "sector": sector_name,
+        "sectorCode": sector_code,
+        "modelVersion": MODEL_VERSION,
         "rawTotalScore": raw_total_score,
         "totalScore": total_score,
         "valueScore": value_score,
@@ -1108,6 +1206,11 @@ def build_stock_item(item, corp_map):
             "revenue": revenue,
             "operatingIncome": operating_income,
             "netIncome": net_income,
+            "normalizedNetIncome": round(normalized_net_income, 0)
+            if normalized_net_income is not None
+            else None,
+            "netIncomeNormalized": normalization_applied,
+            "normalizationWeight": round(normalization_weight, 3),
             "assets": assets,
             "liabilities": liabilities,
             "equity": equity,
@@ -1131,6 +1234,8 @@ def build_stock_item(item, corp_map):
             "priceChange": int(item.get("priceChange", 0)),
             "priceChangeRate": round(item.get("priceChangeRate", 0), 2),
             "targetPrice": target_price,
+            "targetPriceConservative": target_price_low,
+            "targetPriceOptimistic": target_price_high,
             "upside": round(upside, 1) if upside is not None else None,
             "momentum": momentum,
         },
@@ -1522,6 +1627,104 @@ def main():
     )
     stocks = stocks[:MAX_STOCKS]
 
+    # === FAIR VALUE V2: 섹터 부분회귀 기반 목표가 밴드 ===
+    # target_per = per + λ*(섹터중앙값PER - per). 섹터 중앙값은 전체 종목이
+    # 모여야 계산 가능한 population 통계이므로 여기서 일괄 처리한다.
+    # attach_investment_meta()보다 반드시 먼저 실행해야 한다 — finalPickMeta와
+    # timingMeta가 metrics.upside를 참조하기 때문이다.
+    sector_per_buckets = {}
+    market_per_values = []
+    for s in stocks:
+        per_value = s.get("metrics", {}).get("per")
+        if per_value and per_value > 0:
+            market_per_values.append(per_value)
+            code = s.get("sectorCode")
+            if code:
+                sector_per_buckets.setdefault(code, []).append(per_value)
+
+    sector_per_stats = {
+        code: percentile_stats(values) for code, values in sector_per_buckets.items()
+    }
+    market_per_stats = percentile_stats(market_per_values)
+
+    for s in stocks:
+        metrics = s["metrics"]
+        per_value = metrics.get("per")
+        close_price = metrics.get("closePrice") or 0
+        if not per_value or per_value <= 0 or not close_price:
+            s["fairValueMeta"] = {
+                "sectorCode": s.get("sectorCode"),
+                "sectorSampleTier": "fixed",
+                "sectorSampleSize": 0,
+                "regressionLambda": 0.0,
+                "sectorMedianPerUsed": None,
+            }
+            continue
+
+        sector_code = s.get("sectorCode")
+        stats = sector_per_stats.get(sector_code) if sector_code else None
+        if stats and stats["n"] >= MIN_SECTOR_SAMPLE:
+            lam = REGRESSION_LAMBDA_FULL
+            sample_tier = "sector"
+        elif stats:
+            lam = REGRESSION_LAMBDA_LOW
+            sample_tier = "sector_small"
+        elif market_per_stats:
+            stats = market_per_stats
+            lam = REGRESSION_LAMBDA_LOW
+            sample_tier = "market"
+        else:
+            stats = None
+            lam = 0.0
+            sample_tier = "fixed"
+
+        if stats:
+            target_per_low = per_value + lam * (stats["p25"] - per_value)
+            target_per_mid = per_value + lam * (stats["p50"] - per_value)
+            target_per_high = per_value + lam * (stats["p75"] - per_value)
+        else:
+            target_per_low = target_per_mid = target_per_high = per_value
+
+        target_price_low = int(close_price * (target_per_low / per_value))
+        target_price_mid = int(close_price * (target_per_mid / per_value))
+        target_price_high = int(close_price * (target_per_high / per_value))
+        upside_raw = (target_price_mid - close_price) / close_price * 100
+
+        metrics["targetPriceConservative"] = target_price_low
+        metrics["targetPrice"] = target_price_mid
+        metrics["targetPriceOptimistic"] = target_price_high
+        metrics["upside"] = round(upside_raw, 1)
+
+        display_label = None
+        display_reason = None
+        upside_capped = round(upside_raw, 1)
+        if upside_raw > UPSIDE_CAP_HIGH:
+            upside_capped = UPSIDE_CAP_HIGH
+            display_label = "구조적 저평가 구간"
+            display_reason = "실적변동성"
+        elif upside_raw < UPSIDE_CAP_LOW:
+            upside_capped = UPSIDE_CAP_LOW
+            display_label = "구조적 고평가 구간"
+            display_reason = "실적변동성"
+
+        s["display"] = {
+            "upsideLabel": display_label,
+            "upsideLabelReason": display_reason,
+            "upsideCapped": upside_capped,
+        }
+        s["fairValueMeta"] = {
+            "sectorCode": sector_code,
+            "sectorSampleTier": sample_tier,
+            "sectorSampleSize": stats["n"] if stats else 0,
+            "regressionLambda": lam,
+            "sectorMedianPerUsed": stats["p50"] if stats else None,
+        }
+
+        # timingMeta는 build_stock_item()에서 upside=None인 채로 이미 한 번
+        # 계산됐다 — 방금 채운 실제 upside로 다시 계산해야 한다.
+        s["timingMeta"] = build_timing_meta(s)
+    # === FAIR VALUE V2: 목표가 밴드 끝 (등급 백분위는 finalPickMeta 계산 뒤에) ===
+
     stocks = attach_investment_meta(stocks)
 
     # === RISK GRADE FIX: 등급을 절대 기준선이 아니라 전체 종목 분포의 백분위로 재배정 ===
@@ -1541,6 +1744,47 @@ def main():
             level = "주의"
         s["riskMeta"]["level"] = level
     # === RISK GRADE FIX 끝 ===
+
+    # === UNIFIED GRADE V2: 백분위 기반 등급 ===
+    # S: finalScore 상위 7% / A: 상위 25% / B: 상위 65% / C: 나머지
+    # (전부 decision=="INCLUDED" 종목 안에서의 백분위). decision=="EXCLUDED"는
+    # 항상 D. 고위험(주의/높음) 종목은 기존 로직대로 한 단계 강등한다.
+    # 이 자리에서 계산해야 finalPickMeta.finalScore(방금 계산됨)와
+    # riskMeta.level(방금 확정됨)을 둘 다 쓸 수 있다.
+    grade_order = ["S", "A", "B", "C", "D"]
+    included_by_score = sorted(
+        [s for s in stocks if s.get("finalPickMeta", {}).get("decision") == "INCLUDED"],
+        key=lambda s: s.get("finalPickMeta", {}).get("finalScore", 0),
+        reverse=True,
+    )
+    n_included = len(included_by_score)
+    for idx, s in enumerate(included_by_score):
+        rank_pct = (idx + 1) / max(n_included, 1)
+        if rank_pct <= GRADE_S_PCT:
+            s["_gradeCodeRaw"] = "S"
+        elif rank_pct <= GRADE_A_PCT:
+            s["_gradeCodeRaw"] = "A"
+        elif rank_pct <= GRADE_B_PCT:
+            s["_gradeCodeRaw"] = "B"
+        else:
+            s["_gradeCodeRaw"] = "C"
+
+    for s in stocks:
+        if s.get("finalPickMeta", {}).get("decision") == "EXCLUDED":
+            grade_code = "D"
+        else:
+            grade_code = s.pop("_gradeCodeRaw", "C")
+
+        downgraded = False
+        risk_level = s.get("riskMeta", {}).get("level")
+        if risk_level in ("높음", "주의") and grade_code != "D":
+            idx = grade_order.index(grade_code)
+            grade_code = grade_order[min(idx + 1, len(grade_order) - 1)]
+            downgraded = True
+
+        s["unifiedGradeCode"] = grade_code
+        s["unifiedGradeDowngraded"] = downgraded
+    # === UNIFIED GRADE V2 끝 ===
 
     risks = []
     for stock in stocks:

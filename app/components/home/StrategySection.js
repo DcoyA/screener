@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatPrice, formatPercent, getUpsideClass } from "../../lib/homeData";
+import { formatPrice, getUpsideClass, formatUpsideDisplay, formatTargetPriceBand } from "../../lib/homeData";
 
 export default function StrategySection({ strategyCards }) {
   return (
@@ -42,12 +42,12 @@ export default function StrategySection({ strategyCards }) {
                   </div>
                   <div className="candidatePriceItem">
                     <span className="candidatePriceLabel">적정가 추정</span>
-                    <strong className="targetLine">{formatPrice(section.stock.metrics?.targetPrice)}</strong>
+                    <strong className="targetLine">{formatTargetPriceBand(section.stock)}</strong>
                   </div>
                 </div>
 
-                <p className={getUpsideClass(section.stock.metrics?.upside)}>
-                  상승여력 {formatPercent(section.stock.metrics?.upside)}
+                <p className={getUpsideClass(section.stock.display?.upsideCapped ?? section.stock.metrics?.upside)}>
+                  상승여력 {formatUpsideDisplay(section.stock)}
                 </p>
 
                 <div className="reasonBox">

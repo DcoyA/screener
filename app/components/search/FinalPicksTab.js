@@ -37,6 +37,23 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(1)}%`;
 }
 
+// 상승여력 표시값(fair-value v2): 캡 초과 시 라벨, 아니면 캡 적용값(옛 데이터는 원본)
+function formatUpsideDisplay(stock) {
+  const label = stock?.display?.upsideLabel;
+  if (label) return label;
+  const capped = stock?.display?.upsideCapped;
+  return formatPercent(capped ?? stock?.metrics?.upside);
+}
+// 적정가는 단일값이 아니라 보수~낙관 밴드로 표시한다.
+function formatTargetPriceBand(stock) {
+  const lo = Number(stock?.metrics?.targetPriceConservative);
+  const hi = Number(stock?.metrics?.targetPriceOptimistic);
+  if (Number.isFinite(lo) && Number.isFinite(hi) && lo > 0 && hi > 0) {
+    if (lo === hi) return formatPrice(lo);
+    return `${formatPrice(lo)}~${formatPrice(hi)}`;
+  }
+  return formatPrice(stock?.metrics?.targetPrice);
+}
 function formatCompactKrw(value) {
   const num = Number(value || 0);
   if (!num) return "-";
@@ -183,8 +200,8 @@ function PickCard({ item }) {
       <div style={{ border: "1px solid #e5e7eb", borderRadius: 24, background: "linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)", padding: 20, boxShadow: "0 18px 40px rgba(15,23,42,.06)" }}>
         <div className="metricGrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 12, marginBottom: 14 }}>
           <Metric label="현재가" value={formatPrice(item?.metrics?.closePrice)} />
-          <Metric label="적정가 추정" value={formatPrice(item?.metrics?.targetPrice)} />
-          <Metric label="상승여력" value={formatPercent(item?.metrics?.upside)} accent />
+          <Metric label="적정가 추정" value={formatTargetPriceBand(item)} />
+          <Metric label="상승여력" value={formatUpsideDisplay(item)} accent />
           <Metric label="거래대금" value={formatCompactKrw(item?.metrics?.avgTradeValue5d)} />
           <Metric label="PER" value={item?.metrics?.per ? `${Number(item.metrics.per).toFixed(1)}배` : "-"} />
           <Metric label="PBR" value={item?.metrics?.pbr ? `${Number(item.metrics.pbr).toFixed(1)}배` : "-"} />

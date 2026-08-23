@@ -53,6 +53,20 @@ function formatPrice(value) {
   if (!num) return "-";
   return `${num.toLocaleString("ko-KR")}원`;
 }
+
+// 적정가는 단일값이 아니라 보수/낙관 밴드로 표시한다(fair-value v2).
+// 만 단위로 반올림해서 "48만~72만원" 형태로 보여준다.
+function formatPriceBand(low, high) {
+  const loNum = Number(low);
+  const hiNum = Number(high);
+  if (!Number.isFinite(loNum) || !Number.isFinite(hiNum) || (!loNum && !hiNum)) return "-";
+  const toManwon = (n) => Math.round(n / 10000);
+  const lo = toManwon(loNum);
+  const hi = toManwon(hiNum);
+  if (lo === hi) return `${lo.toLocaleString("ko-KR")}만원`;
+  return `${lo.toLocaleString("ko-KR")}만~${hi.toLocaleString("ko-KR")}만원`;
+}
+
 function formatPercent(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "-";
@@ -116,8 +130,15 @@ export default async function DiagnosisPage({ params }) {
 
       <section style={{ marginBottom: 28, display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 12 }}>
         <Metric label="현재가" value={formatPrice(stock.currentPrice)} />
-        <Metric label="적정가 추정" value={formatPrice(stock.targetPrice)} />
-        <Metric label="상승여력" value={formatPercent(stock.upside)} accent />
+        <Metric
+          label="적정가 추정(보수~낙관)"
+          value={formatPriceBand(stock.targetPriceConservative ?? stock.targetPrice, stock.targetPriceOptimistic ?? stock.targetPrice)}
+        />
+        <Metric
+          label="상승여력"
+          value={stock.upsideLabel || formatPercent(stock.upsideDisplay ?? stock.upside)}
+          accent
+        />
         <Metric label="부채비율" value={formatRatio(stock.debtRatio)} />
       </section>
 

@@ -27,6 +27,25 @@ function getUpsideClass(value) {
   return "upsideLine upsideNeutral";
 }
 
+// 상승여력 표시값(fair-value v2): 캡 초과 시 라벨, 아니면 캡 적용값(옛 데이터는 원본).
+function formatUpsideDisplay(stock) {
+  const label = stock?.display?.upsideLabel;
+  if (label) return label;
+  const capped = stock?.display?.upsideCapped;
+  return formatPercent(capped ?? stock?.metrics?.upside);
+}
+
+// 적정가는 단일값이 아니라 보수~낙관 밴드로 표시한다.
+function formatTargetPriceBand(stock) {
+  const lo = Number(stock?.metrics?.targetPriceConservative);
+  const hi = Number(stock?.metrics?.targetPriceOptimistic);
+  if (Number.isFinite(lo) && Number.isFinite(hi) && lo > 0 && hi > 0) {
+    if (lo === hi) return formatPrice(lo);
+    return `${formatPrice(lo)}~${formatPrice(hi)}`;
+  }
+  return formatPrice(stock?.metrics?.targetPrice);
+}
+
 function sortForShortTerm(items) {
   return [...items].sort((a, b) => {
     const aMomentum = Number(a?.metrics?.priceChangeRate ?? a?.metrics?.momentum ?? 0);
@@ -183,4 +202,11 @@ export function buildStrategyCards(items) {
   ];
 }
 
-export { formatPrice, formatPercent, formatKrwCompact, getUpsideClass };
+export {
+  formatPrice,
+  formatPercent,
+  formatKrwCompact,
+  getUpsideClass,
+  formatUpsideDisplay,
+  formatTargetPriceBand,
+};
