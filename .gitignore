@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+__pycache__/
+*.pyc
+
+.env
+.env.local
+.env.*.local
+
+*.log
+npm-debug.log*
+
+.DS_Store
+Thumbs.db
