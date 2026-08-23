@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run dev)",
+      "Bash(git diff:*)",
+      "Bash(git status)",
+      "Bash(node scripts/*)",
+      "Bash(python3 scripts/*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(vercel deploy:*)",
+      "Read(./.env*)"
+    ]
+  }
+}
