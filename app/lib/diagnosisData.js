@@ -19,8 +19,21 @@ export async function getStockDiagnosisData(code) {
     market: stockRow?.market || rawData.market || "",
     currentPrice: snapshot.current_price ?? rawMetrics.closePrice ?? null,
     changePercent: snapshot.change_percent,
+    // fair-value v2: 적정가는 단일값이 아니라 보수/중립/낙관 밴드다.
     targetPrice: rawMetrics.targetPrice ?? null,
+    targetPriceConservative: rawMetrics.targetPriceConservative ?? null,
+    targetPriceOptimistic: rawMetrics.targetPriceOptimistic ?? null,
+    // 계산값(캡 없는 원본)과 표시값(캡+라벨 적용)을 분리해서 함께 내려준다.
     upside: rawMetrics.upside ?? null,
+    upsideDisplay: rawData.display?.upsideCapped ?? rawMetrics.upside ?? null,
+    upsideLabel: rawData.display?.upsideLabel ?? null,
+    upsideLabelReason: rawData.display?.upsideLabelReason ?? null,
+    totalScore: snapshot.total_score ?? rawData.totalScore ?? null,
+    // update_data.py가 전체 종목 백분위로 미리 계산해 저장한 등급 — 여기서
+    // 다시 계산하지 않고 그대로 옮긴다(app/lib/grade.js의 getUnifiedGrade가
+    // 이 필드가 있으면 그대로 신뢰해서 쓴다).
+    unifiedGradeCode: snapshot.unified_grade_code ?? rawData.unifiedGradeCode ?? null,
+    unifiedGradeDowngraded: snapshot.unified_grade_downgraded ?? rawData.unifiedGradeDowngraded ?? false,
     debtRatio: snapshot.debt_ratio,
     valueScore: snapshot.value_score,
     qualityScore: snapshot.quality_score,
@@ -45,7 +58,9 @@ export async function getStockDiagnosisData(code) {
     finalPickMeta: {
       decision: snapshot.final_pick_decision,
       reasons: snapshot.final_pick_reasons || [],
-      score: snapshot.final_pick_score,
+      // 예전엔 이 필드가 `score`라는 이름이라 app/lib/grade.js가 기대하는
+      // `finalScore`와 안 맞아 등급이 항상 기본값(A)으로 떨어졌었다 — 그 버그.
+      finalScore: snapshot.final_pick_score,
     },
     riskMeta: {
       level: snapshot.risk_level,
