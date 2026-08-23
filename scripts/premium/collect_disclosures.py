@@ -1,8 +1,11 @@
 import os
 import time
+import zipfile
+import io
 import urllib.request
 import urllib.parse
 import json
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from supabase import create_client
 
@@ -37,6 +40,31 @@ def call_opendart(endpoint, params):
     raise RuntimeError(f"OpenDART 호출 최종 실패: {last_error}")
 
 
+def download_corp_code_map():
+    """OpenDART가 제공하는 전체 상장사 corpCode.xml(zip)을 받아
+    {종목코드: corp_code} 딕셔너리로 변환한다."""
+    query = urllib.parse.urlencode({"crtfc_key": OPENDART_API_KEY})
+    url = f"https://opendart.fss.or.kr/api/corpCode.xml?{query}"
+
+    print("OpenDART corpCode 매핑 파일 다운로드 중...")
+    with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:
+        zip_bytes = resp.read()
+
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+        xml_bytes = z.read("CORPCODE.xml")
+
+    root = ET.fromstring(xml_bytes)
+    mapping = {}
+    for item in root.findall("list"):
+        stock_code = (item.findtext("stock_code") or "").strip()
+        corp_code = (item.findtext("corp_code") or "").strip()
+        if stock_code:  # 상장사만 (비상장사는 stock_code가 빈 문자열)
+            mapping[stock_code] = corp_code
+
+    print(f"corp_code 매핑 {len(mapping)}건 완료 (상장사 기준)")
+    return mapping
+
+
 def fetch_recent_disclosures(disclosure_type, corp_code, start_date, end_date):
     endpoint = DISCLOSURE_TYPES[disclosure_type]
     params = {
@@ -45,15 +73,32 @@ def fetch_recent_disclosures(disclosure_type, corp_code, start_date, end_date):
         "end_de": end_date,
     }
     data = call_opendart(endpoint, params)
-    if data.get("status") != "000":
+    status = data.get("status")
+    if status != "000":
+        # "013"은 정상적인 '데이터 없음'이므로 로그만 남기고 조용히 넘어간다
+        if status != "013":
+            print(f"OpenDART 응답 이상 (status={status}, message={data.get('message')})")
         return []
     return data.get("list", [])
 
 
-def get_target_corp_codes():
-    """corp_code 매핑 테이블이 이미 있다면 재사용, 없으면 latest_stock_snapshots 기반으로 별도 매핑 필요."""
+def get_target_codes_with_corp_code():
     resp = supabase.table("latest_stock_snapshots").select("code").execute()
-    return sorted({row["code"] for row in resp.data if row.get("code")})
+    ticker_codes = sorted({row["code"] for row in resp.data if row.get("code")})
+
+    corp_map = download_corp_code_map()
+
+    matched = []
+    unmatched = 0
+    for code in ticker_codes:
+        corp_code = corp_map.get(code)
+        if corp_code:
+            matched.append((code, corp_code))
+        else:
+            unmatched += 1
+
+    print(f"종목코드 {len(ticker_codes)}개 중 corp_code 매칭 {len(matched)}건, 미매칭 {unmatched}건")
+    return matched
 
 
 def main():
@@ -62,25 +107,27 @@ def main():
     end_str = end_date.strftime("%Y%m%d")
     start_str = start_date.strftime("%Y%m%d")
 
-    codes = get_target_corp_codes()
-    print(f"총 {len(codes)}개 종목 공시 조회 시작 ({start_str} ~ {end_str})")
+    targets = get_target_codes_with_corp_code()
+    print(f"총 {len(targets)}개 종목 공시 조회 시작 ({start_str} ~ {end_str})")
 
     rows = []
-    for code in codes:
+    for code, corp_code in targets:
         for d_type in DISCLOSURE_TYPES:
             try:
-                items = fetch_recent_disclosures(d_type, code, start_str, end_str)
+                items = fetch_recent_disclosures(d_type, corp_code, start_str, end_str)
             except RuntimeError as e:
                 print(f"[{code}/{d_type}] 조회 실패, 스킵: {e}")
                 continue
             for item in items:
+                rcept_dt = item.get("rcept_dt", "")
                 rows.append({
                     "code": code,
-                    "disclosure_date": item.get("rcept_dt", "")[:4] + "-" + item.get("rcept_dt", "")[4:6] + "-" + item.get("rcept_dt", "")[6:8],
+                    "disclosure_date": f"{rcept_dt[:4]}-{rcept_dt[4:6]}-{rcept_dt[6:8]}" if len(rcept_dt) == 8 else None,
                     "type": d_type,
                     "summary": f"{item.get('repror', '')} 보고 - {item.get('report_tp', '')}",
                     "source_url": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={item.get('rcept_no', '')}",
                 })
+            time.sleep(0.3)  # OpenDART 호출 간 최소 지연
 
     if not rows:
         print("신규 공시가 없습니다.")
