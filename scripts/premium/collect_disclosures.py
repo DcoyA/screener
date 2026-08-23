@@ -100,7 +100,6 @@ def get_target_codes_with_corp_code():
     print(f"종목코드 {len(ticker_codes)}개 중 corp_code 매칭 {len(matched)}건, 미매칭 {unmatched}건")
     return matched
 
-
 def main():
     end_date = datetime.now()
     start_date = end_date - timedelta(days=7)
@@ -111,6 +110,7 @@ def main():
     print(f"총 {len(targets)}개 종목 공시 조회 시작 ({start_str} ~ {end_str})")
 
     rows = []
+    skipped_bad_date = 0
     for code, corp_code in targets:
         for d_type in DISCLOSURE_TYPES:
             try:
@@ -119,15 +119,22 @@ def main():
                 print(f"[{code}/{d_type}] 조회 실패, 스킵: {e}")
                 continue
             for item in items:
-                rcept_dt = item.get("rcept_dt", "")
+                rcept_dt = (item.get("rcept_dt") or "").strip()
+                if len(rcept_dt) != 8 or not rcept_dt.isdigit():
+                    skipped_bad_date += 1
+                    print(f"[{code}/{d_type}] rcept_dt 형식 이상('{rcept_dt}'), 이 건 스킵")
+                    continue
+
                 rows.append({
                     "code": code,
-                    "disclosure_date": f"{rcept_dt[:4]}-{rcept_dt[4:6]}-{rcept_dt[6:8]}" if len(rcept_dt) == 8 else None,
+                    "disclosure_date": f"{rcept_dt[:4]}-{rcept_dt[4:6]}-{rcept_dt[6:8]}",
                     "type": d_type,
                     "summary": f"{item.get('repror', '')} 보고 - {item.get('report_tp', '')}",
                     "source_url": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={item.get('rcept_no', '')}",
                 })
             time.sleep(0.3)  # OpenDART 호출 간 최소 지연
+
+    print(f"날짜 형식 이상으로 스킵된 건수: {skipped_bad_date}")
 
     if not rows:
         print("신규 공시가 없습니다.")
