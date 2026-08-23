@@ -9,6 +9,10 @@ on:
         description: "KRX 요청 URL/헤더/파라미터를 로그에 찍기(AUTH_KEY는 마스킹). 403 등 인증 문제 디버깅용"
         type: boolean
         default: false
+      allow_shrink:
+        description: "Supabase 이상치 가드(직전 스냅샷 대비 50% 미만이면 중단) 우회. 종목 수가 의도적으로 줄었을 때만 켤 것"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -102,6 +106,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ALLOW_SHRINK: ${{ inputs.allow_shrink && '1' || '' }}
 
       - name: Show changed files
         run: git status --short

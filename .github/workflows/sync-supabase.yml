@@ -4,7 +4,12 @@ on:
     branches: [main]
     paths:
       - "app/data/stocks.json"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      allow_shrink:
+        description: "Supabase 이상치 가드(직전 스냅샷 대비 50% 미만이면 중단) 우회. 종목 수가 의도적으로 줄었을 때만 켤 것"
+        type: boolean
+        default: false
 
 jobs:
   ingest:
@@ -19,3 +24,4 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ALLOW_SHRINK: ${{ inputs.allow_shrink && '1' || '' }}

@@ -16,13 +16,44 @@ async function isMarketHoliday(dateStr) {
 
 async function validateAndGuard(rawList) {
   const valid = rawList.filter((s) => s?.code && s?.name && s?.market);
-  const { count: yesterdayCount } = await supabase
+
+  // 버그였던 부분: 예전엔 `.lt("snapshot_date", todayKst)`만 걸고 카운트해서
+  // "오늘 이전의 모든 날짜에 걸쳐 누적된 행 수 총합"과 비교하고 있었다.
+  // stock_daily_snapshots는 (code, snapshot_date)마다 별도 행이라 하루에
+  // ~500건씩 쌓이므로, 과거 3일치만 쌓여도 누적 1,500건이 되고, update_data.py는
+  // MAX_STOCKS=500으로 원래부터 매일 500종목을 만든다(2026-06-20부터 고정값 —
+  // "어제는 1500종목이었는데 오늘 500종목으로 줄었다"가 아니라 "오늘 500 vs
+  // 최근 3일 누적 1500"을 비교하던 게 진짜 원인). 이제 "가장 최근 하루"와만
+  // 비교한다.
+  const { data: latestRow } = await supabase
+    .from("stock_daily_snapshots")
+    .select("snapshot_date")
+    .lt("snapshot_date", todayKst)
+    .order("snapshot_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!latestRow) {
+    // 과거 스냅샷이 아예 없으면(최초 적재) 비교 대상이 없으니 그냥 통과.
+    return valid;
+  }
+
+  const { count: previousDayCount } = await supabase
     .from("stock_daily_snapshots")
     .select("code", { count: "exact", head: true })
-    .lt("snapshot_date", todayKst);
+    .eq("snapshot_date", latestRow.snapshot_date);
 
-  if (yesterdayCount && valid.length < yesterdayCount * 0.5) {
-    throw new Error(`이상치 감지: 기존 ${yesterdayCount}건 대비 오늘 ${valid.length}건. 적재를 중단합니다.`);
+  const allowShrink = process.env.ALLOW_SHRINK === "1";
+  if (!allowShrink && previousDayCount && valid.length < previousDayCount * 0.5) {
+    throw new Error(
+      `이상치 감지: 직전 스냅샷(${latestRow.snapshot_date}) ${previousDayCount}건 대비 오늘 ${valid.length}건. ` +
+        `적재를 중단합니다. 의도된 축소라면 ALLOW_SHRINK=1로 재실행하세요.`
+    );
+  }
+  if (allowShrink && previousDayCount && valid.length < previousDayCount * 0.5) {
+    console.log(
+      `ALLOW_SHRINK=1 - 이상치 가드를 건너뜁니다 (직전 ${latestRow.snapshot_date} ${previousDayCount}건 -> 오늘 ${valid.length}건).`
+    );
   }
   return valid;
 }
