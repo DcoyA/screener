@@ -21,6 +21,11 @@ sector_map_path = DATA_DIR / "sector_map.json"
 
 OPENDART_API_KEY = os.getenv("OPENDART_API_KEY", "").strip()
 KRX_API_KEY = os.getenv("KRX_API_KEY", "").strip()
+# KRX 요청 URL/헤더/파라미터를 로그에 그대로 찍는 디버그 스위치.
+# GitHub Actions에서 workflow_dispatch로 수동 실행할 때 켤 수 있게
+# .github/workflows/weekly-json-update.yml에 입력값으로 연결돼 있다.
+# 키 값 자체는 mask_secret()으로 가려서 찍는다.
+KRX_DEBUG = os.getenv("KRX_DEBUG", "").strip().lower() in ("1", "true", "yes")
 
 DEFAULT_KRX_KOSPI_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/stk_isu_base_info"
 DEFAULT_KRX_KOSDAQ_BASIC_URL = "https://data-dbg.krx.co.kr/svc/apis/sto/ksq_isu_base_info"
@@ -197,6 +202,15 @@ def http_get_json(base_url, params):
         return json.loads(resp.read().decode("utf-8"))
 
 
+class KrxRequestError(RuntimeError):
+    """KRX 요청 실패. http_status가 있으면(401/403 등) 재시도해도 결과가
+    바뀌지 않는 인증/권한 오류일 가능성이 높다는 신호로 쓴다."""
+
+    def __init__(self, message, http_status=None):
+        super().__init__(message)
+        self.http_status = http_status
+
+
 def request_json_url(url, headers=None, params=None):
     headers = headers or {}
     if params:
@@ -214,13 +228,14 @@ def request_json_url(url, headers=None, params=None):
         except Exception:
             payload = {"raw": body}
         payload["http_status"] = e.code
-        raise RuntimeError(
-            f"KRX request failed for {url}: {json.dumps(payload, ensure_ascii=False)}"
+        raise KrxRequestError(
+            f"KRX request failed for {url}: {json.dumps(payload, ensure_ascii=False)}",
+            http_status=e.code,
         )
     try:
         return json.loads(body)
     except Exception:
-        raise RuntimeError(f"Invalid JSON response from {url}: {body[:300]}")
+        raise KrxRequestError(f"Invalid JSON response from {url}: {body[:300]}")
 
 
 def parse_amount(value):
@@ -292,6 +307,17 @@ def clamp(value, min_value=0, max_value=100):
     return max(min_value, min(max_value, value))
 
 
+def mask_secret(value, keep=4):
+    """디버그 로그에 인증키 원문이 그대로 찍히지 않도록 마스킹한다.
+    앞 keep자만 남기고 나머지는 *로 가린다."""
+    if not value:
+        return ""
+    text = str(value)
+    if len(text) <= keep:
+        return "*" * len(text)
+    return text[:keep] + "*" * (len(text) - keep)
+
+
 def pick_field(row, exact_keys=None, contains_keys=None):
     exact_keys = exact_keys or []
     contains_keys = contains_keys or []
@@ -334,6 +360,9 @@ def build_corp_code_map():
 
 
 def krx_headers():
+    # KRX 오픈API 공식 스펙: AUTH_KEY는 HTTP 헤더로만 전달한다.
+    # (예전 코드는 쿼리스트링으로도 같이 보내는 폴백을 시도했는데,
+    # 스펙 위반이라 제거했다 — 아래 fetch_krx_rows 주석 참고.)
     return {
         "AUTH_KEY": KRX_API_KEY,
         "Content-Type": "application/json; charset=utf-8",
@@ -350,56 +379,71 @@ def recent_krx_bas_dd_candidates(days_back=RECENT_DAYS_BACK):
 
 
 def fetch_krx_rows(url, bas_dd):
+    """KRX 정보데이터시스템 오픈API 호출.
+
+    예전엔 인증 방식을 확신하지 못해 header-auth / query-auth /
+    header+query-auth 3가지를 순서대로 시도했다. KRX 오픈API 공식 스펙은
+    AUTH_KEY를 HTTP 헤더로만 받는 방식이라, 쿼리스트링에 AUTH_KEY를 같이
+    실어 보내는 두 방식은 스펙 위반이었다 — 지금까지는 header-auth가
+    먼저 시도돼서 대개 성공했기 때문에 드러나지 않았을 뿐이다. 스펙대로
+    헤더 방식 하나로 정리한다.
+    """
     if not url:
         return [], [f"missing url for basDd={bas_dd}"]
 
-    attempts = [
-        {"headers": krx_headers(), "params": {"basDd": bas_dd}, "label": "header-auth"},
-        {
-            "headers": {"Accept": "application/json"},
-            "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd},
-            "label": "query-auth",
-        },
-        {
-            "headers": krx_headers(),
-            "params": {"AUTH_KEY": KRX_API_KEY, "basDd": bas_dd},
-            "label": "header+query-auth",
-        },
-    ]
+    headers = krx_headers()
+    params = {"basDd": bas_dd}
+
+    if KRX_DEBUG:
+        debug_headers = {
+            key: (mask_secret(value) if key == "AUTH_KEY" else value)
+            for key, value in headers.items()
+        }
+        print(f"[KRX_DEBUG] GET {url}?{urllib.parse.urlencode(params)}")
+        print(f"[KRX_DEBUG] headers={debug_headers}")
 
     errors = []
-    for attempt in attempts:
+    data = None
+    for attempt in range(1, HTTP_RETRIES + 1):
         try:
-            data = request_json_url(
-                url,
-                headers=attempt["headers"],
-                params=attempt["params"],
-            )
+            data = request_json_url(url, headers=headers, params=params)
+            break
+        except KrxRequestError as e:
+            errors.append(f"attempt {attempt}/{HTTP_RETRIES}: {e}")
+            if e.http_status in (401, 403):
+                # 인증/권한 오류는 같은 요청을 재시도해도 결과가 바뀌지
+                # 않으므로 바로 포기한다 — 나머지 basDd 후보로 넘어가거나
+                # 사용자에게 키/구독 상태를 확인하라고 알려주는 편이 낫다.
+                print(
+                    f"[KRX] AUTH_KEY 인증 실패(HTTP {e.http_status}) — url={url}, "
+                    f"basDd={bas_dd}. KRX_API_KEY 값/구독 상태를 확인하세요. "
+                    f"AUTH_KEY(마스킹)={mask_secret(KRX_API_KEY)}"
+                )
+                return [], errors
+            if attempt < HTTP_RETRIES:
+                time.sleep(HTTP_RETRY_SLEEP)
         except RuntimeError as e:
-            errors.append(f"{attempt['label']}: {e}")
-            continue
+            errors.append(f"attempt {attempt}/{HTTP_RETRIES}: {e}")
+            if attempt < HTTP_RETRIES:
+                time.sleep(HTTP_RETRY_SLEEP)
 
-        if isinstance(data, dict):
-            resp_code = str(data.get("respCode", "")).strip()
-            resp_msg = str(data.get("respMsg", "")).strip()
-            if resp_code and resp_code != "000":
-                errors.append(
-                    f"{attempt['label']}: respCode={resp_code}, respMsg={resp_msg}"
-                )
-                continue
-            rows = data.get("OutBlock_1", [])
-            if isinstance(rows, list) and rows:
-                return rows, errors
-            if isinstance(rows, list):
-                errors.append(
-                    f"{attempt['label']}: OutBlock_1 empty for basDd={bas_dd}"
-                )
-                continue
+    if data is None:
+        return [], errors
 
-        errors.append(
-            f"{attempt['label']}: unexpected payload shape for basDd={bas_dd}"
-        )
+    if isinstance(data, dict):
+        resp_code = str(data.get("respCode", "")).strip()
+        resp_msg = str(data.get("respMsg", "")).strip()
+        if resp_code and resp_code != "000":
+            errors.append(f"respCode={resp_code}, respMsg={resp_msg}")
+            return [], errors
+        rows = data.get("OutBlock_1", [])
+        if isinstance(rows, list) and rows:
+            return rows, errors
+        if isinstance(rows, list):
+            errors.append(f"OutBlock_1 empty for basDd={bas_dd}")
+            return [], errors
 
+    errors.append(f"unexpected payload shape for basDd={bas_dd}")
     return [], errors
 
 

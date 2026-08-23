@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "7 0 * * 1-5" # 09:07 KST weekdays
   workflow_dispatch:
+    inputs:
+      krx_debug:
+        description: "KRX 요청 URL/헤더/파라미터를 로그에 찍기(AUTH_KEY는 마스킹). 403 등 인증 문제 디버깅용"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -24,6 +29,7 @@ jobs:
       KRX_KOSPI_DAILY_URL: ${{ vars.KRX_KOSPI_DAILY_URL }}
       KRX_KOSDAQ_DAILY_URL: ${{ vars.KRX_KOSDAQ_DAILY_URL }}
       KRX_KOSPI_INDEX_DAILY_URL: ${{ vars.KRX_KOSPI_INDEX_DAILY_URL }}
+      KRX_DEBUG: ${{ inputs.krx_debug }}
 
     steps:
       - name: Checkout repository
