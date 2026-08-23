@@ -98,8 +98,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install Supabase client
-        run: npm install @supabase/supabase-js
+      - name: Install Node dependencies (npm ci)
+        run: npm ci
 
       - name: Sync latest data to Supabase
         run: node scripts/ingest-daily-snapshot.mjs
@@ -119,8 +119,16 @@ jobs:
           git diff --cached --quiet && echo "No changes to commit" && exit 0
           git commit -m "Update weekday JSON data"
 
+      - name: Discard incidental package.json/package-lock.json drift
+        # npm ci는 원칙적으로 lockfile을 안 건드리지만, 혹시라도(npm 버전 차이 등으로)
+        # 건드려서 unstaged로 남으면 git pull --rebase가 exit 128로 죽는다.
+        # app/data/*.json은 위 Commit changes 단계에서 이미 커밋됐으므로,
+        # 여기서 package.json/package-lock.json만 원복해도 다른 변경사항을
+        # 건드리지 않는다.
+        run: git checkout -- package.json package-lock.json || true
+
       - name: Pull latest changes
-        run: git pull origin main --rebase
+        run: git pull origin main --rebase --autostash
 
       - name: Push changes
         run: git push origin main
