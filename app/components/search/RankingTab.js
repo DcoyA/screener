@@ -479,7 +479,13 @@ export default function RankingTab({ stocks }) {
 
                 <div className="metricRow">
                   <div className="metricBox"><span>현재가</span><strong>{formatPrice(stock?.metrics?.closePrice)}</strong></div>
-                  <div className="metricBox"><span>적정가 추정</span><strong>{formatTargetPriceBand(stock)}</strong></div>
+                  <div className="metricBox">
+                    <span>적정가 추정</span>
+                    <strong>{formatTargetPriceBand(stock)}</strong>
+                    {stock?.holdingDiscount && stock?.metrics?.targetPrice ? (
+                      <small style={{ display: "block", marginTop: 2, color: "#94a3b8", fontSize: ".68rem", fontWeight: 700 }}>지주사 할인 30% 반영</small>
+                    ) : null}
+                  </div>
                   <div className="metricBox"><span>상승여력</span><strong className="sky">{formatUpsideDisplay(stock)}</strong></div>
                   <div className="metricBox"><span>부채비율</span><strong>{formatPercent(stock?.metrics?.debtRatio)}</strong></div>
                 </div>

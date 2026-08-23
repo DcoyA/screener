@@ -80,11 +80,14 @@ function formatRatio(value) {
   return `${num.toFixed(1)}%`;
 }
 
-function Metric({ label, value, accent }) {
+function Metric({ label, value, accent, note }) {
   return (
     <div style={{ border: "1px solid #e5e7eb", borderRadius: 16, padding: 16, background: "#fff" }}>
       <span style={{ display: "block", marginBottom: 8, color: "#64748b", fontSize: "0.84rem", fontWeight: 800 }}>{label}</span>
       <strong style={{ fontSize: "1.15rem", color: accent ? "#0ea5e9" : "#0f172a" }}>{value}</strong>
+      {note ? (
+        <span style={{ display: "block", marginTop: 4, color: "#94a3b8", fontSize: "0.72rem", fontWeight: 700 }}>{note}</span>
+      ) : null}
     </div>
   );
 }
@@ -133,6 +136,7 @@ export default async function DiagnosisPage({ params }) {
         <Metric
           label="적정가 추정(보수~낙관)"
           value={formatPriceBand(stock.targetPriceConservative ?? stock.targetPrice, stock.targetPriceOptimistic ?? stock.targetPrice)}
+          note={stock.holdingDiscount && stock.targetPrice ? "지주사 할인 30% 반영" : null}
         />
         <Metric
           label="상승여력"

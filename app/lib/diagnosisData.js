@@ -28,6 +28,9 @@ export async function getStockDiagnosisData(code) {
     upsideDisplay: rawData.display?.upsideCapped ?? rawMetrics.upside ?? null,
     upsideLabel: rawData.display?.upsideLabel ?? null,
     upsideLabelReason: rawData.display?.upsideLabelReason ?? null,
+    // 지주회사 할인(30%)이 적정가에 이미 반영됐는지 - 화면에 "지주사 할인
+    // 30% 반영" 문구를 보여줄지 판단하는 데 쓴다.
+    holdingDiscount: rawData.holdingDiscount ?? false,
     totalScore: snapshot.total_score ?? rawData.totalScore ?? null,
     // update_data.py가 전체 종목 백분위로 미리 계산해 저장한 등급 — 여기서
     // 다시 계산하지 않고 그대로 옮긴다(app/lib/grade.js의 getUnifiedGrade가

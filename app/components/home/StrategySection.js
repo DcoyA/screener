@@ -43,6 +43,9 @@ export default function StrategySection({ strategyCards }) {
                   <div className="candidatePriceItem">
                     <span className="candidatePriceLabel">적정가 추정</span>
                     <strong className="targetLine">{formatTargetPriceBand(section.stock)}</strong>
+                    {section.stock.holdingDiscount && section.stock.metrics?.targetPrice ? (
+                      <small style={{ display: "block", marginTop: 2, color: "#94a3b8", fontSize: ".68rem", fontWeight: 700 }}>지주사 할인 30% 반영</small>
+                    ) : null}
                   </div>
                 </div>
 

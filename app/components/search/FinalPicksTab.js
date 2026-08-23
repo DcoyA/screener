@@ -149,11 +149,14 @@ function Chip({ children, color = "#475569", bg = "#f1f5f9" }) {
   return <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "7px 12px", borderRadius: 999, fontSize: ".8rem", fontWeight: 900, color, background: bg }}>{children}</span>;
 }
 
-function Metric({ label, value, accent }) {
+function Metric({ label, value, accent, note }) {
   return (
     <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#fff" }}>
       <span style={{ display: "block", marginBottom: 8, color: "#64748b", fontSize: ".84rem", fontWeight: 800 }}>{label}</span>
       <strong style={{ display: "block", fontSize: "1.08rem", lineHeight: 1.35, color: accent ? "#0ea5e9" : "#0f172a" }}>{value}</strong>
+      {note ? (
+        <span style={{ display: "block", marginTop: 4, color: "#94a3b8", fontSize: ".72rem", fontWeight: 700 }}>{note}</span>
+      ) : null}
     </div>
   );
 }
@@ -200,7 +203,11 @@ function PickCard({ item }) {
       <div style={{ border: "1px solid #e5e7eb", borderRadius: 24, background: "linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)", padding: 20, boxShadow: "0 18px 40px rgba(15,23,42,.06)" }}>
         <div className="metricGrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 12, marginBottom: 14 }}>
           <Metric label="현재가" value={formatPrice(item?.metrics?.closePrice)} />
-          <Metric label="적정가 추정" value={formatTargetPriceBand(item)} />
+          <Metric
+            label="적정가 추정"
+            value={formatTargetPriceBand(item)}
+            note={item?.holdingDiscount && item?.metrics?.targetPrice ? "지주사 할인 30% 반영" : null}
+          />
           <Metric label="상승여력" value={formatUpsideDisplay(item)} accent />
           <Metric label="거래대금" value={formatCompactKrw(item?.metrics?.avgTradeValue5d)} />
           <Metric label="PER" value={item?.metrics?.per ? `${Number(item.metrics.per).toFixed(1)}배` : "-"} />
