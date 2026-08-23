@@ -159,4 +159,9 @@
 \- 사용하지 않는 추상화 레이어 미리 만들기
 
 
+## 프리미엄 리포트 프로젝트 (별도 서비스)
+scripts/premium/, app/admin/editorial/ 는 이 문서의 위 도메인 규칙(적정가/성과/표현 규칙)과
+무관한 완전히 독립된 서비스다. 작업 중 다음 파일/테이블은 절대 수정하지 않는다:
+weekly-json-update.yml, sync-supabase.yml, update_data.py, app/data/stocks.json,
+latest_stock_snapshots 테이블(읽기 전용 참조만 허용).
 

@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import zipfile
 import io
@@ -19,8 +20,8 @@ HTTP_RETRIES = 3
 HTTP_RETRY_SLEEP = 5
 
 DISCLOSURE_TYPES = {
-    "major_holder": "majorstock",       # 대량보유 상황보고
-    "executive_ownership": "elestock",  # 임원ㆍ주요주주 소유보고
+    "major_holder": "majorstock",
+    "executive_ownership": "elestock",
 }
 
 
@@ -41,8 +42,6 @@ def call_opendart(endpoint, params):
 
 
 def download_corp_code_map():
-    """OpenDART가 제공하는 전체 상장사 corpCode.xml(zip)을 받아
-    {종목코드: corp_code} 딕셔너리로 변환한다."""
     query = urllib.parse.urlencode({"crtfc_key": OPENDART_API_KEY})
     url = f"https://opendart.fss.or.kr/api/corpCode.xml?{query}"
 
@@ -58,7 +57,7 @@ def download_corp_code_map():
     for item in root.findall("list"):
         stock_code = (item.findtext("stock_code") or "").strip()
         corp_code = (item.findtext("corp_code") or "").strip()
-        if stock_code:  # 상장사만 (비상장사는 stock_code가 빈 문자열)
+        if stock_code:
             mapping[stock_code] = corp_code
 
     print(f"corp_code 매핑 {len(mapping)}건 완료 (상장사 기준)")
@@ -75,7 +74,6 @@ def fetch_recent_disclosures(disclosure_type, corp_code, start_date, end_date):
     data = call_opendart(endpoint, params)
     status = data.get("status")
     if status != "000":
-        # "013"은 정상적인 '데이터 없음'이므로 로그만 남기고 조용히 넘어간다
         if status != "013":
             print(f"OpenDART 응답 이상 (status={status}, message={data.get('message')})")
         return []
@@ -100,6 +98,14 @@ def get_target_codes_with_corp_code():
     print(f"종목코드 {len(ticker_codes)}개 중 corp_code 매칭 {len(matched)}건, 미매칭 {unmatched}건")
     return matched
 
+
+def normalize_rcept_dt(raw_value):
+    digits = re.sub(r"\D", "", raw_value or "")
+    if len(digits) != 8:
+        return None
+    return f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
+
+
 def main():
     end_date = datetime.now()
     start_date = end_date - timedelta(days=7)
@@ -119,20 +125,21 @@ def main():
                 print(f"[{code}/{d_type}] 조회 실패, 스킵: {e}")
                 continue
             for item in items:
-                rcept_dt = (item.get("rcept_dt") or "").strip()
-                if len(rcept_dt) != 8 or not rcept_dt.isdigit():
+                raw_dt = (item.get("rcept_dt") or "").strip()
+                disclosure_date = normalize_rcept_dt(raw_dt)
+                if not disclosure_date:
                     skipped_bad_date += 1
-                    print(f"[{code}/{d_type}] rcept_dt 형식 이상('{rcept_dt}'), 이 건 스킵")
+                    print(f"[{code}/{d_type}] rcept_dt 형식 이상('{raw_dt}'), 이 건 스킵")
                     continue
 
                 rows.append({
                     "code": code,
-                    "disclosure_date": f"{rcept_dt[:4]}-{rcept_dt[4:6]}-{rcept_dt[6:8]}",
+                    "disclosure_date": disclosure_date,
                     "type": d_type,
                     "summary": f"{item.get('repror', '')} 보고 - {item.get('report_tp', '')}",
                     "source_url": f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={item.get('rcept_no', '')}",
                 })
-            time.sleep(0.3)  # OpenDART 호출 간 최소 지연
+            time.sleep(0.3)
 
     print(f"날짜 형식 이상으로 스킵된 건수: {skipped_bad_date}")
 

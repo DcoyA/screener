@@ -60,9 +60,9 @@ async function extractIssuesWithLLM(newsSnippets) {
 
   const prompt = `아래는 최근 3일간 수집된 국내외 뉴스 제목/스니펫 목록이다.
 
-이 목록의 제목만 봐도 국내 증시(코스피/코스닥)나 특정 산업/섹터에 조금이라도 영향을 줄 수 있다고 판단되면 이슈로 선정하라. 완전히 무관한 연예/스포츠 기사만 아니면 최대한 관대하게 선정하되, 최소 1개에서 최대 5개까지 선별하라.
+너는 반드시 이 목록에서 최소 1개, 최대 5개의 이슈를 골라야 한다. "관련성이 애매해서 못 고르겠다"는 답은 허용되지 않는다. 완전히 무관한 연예/스포츠 기사가 아니라면, 국내 증시(코스피/코스닥)와의 연결고리가 조금이라도 있다고 볼 수 있으면 무조건 이슈로 포함시켜라. 정말 연관성이 약하다고 판단되면 confidence를 low로 표시하되, 그래도 최소 1개는 반드시 채워서 출력하라.
 
-목록에 없는 사실을 새로 만들어내지는 말고, 각 이슈에 대해 다음 필드를 가진 JSON 배열만 출력하라 (다른 설명 문장 절대 넣지 말 것):
+목록에 없는 사실을 새로 만들어내지는 말고, 각 이슈에 대해 다음 필드를 가진 JSON 배열만 출력하라 (다른 설명 문장 절대 넣지 말 것, 반드시 배열 형태로만 출력):
 - category: geo/policy/industry/social 중 하나
 - title: 15자 이내 한글 제목
 - summary: 1~2문장 요약
@@ -94,7 +94,16 @@ ${snippetText}`;
   }
 
   const data = await res.json();
-  const text = data?.content?.[0]?.text || "[]";
+  console.log("=== Anthropic 응답 전체 구조 (진단용) ===");
+  console.log(JSON.stringify(data, null, 2));
+  console.log("=== 응답 전체 구조 끝 ===");
+
+  const textBlock = (data?.content || []).find((block) => block.type === "text");
+  const text = textBlock?.text || "[]";
+
+  if (!textBlock) {
+    console.error("응답 content 배열에 type='text' 블록이 없습니다. content 블록 타입들:", (data?.content || []).map((b) => b.type));
+  }
 
   // 진단용: 성공 여부와 무관하게 항상 원문 응답을 로그로 남긴다
   console.log("=== LLM 원문 응답 시작 ===");
