@@ -10,14 +10,27 @@ export const GRADE_META = {
   D: { label: "제외 권장", color: "#be123c", bg: "#ffe4e6" },
 };
 
-function normalizeDecisionToGrade(rawDecision) {
+// finalPickMeta.finalScore 분포(app/data/stocks.json 실측, INCLUDED 377종목) 기준 경계값:
+// S >= 75 (7.7%), A 62~74 (21.0%), B 46~61 (40.6%), C < 46 (30.8%)
+function gradeFromFinalScore(finalScore) {
+  const score = Number(finalScore);
+  if (!Number.isFinite(score)) return "A";
+  if (score >= 75) return "S";
+  if (score >= 62) return "A";
+  if (score >= 46) return "B";
+  return "C";
+}
+
+function normalizeDecisionToGrade(rawDecision, finalScore) {
   const value = String(rawDecision || "").trim().toUpperCase();
+  if (value === "EXCLUDED" || value === "EXCLUDE" || rawDecision === "제외") return "D";
+  if (value === "INCLUDED" || value === "INCLUDE") return gradeFromFinalScore(finalScore);
+  // 레거시/대체 decision 문자열 호환용 (현재 백엔드는 INCLUDED/EXCLUDED만 출력)
   if (value === "BUY" || value === "BUY_CANDIDATE" || rawDecision === "매수 후보") return "S";
   if (value === "WATCH" || rawDecision === "관찰") return "A";
   if (value === "WAIT" || value === "WAIT_FOR_PULLBACK" || rawDecision === "대기") return "B";
   if (value === "RISKY" || rawDecision === "주의") return "C";
-  if (value === "EXCLUDED" || value === "EXCLUDE" || rawDecision === "제외") return "D";
-  return "A";
+  return gradeFromFinalScore(finalScore);
 }
 
 function isHighRisk(stock) {
@@ -66,7 +79,8 @@ export function getUnifiedGrade(stock) {
   }
 
   const rawDecision = stock?.finalPickMeta?.decision;
-  let gradeCode = normalizeDecisionToGrade(rawDecision);
+  const finalScore = stock?.finalPickMeta?.finalScore ?? stock?.totalScore;
+  let gradeCode = normalizeDecisionToGrade(rawDecision, finalScore);
 
   const downgraded = isHighRisk(stock) && gradeCode !== "D";
   if (downgraded) gradeCode = downgrade(gradeCode);
