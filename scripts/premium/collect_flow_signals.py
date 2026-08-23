@@ -10,24 +10,26 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-# KRX 2026 로그인 정책 대응: pykrx가 내부적으로 os.environ의
-# KRX_ID / KRX_PW를 읽어 자동 로그인한다. 여기서는 값이 실제로
-# 주입됐는지만 확인하고, 없으면 경고만 남긴다 (에러로 죽이지 않음).
 if not os.environ.get("KRX_ID") or not os.environ.get("KRX_PW"):
-    print("[WARN] KRX_ID / KRX_PW 환경변수가 비어 있습니다. "
-          "GitHub Actions Secrets 및 workflow env 설정을 확인하세요.")
+    print("[WARN] KRX_ID / KRX_PW 환경변수가 비어 있습니다.")
 
-# 한 번에 처리할 최대 종목 수 (KRX 과다요청 차단 방지용).
-# 워크플로우 env에서 CODE_LIMIT을 지정하면 그 값을 쓰고, 없으면 300으로 제한.
-CODE_LIMIT = int(os.environ.get("CODE_LIMIT", "300"))
+# 시가총액 상위 몇 개까지를 "후보 풀"로 볼지 (기본 300개)
+TOP_N = int(os.environ.get("TOP_N", "300"))
 
-# 종목 처리 사이 최소 지연 시간(초). KRX 서버 차단 방지용.
+# 종목 처리 사이 최소 지연 시간(초)
 SLEEP_SECONDS = float(os.environ.get("SLEEP_SECONDS", "1.2"))
+
+# 요일별로 몇 묶음(chunk)으로 나눌지. 월/화/목/금 = 4묶음
+WEEKDAY_TO_CHUNK = {
+    0: 0,  # 월요일 -> 1번 묶음
+    1: 1,  # 화요일 -> 2번 묶음
+    3: 2,  # 목요일 -> 3번 묶음
+    4: 3,  # 금요일 -> 4번 묶음
+}
+TOTAL_CHUNKS = 4
 
 
 def safe_call(func, *args, max_retries=3, **kwargs):
-    """pykrx 호출을 감싸서 JSON 파싱 실패/일시 오류 시 재시도한다.
-    끝까지 실패하면 None을 반환하고, 호출한 쪽에서 해당 종목을 스킵하도록 한다."""
     for attempt in range(max_retries):
         try:
             return func(*args, **kwargs)
@@ -43,24 +45,42 @@ def safe_call(func, *args, max_retries=3, **kwargs):
     return None
 
 
-def get_target_codes():
-    """우량주스카우터가 이미 관리하는 종목 코드 목록을 재사용한다.
-    KRX 차단 방지를 위해 CODE_LIMIT 개수만큼만 잘라서 반환한다."""
-    resp = supabase.table("latest_stock_snapshots").select("code").execute()
-    codes = sorted({row["code"] for row in resp.data if row.get("code")})
-    if not codes:
-        print("경고: latest_stock_snapshots에서 코드를 가져오지 못했습니다.")
-        return codes
+def get_market_cap_ranked_codes(target_date):
+    """전체 시장 시가총액을 '딱 1번' 호출로 가져와서 상위 TOP_N개 코드를
+    시가총액 내림차순으로 반환한다. 휴장일이면 최대 5일 전까지 거슬러 찾는다."""
+    for back in range(0, 6):
+        check_date = target_date - timedelta(days=back)
+        date_str = check_date.strftime("%Y%m%d")
+        df = safe_call(stock.get_market_cap_by_ticker, date_str, market="ALL")
+        if df is not None and not df.empty:
+            df_sorted = df.sort_values("시가총액", ascending=False)
+            codes = df_sorted.index.tolist()[:TOP_N]
+            print(f"{date_str} 기준 시가총액 데이터로 상위 {len(codes)}개 종목 확정")
+            return codes
+        print(f"{date_str}는 데이터 없음(휴장 추정), 하루 전으로 재시도")
+    print("경고: 최근 6일간 시가총액 데이터를 가져오지 못했습니다.")
+    return []
 
-    if len(codes) > CODE_LIMIT:
-        print(f"전체 {len(codes)}개 중 {CODE_LIMIT}개로 제한하여 수집합니다.")
-        codes = codes[:CODE_LIMIT]
 
-    return codes
+def get_today_chunk(all_codes, target_date):
+    """오늘 요일에 해당하는 묶음(전체의 1/4)만 잘라서 반환한다."""
+    weekday = target_date.weekday()  # 0=월 1=화 2=수 3=목 4=금 5=토 6=일
+    chunk_index = WEEKDAY_TO_CHUNK.get(weekday)
+
+    if chunk_index is None:
+        print(f"[INFO] 오늘 요일({weekday})은 지정된 수집일이 아닙니다. 첫 묶음으로 실행합니다.")
+        chunk_index = 0
+
+    chunk_size = max(1, len(all_codes) // TOTAL_CHUNKS)
+    start = chunk_index * chunk_size
+    end = start + chunk_size if chunk_index < TOTAL_CHUNKS - 1 else len(all_codes)
+    chunk = all_codes[start:end]
+    print(f"오늘은 {chunk_index + 1}/{TOTAL_CHUNKS}번 묶음 처리: {len(chunk)}개 종목 "
+          f"(전체 {len(all_codes)}개 중 {start}~{end})")
+    return chunk
 
 
 def fetch_flow_for_code(code, target_date):
-    """특정 종목의 최근 20거래일 투자자별 순매수 데이터를 가져온다."""
     start = (target_date - timedelta(days=30)).strftime("%Y%m%d")
     end = target_date.strftime("%Y%m%d")
     df = safe_call(stock.get_market_trading_value_by_date, start, end, code)
@@ -70,7 +90,6 @@ def fetch_flow_for_code(code, target_date):
 
 
 def compute_short_balance_change(code, target_date):
-    """대차잔고 변화율(최근 대비 5거래일 전)을 계산한다."""
     start = (target_date - timedelta(days=15)).strftime("%Y%m%d")
     end = target_date.strftime("%Y%m%d")
     df = safe_call(stock.get_shorting_balance_by_date, start, end, code)
@@ -88,8 +107,14 @@ def compute_short_balance_change(code, target_date):
 def main():
     target_date = datetime.now()
     date_str = target_date.strftime("%Y-%m-%d")
-    codes = get_target_codes()
-    print(f"총 {len(codes)}개 종목 수급 데이터 수집 시작 (기준일 {date_str})")
+
+    ranked_codes = get_market_cap_ranked_codes(target_date)
+    if not ranked_codes:
+        print("시가총액 순위를 가져오지 못해 종료합니다.")
+        sys.exit(1)
+
+    codes = get_today_chunk(ranked_codes, target_date)
+    print(f"오늘 실제 수급 데이터 수집 대상: {len(codes)}개 종목 (기준일 {date_str})")
 
     rows = []
     skipped = 0
@@ -116,7 +141,6 @@ def main():
         if i % 20 == 0:
             print(f"진행 상황: {i}/{len(codes)} (스킵 {skipped}건)")
 
-        # 종목 하나 처리 후 KRX 서버 부담을 줄이기 위한 최소 지연
         time.sleep(SLEEP_SECONDS)
 
     print(f"수집 완료: 성공 {len(rows)}건, 스킵 {skipped}건")
