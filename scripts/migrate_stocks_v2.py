@@ -84,8 +84,10 @@ def migrate():
         s["valueScore"] = value_score
         s["rawTotalScore"] = raw_total_score
         s["totalScore"] = total_score
-        sector_code = (ud.SECTOR_MAP.get(s["code"]) or {}).get("ksic_중분류")
+        sector_info = ud.SECTOR_MAP.get(s["code"]) or {}
+        sector_code = sector_info.get("ksic_중분류")
         s["sectorCode"] = sector_code
+        s["holdingDiscount"] = ud.is_holding_company(s.get("name"), sector_info)
 
         # fair-value v2가 이 종목에 대해 온전한지 판정 - update_data.py의
         # build_stock_item()과 동일한 기준. 종목을 빼는 대신 표시만 한다.
@@ -187,6 +189,14 @@ def migrate():
         target_price_low = int(close_price * (target_per_low / per_value))
         target_price_mid = int(close_price * (target_per_mid / per_value))
         target_price_high = int(close_price * (target_per_high / per_value))
+
+        holding_discount_applied = bool(s.get("holdingDiscount"))
+        if holding_discount_applied:
+            discount_factor = 1 - ud.HOLDING_DISCOUNT_RATE
+            target_price_low = int(target_price_low * discount_factor)
+            target_price_mid = int(target_price_mid * discount_factor)
+            target_price_high = int(target_price_high * discount_factor)
+
         upside_raw = (target_price_mid - close_price) / close_price * 100
 
         metrics["targetPriceConservative"] = target_price_low
@@ -200,11 +210,11 @@ def migrate():
         if upside_raw > ud.UPSIDE_CAP_HIGH:
             upside_capped = ud.UPSIDE_CAP_HIGH
             display_label = "구조적 저평가 구간"
-            display_reason = "실적변동성"
+            display_reason = "지주사할인" if holding_discount_applied else "실적변동성"
         elif upside_raw < ud.UPSIDE_CAP_LOW:
             upside_capped = ud.UPSIDE_CAP_LOW
             display_label = "구조적 고평가 구간"
-            display_reason = "실적변동성"
+            display_reason = "지주사할인" if holding_discount_applied else "실적변동성"
 
         s["display"] = {
             "upsideLabel": display_label,

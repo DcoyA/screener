@@ -65,6 +65,11 @@ REGRESSION_LAMBDA_FULL = 0.3
 REGRESSION_LAMBDA_LOW = 0.15
 MIN_SECTOR_SAMPLE = 5
 
+# 지주회사 할인: KSIC상 지주회사가 "금융및보험업"(64)으로 분류돼 실제 사업과
+# 무관한 금융업 중앙값으로 목표가가 끌려 올라가는 문제 보완. 업계 통상
+# NAV 대비 30~50% 할인 중 보수적으로 30%를 목표가(전 구간)에 곱한다.
+HOLDING_DISCOUNT_RATE = 0.30
+
 # 상승여력 표시 캡(계산값 자체는 캡 없이 보존, 표시용 필드만 자름)
 UPSIDE_CAP_HIGH = 80.0
 UPSIDE_CAP_LOW = -40.0
@@ -357,6 +362,24 @@ def build_corp_code_map():
                 "corp_name": corp_name,
             }
     return mapping
+
+
+def is_holding_company(stock_name, sector_info):
+    """지주회사/금융지주 판별. KSIC상 지주회사는 실제 영위 사업과 무관하게
+    "금융 및 보험업"(중분류 64, induty_code가 64로 시작)으로 분류되는 경우가
+    흔하다 — 그래서 섹터 부분회귀(target_per)가 실제와 무관한 금융업 중앙값을
+    끌어와 적정주가를 과대평가하는 문제가 있었다. 여기에 종목명에 "홀딩스"/
+    "지주"가 들어간 경우도 함께 잡는다(KSIC 매칭이 안 됐거나 64가 아닌
+    경우 보완)."""
+    sector_info = sector_info or {}
+    induty_code = str(sector_info.get("induty_code") or "")
+    ksic_mid = str(sector_info.get("ksic_중분류") or "")
+    is_finance_sector = induty_code.startswith("64") or ksic_mid == "64"
+
+    name = str(stock_name or "")
+    is_name_match = ("홀딩스" in name) or ("지주" in name)
+
+    return bool(is_finance_sector or is_name_match)
 
 
 def krx_headers():
@@ -1204,7 +1227,9 @@ def build_stock_item(item, corp_map):
     # 분류(sector_name, sectorMeta/타이밍용으로 계속 씀)가 아니라
     # sector_map.json의 KSIC 중분류다. build_sector_map.py를 먼저 돌려야
     # 채워진다 — 없으면 None이고, main()에서 시장 전체 중앙값 폴백으로 처리된다.
-    sector_code = (SECTOR_MAP.get(stock_code) or {}).get("ksic_중분류")
+    sector_info = SECTOR_MAP.get(stock_code) or {}
+    sector_code = sector_info.get("ksic_중분류")
+    holding_discount = is_holding_company(item["name"], sector_info)
 
     # fair-value v2 계산이 이 종목에 대해 온전한지 판정한다. 셋 중 하나라도
     # 걸리면 "이 종목은 v2 적정가 신뢰도가 낮다"는 뜻이지, 종목 자체를
@@ -1232,6 +1257,7 @@ def build_stock_item(item, corp_map):
         "sectorCode": sector_code,
         "modelVersion": model_version,
         "fairValuePartial": fair_value_partial,
+        "holdingDiscount": holding_discount,
         "rawTotalScore": raw_total_score,
         "totalScore": total_score,
         "valueScore": value_score,
@@ -1775,6 +1801,18 @@ def main():
         target_price_low = int(close_price * (target_per_low / per_value))
         target_price_mid = int(close_price * (target_per_mid / per_value))
         target_price_high = int(close_price * (target_per_high / per_value))
+
+        # 지주회사 할인: 목표가 전 구간(보수/중립/낙관)에 동일하게 적용한다.
+        # upside는 이 할인이 반영된 target_price_mid로부터 계산되므로,
+        # 이 아래의 모든 계산(캡/라벨, timingMeta, finalPickMeta)에 자동으로
+        # 전파된다.
+        holding_discount_applied = bool(s.get("holdingDiscount"))
+        if holding_discount_applied:
+            discount_factor = 1 - HOLDING_DISCOUNT_RATE
+            target_price_low = int(target_price_low * discount_factor)
+            target_price_mid = int(target_price_mid * discount_factor)
+            target_price_high = int(target_price_high * discount_factor)
+
         upside_raw = (target_price_mid - close_price) / close_price * 100
 
         metrics["targetPriceConservative"] = target_price_low
@@ -1788,11 +1826,11 @@ def main():
         if upside_raw > UPSIDE_CAP_HIGH:
             upside_capped = UPSIDE_CAP_HIGH
             display_label = "구조적 저평가 구간"
-            display_reason = "실적변동성"
+            display_reason = "지주사할인" if holding_discount_applied else "실적변동성"
         elif upside_raw < UPSIDE_CAP_LOW:
             upside_capped = UPSIDE_CAP_LOW
             display_label = "구조적 고평가 구간"
-            display_reason = "실적변동성"
+            display_reason = "지주사할인" if holding_discount_applied else "실적변동성"
 
         s["display"] = {
             "upsideLabel": display_label,
