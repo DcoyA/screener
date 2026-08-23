@@ -1206,13 +1206,32 @@ def build_stock_item(item, corp_map):
     # 채워진다 — 없으면 None이고, main()에서 시장 전체 중앙값 폴백으로 처리된다.
     sector_code = (SECTOR_MAP.get(stock_code) or {}).get("ksic_중분류")
 
+    # fair-value v2 계산이 이 종목에 대해 온전한지 판정한다. 셋 중 하나라도
+    # 걸리면 "이 종목은 v2 적정가 신뢰도가 낮다"는 뜻이지, 종목 자체를
+    # 목록에서 빼는 이유가 되면 안 된다(그게 이번 수정의 핵심 원칙) —
+    # 그래서 여기선 플래그만 세우고 아래에서 stock을 그대로 만든다.
+    #   1) operating_income<=0: 이익 정규화(normalize_net_income)가 미적용된다
+    #   2) sector_code 없음: KSIC 섹터 매칭 실패, 목표가 부분회귀가 저신뢰
+    #      폴백(시장 전체 중앙값/고정값)으로 떨어진다
+    #   3) per(또는 정규화된 net_income)가 없음: PER/목표가/upside 자체를
+    #      계산할 근거가 없다
+    fair_value_partial = bool(
+        (operating_income is None or operating_income <= 0)
+        or not sector_code
+        or per is None
+        or not normalized_net_income
+        or normalized_net_income <= 0
+    )
+    model_version = "v2-partial" if fair_value_partial else MODEL_VERSION
+
     stock = {
         "code": stock_code,
         "name": item["name"],
         "market": item["market"],
         "sector": sector_name,
         "sectorCode": sector_code,
-        "modelVersion": MODEL_VERSION,
+        "modelVersion": model_version,
+        "fairValuePartial": fair_value_partial,
         "rawTotalScore": raw_total_score,
         "totalScore": total_score,
         "valueScore": value_score,
@@ -1631,6 +1650,7 @@ def build_history_entry(stocks):
 def main():
     corp_map = build_corp_code_map()
     krx_universe = build_krx_universe()
+    print(f"[STAGE] krx_universe={len(krx_universe)}  corp_map={len(corp_map)}")
 
     candidates = [
         x
@@ -1643,17 +1663,30 @@ def main():
         key=lambda x: (x.get("avgTradeValue5d", 0), x.get("marketCap", 0)),
         reverse=True,
     )
+    print(f"[STAGE] candidates(corp_map 매칭 + 시총/거래대금>0)={len(candidates)}")
 
     stocks = []
-    for item in candidates[: max(MAX_STOCKS * 4, 200)]:
+    build_none_count = 0
+    market_cap_reject_count = 0
+    scanned = candidates[: max(MAX_STOCKS * 4, 200)]
+    for item in scanned:
         stock = build_stock_item(item, corp_map)
         if not stock:
+            build_none_count += 1
             continue
         if stock["metrics"].get("marketCap", 0) < MIN_MARKET_CAP:
+            market_cap_reject_count += 1
             continue
         stocks.append(stock)
         if len(stocks) >= MAX_STOCKS:
             break
+
+    print(
+        f"[STAGE] build_stock_item 스캔={len(scanned)}건 -> "
+        f"성공={len(stocks)} / DART매칭·재무데이터 없음={build_none_count} / "
+        f"시총<{MIN_MARKET_CAP}={market_cap_reject_count} "
+        f"(MAX_STOCKS={MAX_STOCKS}로 상한 - 스캔 대상 자체를 candidates[:{max(MAX_STOCKS*4,200)}]로 미리 제한함)"
+    )
 
     if not stocks:
         raise RuntimeError(
@@ -1670,6 +1703,7 @@ def main():
         reverse=True,
     )
     stocks = stocks[:MAX_STOCKS]
+    print(f"[STAGE] 정렬 후 MAX_STOCKS 상한 적용={len(stocks)}")
 
     # === FAIR VALUE V2: 섹터 부분회귀 기반 목표가 밴드 ===
     # target_per = per + λ*(섹터중앙값PER - per). 섹터 중앙값은 전체 종목이
@@ -1696,6 +1730,15 @@ def main():
         per_value = metrics.get("per")
         close_price = metrics.get("closePrice") or 0
         if not per_value or per_value <= 0 or not close_price:
+            # per(정규화된 순이익 기준)이 없으면 목표가/upside 자체를 계산할
+            # 근거가 없다 — 종목을 빼지 않고 관련 필드만 null로 남긴다.
+            # metrics.targetPrice*/upside는 build_stock_item()에서 이미
+            # None으로 초기화돼 있으므로 여기서 건드릴 필요 없다.
+            s["display"] = {
+                "upsideLabel": None,
+                "upsideLabelReason": None,
+                "upsideCapped": None,
+            }
             s["fairValueMeta"] = {
                 "sectorCode": s.get("sectorCode"),
                 "sectorSampleTier": "fixed",
@@ -1829,6 +1872,13 @@ def main():
         s["unifiedGradeCode"] = grade_code
         s["unifiedGradeDowngraded"] = downgraded
     # === UNIFIED GRADE V2 끝 ===
+
+    partial_count = sum(1 for s in stocks if s.get("fairValuePartial"))
+    print(
+        f"[STAGE] fair-value v2/등급 계산 후 최종={len(stocks)} "
+        f"(fair-value v2 로직은 종목을 빼지 않는다 - 이 단계 앞뒤로 개수는 절대 안 바뀜) | "
+        f"modelVersion=v2-partial={partial_count}건({partial_count / max(len(stocks),1) * 100:.1f}%)"
+    )
 
     risks = []
     for stock in stocks:

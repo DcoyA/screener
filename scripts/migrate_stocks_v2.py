@@ -84,8 +84,20 @@ def migrate():
         s["valueScore"] = value_score
         s["rawTotalScore"] = raw_total_score
         s["totalScore"] = total_score
-        s["modelVersion"] = ud.MODEL_VERSION
-        s["sectorCode"] = (ud.SECTOR_MAP.get(s["code"]) or {}).get("ksic_중분류")
+        sector_code = (ud.SECTOR_MAP.get(s["code"]) or {}).get("ksic_중분류")
+        s["sectorCode"] = sector_code
+
+        # fair-value v2가 이 종목에 대해 온전한지 판정 - update_data.py의
+        # build_stock_item()과 동일한 기준. 종목을 빼는 대신 표시만 한다.
+        fair_value_partial = bool(
+            (operating_income is None or operating_income <= 0)
+            or not sector_code
+            or per is None
+            or not normalized_ni
+            or normalized_ni <= 0
+        )
+        s["modelVersion"] = "v2-partial" if fair_value_partial else ud.MODEL_VERSION
+        s["fairValuePartial"] = fair_value_partial
 
         sb = s.setdefault("scoreBreakdown", {})
         sb["value"] = value_score
@@ -134,6 +146,11 @@ def migrate():
         per_value = metrics.get("per")
         close_price = metrics.get("closePrice") or 0
         if not per_value or per_value <= 0 or not close_price:
+            s["display"] = {
+                "upsideLabel": None,
+                "upsideLabelReason": None,
+                "upsideCapped": None,
+            }
             s["fairValueMeta"] = {
                 "sectorCode": s.get("sectorCode"),
                 "sectorSampleTier": "fixed",
@@ -262,6 +279,12 @@ def migrate():
         grade_counts[grade_code] += 1
 
     print(f"5단계(등급) 완료: {grade_counts}")
+
+    partial_count = sum(1 for s in stocks if s.get("fairValuePartial"))
+    print(
+        f"최종 종목 수: {len(stocks)} (fair-value v2는 종목을 빼지 않음) | "
+        f"modelVersion=v2-partial: {partial_count}건({partial_count / max(len(stocks), 1) * 100:.1f}%)"
+    )
 
     ud.save_json(ud.stocks_path, stocks)
     print(f"저장 완료: {ud.stocks_path}")
