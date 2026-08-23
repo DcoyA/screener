@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T11:15:30Z",
+  "generatedAt": "2026-08-23T11:59:38Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -14,7 +14,7 @@
     "count": 500,
     "eligibleRatio": 0.868,
     "avgTotalScore": 76.5,
-    "avgUpside": 67.62,
+    "avgUpside": 59.06,
     "avgLiquidity5d": 14841900305.5,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
