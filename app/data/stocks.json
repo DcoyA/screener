@@ -69,14 +69,14 @@
       "prevClosePrice": 190300,
       "priceChange": -900,
       "priceChangeRate": -0.47,
-      "targetPrice": 441933,
-      "upside": 133.3,
+      "targetPrice": 309353,
+      "upside": 63.3,
       "momentum": -0.47,
       "normalizedNetIncome": 606455450562.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 279470,
-      "targetPriceOptimistic": 528917
+      "targetPriceConservative": 195629,
+      "targetPriceOptimistic": 370241
     },
     "riskMeta": {
       "level": "낮음",
@@ -108,7 +108,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 75,
+      "score": 64,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
       "reason": "타이밍상 중립 구간"
@@ -127,7 +127,7 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 86,
+      "finalScore": 83,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
@@ -136,7 +136,7 @@
       ],
       "debug": {
         "baseScore": 86.0,
-        "timingScore": 75.0,
+        "timingScore": 64.0,
         "sectorStrength": 69.0,
         "marketFit": 51.0,
         "liquidityScore": 68,
@@ -146,9 +146,9 @@
     "modelVersion": "v2",
     "sectorCode": "64",
     "display": {
-      "upsideLabel": "구조적 저평가 구간",
-      "upsideLabelReason": "실적변동성",
-      "upsideCapped": 80.0
+      "upsideLabel": null,
+      "upsideLabelReason": null,
+      "upsideCapped": 63.3
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -159,7 +159,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "192080",
@@ -321,7 +322,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "091590",
@@ -481,7 +483,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "067160",
@@ -641,7 +644,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "041510",
@@ -802,7 +806,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "006730",
@@ -962,7 +967,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "037710",
@@ -1124,7 +1130,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "111770",
@@ -1286,7 +1293,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "383220",
@@ -1447,7 +1455,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "267250",
@@ -1519,14 +1528,14 @@
       "prevClosePrice": 229000,
       "priceChange": 6500,
       "priceChangeRate": 2.84,
-      "targetPrice": 472722,
-      "upside": 100.7,
+      "targetPrice": 330905,
+      "upside": 40.5,
       "momentum": 2.84,
       "normalizedNetIncome": 3675482625000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 311036,
-      "targetPriceOptimistic": 559289
+      "targetPriceConservative": 217725,
+      "targetPriceOptimistic": 391502
     },
     "riskMeta": {
       "level": "보통",
@@ -1558,7 +1567,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 72,
+      "score": 63,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
       "reason": "거래대금 충분"
@@ -1577,7 +1586,7 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 87,
+      "finalScore": 85,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
@@ -1586,7 +1595,7 @@
       ],
       "debug": {
         "baseScore": 75.0,
-        "timingScore": 72.0,
+        "timingScore": 63.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -1596,9 +1605,9 @@
     "modelVersion": "v2",
     "sectorCode": "64",
     "display": {
-      "upsideLabel": "구조적 저평가 구간",
-      "upsideLabelReason": "실적변동성",
-      "upsideCapped": 80.0
+      "upsideLabel": null,
+      "upsideLabelReason": null,
+      "upsideCapped": 40.5
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -1609,7 +1618,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "194700",
@@ -1769,7 +1779,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "073240",
@@ -1928,9 +1939,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 16.31
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "375500",
@@ -2092,7 +2104,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "002380",
@@ -2254,7 +2267,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "035250",
@@ -2415,7 +2429,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "081660",
@@ -2487,14 +2502,14 @@
       "prevClosePrice": 42900,
       "priceChange": -400,
       "priceChangeRate": -0.93,
-      "targetPrice": 64098,
-      "upside": 50.8,
+      "targetPrice": 44868,
+      "upside": 5.6,
       "momentum": -0.93,
       "normalizedNetIncome": 348617792581.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 55466,
-      "targetPriceOptimistic": 149328
+      "targetPriceConservative": 38826,
+      "targetPriceOptimistic": 104529
     },
     "riskMeta": {
       "level": "보통",
@@ -2526,7 +2541,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 62,
+      "score": 55,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
       "reason": "타이밍상 중립 구간"
@@ -2545,16 +2560,15 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 79,
+      "finalScore": 73,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
-        "목표가 대비 상승여력이 커서 소폭 가점했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
       ],
       "debug": {
         "baseScore": 74.0,
-        "timingScore": 62.0,
+        "timingScore": 55.0,
         "sectorStrength": 69.0,
         "marketFit": 52.0,
         "liquidityScore": 68,
@@ -2566,7 +2580,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 50.8
+      "upsideCapped": 5.6
     },
     "fairValueMeta": {
       "sectorCode": "46",
@@ -2575,9 +2589,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 17.43
     },
-    "unifiedGradeCode": "S",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "037460",
@@ -2737,7 +2752,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "017510",
@@ -2897,7 +2913,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "030200",
@@ -3058,7 +3075,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "035900",
@@ -3219,7 +3237,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003380",
@@ -3291,14 +3310,14 @@
       "prevClosePrice": 11200,
       "priceChange": 30,
       "priceChangeRate": 0.27,
-      "targetPrice": 38182,
-      "upside": 240.0,
+      "targetPrice": 26727,
+      "upside": 138.0,
       "momentum": 0.27,
       "normalizedNetIncome": 513760000000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 22258,
-      "targetPriceOptimistic": 46707
+      "targetPriceConservative": 15580,
+      "targetPriceOptimistic": 32694
     },
     "riskMeta": {
       "level": "보통",
@@ -3330,7 +3349,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 91,
+      "score": 76,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
       "reason": "타이밍상 중립 구간"
@@ -3349,14 +3368,14 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 74,
+      "finalScore": 70,
       "sectorType": "normal",
       "reasons": [
         "목표가 대비 상승여력이 커서 소폭 가점했습니다."
       ],
       "debug": {
         "baseScore": 73.0,
-        "timingScore": 91.0,
+        "timingScore": 76.0,
         "sectorStrength": 60.0,
         "marketFit": 47.0,
         "liquidityScore": 68,
@@ -3367,7 +3386,7 @@
     "sectorCode": "64",
     "display": {
       "upsideLabel": "구조적 저평가 구간",
-      "upsideLabelReason": "실적변동성",
+      "upsideLabelReason": "지주사할인",
       "upsideCapped": 80.0
     },
     "fairValueMeta": {
@@ -3379,7 +3398,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "034230",
@@ -3540,7 +3560,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "439260",
@@ -3701,7 +3722,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "475430",
@@ -3861,7 +3883,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "102940",
@@ -4021,7 +4044,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "017890",
@@ -4181,7 +4205,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "161390",
@@ -4342,7 +4367,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "008490",
@@ -4504,7 +4530,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "001560",
@@ -4664,7 +4691,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "257720",
@@ -4824,7 +4852,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "072950",
@@ -4982,9 +5011,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 35.51
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "010690",
@@ -5146,7 +5176,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "333430",
@@ -5306,7 +5337,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "111710",
@@ -5466,7 +5498,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000270",
@@ -5628,7 +5661,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "214450",
@@ -5788,7 +5822,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "078930",
@@ -5860,14 +5895,14 @@
       "prevClosePrice": 107400,
       "priceChange": 9600,
       "priceChangeRate": 8.94,
-      "targetPrice": 155821,
-      "upside": 33.2,
+      "targetPrice": 109074,
+      "upside": -6.8,
       "momentum": 8.94,
       "normalizedNetIncome": 1038137000000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 117000,
-      "targetPriceOptimistic": 176606
+      "targetPriceConservative": 81900,
+      "targetPriceOptimistic": 123624
     },
     "riskMeta": {
       "level": "낮음",
@@ -5899,7 +5934,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 67,
+      "score": 61,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
       "reason": "거래대금 충분"
@@ -5918,16 +5953,15 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 84,
+      "finalScore": 79,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
-        "목표가 대비 상승여력이 커서 소폭 가점했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
       ],
       "debug": {
         "baseScore": 70.0,
-        "timingScore": 67.0,
+        "timingScore": 61.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -5939,7 +5973,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 33.2
+      "upsideCapped": -6.8
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -5950,7 +5984,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "062040",
@@ -6111,7 +6146,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "058470",
@@ -6271,7 +6307,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "011200",
@@ -6430,9 +6467,10 @@
       "regressionLambda": 0.15,
       "sectorMedianPerUsed": 11.14
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "214150",
@@ -6592,7 +6630,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "071970",
@@ -6753,7 +6792,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "265740",
@@ -6913,7 +6953,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "002900",
@@ -7075,7 +7116,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "006650",
@@ -7237,7 +7279,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "086670",
@@ -7395,9 +7438,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 49.45
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "402340",
@@ -7469,14 +7513,14 @@
       "prevClosePrice": 1117000,
       "priceChange": 37000,
       "priceChangeRate": 3.31,
-      "targetPrice": 1249821,
-      "upside": 8.3,
+      "targetPrice": 874874,
+      "upside": -24.2,
       "momentum": 3.31,
       "normalizedNetIncome": 8818695000000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 1017685,
-      "targetPriceOptimistic": 1374108
+      "targetPriceConservative": 712379,
+      "targetPriceOptimistic": 961875
     },
     "riskMeta": {
       "level": "낮음",
@@ -7508,10 +7552,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 59,
+      "score": 44,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
-      "reason": "거래대금 충분"
+      "reason": "거래대금 충분 · 적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -7527,15 +7571,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 78,
+      "finalScore": 68,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 69.0,
-        "timingScore": 59.0,
+        "timingScore": 44.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -7547,7 +7592,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 8.3
+      "upsideCapped": -24.2
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -7556,9 +7601,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "S",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "009540",
@@ -7630,14 +7676,14 @@
       "prevClosePrice": 371500,
       "priceChange": 14500,
       "priceChangeRate": 3.9,
-      "targetPrice": 543875,
-      "upside": 40.9,
+      "targetPrice": 380712,
+      "upside": -1.4,
       "momentum": 3.9,
       "normalizedNetIncome": 2928395265000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 400149,
-      "targetPriceOptimistic": 620827
+      "targetPriceConservative": 280104,
+      "targetPriceOptimistic": 434578
     },
     "riskMeta": {
       "level": "보통",
@@ -7669,7 +7715,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 64,
+      "score": 58,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
       "reason": "거래대금 충분"
@@ -7688,15 +7734,14 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 68,
+      "finalScore": 62,
       "sectorType": "cyclical",
       "reasons": [
-        "산업재 섹터는 경기/업황 민감도가 높아 소폭 감점했습니다.",
-        "목표가 대비 상승여력이 커서 소폭 가점했습니다."
+        "산업재 섹터는 경기/업황 민감도가 높아 소폭 감점했습니다."
       ],
       "debug": {
         "baseScore": 69.0,
-        "timingScore": 64.0,
+        "timingScore": 58.0,
         "sectorStrength": 71.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -7708,7 +7753,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 40.9
+      "upsideCapped": -1.4
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -7719,7 +7764,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "003010",
@@ -7881,7 +7927,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "123330",
@@ -8041,7 +8088,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "028670",
@@ -8202,7 +8250,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "139480",
@@ -8362,7 +8411,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "204620",
@@ -8522,7 +8572,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003230",
@@ -8683,7 +8734,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "483650",
@@ -8844,7 +8896,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003350",
@@ -9006,7 +9059,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "101490",
@@ -9166,7 +9220,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "114810",
@@ -9326,7 +9381,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "122870",
@@ -9487,7 +9543,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "005690",
@@ -9649,7 +9706,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "005850",
@@ -9810,7 +9868,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "294870",
@@ -9972,7 +10031,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "196170",
@@ -10132,7 +10192,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "086280",
@@ -10293,7 +10354,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "251270",
@@ -10454,7 +10516,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000120",
@@ -10615,7 +10678,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "272110",
@@ -10775,7 +10839,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "419530",
@@ -10936,7 +11001,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "128660",
@@ -11096,7 +11162,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000660",
@@ -11257,7 +11324,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "207940",
@@ -11418,7 +11486,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "021240",
@@ -11579,7 +11648,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "271560",
@@ -11740,7 +11810,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "039200",
@@ -11900,7 +11971,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "018290",
@@ -12060,7 +12132,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "278470",
@@ -12221,7 +12294,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "033780",
@@ -12382,7 +12456,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "259960",
@@ -12543,7 +12618,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "069960",
@@ -12704,7 +12780,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "317400",
@@ -12865,7 +12942,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "326030",
@@ -13026,7 +13104,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "086450",
@@ -13188,7 +13267,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "092790",
@@ -13350,7 +13430,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "336570",
@@ -13510,7 +13591,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "171090",
@@ -13668,9 +13750,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 49.45
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "108320",
@@ -13831,7 +13914,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "005380",
@@ -13991,7 +14075,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "068270",
@@ -14152,7 +14237,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "012330",
@@ -14312,7 +14398,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "042700",
@@ -14472,7 +14559,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "034730",
@@ -14544,14 +14632,14 @@
       "prevClosePrice": 553000,
       "priceChange": 32000,
       "priceChangeRate": 5.79,
-      "targetPrice": 549861,
-      "upside": -6.0,
+      "targetPrice": 384902,
+      "upside": -34.2,
       "momentum": 5.79,
       "normalizedNetIncome": 1538424011562.0,
       "netIncomeNormalized": true,
       "normalizationWeight": 0.944,
-      "targetPriceConservative": 476147,
-      "targetPriceOptimistic": 589328
+      "targetPriceConservative": 333302,
+      "targetPriceOptimistic": 412529
     },
     "riskMeta": {
       "level": "보통",
@@ -14583,10 +14671,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 59,
+      "score": 45,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
-      "reason": "거래대금 충분"
+      "reason": "거래대금 충분 · 적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -14602,15 +14690,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 73,
+      "finalScore": 64,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 52.0,
-        "timingScore": 59.0,
+        "timingScore": 45.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -14622,7 +14711,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -6.0
+      "upsideCapped": -34.2
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -14631,9 +14720,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "095610",
@@ -14793,7 +14883,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "007660",
@@ -14954,7 +15045,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "011780",
@@ -15116,7 +15208,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "007340",
@@ -15278,7 +15371,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "082920",
@@ -15438,7 +15532,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "014680",
@@ -15599,7 +15694,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "195940",
@@ -15759,7 +15855,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "267260",
@@ -15920,7 +16017,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "039030",
@@ -16080,7 +16178,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003550",
@@ -16152,14 +16251,14 @@
       "prevClosePrice": 113700,
       "priceChange": 6300,
       "priceChangeRate": 5.54,
-      "targetPrice": 127759,
-      "upside": 6.5,
+      "targetPrice": 89431,
+      "upside": -25.5,
       "momentum": 5.54,
       "normalizedNetIncome": 1000121000000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 104778,
-      "targetPriceOptimistic": 140063
+      "targetPriceConservative": 73344,
+      "targetPriceOptimistic": 98044
     },
     "riskMeta": {
       "level": "낮음",
@@ -16191,10 +16290,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 60,
+      "score": 46,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
-      "reason": "거래대금 충분"
+      "reason": "거래대금 충분 · 적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -16210,15 +16309,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 77,
+      "finalScore": 67,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 63.0,
-        "timingScore": 60.0,
+        "timingScore": 46.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -16230,7 +16330,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 6.5
+      "upsideCapped": -25.5
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -16239,9 +16339,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "S",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "036570",
@@ -16403,7 +16504,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "095340",
@@ -16563,7 +16665,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "006910",
@@ -16723,7 +16826,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "032640",
@@ -16884,7 +16988,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "145020",
@@ -17044,7 +17149,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "458870",
@@ -17204,7 +17310,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "017960",
@@ -17364,9 +17471,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 26.39
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "092730",
@@ -17526,7 +17634,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "080220",
@@ -17684,9 +17793,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 35.51
     },
-    "unifiedGradeCode": "C",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "028260",
@@ -17847,7 +17957,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "403870",
@@ -18007,7 +18118,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "089970",
@@ -18167,7 +18279,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "004370",
@@ -18328,7 +18441,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "053800",
@@ -18488,7 +18602,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "035420",
@@ -18649,7 +18764,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "241710",
@@ -18809,7 +18925,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "457370",
@@ -18969,7 +19086,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "067290",
@@ -19129,7 +19247,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "443060",
@@ -19290,7 +19409,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "009450",
@@ -19452,7 +19572,8 @@
     },
     "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "368770",
@@ -19612,7 +19733,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "420770",
@@ -19772,7 +19894,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "030000",
@@ -19933,7 +20056,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "213420",
@@ -20093,7 +20217,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "102710",
@@ -20253,7 +20378,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "089890",
@@ -20413,7 +20539,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "037440",
@@ -20573,7 +20700,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "005930",
@@ -20734,7 +20862,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "043260",
@@ -20894,7 +21023,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "119850",
@@ -21054,7 +21184,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "319660",
@@ -21214,7 +21345,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "281820",
@@ -21375,7 +21507,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "100090",
@@ -21536,7 +21669,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "469610",
@@ -21697,7 +21831,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "103140",
@@ -21859,7 +21994,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "052460",
@@ -22019,7 +22155,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "012750",
@@ -22180,7 +22317,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "240810",
@@ -22340,7 +22478,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "064400",
@@ -22501,7 +22640,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "218410",
@@ -22661,7 +22801,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "064760",
@@ -22821,7 +22962,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "005180",
@@ -22982,7 +23124,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "096530",
@@ -23142,7 +23285,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "237690",
@@ -23302,7 +23446,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "212560",
@@ -23462,7 +23607,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "033100",
@@ -23622,7 +23768,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "482630",
@@ -23782,7 +23929,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "056190",
@@ -23942,7 +24090,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "298040",
@@ -24102,7 +24251,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "035720",
@@ -24263,7 +24413,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "322000",
@@ -24424,7 +24575,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "090430",
@@ -24585,7 +24737,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "047050",
@@ -24746,7 +24899,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "031980",
@@ -24818,14 +24972,14 @@
       "prevClosePrice": 105200,
       "priceChange": 6000,
       "priceChangeRate": 5.7,
-      "targetPrice": 139463,
-      "upside": 25.4,
+      "targetPrice": 97624,
+      "upside": -12.2,
       "momentum": 5.7,
       "normalizedNetIncome": 89571744746.0,
       "netIncomeNormalized": true,
       "normalizationWeight": 0.061,
-      "targetPriceConservative": 107548,
-      "targetPriceOptimistic": 205385
+      "targetPriceConservative": 75283,
+      "targetPriceOptimistic": 143769
     },
     "riskMeta": {
       "level": "낮음",
@@ -24857,7 +25011,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 63,
+      "score": 58,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
       "reason": "타이밍상 중립 구간"
@@ -24876,14 +25030,14 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 66,
+      "finalScore": 60,
       "sectorType": "normal",
       "reasons": [
-        "목표가 대비 상승여력이 커서 소폭 가점했습니다."
+        "특이 신호 없이 기본 지표 기준으로 평가했습니다."
       ],
       "debug": {
         "baseScore": 57.0,
-        "timingScore": 63.0,
+        "timingScore": 58.0,
         "sectorStrength": 60.0,
         "marketFit": 57.0,
         "liquidityScore": 76,
@@ -24895,7 +25049,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 25.4
+      "upsideCapped": -12.2
     },
     "fairValueMeta": {
       "sectorCode": "29",
@@ -24906,7 +25060,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "128940",
@@ -25067,7 +25222,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "459550",
@@ -25225,9 +25381,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 35.51
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "140860",
@@ -25387,7 +25544,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "001060",
@@ -25549,7 +25707,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "425420",
@@ -25709,7 +25868,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "137400",
@@ -25869,7 +26029,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "161890",
@@ -26030,7 +26191,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "108490",
@@ -26190,7 +26352,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "090460",
@@ -26350,9 +26513,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 35.51
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "S",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "166090",
@@ -26512,7 +26676,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "008930",
@@ -26584,14 +26749,14 @@
       "prevClosePrice": 44350,
       "priceChange": -50,
       "priceChangeRate": -0.11,
-      "targetPrice": 42394,
-      "upside": -4.3,
+      "targetPrice": 29675,
+      "upside": -33.0,
       "momentum": -0.11,
       "normalizedNetIncome": 117709205494.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 36415,
-      "targetPriceOptimistic": 45595
+      "targetPriceConservative": 25490,
+      "targetPriceOptimistic": 31916
     },
     "riskMeta": {
       "level": "낮음",
@@ -26623,10 +26788,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 54,
+      "score": 40,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -26642,15 +26807,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 70,
+      "finalScore": 60,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 56.0,
-        "timingScore": 54.0,
+        "timingScore": 40.0,
         "sectorStrength": 69.0,
         "marketFit": 56.0,
         "liquidityScore": 76,
@@ -26662,7 +26828,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -4.3
+      "upsideCapped": -33.0
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -26671,9 +26837,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "251970",
@@ -26833,7 +27000,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003720",
@@ -26994,7 +27162,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "051600",
@@ -27155,7 +27324,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "002680",
@@ -27315,7 +27485,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "033240",
@@ -27477,7 +27648,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "011210",
@@ -27638,7 +27810,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "026940",
@@ -27800,7 +27973,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "010130",
@@ -27961,7 +28135,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "131290",
@@ -28121,7 +28296,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "327260",
@@ -28281,7 +28457,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "004020",
@@ -28443,7 +28620,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "142210",
@@ -28603,7 +28781,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "083450",
@@ -28764,7 +28943,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "014620",
@@ -28924,7 +29104,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "329180",
@@ -29084,7 +29265,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "004170",
@@ -29246,7 +29428,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "103590",
@@ -29407,7 +29590,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "023530",
@@ -29567,7 +29751,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "031330",
@@ -29727,7 +29912,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "126640",
@@ -29887,7 +30073,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "050890",
@@ -30047,7 +30234,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "389260",
@@ -30207,7 +30395,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "254490",
@@ -30367,7 +30556,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "353200",
@@ -30529,7 +30719,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "028050",
@@ -30690,7 +30881,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "018260",
@@ -30851,7 +31043,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "388050",
@@ -31011,7 +31204,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "181710",
@@ -31172,7 +31366,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "098460",
@@ -31333,7 +31528,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "025560",
@@ -31494,7 +31690,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "252990",
@@ -31654,7 +31851,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "080580",
@@ -31814,7 +32012,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "017800",
@@ -31976,7 +32175,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "232140",
@@ -32136,7 +32336,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "045100",
@@ -32296,7 +32497,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "229640",
@@ -32368,14 +32570,14 @@
       "prevClosePrice": 48150,
       "priceChange": 150,
       "priceChangeRate": 0.31,
-      "targetPrice": 44282,
-      "upside": -8.3,
+      "targetPrice": 30997,
+      "upside": -35.8,
       "momentum": 0.31,
       "normalizedNetIncome": 48475789714.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 38782,
-      "targetPriceOptimistic": 47226
+      "targetPriceConservative": 27147,
+      "targetPriceOptimistic": 33058
     },
     "riskMeta": {
       "level": "보통",
@@ -32407,10 +32609,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 54,
+      "score": 40,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -32426,15 +32628,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 67,
+      "finalScore": 57,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 53.0,
-        "timingScore": 54.0,
+        "timingScore": 40.0,
         "sectorStrength": 69.0,
         "marketFit": 52.0,
         "liquidityScore": 68,
@@ -32446,7 +32649,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -8.3
+      "upsideCapped": -35.8
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -32457,7 +32660,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "005490",
@@ -32529,14 +32733,14 @@
       "prevClosePrice": 325500,
       "priceChange": 8500,
       "priceChangeRate": 2.61,
-      "targetPrice": 295692,
-      "upside": -11.5,
+      "targetPrice": 206984,
+      "upside": -38.0,
       "momentum": 2.61,
       "normalizedNetIncome": 504403472266.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 272165,
-      "targetPriceOptimistic": 507912
+      "targetPriceConservative": 190515,
+      "targetPriceOptimistic": 355538
     },
     "riskMeta": {
       "level": "낮음",
@@ -32568,10 +32772,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 55,
+      "score": 41,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
-      "reason": "거래대금 충분"
+      "reason": "거래대금 충분 · 적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -32587,15 +32791,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 72,
+      "finalScore": 63,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 52.0,
-        "timingScore": 55.0,
+        "timingScore": 41.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -32607,7 +32812,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -11.5
+      "upsideCapped": -38.0
     },
     "fairValueMeta": {
       "sectorCode": "24",
@@ -32616,9 +32821,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 32.41
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "001040",
@@ -32690,14 +32896,14 @@
       "prevClosePrice": 137600,
       "priceChange": 500,
       "priceChangeRate": 0.36,
-      "targetPrice": 129007,
-      "upside": -6.6,
+      "targetPrice": 90304,
+      "upside": -34.6,
       "momentum": 0.36,
       "normalizedNetIncome": 142631457000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 112024,
-      "targetPriceOptimistic": 138100
+      "targetPriceConservative": 78416,
+      "targetPriceOptimistic": 96670
     },
     "riskMeta": {
       "level": "보통",
@@ -32729,10 +32935,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 54,
+      "score": 40,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -32748,15 +32954,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 69,
+      "finalScore": 60,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 52.0,
-        "timingScore": 54.0,
+        "timingScore": 40.0,
         "sectorStrength": 69.0,
         "marketFit": 59.0,
         "liquidityScore": 76,
@@ -32768,7 +32975,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -6.6
+      "upsideCapped": -34.6
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -32777,9 +32984,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "A",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "120110",
@@ -32940,7 +33148,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "382800",
@@ -33100,7 +33309,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "041830",
@@ -33260,7 +33470,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "092870",
@@ -33420,7 +33631,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "417500",
@@ -33580,7 +33792,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "005290",
@@ -33740,7 +33953,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "295310",
@@ -33900,7 +34114,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "460930",
@@ -34060,7 +34275,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "060250",
@@ -34220,7 +34436,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "280360",
@@ -34381,7 +34598,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "290550",
@@ -34541,7 +34759,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "452280",
@@ -34701,7 +34920,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "068760",
@@ -34862,7 +35082,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "460940",
@@ -35022,7 +35243,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "009150",
@@ -35184,7 +35406,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000250",
@@ -35346,7 +35569,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "033160",
@@ -35506,7 +35730,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000390",
@@ -35666,7 +35891,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "007810",
@@ -35827,7 +36053,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "019210",
@@ -35988,7 +36215,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "084370",
@@ -36148,7 +36376,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "170920",
@@ -36308,7 +36537,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "357780",
@@ -36468,7 +36698,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "282330",
@@ -36629,7 +36860,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "001430",
@@ -36701,14 +36933,14 @@
       "prevClosePrice": 43550,
       "priceChange": 1450,
       "priceChangeRate": 3.33,
-      "targetPrice": 46718,
-      "upside": 3.8,
+      "targetPrice": 32702,
+      "upside": -27.3,
       "momentum": 3.33,
       "normalizedNetIncome": 56136309970.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 40933,
-      "targetPriceOptimistic": 98901
+      "targetPriceConservative": 28653,
+      "targetPriceOptimistic": 69230
     },
     "riskMeta": {
       "level": "보통",
@@ -36740,10 +36972,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 58,
+      "score": 44,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -36759,15 +36991,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 67,
+      "finalScore": 58,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 50.0,
-        "timingScore": 58.0,
+        "timingScore": 44.0,
         "sectorStrength": 69.0,
         "marketFit": 54.0,
         "liquidityScore": 68,
@@ -36779,7 +37012,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 3.8
+      "upsideCapped": -27.3
     },
     "fairValueMeta": {
       "sectorCode": "24",
@@ -36790,7 +37023,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "003280",
@@ -36951,7 +37185,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "007070",
@@ -37112,7 +37347,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "214370",
@@ -37272,7 +37508,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "237880",
@@ -37432,7 +37669,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "100790",
@@ -37504,14 +37742,14 @@
       "prevClosePrice": 17570,
       "priceChange": -70,
       "priceChangeRate": -0.4,
-      "targetPrice": 16102,
-      "upside": -8.0,
+      "targetPrice": 11271,
+      "upside": -35.6,
       "momentum": -0.4,
       "normalizedNetIncome": 30930410145.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 14079,
-      "targetPriceOptimistic": 17185
+      "targetPriceConservative": 9855,
+      "targetPriceOptimistic": 12029
     },
     "riskMeta": {
       "level": "보통",
@@ -37543,10 +37781,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 53,
+      "score": 39,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
-      "reason": "거래대금 충분"
+      "reason": "거래대금 충분 · 적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "중소형주",
@@ -37562,14 +37800,14 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 57,
+      "finalScore": 48,
       "sectorType": "normal",
       "reasons": [
-        "특이 신호 없이 기본 지표 기준으로 평가했습니다."
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 49.0,
-        "timingScore": 53.0,
+        "timingScore": 39.0,
         "sectorStrength": 60.0,
         "marketFit": 57.0,
         "liquidityScore": 79,
@@ -37581,7 +37819,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -8.0
+      "upsideCapped": -35.6
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -37590,9 +37828,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "307950",
@@ -37754,7 +37993,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "204320",
@@ -37915,7 +38155,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "417840",
@@ -38075,7 +38316,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "052690",
@@ -38237,7 +38479,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "052710",
@@ -38397,7 +38640,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "160980",
@@ -38557,7 +38801,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "219130",
@@ -38717,7 +38962,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "038500",
@@ -38877,7 +39123,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "138360",
@@ -39037,7 +39284,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "093320",
@@ -39197,7 +39445,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "039440",
@@ -39357,7 +39606,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "036930",
@@ -39517,7 +39767,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "010120",
@@ -39678,7 +39929,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "093370",
@@ -39840,7 +40092,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000500",
@@ -40001,7 +40254,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "489790",
@@ -40162,7 +40416,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "085910",
@@ -40322,7 +40577,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "347700",
@@ -40482,7 +40738,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "112610",
@@ -40643,7 +40900,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "195870",
@@ -40804,7 +41062,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "049630",
@@ -40964,7 +41223,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "066570",
@@ -41125,7 +41385,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "058610",
@@ -41285,7 +41546,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "001440",
@@ -41446,7 +41708,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "126730",
@@ -41607,7 +41870,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "247540",
@@ -41767,7 +42031,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "144960",
@@ -41927,7 +42192,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "059120",
@@ -42087,7 +42353,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "377300",
@@ -42249,7 +42516,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "356680",
@@ -42409,7 +42677,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "060370",
@@ -42569,7 +42838,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "222080",
@@ -42729,7 +42999,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "105840",
@@ -42890,7 +43161,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "006340",
@@ -43051,7 +43323,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "001820",
@@ -43212,7 +43485,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "017670",
@@ -43373,7 +43647,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "373220",
@@ -43535,7 +43810,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "332570",
@@ -43695,7 +43971,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "319400",
@@ -43855,7 +44132,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "017900",
@@ -44017,7 +44295,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "439090",
@@ -44177,7 +44456,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "066430",
@@ -44337,7 +44617,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "001740",
@@ -44498,7 +44779,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003160",
@@ -44659,7 +44941,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "099320",
@@ -44819,7 +45102,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "232680",
@@ -44979,7 +45263,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "011070",
@@ -45140,7 +45425,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "024840",
@@ -45300,7 +45586,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "264850",
@@ -45460,7 +45747,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "044490",
@@ -45620,7 +45908,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "298020",
@@ -45781,7 +46070,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "091580",
@@ -45941,7 +46231,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003670",
@@ -46103,7 +46394,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "267270",
@@ -46261,9 +46553,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 49.45
     },
-    "unifiedGradeCode": "C",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "413630",
@@ -46423,7 +46716,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "189300",
@@ -46584,7 +46878,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "004310",
@@ -46745,7 +47040,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "162300",
@@ -46905,7 +47201,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "234340",
@@ -47065,7 +47362,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "263800",
@@ -47225,7 +47523,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "437730",
@@ -47385,7 +47684,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "330860",
@@ -47545,7 +47845,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "022100",
@@ -47707,7 +48008,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "362320",
@@ -47867,7 +48169,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "383310",
@@ -48027,7 +48330,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "125490",
@@ -48187,7 +48491,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "272210",
@@ -48349,7 +48654,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "078600",
@@ -48509,7 +48815,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "241560",
@@ -48671,7 +48978,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "004710",
@@ -48832,7 +49140,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "078350",
@@ -48992,7 +49301,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "200470",
@@ -49152,7 +49462,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "010950",
@@ -49313,7 +49624,8 @@
     },
     "unifiedGradeCode": "A",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "051910",
@@ -49478,7 +49790,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "051900",
@@ -49643,7 +49956,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "025320",
@@ -49803,7 +50117,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "285130",
@@ -49968,7 +50283,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "065350",
@@ -50128,7 +50444,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "034020",
@@ -50290,7 +50607,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "089030",
@@ -50451,7 +50769,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "074600",
@@ -50611,7 +50930,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "900340",
@@ -50683,14 +51003,14 @@
       "prevClosePrice": 1705,
       "priceChange": -43,
       "priceChangeRate": -2.52,
-      "targetPrice": 1192,
-      "upside": -28.3,
+      "targetPrice": 834,
+      "upside": -49.8,
       "momentum": -2.52,
       "normalizedNetIncome": 56032053.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 1177,
-      "targetPriceOptimistic": 1201
+      "targetPriceConservative": 823,
+      "targetPriceOptimistic": 840
     },
     "riskMeta": {
       "level": "낮음",
@@ -50722,7 +51042,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 39,
+      "score": 36,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
       "reason": "적정가 대비 고평가 부담"
@@ -50741,14 +51061,14 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 40,
+      "finalScore": 39,
       "sectorType": "normal",
       "reasons": [
         "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 38.0,
-        "timingScore": 39.0,
+        "timingScore": 36.0,
         "sectorStrength": 60.0,
         "marketFit": 47.0,
         "liquidityScore": 60,
@@ -50758,9 +51078,9 @@
     "modelVersion": "v2",
     "sectorCode": "64",
     "display": {
-      "upsideLabel": null,
-      "upsideLabelReason": null,
-      "upsideCapped": -28.3
+      "upsideLabel": "구조적 고평가 구간",
+      "upsideLabelReason": "지주사할인",
+      "upsideCapped": -40.0
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -50771,7 +51091,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "125020",
@@ -50931,7 +51252,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "253590",
@@ -51091,7 +51413,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "108860",
@@ -51255,7 +51578,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "388210",
@@ -51419,7 +51743,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "006280",
@@ -51584,7 +51909,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "096770",
@@ -51749,7 +52075,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "018880",
@@ -51914,7 +52241,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "457190",
@@ -52076,7 +52404,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "086520",
@@ -52240,7 +52569,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": true
   },
   {
     "code": "277810",
@@ -52404,7 +52734,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "122640",
@@ -52564,7 +52895,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "281740",
@@ -52724,7 +53056,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000210",
@@ -52889,7 +53222,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "004990",
@@ -53054,7 +53388,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": true
   },
   {
     "code": "097950",
@@ -53219,7 +53554,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "123690",
@@ -53381,7 +53717,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "352820",
@@ -53546,7 +53883,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "058730",
@@ -53711,7 +54049,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "053260",
@@ -53875,7 +54214,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "450080",
@@ -54040,7 +54380,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "010780",
@@ -54205,7 +54546,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "030530",
@@ -54277,14 +54619,14 @@
       "prevClosePrice": 20800,
       "priceChange": 200,
       "priceChangeRate": 0.96,
-      "targetPrice": 18896,
-      "upside": -10.0,
+      "targetPrice": 13227,
+      "upside": -37.0,
       "momentum": 0.96,
       "normalizedNetIncome": 50427053015,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 17048,
-      "targetPriceOptimistic": 20988
+      "targetPriceConservative": 11933,
+      "targetPriceOptimistic": 14691
     },
     "riskMeta": {
       "level": "보통",
@@ -54320,10 +54662,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 54,
+      "score": 40,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "중소형주",
@@ -54339,14 +54681,14 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 51,
+      "finalScore": 41,
       "sectorType": "normal",
       "reasons": [
-        "특이 신호 없이 기본 지표 기준으로 평가했습니다."
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 32.0,
-        "timingScore": 54.0,
+        "timingScore": 40.0,
         "sectorStrength": 60.0,
         "marketFit": 51.0,
         "liquidityScore": 76,
@@ -54358,7 +54700,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": -10.0
+      "upsideCapped": -37.0
     },
     "fairValueMeta": {
       "sectorCode": "20",
@@ -54369,7 +54711,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": true
   },
   {
     "code": "112040",
@@ -54533,7 +54876,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "228670",
@@ -54697,7 +55041,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": true,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "180640",
@@ -54769,14 +55114,14 @@
       "prevClosePrice": 119000,
       "priceChange": 1000,
       "priceChangeRate": 0.84,
-      "targetPrice": 99771,
-      "upside": -16.9,
+      "targetPrice": 69839,
+      "upside": -41.8,
       "momentum": 0.84,
       "normalizedNetIncome": 159181702000,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 91488,
-      "targetPriceOptimistic": 104206
+      "targetPriceConservative": 64041,
+      "targetPriceOptimistic": 72944
     },
     "riskMeta": {
       "level": "보통",
@@ -54812,10 +55157,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 53,
+      "score": 39,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -54831,15 +55176,16 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 62,
+      "finalScore": 52,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
-        "보수적 시장 국면에서 방어적 종목을 우대했습니다."
+        "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 30.0,
-        "timingScore": 53.0,
+        "timingScore": 39.0,
         "sectorStrength": 69.0,
         "marketFit": 56.0,
         "liquidityScore": 76,
@@ -54849,9 +55195,9 @@
     "modelVersion": "v2-partial",
     "sectorCode": "64",
     "display": {
-      "upsideLabel": null,
-      "upsideLabelReason": null,
-      "upsideCapped": -16.9
+      "upsideLabel": "구조적 고평가 구간",
+      "upsideLabelReason": "지주사할인",
+      "upsideCapped": -40.0
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -54860,9 +55206,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": true
   },
   {
     "code": "456040",
@@ -55027,7 +55374,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "222800",
@@ -55191,7 +55539,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "290650",
@@ -55356,7 +55705,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "441270",
@@ -55520,7 +55870,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "064260",
@@ -55684,7 +56035,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "011330",
@@ -55846,7 +56198,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "077360",
@@ -56010,7 +56363,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "396300",
@@ -56174,7 +56528,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "033790",
@@ -56338,7 +56693,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "024060",
@@ -56502,7 +56858,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "005070",
@@ -56667,7 +57024,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "203400",
@@ -56829,7 +57187,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "079650",
@@ -56991,7 +57350,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "126340",
@@ -57155,7 +57515,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "011170",
@@ -57317,7 +57678,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "355150",
@@ -57481,7 +57843,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "011930",
@@ -57646,7 +58009,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "131970",
@@ -57810,7 +58174,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "217590",
@@ -57975,7 +58340,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "448900",
@@ -58139,7 +58505,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "009830",
@@ -58301,7 +58668,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "087010",
@@ -58463,7 +58831,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "298380",
@@ -58625,7 +58994,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "010060",
@@ -58787,7 +59157,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": true
   },
   {
     "code": "466100",
@@ -58949,7 +59320,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "228340",
@@ -59111,7 +59483,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "101730",
@@ -59273,7 +59646,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "189330",
@@ -59435,7 +59809,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "032580",
@@ -59597,7 +59972,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "020150",
@@ -59759,7 +60135,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "041960",
@@ -59923,7 +60300,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "141080",
@@ -60085,7 +60463,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "463020",
@@ -60247,7 +60626,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "491000",
@@ -60409,7 +60789,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "372910",
@@ -60571,7 +60952,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "215790",
@@ -60733,7 +61115,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "263750",
@@ -60895,7 +61278,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "028300",
@@ -61057,7 +61441,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "005360",
@@ -61219,7 +61604,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "347850",
@@ -61381,7 +61767,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "131400",
@@ -61543,7 +61930,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "039980",
@@ -61705,7 +62093,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "230240",
@@ -61867,7 +62256,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "006400",
@@ -62029,7 +62419,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "226340",
@@ -62191,7 +62582,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "454910",
@@ -62353,7 +62745,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "138080",
@@ -62515,7 +62908,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "009420",
@@ -62677,7 +63071,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "348370",
@@ -62839,7 +63234,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "488900",
@@ -63001,7 +63397,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "036540",
@@ -63163,7 +63560,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "475830",
@@ -63325,7 +63723,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "046890",
@@ -63487,7 +63886,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "025900",
@@ -63649,7 +64049,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "032820",
@@ -63811,7 +64212,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "069540",
@@ -63973,7 +64375,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "090710",
@@ -64135,7 +64538,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "174900",
@@ -64297,7 +64701,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "468530",
@@ -64459,7 +64864,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "018000",
@@ -64621,7 +65027,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "046970",
@@ -64783,7 +65190,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "187660",
@@ -64945,7 +65353,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "490470",
@@ -65107,7 +65516,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "314130",
@@ -65269,7 +65679,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "323280",
@@ -65431,7 +65842,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "007390",
@@ -65593,7 +66005,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "445680",
@@ -65755,7 +66168,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "127120",
@@ -65917,7 +66331,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "090360",
@@ -66079,7 +66494,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "310210",
@@ -66241,7 +66657,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "007820",
@@ -66403,7 +66820,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "225190",
@@ -66565,7 +66983,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "048410",
@@ -66727,7 +67146,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "062970",
@@ -66889,7 +67309,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "456160",
@@ -67051,7 +67472,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "293490",
@@ -67213,7 +67635,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "318060",
@@ -67375,7 +67798,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "148780",
@@ -67537,7 +67961,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "475040",
@@ -67699,7 +68124,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "304100",
@@ -67861,7 +68287,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "320000",
@@ -68023,7 +68450,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "064290",
@@ -68185,7 +68613,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "321370",
@@ -68347,7 +68776,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "417200",
@@ -68509,7 +68939,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "406820",
@@ -68671,7 +69102,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "289080",
@@ -68833,7 +69265,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": true
   },
   {
     "code": "049080",
@@ -68995,7 +69428,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "322310",
@@ -69157,7 +69591,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "484810",
@@ -69319,7 +69754,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "115180",
@@ -69481,7 +69917,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "056080",
@@ -69643,7 +70080,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "160190",
@@ -69805,7 +70243,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "036810",
@@ -69967,7 +70406,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "389500",
@@ -70129,7 +70569,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "328130",
@@ -70291,7 +70732,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "204270",
@@ -70453,7 +70895,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "006110",
@@ -70615,7 +71058,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "456010",
@@ -70777,7 +71221,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "159010",
@@ -70939,7 +71384,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "399720",
@@ -71101,7 +71547,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "015760",
@@ -71265,7 +71712,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "124500",
@@ -71430,9 +71878,10 @@
       "regressionLambda": 0.15,
       "sectorMedianPerUsed": 17.63
     },
-    "unifiedGradeCode": "C",
+    "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "059090",
@@ -71599,7 +72048,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": true,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "064350",
@@ -71767,7 +72217,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "053700",
@@ -71934,7 +72385,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": true,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "039490",
@@ -72098,7 +72550,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "034220",
@@ -72267,7 +72720,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "082740",
@@ -72436,7 +72890,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "042660",
@@ -72604,7 +73059,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "192820",
@@ -72772,7 +73228,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "077970",
@@ -72941,7 +73398,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": true,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "198440",
@@ -73107,7 +73565,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": true,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "006360",
@@ -73273,7 +73732,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "067310",
@@ -73439,7 +73899,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003530",
@@ -73603,7 +74064,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "012450",
@@ -73771,7 +74233,8 @@
     },
     "unifiedGradeCode": "B",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "010140",
@@ -73935,7 +74398,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "006260",
@@ -74007,14 +74471,14 @@
       "prevClosePrice": 326000,
       "priceChange": -2500,
       "priceChangeRate": -0.77,
-      "targetPrice": 329332,
-      "upside": 1.8,
+      "targetPrice": 230532,
+      "upside": -28.7,
       "momentum": -0.77,
       "normalizedNetIncome": 485145000000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 275301,
-      "targetPriceOptimistic": 358260
+      "targetPriceConservative": 192710,
+      "targetPriceOptimistic": 250781
     },
     "riskMeta": {
       "level": "보통",
@@ -74052,10 +74516,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 55,
+      "score": 40,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": true,
-      "reason": "거래대금 충분"
+      "reason": "거래대금 충분 · 적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -74071,16 +74535,17 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 60,
+      "finalScore": 50,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
         "보수적 시장 국면에서 방어적 종목을 우대했습니다.",
-        "최근 부정적 뉴스 신호 1건을 반영해 감점했습니다."
+        "최근 부정적 뉴스 신호 1건을 반영해 감점했습니다.",
+        "목표가 대비 고평가 부담이 있어 감점했습니다."
       ],
       "debug": {
         "baseScore": 32.0,
-        "timingScore": 55.0,
+        "timingScore": 40.0,
         "sectorStrength": 69.0,
         "marketFit": 64.0,
         "liquidityScore": 87,
@@ -74092,7 +74557,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 1.8
+      "upsideCapped": -28.7
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -74101,9 +74566,10 @@
       "regressionLambda": 0.3,
       "sectorMedianPerUsed": 22.05
     },
-    "unifiedGradeCode": "B",
+    "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "006800",
@@ -74267,7 +74733,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "089860",
@@ -74431,7 +74898,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "002990",
@@ -74595,7 +75063,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "097230",
@@ -74759,7 +75228,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "003490",
@@ -74923,7 +75393,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "298000",
@@ -75089,7 +75560,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": true
+    "fairValuePartial": true,
+    "holdingDiscount": false
   },
   {
     "code": "323410",
@@ -75161,14 +75633,14 @@
       "prevClosePrice": 22150,
       "priceChange": 50,
       "priceChangeRate": 0.23,
-      "targetPrice": 22200,
-      "upside": 0.0,
+      "targetPrice": 15539,
+      "upside": -30.0,
       "momentum": 0.23,
       "normalizedNetIncome": 480280000000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 18702,
-      "targetPriceOptimistic": 24072
+      "targetPriceConservative": 13091,
+      "targetPriceOptimistic": 16850
     },
     "riskMeta": {
       "level": "주의",
@@ -75206,10 +75678,10 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 55,
+      "score": 41,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
-      "reason": "타이밍상 중립 구간"
+      "reason": "적정가 대비 고평가 부담"
     },
     "sectorMeta": {
       "name": "대형주",
@@ -75232,7 +75704,7 @@
       ],
       "debug": {
         "baseScore": 23.0,
-        "timingScore": 55.0,
+        "timingScore": 41.0,
         "sectorStrength": 69.0,
         "marketFit": 60.0
       }
@@ -75242,7 +75714,7 @@
     "display": {
       "upsideLabel": null,
       "upsideLabelReason": null,
-      "upsideCapped": 0.0
+      "upsideCapped": -30.0
     },
     "fairValueMeta": {
       "sectorCode": "64",
@@ -75253,7 +75725,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "003680",
@@ -75417,7 +75890,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "083650",
@@ -75581,7 +76055,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "032350",
@@ -75745,7 +76220,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "475150",
@@ -75909,7 +76385,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "079550",
@@ -76073,7 +76550,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "000490",
@@ -76239,7 +76717,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "001260",
@@ -76311,14 +76790,14 @@
       "prevClosePrice": 403000,
       "priceChange": 30500,
       "priceChangeRate": 7.57,
-      "targetPrice": 305083,
-      "upside": -29.6,
+      "targetPrice": 213558,
+      "upside": -50.7,
       "momentum": 7.57,
       "normalizedNetIncome": 5293178000.0,
       "netIncomeNormalized": false,
       "normalizationWeight": 0.0,
-      "targetPriceConservative": 304037,
-      "targetPriceOptimistic": 305516
+      "targetPriceConservative": 212825,
+      "targetPriceOptimistic": 213861
     },
     "riskMeta": {
       "level": "보통",
@@ -76356,7 +76835,7 @@
       "positiveKeywords": []
     },
     "timingMeta": {
-      "score": 47,
+      "score": 43,
       "recentSpikeFlag": false,
       "volumeSpikeFlag": false,
       "reason": "적정가 대비 고평가 부담"
@@ -76375,7 +76854,7 @@
     },
     "finalPickMeta": {
       "decision": "INCLUDED",
-      "finalScore": 47,
+      "finalScore": 46,
       "sectorType": "defensive",
       "reasons": [
         "대형주 섹터는 방어적 성격이 있어 안정성 관점에서 소폭 가점했습니다.",
@@ -76385,7 +76864,7 @@
       ],
       "debug": {
         "baseScore": 20.0,
-        "timingScore": 47.0,
+        "timingScore": 43.0,
         "sectorStrength": 69.0,
         "marketFit": 60.0,
         "liquidityScore": 80,
@@ -76395,9 +76874,9 @@
     "modelVersion": "v2",
     "sectorCode": "41",
     "display": {
-      "upsideLabel": null,
-      "upsideLabelReason": null,
-      "upsideCapped": -29.6
+      "upsideLabel": "구조적 고평가 구간",
+      "upsideLabelReason": "지주사할인",
+      "upsideCapped": -40.0
     },
     "fairValueMeta": {
       "sectorCode": "41",
@@ -76408,7 +76887,8 @@
     },
     "unifiedGradeCode": "C",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": true
   },
   {
     "code": "419050",
@@ -76578,7 +77058,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "036460",
@@ -76742,7 +77223,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "010820",
@@ -76906,7 +77388,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "047810",
@@ -77070,7 +77553,8 @@
     },
     "unifiedGradeCode": "D",
     "unifiedGradeDowngraded": false,
-    "fairValuePartial": false
+    "fairValuePartial": false,
+    "holdingDiscount": false
   },
   {
     "code": "008770",
@@ -77240,7 +77724,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "178320",
@@ -77408,7 +77893,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "008830",
@@ -77576,7 +78062,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "122350",
@@ -77742,7 +78229,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "010170",
@@ -77908,7 +78396,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "950160",
@@ -78075,7 +78564,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "047040",
@@ -78242,7 +78732,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "066970",
@@ -78409,7 +78900,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "001210",
@@ -78575,7 +79067,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "440110",
@@ -78742,7 +79235,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "336260",
@@ -78908,7 +79402,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "005090",
@@ -79074,7 +79569,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "011790",
@@ -79240,7 +79736,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "005950",
@@ -79406,7 +79903,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "222040",
@@ -79572,7 +80070,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "348340",
@@ -79739,7 +80238,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "092200",
@@ -79905,7 +80405,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "376900",
@@ -80071,7 +80572,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "076610",
@@ -80238,7 +80740,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "011230",
@@ -80404,7 +80907,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "079160",
@@ -80570,7 +81074,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   },
   {
     "code": "036710",
@@ -80737,7 +81242,8 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": true
   },
   {
     "code": "044340",
@@ -80903,6 +81409,7 @@
       "upsideLabel": null,
       "upsideLabelReason": null,
       "upsideCapped": null
-    }
+    },
+    "holdingDiscount": false
   }
 ]
