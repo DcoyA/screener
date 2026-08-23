@@ -42,6 +42,25 @@ function formatKrwCompact(value) {
   if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
   return `${num.toLocaleString("ko-KR")}원`;
 }
+// 상승여력 표시값(fair-value v2): display.upsideLabel이 있으면(캡 초과)
+// 숫자 대신 라벨을 보여준다. 없으면 display.upsideCapped(캡 적용된 값,
+// 없는 옛 데이터는 원본 upside)를 퍼센트로 보여준다.
+function formatUpsideDisplay(stock) {
+  const label = stock?.display?.upsideLabel;
+  if (label) return label;
+  const capped = stock?.display?.upsideCapped;
+  return formatPercent(capped ?? stock?.metrics?.upside);
+}
+// 적정가 밴드 표시값(fair-value v2): 보수~낙관 범위, 둘 다 없으면 단일값.
+function formatTargetPriceBand(stock) {
+  const lo = Number(stock?.metrics?.targetPriceConservative);
+  const hi = Number(stock?.metrics?.targetPriceOptimistic);
+  if (Number.isFinite(lo) && Number.isFinite(hi) && lo > 0 && hi > 0) {
+    if (lo === hi) return formatPrice(lo);
+    return `${formatPrice(lo)}~${formatPrice(hi)}`;
+  }
+  return formatPrice(stock?.metrics?.targetPrice);
+}
 function debtRatioForUndervalue(item) {
   const explicit = Number(item?.undervalueMeta?.sortDebtRatio);
   if (Number.isFinite(explicit)) return explicit;
@@ -205,7 +224,7 @@ function getScorePresentation(stock, activeView) {
     return { label: "가치 점수", valueText: `${Math.round(Number(stock?.valueScore ?? 0))}점`, tooltip: "가치 점수는 저평가 관점에서의 내부 점수이며 예상 수익률을 의미하지 않습니다." };
   }
   if (activeView === "upside") {
-    return { label: "상승여력", valueText: formatPercent(stock?.metrics?.upside), tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다." };
+    return { label: "상승여력", valueText: formatUpsideDisplay(stock), tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다. 캡을 초과하는 값은 숫자 대신 구조적 할인/할증 라벨로 표시됩니다." };
   }
   return { label: "종합 점수", valueText: `${Math.round(Number(stock?.totalScore ?? 0))}점`, tooltip: "종합 점수는 안정성·가치·시장성 등을 함께 반영한 내부 점수이며 예상 수익률을 의미하지 않습니다." };
 }
@@ -460,8 +479,8 @@ export default function RankingTab({ stocks }) {
 
                 <div className="metricRow">
                   <div className="metricBox"><span>현재가</span><strong>{formatPrice(stock?.metrics?.closePrice)}</strong></div>
-                  <div className="metricBox"><span>적정가 추정</span><strong>{formatPrice(stock?.metrics?.targetPrice)}</strong></div>
-                  <div className="metricBox"><span>상승여력</span><strong className="sky">{formatPercent(stock?.metrics?.upside)}</strong></div>
+                  <div className="metricBox"><span>적정가 추정</span><strong>{formatTargetPriceBand(stock)}</strong></div>
+                  <div className="metricBox"><span>상승여력</span><strong className="sky">{formatUpsideDisplay(stock)}</strong></div>
                   <div className="metricBox"><span>부채비율</span><strong>{formatPercent(stock?.metrics?.debtRatio)}</strong></div>
                 </div>
 
