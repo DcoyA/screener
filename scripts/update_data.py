@@ -1258,6 +1258,7 @@ def build_stock_item(item, corp_map):
         "modelVersion": model_version,
         "fairValuePartial": fair_value_partial,
         "holdingDiscount": holding_discount,
+        "holdingDiscountRate": HOLDING_DISCOUNT_RATE if holding_discount else None,
         "rawTotalScore": raw_total_score,
         "totalScore": total_score,
         "valueScore": value_score,

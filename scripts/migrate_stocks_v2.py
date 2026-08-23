@@ -88,6 +88,7 @@ def migrate():
         sector_code = sector_info.get("ksic_중분류")
         s["sectorCode"] = sector_code
         s["holdingDiscount"] = ud.is_holding_company(s.get("name"), sector_info)
+        s["holdingDiscountRate"] = ud.HOLDING_DISCOUNT_RATE if s["holdingDiscount"] else None
 
         # fair-value v2가 이 종목에 대해 온전한지 판정 - update_data.py의
         # build_stock_item()과 동일한 기준. 종목을 빼는 대신 표시만 한다.
