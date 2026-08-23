@@ -1,0 +1,5507 @@
+{
+  "generatedAt": "2026-08-23T08:37:12Z",
+  "source": "DART company.json (induty_code)",
+  "count": 500,
+  "items": {
+    "009970": {
+      "code": "009970",
+      "corp_name": "영원무역홀딩스",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:33:51Z"
+    },
+    "192080": {
+      "code": "192080",
+      "corp_name": "더블유게임즈",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:33:52Z"
+    },
+    "091590": {
+      "code": "091590",
+      "corp_name": "남화토건",
+      "induty_code": "411",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:33:52Z"
+    },
+    "067160": {
+      "code": "067160",
+      "corp_name": "SOOP",
+      "induty_code": "582",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:33:52Z"
+    },
+    "041510": {
+      "code": "041510",
+      "corp_name": "에스엠",
+      "induty_code": "59201",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "59",
+      "updated_at": "2026-08-23T08:33:53Z"
+    },
+    "006730": {
+      "code": "006730",
+      "corp_name": "서부T&D",
+      "induty_code": "551",
+      "ksic_대분류": {
+        "code": "I",
+        "name": "숙박 및 음식점업"
+      },
+      "ksic_중분류": "55",
+      "updated_at": "2026-08-23T08:33:53Z"
+    },
+    "037710": {
+      "code": "037710",
+      "corp_name": "광주신세계",
+      "induty_code": "47111",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:33:54Z"
+    },
+    "111770": {
+      "code": "111770",
+      "corp_name": "영원무역",
+      "induty_code": "46800",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:33:54Z"
+    },
+    "383220": {
+      "code": "383220",
+      "corp_name": "F&F",
+      "induty_code": "14111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "14",
+      "updated_at": "2026-08-23T08:33:54Z"
+    },
+    "267250": {
+      "code": "267250",
+      "corp_name": "HD현대",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:33:55Z"
+    },
+    "194700": {
+      "code": "194700",
+      "corp_name": "노바렉스",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:33:55Z"
+    },
+    "073240": {
+      "code": "073240",
+      "corp_name": "금호타이어",
+      "induty_code": "221",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "22",
+      "updated_at": "2026-08-23T08:33:56Z"
+    },
+    "375500": {
+      "code": "375500",
+      "corp_name": "DL이앤씨",
+      "induty_code": "412",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:33:56Z"
+    },
+    "002380": {
+      "code": "002380",
+      "corp_name": "케이씨씨",
+      "induty_code": "20411",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:33:57Z"
+    },
+    "035250": {
+      "code": "035250",
+      "corp_name": "강원랜드",
+      "induty_code": "91249",
+      "ksic_대분류": {
+        "code": "R",
+        "name": "예술, 스포츠 및 여가관련 서비스업"
+      },
+      "ksic_중분류": "91",
+      "updated_at": "2026-08-23T08:33:57Z"
+    },
+    "081660": {
+      "code": "081660",
+      "corp_name": "미스토홀딩스",
+      "induty_code": "464",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:33:57Z"
+    },
+    "037460": {
+      "code": "037460",
+      "corp_name": "삼지전자",
+      "induty_code": "2642",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:33:58Z"
+    },
+    "017510": {
+      "code": "017510",
+      "corp_name": "세명전기",
+      "induty_code": "2599",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:33:58Z"
+    },
+    "030200": {
+      "code": "030200",
+      "corp_name": "케이티",
+      "induty_code": "612",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "61",
+      "updated_at": "2026-08-23T08:33:58Z"
+    },
+    "035900": {
+      "code": "035900",
+      "corp_name": "JYP Ent.",
+      "induty_code": "59201",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "59",
+      "updated_at": "2026-08-23T08:33:59Z"
+    },
+    "003380": {
+      "code": "003380",
+      "corp_name": "하림지주",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:33:59Z"
+    },
+    "034230": {
+      "code": "034230",
+      "corp_name": "파라다이스",
+      "induty_code": "91249",
+      "ksic_대분류": {
+        "code": "R",
+        "name": "예술, 스포츠 및 여가관련 서비스업"
+      },
+      "ksic_중분류": "91",
+      "updated_at": "2026-08-23T08:34:00Z"
+    },
+    "439260": {
+      "code": "439260",
+      "corp_name": "대한조선",
+      "induty_code": "3111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:34:00Z"
+    },
+    "475430": {
+      "code": "475430",
+      "corp_name": "키스트론",
+      "induty_code": "28302",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:00Z"
+    },
+    "102940": {
+      "code": "102940",
+      "corp_name": "코오롱생명과학",
+      "induty_code": "2110",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:01Z"
+    },
+    "017890": {
+      "code": "017890",
+      "corp_name": "한국알콜",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:01Z"
+    },
+    "161390": {
+      "code": "161390",
+      "corp_name": "한국타이어앤테크놀로지",
+      "induty_code": "221",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "22",
+      "updated_at": "2026-08-23T08:34:02Z"
+    },
+    "008490": {
+      "code": "008490",
+      "corp_name": "서흥",
+      "induty_code": "2049",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:02Z"
+    },
+    "001560": {
+      "code": "001560",
+      "corp_name": "제일연마",
+      "induty_code": "23992",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:34:03Z"
+    },
+    "257720": {
+      "code": "257720",
+      "corp_name": "실리콘투",
+      "induty_code": "46800",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:34:03Z"
+    },
+    "072950": {
+      "code": "072950",
+      "corp_name": "빛샘전자",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:03Z"
+    },
+    "010690": {
+      "code": "010690",
+      "corp_name": "화신",
+      "induty_code": "30391",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:04Z"
+    },
+    "333430": {
+      "code": "333430",
+      "corp_name": "일승",
+      "induty_code": "311",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:34:04Z"
+    },
+    "111710": {
+      "code": "111710",
+      "corp_name": "남화산업",
+      "induty_code": "91121",
+      "ksic_대분류": {
+        "code": "R",
+        "name": "예술, 스포츠 및 여가관련 서비스업"
+      },
+      "ksic_중분류": "91",
+      "updated_at": "2026-08-23T08:34:05Z"
+    },
+    "000270": {
+      "code": "000270",
+      "corp_name": "기아",
+      "induty_code": "30121",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:05Z"
+    },
+    "214450": {
+      "code": "214450",
+      "corp_name": "파마리서치",
+      "induty_code": "213",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:05Z"
+    },
+    "078930": {
+      "code": "078930",
+      "corp_name": "GS",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:34:06Z"
+    },
+    "062040": {
+      "code": "062040",
+      "corp_name": "산일전기",
+      "induty_code": "28112",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:06Z"
+    },
+    "058470": {
+      "code": "058470",
+      "corp_name": "리노공업",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:06Z"
+    },
+    "011200": {
+      "code": "011200",
+      "corp_name": "HMM",
+      "induty_code": "50112",
+      "ksic_대분류": {
+        "code": "H",
+        "name": "운수 및 창고업"
+      },
+      "ksic_중분류": "50",
+      "updated_at": "2026-08-23T08:34:07Z"
+    },
+    "214150": {
+      "code": "214150",
+      "corp_name": "클래시스",
+      "induty_code": "271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:34:07Z"
+    },
+    "071970": {
+      "code": "071970",
+      "corp_name": "HD현대마린엔진",
+      "induty_code": "29119",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:08Z"
+    },
+    "265740": {
+      "code": "265740",
+      "corp_name": "엔에프씨",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:08Z"
+    },
+    "002900": {
+      "code": "002900",
+      "corp_name": "TYM",
+      "induty_code": "29210",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:08Z"
+    },
+    "006650": {
+      "code": "006650",
+      "corp_name": "대한유화",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:09Z"
+    },
+    "086670": {
+      "code": "086670",
+      "corp_name": "비엠티",
+      "induty_code": "29133",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:09Z"
+    },
+    "402340": {
+      "code": "402340",
+      "corp_name": "SK스퀘어",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:34:10Z"
+    },
+    "009540": {
+      "code": "009540",
+      "corp_name": "HD한국조선해양",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:34:10Z"
+    },
+    "003010": {
+      "code": "003010",
+      "corp_name": "혜인",
+      "induty_code": "465",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:34:10Z"
+    },
+    "123330": {
+      "code": "123330",
+      "corp_name": "제닉",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:11Z"
+    },
+    "028670": {
+      "code": "028670",
+      "corp_name": "팬오션",
+      "induty_code": "50112",
+      "ksic_대분류": {
+        "code": "H",
+        "name": "운수 및 창고업"
+      },
+      "ksic_중분류": "50",
+      "updated_at": "2026-08-23T08:34:11Z"
+    },
+    "139480": {
+      "code": "139480",
+      "corp_name": "이마트",
+      "induty_code": "471",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:34:12Z"
+    },
+    "204620": {
+      "code": "204620",
+      "corp_name": "글로벌텍스프리",
+      "induty_code": "661",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:34:12Z"
+    },
+    "003230": {
+      "code": "003230",
+      "corp_name": "삼양식품",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:34:12Z"
+    },
+    "483650": {
+      "code": "483650",
+      "corp_name": "달바글로벌",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:13Z"
+    },
+    "003350": {
+      "code": "003350",
+      "corp_name": "한국화장품제조",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:13Z"
+    },
+    "101490": {
+      "code": "101490",
+      "corp_name": "에스앤에스텍",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:14Z"
+    },
+    "114810": {
+      "code": "114810",
+      "corp_name": "한솔아이원스",
+      "induty_code": "2927",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:14Z"
+    },
+    "122870": {
+      "code": "122870",
+      "corp_name": "와이지엔터테인먼트",
+      "induty_code": "59201",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "59",
+      "updated_at": "2026-08-23T08:34:14Z"
+    },
+    "005690": {
+      "code": "005690",
+      "corp_name": "파미셀",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:15Z"
+    },
+    "005850": {
+      "code": "005850",
+      "corp_name": "에스엘",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:15Z"
+    },
+    "294870": {
+      "code": "294870",
+      "corp_name": "IPARK현대산업개발",
+      "induty_code": "411",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:34:16Z"
+    },
+    "196170": {
+      "code": "196170",
+      "corp_name": "알테오젠",
+      "induty_code": "70113",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:34:16Z"
+    },
+    "086280": {
+      "code": "086280",
+      "corp_name": "현대글로비스",
+      "induty_code": "5299",
+      "ksic_대분류": {
+        "code": "H",
+        "name": "운수 및 창고업"
+      },
+      "ksic_중분류": "52",
+      "updated_at": "2026-08-23T08:34:16Z"
+    },
+    "251270": {
+      "code": "251270",
+      "corp_name": "넷마블",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:34:17Z"
+    },
+    "000120": {
+      "code": "000120",
+      "corp_name": "CJ대한통운",
+      "induty_code": "493",
+      "ksic_대분류": {
+        "code": "H",
+        "name": "운수 및 창고업"
+      },
+      "ksic_중분류": "49",
+      "updated_at": "2026-08-23T08:34:17Z"
+    },
+    "272110": {
+      "code": "272110",
+      "corp_name": "케이엔제이",
+      "induty_code": "261",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:18Z"
+    },
+    "419530": {
+      "code": "419530",
+      "corp_name": "SAMG엔터",
+      "induty_code": "59112",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "59",
+      "updated_at": "2026-08-23T08:34:18Z"
+    },
+    "128660": {
+      "code": "128660",
+      "corp_name": "피제이메탈",
+      "induty_code": "2429",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:34:18Z"
+    },
+    "000660": {
+      "code": "000660",
+      "corp_name": "SK하이닉스",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:19Z"
+    },
+    "207940": {
+      "code": "207940",
+      "corp_name": "삼성바이오로직스",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:19Z"
+    },
+    "021240": {
+      "code": "021240",
+      "corp_name": "코웨이",
+      "induty_code": "969",
+      "ksic_대분류": {
+        "code": "S",
+        "name": "협회 및 단체, 수리 및 기타 개인 서비스업"
+      },
+      "ksic_중분류": "96",
+      "updated_at": "2026-08-23T08:34:20Z"
+    },
+    "271560": {
+      "code": "271560",
+      "corp_name": "오리온",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:34:20Z"
+    },
+    "039200": {
+      "code": "039200",
+      "corp_name": "오스코텍",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:20Z"
+    },
+    "018290": {
+      "code": "018290",
+      "corp_name": "브이티",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:21Z"
+    },
+    "278470": {
+      "code": "278470",
+      "corp_name": "에이피알",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:21Z"
+    },
+    "033780": {
+      "code": "033780",
+      "corp_name": "케이티앤지",
+      "induty_code": "12000",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "12",
+      "updated_at": "2026-08-23T08:34:22Z"
+    },
+    "259960": {
+      "code": "259960",
+      "corp_name": "크래프톤",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:34:22Z"
+    },
+    "069960": {
+      "code": "069960",
+      "corp_name": "현대백화점",
+      "induty_code": "47111",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:34:22Z"
+    },
+    "317400": {
+      "code": "317400",
+      "corp_name": "자이에스앤디",
+      "induty_code": "681",
+      "ksic_대분류": {
+        "code": "L",
+        "name": "부동산업"
+      },
+      "ksic_중분류": "68",
+      "updated_at": "2026-08-23T08:34:23Z"
+    },
+    "326030": {
+      "code": "326030",
+      "corp_name": "에스케이바이오팜",
+      "induty_code": "7011",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:34:23Z"
+    },
+    "086450": {
+      "code": "086450",
+      "corp_name": "동국제약",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:23Z"
+    },
+    "092790": {
+      "code": "092790",
+      "corp_name": "넥스틸",
+      "induty_code": "2419",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:34:24Z"
+    },
+    "336570": {
+      "code": "336570",
+      "corp_name": "원텍",
+      "induty_code": "271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:34:24Z"
+    },
+    "171090": {
+      "code": "171090",
+      "corp_name": "선익시스템",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:25Z"
+    },
+    "108320": {
+      "code": "108320",
+      "corp_name": "LX세미콘",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:25Z"
+    },
+    "005380": {
+      "code": "005380",
+      "corp_name": "현대자동차",
+      "induty_code": "30121",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:25Z"
+    },
+    "068270": {
+      "code": "068270",
+      "corp_name": "셀트리온",
+      "induty_code": "21100",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:26Z"
+    },
+    "012330": {
+      "code": "012330",
+      "corp_name": "현대모비스",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:26Z"
+    },
+    "042700": {
+      "code": "042700",
+      "corp_name": "한미반도체",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:27Z"
+    },
+    "034730": {
+      "code": "034730",
+      "corp_name": "SK",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:34:27Z"
+    },
+    "095610": {
+      "code": "095610",
+      "corp_name": "테스",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:28Z"
+    },
+    "007660": {
+      "code": "007660",
+      "corp_name": "이수페타시스",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:28Z"
+    },
+    "011780": {
+      "code": "011780",
+      "corp_name": "금호석유화학",
+      "induty_code": "201",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:28Z"
+    },
+    "007340": {
+      "code": "007340",
+      "corp_name": "DN오토모티브",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:29Z"
+    },
+    "082920": {
+      "code": "082920",
+      "corp_name": "비츠로셀",
+      "induty_code": "28201",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:29Z"
+    },
+    "014680": {
+      "code": "014680",
+      "corp_name": "한솔케미칼",
+      "induty_code": "20129",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:29Z"
+    },
+    "195940": {
+      "code": "195940",
+      "corp_name": "HK이노엔",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:30Z"
+    },
+    "267260": {
+      "code": "267260",
+      "corp_name": "HD현대일렉트릭",
+      "induty_code": "281",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:30Z"
+    },
+    "039030": {
+      "code": "039030",
+      "corp_name": "이오테크닉스",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:31Z"
+    },
+    "003550": {
+      "code": "003550",
+      "corp_name": "LG",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:34:31Z"
+    },
+    "036570": {
+      "code": "036570",
+      "corp_name": "NC",
+      "induty_code": "582",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:34:31Z"
+    },
+    "095340": {
+      "code": "095340",
+      "corp_name": "ISC",
+      "induty_code": "465",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:34:32Z"
+    },
+    "006910": {
+      "code": "006910",
+      "corp_name": "보성파워텍",
+      "induty_code": "2511",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:34:32Z"
+    },
+    "032640": {
+      "code": "032640",
+      "corp_name": "LG유플러스",
+      "induty_code": "61220",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "61",
+      "updated_at": "2026-08-23T08:34:33Z"
+    },
+    "145020": {
+      "code": "145020",
+      "corp_name": "휴젤",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:33Z"
+    },
+    "458870": {
+      "code": "458870",
+      "corp_name": "씨어스",
+      "induty_code": "27199",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:34:33Z"
+    },
+    "017960": {
+      "code": "017960",
+      "corp_name": "한국카본",
+      "induty_code": "2512",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:34:34Z"
+    },
+    "092730": {
+      "code": "092730",
+      "corp_name": "네오팜",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:34Z"
+    },
+    "080220": {
+      "code": "080220",
+      "corp_name": "제주반도체",
+      "induty_code": "2611",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:35Z"
+    },
+    "028260": {
+      "code": "028260",
+      "corp_name": "삼성물산",
+      "induty_code": "467",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:34:35Z"
+    },
+    "403870": {
+      "code": "403870",
+      "corp_name": "HPSP",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:35Z"
+    },
+    "089970": {
+      "code": "089970",
+      "corp_name": "브이엠",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:36Z"
+    },
+    "004370": {
+      "code": "004370",
+      "corp_name": "농심",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:34:36Z"
+    },
+    "053800": {
+      "code": "053800",
+      "corp_name": "안랩",
+      "induty_code": "58221",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:34:37Z"
+    },
+    "035420": {
+      "code": "035420",
+      "corp_name": "NAVER",
+      "induty_code": "63120",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "63",
+      "updated_at": "2026-08-23T08:34:37Z"
+    },
+    "241710": {
+      "code": "241710",
+      "corp_name": "코스메카코리아",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:37Z"
+    },
+    "457370": {
+      "code": "457370",
+      "corp_name": "한켐",
+      "induty_code": "20119",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:38Z"
+    },
+    "067290": {
+      "code": "067290",
+      "corp_name": "JW신약",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:38Z"
+    },
+    "443060": {
+      "code": "443060",
+      "corp_name": "HD현대마린솔루션",
+      "induty_code": "7212",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:34:39Z"
+    },
+    "009450": {
+      "code": "009450",
+      "corp_name": "경동나비엔",
+      "induty_code": "28520",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:39Z"
+    },
+    "368770": {
+      "code": "368770",
+      "corp_name": "파이버프로",
+      "induty_code": "27219",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:34:39Z"
+    },
+    "420770": {
+      "code": "420770",
+      "corp_name": "기가비스",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:40Z"
+    },
+    "030000": {
+      "code": "030000",
+      "corp_name": "제일기획",
+      "induty_code": "71310",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "71",
+      "updated_at": "2026-08-23T08:34:40Z"
+    },
+    "213420": {
+      "code": "213420",
+      "corp_name": "덕산네오룩스",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:41Z"
+    },
+    "102710": {
+      "code": "102710",
+      "corp_name": "이엔에프테크놀로지",
+      "induty_code": "2049",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:41Z"
+    },
+    "089890": {
+      "code": "089890",
+      "corp_name": "코세스",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:41Z"
+    },
+    "037440": {
+      "code": "037440",
+      "corp_name": "희림",
+      "induty_code": "72111",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:34:42Z"
+    },
+    "005930": {
+      "code": "005930",
+      "corp_name": "삼성전자",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:42Z"
+    },
+    "043260": {
+      "code": "043260",
+      "corp_name": "성호전자",
+      "induty_code": "26291",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:43Z"
+    },
+    "119850": {
+      "code": "119850",
+      "corp_name": "지엔씨에너지",
+      "induty_code": "28111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:43Z"
+    },
+    "319660": {
+      "code": "319660",
+      "corp_name": "피에스케이",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:43Z"
+    },
+    "281820": {
+      "code": "281820",
+      "corp_name": "케이씨텍",
+      "induty_code": "272",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:34:44Z"
+    },
+    "100090": {
+      "code": "100090",
+      "corp_name": "SK오션플랜트",
+      "induty_code": "2413",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:34:44Z"
+    },
+    "469610": {
+      "code": "469610",
+      "corp_name": "이노테크",
+      "induty_code": "29299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:45Z"
+    },
+    "103140": {
+      "code": "103140",
+      "corp_name": "풍산",
+      "induty_code": "242",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:34:45Z"
+    },
+    "052460": {
+      "code": "052460",
+      "corp_name": "아이크래프트",
+      "induty_code": "620",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "62",
+      "updated_at": "2026-08-23T08:34:45Z"
+    },
+    "012750": {
+      "code": "012750",
+      "corp_name": "에스원",
+      "induty_code": "75320",
+      "ksic_대분류": {
+        "code": "N",
+        "name": "사업시설 관리, 사업 지원 및 임대 서비스업"
+      },
+      "ksic_중분류": "75",
+      "updated_at": "2026-08-23T08:34:46Z"
+    },
+    "240810": {
+      "code": "240810",
+      "corp_name": "원익IPS",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:46Z"
+    },
+    "064400": {
+      "code": "064400",
+      "corp_name": "LG씨엔에스",
+      "induty_code": "62021",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "62",
+      "updated_at": "2026-08-23T08:34:47Z"
+    },
+    "218410": {
+      "code": "218410",
+      "corp_name": "RFHIC",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:47Z"
+    },
+    "064760": {
+      "code": "064760",
+      "corp_name": "티씨케이",
+      "induty_code": "23999",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:34:47Z"
+    },
+    "005180": {
+      "code": "005180",
+      "corp_name": "빙그레",
+      "induty_code": "104",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:34:48Z"
+    },
+    "096530": {
+      "code": "096530",
+      "corp_name": "씨젠",
+      "induty_code": "2130",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:48Z"
+    },
+    "237690": {
+      "code": "237690",
+      "corp_name": "에스티팜",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:48Z"
+    },
+    "212560": {
+      "code": "212560",
+      "corp_name": "네오오토",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:49Z"
+    },
+    "033100": {
+      "code": "033100",
+      "corp_name": "제룡전기",
+      "induty_code": "2811",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:49Z"
+    },
+    "482630": {
+      "code": "482630",
+      "corp_name": "삼양엔씨켐",
+      "induty_code": "20499",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:50Z"
+    },
+    "056190": {
+      "code": "056190",
+      "corp_name": "SFA",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:50Z"
+    },
+    "298040": {
+      "code": "298040",
+      "corp_name": "효성중공업",
+      "induty_code": "281",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:34:50Z"
+    },
+    "035720": {
+      "code": "035720",
+      "corp_name": "카카오",
+      "induty_code": "63120",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "63",
+      "updated_at": "2026-08-23T08:34:51Z"
+    },
+    "322000": {
+      "code": "322000",
+      "corp_name": "HD현대에너지솔루션",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:51Z"
+    },
+    "090430": {
+      "code": "090430",
+      "corp_name": "아모레퍼시픽",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:52Z"
+    },
+    "047050": {
+      "code": "047050",
+      "corp_name": "포스코인터내셔널",
+      "induty_code": "461",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:34:52Z"
+    },
+    "031980": {
+      "code": "031980",
+      "corp_name": "피에스케이홀딩스",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:52Z"
+    },
+    "128940": {
+      "code": "128940",
+      "corp_name": "한미약품",
+      "induty_code": "21212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:53Z"
+    },
+    "459550": {
+      "code": "459550",
+      "corp_name": "알트",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:53Z"
+    },
+    "140860": {
+      "code": "140860",
+      "corp_name": "파크시스템스",
+      "induty_code": "27219",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:34:54Z"
+    },
+    "001060": {
+      "code": "001060",
+      "corp_name": "JW중외제약",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:34:54Z"
+    },
+    "425420": {
+      "code": "425420",
+      "corp_name": "티에프이",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:54Z"
+    },
+    "137400": {
+      "code": "137400",
+      "corp_name": "피엔티",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:55Z"
+    },
+    "161890": {
+      "code": "161890",
+      "corp_name": "한국콜마",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:34:55Z"
+    },
+    "108490": {
+      "code": "108490",
+      "corp_name": "로보티즈",
+      "induty_code": "29299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:34:56Z"
+    },
+    "090460": {
+      "code": "090460",
+      "corp_name": "비에이치",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:56Z"
+    },
+    "166090": {
+      "code": "166090",
+      "corp_name": "하나머티리얼즈",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:56Z"
+    },
+    "008930": {
+      "code": "008930",
+      "corp_name": "한미사이언스",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:34:57Z"
+    },
+    "251970": {
+      "code": "251970",
+      "corp_name": "펌텍코리아",
+      "induty_code": "22232",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "22",
+      "updated_at": "2026-08-23T08:34:57Z"
+    },
+    "003720": {
+      "code": "003720",
+      "corp_name": "삼영",
+      "induty_code": "2221",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "22",
+      "updated_at": "2026-08-23T08:34:58Z"
+    },
+    "051600": {
+      "code": "051600",
+      "corp_name": "한전KPS",
+      "induty_code": "42311",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "42",
+      "updated_at": "2026-08-23T08:34:58Z"
+    },
+    "002680": {
+      "code": "002680",
+      "corp_name": "한탑",
+      "induty_code": "105",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:34:58Z"
+    },
+    "033240": {
+      "code": "033240",
+      "corp_name": "자화전자",
+      "induty_code": "26292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:34:59Z"
+    },
+    "011210": {
+      "code": "011210",
+      "corp_name": "현대위아",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:34:59Z"
+    },
+    "026940": {
+      "code": "026940",
+      "corp_name": "부국철강",
+      "induty_code": "2413",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:00Z"
+    },
+    "010130": {
+      "code": "010130",
+      "corp_name": "고려아연",
+      "induty_code": "24213",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:00Z"
+    },
+    "131290": {
+      "code": "131290",
+      "corp_name": "티에스이",
+      "induty_code": "27212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:00Z"
+    },
+    "327260": {
+      "code": "327260",
+      "corp_name": "RF머트리얼즈",
+      "induty_code": "26299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:01Z"
+    },
+    "004020": {
+      "code": "004020",
+      "corp_name": "현대제철",
+      "induty_code": "2411",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:01Z"
+    },
+    "142210": {
+      "code": "142210",
+      "corp_name": "유니트론텍",
+      "induty_code": "46522",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:02Z"
+    },
+    "083450": {
+      "code": "083450",
+      "corp_name": "GST",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:02Z"
+    },
+    "014620": {
+      "code": "014620",
+      "corp_name": "성광벤드",
+      "induty_code": "24133",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:02Z"
+    },
+    "329180": {
+      "code": "329180",
+      "corp_name": "HD현대중공업",
+      "induty_code": "31113",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:35:03Z"
+    },
+    "004170": {
+      "code": "004170",
+      "corp_name": "신세계",
+      "induty_code": "47111",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:35:03Z"
+    },
+    "103590": {
+      "code": "103590",
+      "corp_name": "일진전기",
+      "induty_code": "2830",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:04Z"
+    },
+    "023530": {
+      "code": "023530",
+      "corp_name": "롯데쇼핑",
+      "induty_code": "47111",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:35:05Z"
+    },
+    "031330": {
+      "code": "031330",
+      "corp_name": "에스에이엠티",
+      "induty_code": "4659",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:05Z"
+    },
+    "126640": {
+      "code": "126640",
+      "corp_name": "화신정공",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:35:05Z"
+    },
+    "050890": {
+      "code": "050890",
+      "corp_name": "쏠리드",
+      "induty_code": "2642",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:06Z"
+    },
+    "389260": {
+      "code": "389260",
+      "corp_name": "대명에너지",
+      "induty_code": "4112",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:35:06Z"
+    },
+    "254490": {
+      "code": "254490",
+      "corp_name": "미래반도체",
+      "induty_code": "467",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:07Z"
+    },
+    "353200": {
+      "code": "353200",
+      "corp_name": "대덕전자",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:07Z"
+    },
+    "028050": {
+      "code": "028050",
+      "corp_name": "삼성E&A",
+      "induty_code": "72129",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:35:07Z"
+    },
+    "018260": {
+      "code": "018260",
+      "corp_name": "삼성에스디에스",
+      "induty_code": "62021",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "62",
+      "updated_at": "2026-08-23T08:35:08Z"
+    },
+    "388050": {
+      "code": "388050",
+      "corp_name": "지투파워",
+      "induty_code": "28123",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:08Z"
+    },
+    "181710": {
+      "code": "181710",
+      "corp_name": "NHN",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:35:09Z"
+    },
+    "098460": {
+      "code": "098460",
+      "corp_name": "고영",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:09Z"
+    },
+    "025560": {
+      "code": "025560",
+      "corp_name": "미래산업",
+      "induty_code": "27219",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:09Z"
+    },
+    "252990": {
+      "code": "252990",
+      "corp_name": "샘씨엔에스",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:10Z"
+    },
+    "080580": {
+      "code": "080580",
+      "corp_name": "오킨스전자",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:10Z"
+    },
+    "017800": {
+      "code": "017800",
+      "corp_name": "현대엘리베이터",
+      "induty_code": "29162",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:11Z"
+    },
+    "232140": {
+      "code": "232140",
+      "corp_name": "와이씨",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:11Z"
+    },
+    "045100": {
+      "code": "045100",
+      "corp_name": "한양이엔지",
+      "induty_code": "721",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:35:11Z"
+    },
+    "229640": {
+      "code": "229640",
+      "corp_name": "LS에코에너지",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:35:12Z"
+    },
+    "005490": {
+      "code": "005490",
+      "corp_name": "POSCO홀딩스",
+      "induty_code": "2411",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:12Z"
+    },
+    "001040": {
+      "code": "001040",
+      "corp_name": "CJ",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:35:13Z"
+    },
+    "120110": {
+      "code": "120110",
+      "corp_name": "코오롱인더",
+      "induty_code": "205",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:13Z"
+    },
+    "382800": {
+      "code": "382800",
+      "corp_name": "지앤비에스 에코",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:13Z"
+    },
+    "041830": {
+      "code": "041830",
+      "corp_name": "인바디",
+      "induty_code": "27199",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:14Z"
+    },
+    "092870": {
+      "code": "092870",
+      "corp_name": "엑시콘",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:14Z"
+    },
+    "417500": {
+      "code": "417500",
+      "corp_name": "제이아이테크",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:15Z"
+    },
+    "005290": {
+      "code": "005290",
+      "corp_name": "동진쎄미켐",
+      "induty_code": "20129",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:15Z"
+    },
+    "295310": {
+      "code": "295310",
+      "corp_name": "에이치브이엠",
+      "induty_code": "24219",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:15Z"
+    },
+    "460930": {
+      "code": "460930",
+      "corp_name": "현대힘스",
+      "induty_code": "31114",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:35:16Z"
+    },
+    "060250": {
+      "code": "060250",
+      "corp_name": "NHN KCP",
+      "induty_code": "661",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:35:16Z"
+    },
+    "280360": {
+      "code": "280360",
+      "corp_name": "롯데웰푸드",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:35:17Z"
+    },
+    "290550": {
+      "code": "290550",
+      "corp_name": "디케이티",
+      "induty_code": "26224",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:17Z"
+    },
+    "452280": {
+      "code": "452280",
+      "corp_name": "한선엔지니어링",
+      "induty_code": "259",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:35:17Z"
+    },
+    "068760": {
+      "code": "068760",
+      "corp_name": "셀트리온제약",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:35:18Z"
+    },
+    "460940": {
+      "code": "460940",
+      "corp_name": "피앤에스로보틱스",
+      "induty_code": "27199",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:18Z"
+    },
+    "009150": {
+      "code": "009150",
+      "corp_name": "삼성전기",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:19Z"
+    },
+    "000250": {
+      "code": "000250",
+      "corp_name": "삼천당제약",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:35:19Z"
+    },
+    "033160": {
+      "code": "033160",
+      "corp_name": "엠케이전자",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:19Z"
+    },
+    "000390": {
+      "code": "000390",
+      "corp_name": "SP삼화",
+      "induty_code": "20411",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:20Z"
+    },
+    "007810": {
+      "code": "007810",
+      "corp_name": "코리아써키트",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:20Z"
+    },
+    "019210": {
+      "code": "019210",
+      "corp_name": "와이지-원",
+      "induty_code": "25934",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:35:21Z"
+    },
+    "084370": {
+      "code": "084370",
+      "corp_name": "유진테크",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:21Z"
+    },
+    "170920": {
+      "code": "170920",
+      "corp_name": "엘티씨",
+      "induty_code": "20119",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:21Z"
+    },
+    "357780": {
+      "code": "357780",
+      "corp_name": "솔브레인",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:22Z"
+    },
+    "282330": {
+      "code": "282330",
+      "corp_name": "BGF리테일",
+      "induty_code": "47122",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:35:22Z"
+    },
+    "001430": {
+      "code": "001430",
+      "corp_name": "세아베스틸지주",
+      "induty_code": "2411",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:23Z"
+    },
+    "003280": {
+      "code": "003280",
+      "corp_name": "흥아해운",
+      "induty_code": "50112",
+      "ksic_대분류": {
+        "code": "H",
+        "name": "운수 및 창고업"
+      },
+      "ksic_중분류": "50",
+      "updated_at": "2026-08-23T08:35:23Z"
+    },
+    "007070": {
+      "code": "007070",
+      "corp_name": "GS리테일",
+      "induty_code": "47122",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:35:23Z"
+    },
+    "214370": {
+      "code": "214370",
+      "corp_name": "케어젠",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:35:24Z"
+    },
+    "237880": {
+      "code": "237880",
+      "corp_name": "클리오",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:24Z"
+    },
+    "100790": {
+      "code": "100790",
+      "corp_name": "미래에셋벤처투자",
+      "induty_code": "649",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:35:25Z"
+    },
+    "307950": {
+      "code": "307950",
+      "corp_name": "현대오토에버",
+      "induty_code": "582",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:35:25Z"
+    },
+    "204320": {
+      "code": "204320",
+      "corp_name": "HL만도",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:35:26Z"
+    },
+    "417840": {
+      "code": "417840",
+      "corp_name": "저스템",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:26Z"
+    },
+    "052690": {
+      "code": "052690",
+      "corp_name": "한전기술",
+      "induty_code": "72129",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:35:26Z"
+    },
+    "052710": {
+      "code": "052710",
+      "corp_name": "아모텍",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:27Z"
+    },
+    "160980": {
+      "code": "160980",
+      "corp_name": "싸이맥스",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:27Z"
+    },
+    "219130": {
+      "code": "219130",
+      "corp_name": "타이거일렉",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:28Z"
+    },
+    "038500": {
+      "code": "038500",
+      "corp_name": "삼표시멘트",
+      "induty_code": "239",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:35:28Z"
+    },
+    "138360": {
+      "code": "138360",
+      "corp_name": "앤로보틱스",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:28Z"
+    },
+    "093320": {
+      "code": "093320",
+      "corp_name": "케이아이엔엑스",
+      "induty_code": "63112",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "63",
+      "updated_at": "2026-08-23T08:35:29Z"
+    },
+    "039440": {
+      "code": "039440",
+      "corp_name": "에스티아이",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:29Z"
+    },
+    "036930": {
+      "code": "036930",
+      "corp_name": "주성엔지니어링",
+      "induty_code": "29229",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:30Z"
+    },
+    "010120": {
+      "code": "010120",
+      "corp_name": "엘에스일렉트릭",
+      "induty_code": "28121",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:30Z"
+    },
+    "093370": {
+      "code": "093370",
+      "corp_name": "후성",
+      "induty_code": "20129",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:30Z"
+    },
+    "000500": {
+      "code": "000500",
+      "corp_name": "가온전선",
+      "induty_code": "28302",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:31Z"
+    },
+    "489790": {
+      "code": "489790",
+      "corp_name": "한화비전",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:31Z"
+    },
+    "085910": {
+      "code": "085910",
+      "corp_name": "네오티스",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:35:32Z"
+    },
+    "347700": {
+      "code": "347700",
+      "corp_name": "스피어",
+      "induty_code": "58222",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:35:32Z"
+    },
+    "112610": {
+      "code": "112610",
+      "corp_name": "씨에스윈드",
+      "induty_code": "2511",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:35:32Z"
+    },
+    "195870": {
+      "code": "195870",
+      "corp_name": "해성디에스",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:33Z"
+    },
+    "049630": {
+      "code": "049630",
+      "corp_name": "재영솔루텍",
+      "induty_code": "27309",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:33Z"
+    },
+    "066570": {
+      "code": "066570",
+      "corp_name": "LG전자",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:34Z"
+    },
+    "058610": {
+      "code": "058610",
+      "corp_name": "에스피지",
+      "induty_code": "28111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:34Z"
+    },
+    "001440": {
+      "code": "001440",
+      "corp_name": "대한전선",
+      "induty_code": "28302",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:34Z"
+    },
+    "126730": {
+      "code": "126730",
+      "corp_name": "코칩",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:35Z"
+    },
+    "247540": {
+      "code": "247540",
+      "corp_name": "에코프로비엠",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:35Z"
+    },
+    "144960": {
+      "code": "144960",
+      "corp_name": "뉴파워프라즈마",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:36Z"
+    },
+    "059120": {
+      "code": "059120",
+      "corp_name": "아진엑스텍",
+      "induty_code": "2611",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:36Z"
+    },
+    "377300": {
+      "code": "377300",
+      "corp_name": "카카오페이",
+      "induty_code": "66199",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:35:36Z"
+    },
+    "356680": {
+      "code": "356680",
+      "corp_name": "엑스게이트",
+      "induty_code": "58221",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:35:37Z"
+    },
+    "060370": {
+      "code": "060370",
+      "corp_name": "LS마린솔루션",
+      "induty_code": "423",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "42",
+      "updated_at": "2026-08-23T08:35:37Z"
+    },
+    "222080": {
+      "code": "222080",
+      "corp_name": "SFA넥셀",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:38Z"
+    },
+    "105840": {
+      "code": "105840",
+      "corp_name": "우진",
+      "induty_code": "27216",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:38Z"
+    },
+    "006340": {
+      "code": "006340",
+      "corp_name": "대원전선",
+      "induty_code": "28302",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:38Z"
+    },
+    "001820": {
+      "code": "001820",
+      "corp_name": "삼화콘덴서공업",
+      "induty_code": "26291",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:39Z"
+    },
+    "017670": {
+      "code": "017670",
+      "corp_name": "SK텔레콤",
+      "induty_code": "61220",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "61",
+      "updated_at": "2026-08-23T08:35:39Z"
+    },
+    "373220": {
+      "code": "373220",
+      "corp_name": "LG에너지솔루션",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:39Z"
+    },
+    "332570": {
+      "code": "332570",
+      "corp_name": "PS일렉트로닉스",
+      "induty_code": "26299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:40Z"
+    },
+    "319400": {
+      "code": "319400",
+      "corp_name": "현대무벡스",
+      "induty_code": "291",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:40Z"
+    },
+    "017900": {
+      "code": "017900",
+      "corp_name": "광전자",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:41Z"
+    },
+    "439090": {
+      "code": "439090",
+      "corp_name": "마녀공장",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:41Z"
+    },
+    "066430": {
+      "code": "066430",
+      "corp_name": "아이로보틱스",
+      "induty_code": "467",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:42Z"
+    },
+    "001740": {
+      "code": "001740",
+      "corp_name": "SK네트웍스",
+      "induty_code": "467",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:42Z"
+    },
+    "003160": {
+      "code": "003160",
+      "corp_name": "디아이",
+      "induty_code": "27212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:35:42Z"
+    },
+    "099320": {
+      "code": "099320",
+      "corp_name": "쎄트렉아이",
+      "induty_code": "3131",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:35:43Z"
+    },
+    "232680": {
+      "code": "232680",
+      "corp_name": "라온로보틱스",
+      "induty_code": "29280",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:43Z"
+    },
+    "011070": {
+      "code": "011070",
+      "corp_name": "LG이노텍",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:44Z"
+    },
+    "024840": {
+      "code": "024840",
+      "corp_name": "KBI메탈",
+      "induty_code": "242",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:44Z"
+    },
+    "264850": {
+      "code": "264850",
+      "corp_name": "이랜시스",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:44Z"
+    },
+    "044490": {
+      "code": "044490",
+      "corp_name": "태웅",
+      "induty_code": "25912",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:35:45Z"
+    },
+    "298020": {
+      "code": "298020",
+      "corp_name": "효성티앤씨",
+      "induty_code": "2050",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:45Z"
+    },
+    "091580": {
+      "code": "091580",
+      "corp_name": "상신이디피",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:46Z"
+    },
+    "003670": {
+      "code": "003670",
+      "corp_name": "포스코퓨처엠",
+      "induty_code": "282",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:46Z"
+    },
+    "267270": {
+      "code": "267270",
+      "corp_name": "HD건설기계",
+      "induty_code": "29241",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:46Z"
+    },
+    "413630": {
+      "code": "413630",
+      "corp_name": "씨피시스템",
+      "induty_code": "222",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "22",
+      "updated_at": "2026-08-23T08:35:47Z"
+    },
+    "189300": {
+      "code": "189300",
+      "corp_name": "인텔리안테크",
+      "induty_code": "26429",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:47Z"
+    },
+    "004310": {
+      "code": "004310",
+      "corp_name": "현대약품",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:35:48Z"
+    },
+    "162300": {
+      "code": "162300",
+      "corp_name": "신스틸",
+      "induty_code": "241",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:35:48Z"
+    },
+    "234340": {
+      "code": "234340",
+      "corp_name": "헥토파이낸셜",
+      "induty_code": "661",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:35:48Z"
+    },
+    "263800": {
+      "code": "263800",
+      "corp_name": "데이타솔루션",
+      "induty_code": "465",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:49Z"
+    },
+    "437730": {
+      "code": "437730",
+      "corp_name": "삼현",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:35:49Z"
+    },
+    "330860": {
+      "code": "330860",
+      "corp_name": "네패스아크",
+      "induty_code": "739",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "73",
+      "updated_at": "2026-08-23T08:35:50Z"
+    },
+    "022100": {
+      "code": "022100",
+      "corp_name": "포스코DX",
+      "induty_code": "72129",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:35:50Z"
+    },
+    "362320": {
+      "code": "362320",
+      "corp_name": "청담글로벌",
+      "induty_code": "46443",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:35:50Z"
+    },
+    "383310": {
+      "code": "383310",
+      "corp_name": "에코프로에이치엔",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:51Z"
+    },
+    "125490": {
+      "code": "125490",
+      "corp_name": "한라캐스트",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:35:51Z"
+    },
+    "272210": {
+      "code": "272210",
+      "corp_name": "한화시스템",
+      "induty_code": "26299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:52Z"
+    },
+    "078600": {
+      "code": "078600",
+      "corp_name": "대주전자재료",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:52Z"
+    },
+    "241560": {
+      "code": "241560",
+      "corp_name": "두산밥캣",
+      "induty_code": "29241",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:52Z"
+    },
+    "004710": {
+      "code": "004710",
+      "corp_name": "한솔테크닉스",
+      "induty_code": "26299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:53Z"
+    },
+    "078350": {
+      "code": "078350",
+      "corp_name": "한양디지텍",
+      "induty_code": "2611",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:53Z"
+    },
+    "200470": {
+      "code": "200470",
+      "corp_name": "에이팩트",
+      "induty_code": "261",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:54Z"
+    },
+    "010950": {
+      "code": "010950",
+      "corp_name": "S-Oil",
+      "induty_code": "19210",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "19",
+      "updated_at": "2026-08-23T08:35:54Z"
+    },
+    "051910": {
+      "code": "051910",
+      "corp_name": "LG화학",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:54Z"
+    },
+    "051900": {
+      "code": "051900",
+      "corp_name": "LG생활건강",
+      "induty_code": "20422",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:55Z"
+    },
+    "025320": {
+      "code": "025320",
+      "corp_name": "시노펙스",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:55Z"
+    },
+    "285130": {
+      "code": "285130",
+      "corp_name": "SK케미칼",
+      "induty_code": "20202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:35:56Z"
+    },
+    "065350": {
+      "code": "065350",
+      "corp_name": "신성델타테크",
+      "induty_code": "28519",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:56Z"
+    },
+    "034020": {
+      "code": "034020",
+      "corp_name": "두산에너빌리티",
+      "induty_code": "29119",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:56Z"
+    },
+    "089030": {
+      "code": "089030",
+      "corp_name": "테크윙",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:57Z"
+    },
+    "074600": {
+      "code": "074600",
+      "corp_name": "원익QnC",
+      "induty_code": "2312",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:35:57Z"
+    },
+    "900340": {
+      "code": "900340",
+      "corp_name": "윙입푸드",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:35:58Z"
+    },
+    "125020": {
+      "code": "125020",
+      "corp_name": "티씨머티리얼즈",
+      "induty_code": "283",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:35:58Z"
+    },
+    "253590": {
+      "code": "253590",
+      "corp_name": "네오셈",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:35:58Z"
+    },
+    "108860": {
+      "code": "108860",
+      "corp_name": "셀바스AI",
+      "induty_code": "5822",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:35:59Z"
+    },
+    "388210": {
+      "code": "388210",
+      "corp_name": "씨엠티엑스",
+      "induty_code": "26299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:35:59Z"
+    },
+    "006280": {
+      "code": "006280",
+      "corp_name": "녹십자",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:00Z"
+    },
+    "096770": {
+      "code": "096770",
+      "corp_name": "SK이노베이션",
+      "induty_code": "192",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "19",
+      "updated_at": "2026-08-23T08:36:00Z"
+    },
+    "018880": {
+      "code": "018880",
+      "corp_name": "한온시스템",
+      "induty_code": "29172",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:00Z"
+    },
+    "457190": {
+      "code": "457190",
+      "corp_name": "이수스페셜티케미컬",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:01Z"
+    },
+    "086520": {
+      "code": "086520",
+      "corp_name": "에코프로",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:01Z"
+    },
+    "277810": {
+      "code": "277810",
+      "corp_name": "레인보우로보틱스",
+      "induty_code": "29280",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:02Z"
+    },
+    "122640": {
+      "code": "122640",
+      "corp_name": "예스티",
+      "induty_code": "29271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:02Z"
+    },
+    "281740": {
+      "code": "281740",
+      "corp_name": "레이크머티리얼즈",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:02Z"
+    },
+    "000210": {
+      "code": "000210",
+      "corp_name": "DL",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:03Z"
+    },
+    "004990": {
+      "code": "004990",
+      "corp_name": "롯데지주",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:03Z"
+    },
+    "097950": {
+      "code": "097950",
+      "corp_name": "CJ제일제당",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:36:04Z"
+    },
+    "123690": {
+      "code": "123690",
+      "corp_name": "한국화장품",
+      "induty_code": "46443",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:36:04Z"
+    },
+    "352820": {
+      "code": "352820",
+      "corp_name": "하이브",
+      "induty_code": "592",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "59",
+      "updated_at": "2026-08-23T08:36:04Z"
+    },
+    "058730": {
+      "code": "058730",
+      "corp_name": "다스코",
+      "induty_code": "25112",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:36:05Z"
+    },
+    "053260": {
+      "code": "053260",
+      "corp_name": "금강철강",
+      "induty_code": "2419",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:36:05Z"
+    },
+    "450080": {
+      "code": "450080",
+      "corp_name": "에코프로머티",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:06Z"
+    },
+    "010780": {
+      "code": "010780",
+      "corp_name": "아이에스동서",
+      "induty_code": "2332",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:36:06Z"
+    },
+    "030530": {
+      "code": "030530",
+      "corp_name": "원익홀딩스",
+      "induty_code": "201",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:07Z"
+    },
+    "112040": {
+      "code": "112040",
+      "corp_name": "위메이드",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:07Z"
+    },
+    "228670": {
+      "code": "228670",
+      "corp_name": "레이",
+      "induty_code": "27111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:36:07Z"
+    },
+    "180640": {
+      "code": "180640",
+      "corp_name": "한진칼",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:08Z"
+    },
+    "456040": {
+      "code": "456040",
+      "corp_name": "OCI",
+      "induty_code": "20129",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:08Z"
+    },
+    "222800": {
+      "code": "222800",
+      "corp_name": "심텍",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:09Z"
+    },
+    "290650": {
+      "code": "290650",
+      "corp_name": "엘앤씨바이오",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:09Z"
+    },
+    "441270": {
+      "code": "441270",
+      "corp_name": "파인엠텍",
+      "induty_code": "26299",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:09Z"
+    },
+    "064260": {
+      "code": "064260",
+      "corp_name": "다날",
+      "induty_code": "582",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:10Z"
+    },
+    "011330": {
+      "code": "011330",
+      "corp_name": "유니켐",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:36:10Z"
+    },
+    "077360": {
+      "code": "077360",
+      "corp_name": "덕산하이메탈",
+      "induty_code": "261",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:11Z"
+    },
+    "396300": {
+      "code": "396300",
+      "corp_name": "세아메카닉스",
+      "induty_code": "259",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:36:11Z"
+    },
+    "033790": {
+      "code": "033790",
+      "corp_name": "피노",
+      "induty_code": "282",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:11Z"
+    },
+    "024060": {
+      "code": "024060",
+      "corp_name": "흥구석유",
+      "induty_code": "46712",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:36:12Z"
+    },
+    "005070": {
+      "code": "005070",
+      "corp_name": "코스모신소재",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:12Z"
+    },
+    "203400": {
+      "code": "203400",
+      "corp_name": "에이비온",
+      "induty_code": "70113",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:13Z"
+    },
+    "079650": {
+      "code": "079650",
+      "corp_name": "서산",
+      "induty_code": "23322",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:36:13Z"
+    },
+    "126340": {
+      "code": "126340",
+      "corp_name": "비나텍",
+      "induty_code": "282",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:13Z"
+    },
+    "011170": {
+      "code": "011170",
+      "corp_name": "롯데케미칼",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:14Z"
+    },
+    "355150": {
+      "code": "355150",
+      "corp_name": "코스텍시스",
+      "induty_code": "261",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:14Z"
+    },
+    "011930": {
+      "code": "011930",
+      "corp_name": "신성이엔지",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:15Z"
+    },
+    "131970": {
+      "code": "131970",
+      "corp_name": "두산테스나",
+      "induty_code": "739",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "73",
+      "updated_at": "2026-08-23T08:36:15Z"
+    },
+    "217590": {
+      "code": "217590",
+      "corp_name": "티엠씨",
+      "induty_code": "2830",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:15Z"
+    },
+    "448900": {
+      "code": "448900",
+      "corp_name": "한국피아이엠",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:36:16Z"
+    },
+    "009830": {
+      "code": "009830",
+      "corp_name": "한화솔루션",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:16Z"
+    },
+    "087010": {
+      "code": "087010",
+      "corp_name": "펩트론",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:17Z"
+    },
+    "298380": {
+      "code": "298380",
+      "corp_name": "에이비엘바이오",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:17Z"
+    },
+    "010060": {
+      "code": "010060",
+      "corp_name": "OCI홀딩스",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:17Z"
+    },
+    "466100": {
+      "code": "466100",
+      "corp_name": "클로봇",
+      "induty_code": "58221",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:18Z"
+    },
+    "228340": {
+      "code": "228340",
+      "corp_name": "동양파일",
+      "induty_code": "23325",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:36:18Z"
+    },
+    "101730": {
+      "code": "101730",
+      "corp_name": "위메이드맥스",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:19Z"
+    },
+    "189330": {
+      "code": "189330",
+      "corp_name": "씨이랩",
+      "induty_code": "582",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:19Z"
+    },
+    "032580": {
+      "code": "032580",
+      "corp_name": "피델릭스",
+      "induty_code": "2611",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:19Z"
+    },
+    "020150": {
+      "code": "020150",
+      "corp_name": "롯데에너지머티리얼즈",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:20Z"
+    },
+    "041960": {
+      "code": "041960",
+      "corp_name": "코미팜",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:20Z"
+    },
+    "141080": {
+      "code": "141080",
+      "corp_name": "리가켐바이오",
+      "induty_code": "70113",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:21Z"
+    },
+    "463020": {
+      "code": "463020",
+      "corp_name": "뉴엔AI",
+      "induty_code": "58222",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:21Z"
+    },
+    "491000": {
+      "code": "491000",
+      "corp_name": "리브스메드",
+      "induty_code": "27112",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:36:21Z"
+    },
+    "372910": {
+      "code": "372910",
+      "corp_name": "한컴라이프케어",
+      "induty_code": "27199",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:36:22Z"
+    },
+    "215790": {
+      "code": "215790",
+      "corp_name": "이노인스트루먼트",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:22Z"
+    },
+    "263750": {
+      "code": "263750",
+      "corp_name": "펄어비스",
+      "induty_code": "58211",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:23Z"
+    },
+    "028300": {
+      "code": "028300",
+      "corp_name": "HLB",
+      "induty_code": "213",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:23Z"
+    },
+    "005360": {
+      "code": "005360",
+      "corp_name": "모나미",
+      "induty_code": "46452",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:36:23Z"
+    },
+    "347850": {
+      "code": "347850",
+      "corp_name": "디앤디파마텍",
+      "induty_code": "70113",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:24Z"
+    },
+    "131400": {
+      "code": "131400",
+      "corp_name": "이브이첨단소재",
+      "induty_code": "2622",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:24Z"
+    },
+    "039980": {
+      "code": "039980",
+      "corp_name": "폴라리스AI",
+      "induty_code": "620",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "62",
+      "updated_at": "2026-08-23T08:36:25Z"
+    },
+    "230240": {
+      "code": "230240",
+      "corp_name": "에치에프알",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:25Z"
+    },
+    "006400": {
+      "code": "006400",
+      "corp_name": "삼성SDI",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:25Z"
+    },
+    "226340": {
+      "code": "226340",
+      "corp_name": "본느",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:26Z"
+    },
+    "454910": {
+      "code": "454910",
+      "corp_name": "두산로보틱스",
+      "induty_code": "2928",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:26Z"
+    },
+    "138080": {
+      "code": "138080",
+      "corp_name": "오이솔루션",
+      "induty_code": "26410",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:27Z"
+    },
+    "009420": {
+      "code": "009420",
+      "corp_name": "한올바이오파마",
+      "induty_code": "212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:27Z"
+    },
+    "348370": {
+      "code": "348370",
+      "corp_name": "엔켐",
+      "induty_code": "20119",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:28Z"
+    },
+    "488900": {
+      "code": "488900",
+      "corp_name": "비츠로넥스텍",
+      "induty_code": "31322",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:36:28Z"
+    },
+    "036540": {
+      "code": "036540",
+      "corp_name": "SFA반도체",
+      "induty_code": "2611",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:28Z"
+    },
+    "475830": {
+      "code": "475830",
+      "corp_name": "오름테라퓨틱",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:29Z"
+    },
+    "046890": {
+      "code": "046890",
+      "corp_name": "서울반도체",
+      "induty_code": "2612",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:29Z"
+    },
+    "025900": {
+      "code": "025900",
+      "corp_name": "동화기업",
+      "induty_code": "16212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "16",
+      "updated_at": "2026-08-23T08:36:30Z"
+    },
+    "032820": {
+      "code": "032820",
+      "corp_name": "우리기술",
+      "induty_code": "281",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:30Z"
+    },
+    "069540": {
+      "code": "069540",
+      "corp_name": "빛과전자",
+      "induty_code": "264",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:30Z"
+    },
+    "090710": {
+      "code": "090710",
+      "corp_name": "휴림로봇",
+      "induty_code": "29280",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:31Z"
+    },
+    "174900": {
+      "code": "174900",
+      "corp_name": "앱클론",
+      "induty_code": "213",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:31Z"
+    },
+    "468530": {
+      "code": "468530",
+      "corp_name": "프로티나",
+      "induty_code": "701",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:32Z"
+    },
+    "018000": {
+      "code": "018000",
+      "corp_name": "유니슨",
+      "induty_code": "29119",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:32Z"
+    },
+    "046970": {
+      "code": "046970",
+      "corp_name": "우리로",
+      "induty_code": "467",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "46",
+      "updated_at": "2026-08-23T08:36:32Z"
+    },
+    "187660": {
+      "code": "187660",
+      "corp_name": "페니트리움바이오",
+      "induty_code": "70113",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:33Z"
+    },
+    "490470": {
+      "code": "490470",
+      "corp_name": "세미파이브",
+      "induty_code": "721",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "72",
+      "updated_at": "2026-08-23T08:36:33Z"
+    },
+    "314130": {
+      "code": "314130",
+      "corp_name": "지놈앤컴퍼니",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:34Z"
+    },
+    "323280": {
+      "code": "323280",
+      "corp_name": "태성",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:34Z"
+    },
+    "007390": {
+      "code": "007390",
+      "corp_name": "네이처셀",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:34Z"
+    },
+    "445680": {
+      "code": "445680",
+      "corp_name": "큐리옥스바이오시스템즈",
+      "induty_code": "271",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:36:35Z"
+    },
+    "127120": {
+      "code": "127120",
+      "corp_name": "제이에스링크",
+      "induty_code": "70111",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:35Z"
+    },
+    "090360": {
+      "code": "090360",
+      "corp_name": "로보스타",
+      "induty_code": "29280",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:36Z"
+    },
+    "310210": {
+      "code": "310210",
+      "corp_name": "보로노이",
+      "induty_code": "701",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:36Z"
+    },
+    "007820": {
+      "code": "007820",
+      "corp_name": "엠엑스로보틱스",
+      "induty_code": "29169",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:36Z"
+    },
+    "225190": {
+      "code": "225190",
+      "corp_name": "LK삼양",
+      "induty_code": "273",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:36:37Z"
+    },
+    "048410": {
+      "code": "048410",
+      "corp_name": "현대바이오",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:37Z"
+    },
+    "062970": {
+      "code": "062970",
+      "corp_name": "한국첨단소재",
+      "induty_code": "26410",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:38Z"
+    },
+    "456160": {
+      "code": "456160",
+      "corp_name": "지투지바이오",
+      "induty_code": "21212",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:36:38Z"
+    },
+    "293490": {
+      "code": "293490",
+      "corp_name": "카카오게임즈",
+      "induty_code": "5821",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:38Z"
+    },
+    "318060": {
+      "code": "318060",
+      "corp_name": "그래피",
+      "induty_code": "20202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:39Z"
+    },
+    "148780": {
+      "code": "148780",
+      "corp_name": "비큐AI",
+      "induty_code": "58222",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:39Z"
+    },
+    "475040": {
+      "code": "475040",
+      "corp_name": "스트라드비젼",
+      "induty_code": "582",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:40Z"
+    },
+    "304100": {
+      "code": "304100",
+      "corp_name": "솔트룩스",
+      "induty_code": "58222",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:40Z"
+    },
+    "320000": {
+      "code": "320000",
+      "corp_name": "한울반도체",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:40Z"
+    },
+    "064290": {
+      "code": "064290",
+      "corp_name": "인텍플러스",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:41Z"
+    },
+    "321370": {
+      "code": "321370",
+      "corp_name": "센서뷰",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:41Z"
+    },
+    "417200": {
+      "code": "417200",
+      "corp_name": "LS머트리얼즈",
+      "induty_code": "26291",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:42Z"
+    },
+    "406820": {
+      "code": "406820",
+      "corp_name": "뷰티스킨",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:42Z"
+    },
+    "289080": {
+      "code": "289080",
+      "corp_name": "SV인베스트먼트",
+      "induty_code": "649",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:42Z"
+    },
+    "049080": {
+      "code": "049080",
+      "corp_name": "기가레인",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:43Z"
+    },
+    "322310": {
+      "code": "322310",
+      "corp_name": "오로스테크놀로지",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:43Z"
+    },
+    "484810": {
+      "code": "484810",
+      "corp_name": "티엑스알로보틱스",
+      "induty_code": "291",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:44Z"
+    },
+    "115180": {
+      "code": "115180",
+      "corp_name": "큐리언트",
+      "induty_code": "70113",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "70",
+      "updated_at": "2026-08-23T08:36:44Z"
+    },
+    "056080": {
+      "code": "056080",
+      "corp_name": "유진로봇",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:44Z"
+    },
+    "160190": {
+      "code": "160190",
+      "corp_name": "하이젠알앤엠",
+      "induty_code": "28111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:36:45Z"
+    },
+    "036810": {
+      "code": "036810",
+      "corp_name": "에프에스티",
+      "induty_code": "2629",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:45Z"
+    },
+    "389500": {
+      "code": "389500",
+      "corp_name": "에스비비테크",
+      "induty_code": "291",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:46Z"
+    },
+    "328130": {
+      "code": "328130",
+      "corp_name": "루닛",
+      "induty_code": "58222",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "58",
+      "updated_at": "2026-08-23T08:36:46Z"
+    },
+    "204270": {
+      "code": "204270",
+      "corp_name": "제이앤티씨",
+      "induty_code": "262",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:46Z"
+    },
+    "006110": {
+      "code": "006110",
+      "corp_name": "삼아알미늄",
+      "induty_code": "24222",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "24",
+      "updated_at": "2026-08-23T08:36:47Z"
+    },
+    "456010": {
+      "code": "456010",
+      "corp_name": "아이씨티케이",
+      "induty_code": "261",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:47Z"
+    },
+    "159010": {
+      "code": "159010",
+      "corp_name": "아스플로",
+      "induty_code": "29133",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:48Z"
+    },
+    "399720": {
+      "code": "399720",
+      "corp_name": "가온칩스",
+      "induty_code": "26112",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:48Z"
+    },
+    "015760": {
+      "code": "015760",
+      "corp_name": "한국전력공사",
+      "induty_code": "35120",
+      "ksic_대분류": {
+        "code": "D",
+        "name": "전기, 가스, 증기 및 공기조절 공급업"
+      },
+      "ksic_중분류": "35",
+      "updated_at": "2026-08-23T08:36:48Z"
+    },
+    "124500": {
+      "code": "124500",
+      "corp_name": "아이티센글로벌",
+      "induty_code": "62021",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "62",
+      "updated_at": "2026-08-23T08:36:49Z"
+    },
+    "059090": {
+      "code": "059090",
+      "corp_name": "미코",
+      "induty_code": "261",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:49Z"
+    },
+    "064350": {
+      "code": "064350",
+      "corp_name": "현대로템",
+      "induty_code": "31910",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:36:50Z"
+    },
+    "053700": {
+      "code": "053700",
+      "corp_name": "삼보모터스",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:36:50Z"
+    },
+    "039490": {
+      "code": "039490",
+      "corp_name": "키움증권",
+      "induty_code": "66121",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:36:50Z"
+    },
+    "034220": {
+      "code": "034220",
+      "corp_name": "LG디스플레이",
+      "induty_code": "2621",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:51Z"
+    },
+    "082740": {
+      "code": "082740",
+      "corp_name": "한화엔진",
+      "induty_code": "29111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:51Z"
+    },
+    "042660": {
+      "code": "042660",
+      "corp_name": "한화오션",
+      "induty_code": "3111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:36:52Z"
+    },
+    "192820": {
+      "code": "192820",
+      "corp_name": "코스맥스",
+      "induty_code": "20423",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:52Z"
+    },
+    "077970": {
+      "code": "077970",
+      "corp_name": "STX엔진",
+      "induty_code": "29111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:52Z"
+    },
+    "198440": {
+      "code": "198440",
+      "corp_name": "강동씨앤엘",
+      "induty_code": "233",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "23",
+      "updated_at": "2026-08-23T08:36:53Z"
+    },
+    "006360": {
+      "code": "006360",
+      "corp_name": "GS건설",
+      "induty_code": "4111",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:36:53Z"
+    },
+    "067310": {
+      "code": "067310",
+      "corp_name": "하나마이크론",
+      "induty_code": "2611",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:36:54Z"
+    },
+    "003530": {
+      "code": "003530",
+      "corp_name": "한화투자증권",
+      "induty_code": "66121",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:36:54Z"
+    },
+    "012450": {
+      "code": "012450",
+      "corp_name": "한화에어로스페이스",
+      "induty_code": "31321",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:36:54Z"
+    },
+    "010140": {
+      "code": "010140",
+      "corp_name": "삼성중공업",
+      "induty_code": "3111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:36:55Z"
+    },
+    "006260": {
+      "code": "006260",
+      "corp_name": "LS",
+      "induty_code": "64992",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:55Z"
+    },
+    "006800": {
+      "code": "006800",
+      "corp_name": "미래에셋증권",
+      "induty_code": "66121",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "66",
+      "updated_at": "2026-08-23T08:36:56Z"
+    },
+    "089860": {
+      "code": "089860",
+      "corp_name": "롯데렌탈",
+      "induty_code": "76110",
+      "ksic_대분류": {
+        "code": "N",
+        "name": "사업시설 관리, 사업 지원 및 임대 서비스업"
+      },
+      "ksic_중분류": "76",
+      "updated_at": "2026-08-23T08:36:56Z"
+    },
+    "002990": {
+      "code": "002990",
+      "corp_name": "금호건설",
+      "induty_code": "41112",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:36:56Z"
+    },
+    "097230": {
+      "code": "097230",
+      "corp_name": "HJ중공업",
+      "induty_code": "41221",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:36:57Z"
+    },
+    "003490": {
+      "code": "003490",
+      "corp_name": "대한항공",
+      "induty_code": "511",
+      "ksic_대분류": {
+        "code": "H",
+        "name": "운수 및 창고업"
+      },
+      "ksic_중분류": "51",
+      "updated_at": "2026-08-23T08:36:57Z"
+    },
+    "298000": {
+      "code": "298000",
+      "corp_name": "효성화학",
+      "induty_code": "201",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:36:58Z"
+    },
+    "323410": {
+      "code": "323410",
+      "corp_name": "카카오뱅크",
+      "induty_code": "64121",
+      "ksic_대분류": {
+        "code": "K",
+        "name": "금융 및 보험업"
+      },
+      "ksic_중분류": "64",
+      "updated_at": "2026-08-23T08:36:58Z"
+    },
+    "003680": {
+      "code": "003680",
+      "corp_name": "한성기업",
+      "induty_code": "10211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:36:58Z"
+    },
+    "083650": {
+      "code": "083650",
+      "corp_name": "비에이치아이",
+      "induty_code": "29176",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:36:59Z"
+    },
+    "032350": {
+      "code": "032350",
+      "corp_name": "롯데관광개발",
+      "induty_code": "75210",
+      "ksic_대분류": {
+        "code": "N",
+        "name": "사업시설 관리, 사업 지원 및 임대 서비스업"
+      },
+      "ksic_중분류": "75",
+      "updated_at": "2026-08-23T08:36:59Z"
+    },
+    "475150": {
+      "code": "475150",
+      "corp_name": "SK이터닉스",
+      "induty_code": "411",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:37:00Z"
+    },
+    "079550": {
+      "code": "079550",
+      "corp_name": "LIG디펜스앤에어로스페이스",
+      "induty_code": "25200",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:37:00Z"
+    },
+    "000490": {
+      "code": "000490",
+      "corp_name": "대동",
+      "induty_code": "29210",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:37:00Z"
+    },
+    "001260": {
+      "code": "001260",
+      "corp_name": "남광토건",
+      "induty_code": "41221",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:37:01Z"
+    },
+    "419050": {
+      "code": "419050",
+      "corp_name": "삼기에너지솔루션즈",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:37:01Z"
+    },
+    "036460": {
+      "code": "036460",
+      "corp_name": "한국가스공사",
+      "induty_code": "35200",
+      "ksic_대분류": {
+        "code": "D",
+        "name": "전기, 가스, 증기 및 공기조절 공급업"
+      },
+      "ksic_중분류": "35",
+      "updated_at": "2026-08-23T08:37:02Z"
+    },
+    "010820": {
+      "code": "010820",
+      "corp_name": "퍼스텍",
+      "induty_code": "252",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "25",
+      "updated_at": "2026-08-23T08:37:02Z"
+    },
+    "047810": {
+      "code": "047810",
+      "corp_name": "한국항공우주",
+      "induty_code": "31311",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "31",
+      "updated_at": "2026-08-23T08:37:02Z"
+    },
+    "008770": {
+      "code": "008770",
+      "corp_name": "호텔신라",
+      "induty_code": "47859",
+      "ksic_대분류": {
+        "code": "G",
+        "name": "도매 및 소매업"
+      },
+      "ksic_중분류": "47",
+      "updated_at": "2026-08-23T08:37:03Z"
+    },
+    "178320": {
+      "code": "178320",
+      "corp_name": "서진시스템",
+      "induty_code": "289",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:37:03Z"
+    },
+    "008830": {
+      "code": "008830",
+      "corp_name": "대동기어",
+      "induty_code": "292",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:37:04Z"
+    },
+    "122350": {
+      "code": "122350",
+      "corp_name": "삼기",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:37:04Z"
+    },
+    "010170": {
+      "code": "010170",
+      "corp_name": "대한광통신",
+      "induty_code": "283",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:37:04Z"
+    },
+    "950160": {
+      "code": "950160",
+      "corp_name": "코오롱티슈진",
+      "induty_code": "211",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:37:05Z"
+    },
+    "047040": {
+      "code": "047040",
+      "corp_name": "대우건설",
+      "induty_code": "41112",
+      "ksic_대분류": {
+        "code": "F",
+        "name": "건설업"
+      },
+      "ksic_중분류": "41",
+      "updated_at": "2026-08-23T08:37:05Z"
+    },
+    "066970": {
+      "code": "066970",
+      "corp_name": "엘앤에프",
+      "induty_code": "28202",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:37:06Z"
+    },
+    "001210": {
+      "code": "001210",
+      "corp_name": "금호전기",
+      "induty_code": "28410",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:37:06Z"
+    },
+    "440110": {
+      "code": "440110",
+      "corp_name": "파두",
+      "induty_code": "26112",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:37:06Z"
+    },
+    "336260": {
+      "code": "336260",
+      "corp_name": "두산퓨얼셀",
+      "induty_code": "28111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:37:07Z"
+    },
+    "005090": {
+      "code": "005090",
+      "corp_name": "SGC에너지",
+      "induty_code": "351",
+      "ksic_대분류": {
+        "code": "D",
+        "name": "전기, 가스, 증기 및 공기조절 공급업"
+      },
+      "ksic_중분류": "35",
+      "updated_at": "2026-08-23T08:37:07Z"
+    },
+    "011790": {
+      "code": "011790",
+      "corp_name": "SKC",
+      "induty_code": "204",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:37:08Z"
+    },
+    "005950": {
+      "code": "005950",
+      "corp_name": "이수화학",
+      "induty_code": "20111",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "20",
+      "updated_at": "2026-08-23T08:37:08Z"
+    },
+    "222040": {
+      "code": "222040",
+      "corp_name": "코스맥스엔비티",
+      "induty_code": "108",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "10",
+      "updated_at": "2026-08-23T08:37:08Z"
+    },
+    "348340": {
+      "code": "348340",
+      "corp_name": "뉴로메카",
+      "induty_code": "29280",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "29",
+      "updated_at": "2026-08-23T08:37:09Z"
+    },
+    "092200": {
+      "code": "092200",
+      "corp_name": "디아이씨",
+      "induty_code": "303",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "30",
+      "updated_at": "2026-08-23T08:37:09Z"
+    },
+    "376900": {
+      "code": "376900",
+      "corp_name": "로킷헬스케어",
+      "induty_code": "21309",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "21",
+      "updated_at": "2026-08-23T08:37:10Z"
+    },
+    "076610": {
+      "code": "076610",
+      "corp_name": "해성옵틱스",
+      "induty_code": "273",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "27",
+      "updated_at": "2026-08-23T08:37:10Z"
+    },
+    "011230": {
+      "code": "011230",
+      "corp_name": "삼화전자공업",
+      "induty_code": "265",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "26",
+      "updated_at": "2026-08-23T08:37:10Z"
+    },
+    "079160": {
+      "code": "079160",
+      "corp_name": "CJ CGV",
+      "induty_code": "59141",
+      "ksic_대분류": {
+        "code": "J",
+        "name": "정보통신업"
+      },
+      "ksic_중분류": "59",
+      "updated_at": "2026-08-23T08:37:11Z"
+    },
+    "036710": {
+      "code": "036710",
+      "corp_name": "심텍홀딩스",
+      "induty_code": "715",
+      "ksic_대분류": {
+        "code": "M",
+        "name": "전문, 과학 및 기술 서비스업"
+      },
+      "ksic_중분류": "71",
+      "updated_at": "2026-08-23T08:37:11Z"
+    },
+    "044340": {
+      "code": "044340",
+      "corp_name": "위닉스",
+      "induty_code": "28519",
+      "ksic_대분류": {
+        "code": "C",
+        "name": "제조업"
+      },
+      "ksic_중분류": "28",
+      "updated_at": "2026-08-23T08:37:12Z"
+    }
+  }
+}
