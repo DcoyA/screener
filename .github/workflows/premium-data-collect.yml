@@ -38,13 +38,12 @@ jobs:
           node-version: 22
 
       - name: Install Node deps
-        run: npm install @supabase/supabase-js
+        run: npm install @supabase/supabase-js fast-xml-parser
 
       - name: Scan market issues
         run: node scripts/premium/scan_market_issues.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
