@@ -1,0 +1,31 @@
+name: Premium Report - Generate
+
+on:
+  workflow_dispatch:
+  schedule:
+    # KST 06:00~08:59 구간: 이 시간대는 UTC로 보면 아직 전날이므로
+    # day-of-week를 KST 요일(월화목금)보다 하루 앞선 요일(일월수목)로 지정해야 한다.
+    - cron: "0,30 21-23 * * 0,1,3,4"
+    # KST 09:00~22:xx 구간: UTC 자정을 넘은 뒤라 day-of-week가 KST 요일과 동일하다.
+    - cron: "0,30 0-13 * * 1,2,4,5"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Node deps
+        run: npm install @supabase/supabase-js
+
+      - name: Generate report
+        run: node scripts/premium/generate-report.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
