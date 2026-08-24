@@ -209,6 +209,21 @@ async function main() {
     status: "proposed",
   }));
 
+  const { data: existing, error: existingError } = await supabase
+    .from("topic_candidates")
+    .select("id")
+    .eq("target_issue_date", today);
+
+  if (existingError) {
+    console.error("topic_candidates 기존 행 조회 실패:", existingError);
+    process.exit(1);
+  }
+
+  if (existing.length > 0) {
+    console.log(`[생성] 오늘(${today})은 이미 후보가 ${existing.length}건 존재하므로 신규 생성을 스킵합니다`);
+    return;
+  }
+
   const { error } = await supabase.from("topic_candidates").insert(rows);
   if (error) {
     console.error("topic_candidates 저장 실패 (원문):");
