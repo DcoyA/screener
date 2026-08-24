@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { kstTodayStr, kstWeekday, KST_WEEKDAY_NAME } from "./lib/date.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -9,12 +10,6 @@ const MAX_CANDIDATES = 4;
 const MIN_CANDIDATES = 3;
 
 const KST_DAY_TYPE = { 1: "mon", 2: "tue", 4: "thu", 5: "fri" }; // topic_candidates_day_type_check 허용값
-const KST_WEEKDAY_NAME = ["일", "월", "화", "수", "목", "금", "토"];
-
-function getKstWeekday() {
-  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-  return kst.getUTCDay(); // 0=일 ... 6=토
-}
 
 function daysAgoStr(days) {
   const d = new Date();
@@ -173,7 +168,7 @@ function selectTopCandidates(allItems) {
 }
 
 async function main() {
-  const weekday = getKstWeekday();
+  const weekday = kstWeekday();
   const dayType = KST_DAY_TYPE[weekday];
   if (!dayType) {
     console.log(`[생성] 오늘(${KST_WEEKDAY_NAME[weekday]}요일)은 리포트 생성 대상 요일이 아니므로 스킵합니다`);
@@ -202,7 +197,7 @@ async function main() {
   const topCandidates = selectTopCandidates(scoredItems);
   console.log(`[생성] ${topCandidates.length}건 후보 선정`);
 
-  const today = daysAgoStr(0);
+  const today = kstTodayStr(); // notify-editor.mjs가 조회하는 target_issue_date와 동일한 KST 기준이어야 함
   const rows = topCandidates.map((c, idx) => ({
     target_issue_date: today,
     day_type: dayType,

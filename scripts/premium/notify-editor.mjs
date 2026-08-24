@@ -1,14 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import { kstTodayStr, kstWeekday, KST_WEEKDAY_NAME } from "./lib/date.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-function kstTodayStr() {
-  const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-  return kst.toISOString().slice(0, 10);
-}
 
 async function fetchTodayProposedCandidates() {
   const today = kstTodayStr();
@@ -78,13 +74,11 @@ function buildSlackMessage(candidates) {
 
 async function main() {
   const candidates = await fetchTodayProposedCandidates();
+  console.log(`[알림] topic_candidates 조회 ${candidates.length}건`);
 
-  if (candidates.length === 0) {
-    console.log("[알림] 오늘 알릴 후보가 없습니다");
-    return;
-  }
+  const emptyNoticeText = `[알림] 오늘(${kstTodayStr()}, ${KST_WEEKDAY_NAME[kstWeekday()]}요일) 발행할 리포트 후보가 없습니다.`;
+  const message = candidates.length === 0 ? { text: emptyNoticeText } : buildSlackMessage(candidates);
 
-  const message = buildSlackMessage(candidates);
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
 
   if (!webhookUrl) {
@@ -105,7 +99,11 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`[알림] 슬랙에 ${candidates.length}건 후보 전송 완료`);
+  if (candidates.length === 0) {
+    console.log(`[알림] 후보 없음 안내 슬랙 전송 완료`);
+  } else {
+    console.log(`[알림] 슬랙에 ${candidates.length}건 후보 전송 완료`);
+  }
 }
 
 main();
