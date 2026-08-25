@@ -6,6 +6,7 @@ import Image from "next/image";
 import MainNav from "../MainNav";
 import HeroSection from "./HeroSection";
 import SubscribeSection from "./SubscribeSection";
+import SubscribeHeroBanner from "./SubscribeHeroBanner";
 import StrategySection from "./StrategySection";
 import AvoidSection from "./AvoidSection";
 import BridgeSection from "./BridgeSection";
@@ -13,11 +14,10 @@ import QuickLinksSection from "./QuickLinksSection";
 import NoticePreview from "./NoticePreview";
 import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
 import PortfolioSummaryCard from "./PortfolioSummaryCard";
-import ReportHeroCard from "./ReportHeroCard";
 import TopScoresSection from "./TopScoresSection";
 import ScreenerLinkSection from "./ScreenerLinkSection";
 
-export default function HomeClient({ stocks, notices, latestReport }) {
+export default function HomeClient({ stocks, notices }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -89,11 +89,18 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           <MainNav className="mainNav" />
         </header>
 
-        <ReportHeroCard report={latestReport} />
-        <TopScoresSection stocks={stocks} />
-        <ScreenerLinkSection />
+        <SubscribeHeroBanner openModal={openModal} />
 
-        <HeroSection updatedAt={updatedAt} stocks={stocks} />
+        <div className="topStack">
+          <div className="topStackSearch">
+            <HeroSection updatedAt={updatedAt} stocks={stocks} />
+          </div>
+          <div className="topStackScores">
+            <TopScoresSection stocks={stocks} />
+            <ScreenerLinkSection />
+          </div>
+        </div>
+
         <PortfolioSummaryCard />
 
         <SubscribeSection
@@ -103,7 +110,6 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           isSubmitted={isSubmitted}
           isSubmitting={isSubmitting}
           submitError={submitError}
-          openModal={openModal}
           closeModal={closeModal}
           handleSubscribe={handleSubscribe}
         />
@@ -157,6 +163,27 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           font-weight: 800;
           color: #0f172a;
           letter-spacing: -0.02em;
+        }
+        .topStack {
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+          margin-top: 32px;
+        }
+        .topStackSearch {
+          order: 1;
+        }
+        .topStackScores {
+          order: 2;
+        }
+        @media (max-width: 768px) {
+          /* 모바일에서는 검색바보다 TOP5(빠른 가치 확인)를 먼저 보여준다 */
+          .topStackSearch {
+            order: 2;
+          }
+          .topStackScores {
+            order: 1;
+          }
         }
         .hero {
           position: relative;
@@ -230,9 +257,9 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           display: inline-flex;
           align-items: center;
           padding: 8px 14px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
+          border-radius: var(--radius-pill);
+          background: var(--color-surface-tint);
+          color: var(--color-primary);
           font-size: 0.82rem;
           font-weight: 800;
           letter-spacing: 0.02em;
@@ -317,8 +344,8 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border-radius: 14px;
-          padding: 14px 18px;
+          border-radius: var(--radius-pill);
+          padding: 14px 22px;
           font-weight: 800;
           text-decoration: none;
           border: 1px solid transparent;
@@ -327,12 +354,12 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           font-size: 0.98rem;
         }
         .primaryBtn {
-          background: #0f172a;
+          background: var(--color-primary);
           color: #ffffff;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+          box-shadow: 0 10px 24px rgba(75, 63, 255, 0.18);
         }
         .primaryBtn:hover {
-          background: #111827;
+          background: #3c30e0;
         }
         .primaryBtn:disabled,
         .ghostBtn:disabled {
@@ -345,8 +372,8 @@ export default function HomeClient({ stocks, notices, latestReport }) {
         .linkBtn,
         .miniActionLink {
           background: #ffffff;
-          color: #0f172a;
-          border-color: #dbe3f0;
+          color: var(--color-primary);
+          border-color: var(--color-primary);
         }
         .secondaryBtn:hover,
         .ghostBtn:hover,
@@ -703,14 +730,20 @@ export default function HomeClient({ stocks, notices, latestReport }) {
           flex-direction: column;
           gap: 8px;
           text-decoration: none;
-          padding: 20px;
-          border-radius: 20px;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          color: #0f172a;
+          padding: 22px 20px;
+          border-radius: var(--radius-tile);
+          background: var(--color-primary);
+          color: #ffffff;
+          transition: transform 0.15s ease;
+        }
+        .quickLinkItem:hover {
+          transform: translateY(-2px);
         }
         .quickLinkItem strong {
           font-size: 1.05rem;
+        }
+        .quickLinkItem span {
+          color: rgba(255, 255, 255, 0.78);
         }
         .noticePreviewSection {
           margin: 28px 0 34px;

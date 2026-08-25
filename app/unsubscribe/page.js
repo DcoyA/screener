@@ -2,8 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import MainNav from "../components/MainNav";
+import PageTopBar from "../components/PageTopBar";
 
 function UnsubscribeInner() {
   const searchParams = useSearchParams();
@@ -36,10 +35,7 @@ function UnsubscribeInner() {
 
   return (
     <main className="container">
-      <div className="topLinks">
-        <Link href="/" className="homeBtn">홈으로 가기</Link>
-        <MainNav />
-      </div>
+      <PageTopBar />
 
       <div className="card">
         {status !== "done" ? (
@@ -59,32 +55,12 @@ function UnsubscribeInner() {
         .container {
           max-width: 560px;
           margin: 0 auto;
-          padding: 32px 24px 80px;
+          padding: 18px 24px 80px;
           color: #0f172a;
-        }
-        .topLinks {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 26px;
-          flex-wrap: wrap;
-        }
-        .homeBtn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 14px;
-          padding: 10px 14px;
-          text-decoration: none;
-          font-weight: 800;
-          border: 1px solid #0f172a;
-          background: #0f172a;
-          color: #fff;
         }
         .card {
           padding: 28px;
-          border-radius: 20px;
+          border-radius: var(--radius-card);
           background: #ffffff;
           border: 1px solid #e5e7eb;
           text-align: center;
@@ -95,10 +71,10 @@ function UnsubscribeInner() {
         }
         .primaryBtn {
           border: none;
-          border-radius: 14px;
+          border-radius: var(--radius-pill);
           padding: 12px 20px;
           font-weight: 800;
-          background: #0f172a;
+          background: var(--color-primary);
           color: #fff;
           cursor: pointer;
         }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import history from "../data/history.json";
 import stocks from "../data/stocks.json";
-import MainNav from "../components/MainNav";
+import PageTopBar from "../components/PageTopBar";
 
 function formatPrice(value) {
   const num = Number(value);
@@ -263,10 +263,10 @@ export default function PerformancePage() {
   return (
     <>
       <main className="container">
-        <div className="topLinks">
-          <Link href="/" className="homeBtn">홈으로 가기</Link>
-          <MainNav />
-        </div>
+        <PageTopBar />
+
+        {/* 상단 네비를 4개로 통합하면서 "성과/백테스트"가 네비에서 빠져 여기서 진입 경로를 열어둔다 */}
+        <Link href="/reports" className="performanceCrossLink">← 무료 리포트로 돌아가기</Link>
 
         <section className="pageHero">
           <div>
@@ -671,9 +671,8 @@ export default function PerformancePage() {
       </main>
 
       <style jsx>{`
-        .container { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; color: #0f172a; }
-        .topLinks { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
-        .homeBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; padding: 12px 16px; text-decoration: none; font-weight: 800; border: 1px solid #0f172a; background: #0f172a; color: #fff; }
+        .container { max-width: 1180px; margin: 0 auto; padding: 18px 24px 80px; color: #0f172a; }
+        .performanceCrossLink { display: inline-flex; margin-bottom: 16px; color: var(--color-primary); font-weight: 800; text-decoration: none; }
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
         .badge, .methodBadge, .controversyBadge, .detailBadge { display: inline-flex; padding: 8px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
         .badge { background: #eef2ff; color: #4f46e5; }

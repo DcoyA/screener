@@ -1,14 +1,19 @@
 :root {
-  /* 디자인 토큰 - 신규/재구성 화면은 하드코딩 헥스 대신 이 값들을 재사용한다 */
-  --color-primary: #6c4fe0;
-  --color-accent: #ff6b2c;
-  --color-bg: #f7f5fc;
+  /* 디자인 토큰 - CLEO 레퍼런스 기준(고채도 인디고 + 순백 + 오렌지 포인트).
+     신규/재구성 화면은 하드코딩 헥스 대신 이 값들을 재사용한다 */
+  --color-primary: #4b3fff;
+  --color-primary-dark: #1b1140;
+  --color-accent: #ff7a1a;
+  --color-bg: #ffffff;
+  --color-surface-tint: #f1effe;
   --color-card-bg: #ffffff;
   --color-score-good: #22c55e;
   --color-score-mid: #f59e0b;
   --color-score-bad: #ef4444;
-  --radius-card: 12px;
+  --radius-card: 16px;
+  --radius-tile: 20px;
   --radius-button: 8px;
+  --radius-pill: 999px;
 }
 
 * {

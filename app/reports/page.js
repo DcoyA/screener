@@ -3,7 +3,7 @@
 import Link from "next/link";
 import reports from "../data/reports.json";
 import stocks from "../data/stocks.json";
-import MainNav from "../components/MainNav";
+import PageTopBar from "../components/PageTopBar";
 
 
 export default function ReportsPage() {
@@ -12,11 +12,7 @@ export default function ReportsPage() {
   return (
     <>
       <main className="container">
-        <div className="topLinks">
-          <Link href="/" className="homeBtn">홈으로 가기</Link>
-          <MainNav />
-        </div>
-
+        <PageTopBar />
 
         <section className="pageHero">
           <div>
@@ -33,6 +29,12 @@ export default function ReportsPage() {
             <strong>{updatedAt}</strong>
           </div>
         </section>
+
+        {/* 상단 네비를 4개로 통합하면서 "성과/백테스트"가 네비에서 빠져
+            여기서 진입 경로를 열어둔다 (리포트<->성과 상호 링크). */}
+        <Link href="/performance" className="performanceCrossLink">
+          📈 이 전략들의 실제 성과/백테스트 결과 보기 →
+        </Link>
 
         <div className="reportList">
           {reports.map((report) => {
@@ -100,13 +102,12 @@ export default function ReportsPage() {
           padding: 32px 24px 80px;
           color: #0f172a;
         }
-        .topLinks {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 26px;
-          flex-wrap: wrap;
+        .performanceCrossLink {
+          display: inline-flex;
+          margin-bottom: 20px;
+          color: var(--color-primary);
+          font-weight: 800;
+          text-decoration: none;
         }
         .subNav {
           display: flex;
@@ -238,26 +239,18 @@ export default function ReportsPage() {
           margin: 0 0 8px;
           font-size: 1.1rem;
         }
-        .miniLink,
-        .homeBtn {
+        .miniLink {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border-radius: 14px;
+          border-radius: var(--radius-button);
           padding: 10px 14px;
           text-decoration: none;
           font-weight: 800;
           border: 1px solid #dbe3f0;
-        }
-        .miniLink {
           margin-top: 12px;
           background: #fff;
           color: #0f172a;
-        }
-        .homeBtn {
-          background: #0f172a;
-          color: #fff;
-          border-color: #0f172a;
         }
         .bulletList {
           margin: 0;

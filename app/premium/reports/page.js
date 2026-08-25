@@ -1,29 +1,9 @@
 import Link from "next/link";
-import MainNav from "../../components/MainNav";
+import PageTopBar from "../../components/PageTopBar";
 import { createSupabaseAdminClient } from "../../lib/supabase/admin";
 
 const styles = {
-  container: { maxWidth: 900, margin: "0 auto", padding: "32px 24px 80px", color: "#0f172a" },
-  topLinks: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 16,
-    marginBottom: 26,
-    flexWrap: "wrap",
-  },
-  homeBtn: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "var(--radius-button)",
-    padding: "10px 14px",
-    textDecoration: "none",
-    fontWeight: 800,
-    border: "1px solid #0f172a",
-    background: "#0f172a",
-    color: "#fff",
-  },
+  container: { maxWidth: 900, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a" },
   latestCard: {
     display: "block",
     padding: 28,
@@ -138,10 +118,7 @@ export default async function PremiumReportsArchivePage() {
 
   return (
     <main style={styles.container}>
-      <div style={styles.topLinks}>
-        <Link href="/" style={styles.homeBtn}>홈으로 가기</Link>
-        <MainNav />
-      </div>
+      <PageTopBar />
 
       <h1>프리미엄 리포트 아카이브</h1>
 

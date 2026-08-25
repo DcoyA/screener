@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import MainNav from "../components/MainNav";
+import PageTopBar from "../components/PageTopBar";
 import RankingTab from "../components/search/RankingTab";
 import RiskCheckTab from "../components/search/RiskCheckTab";
 import FinalPicksTab from "../components/search/FinalPicksTab";
@@ -40,10 +39,7 @@ function SearchPageContent({ stocks, risks }) {
 
   return (
     <main className="container">
-      <div className="topLinks">
-        <Link href="/" className="homeBtn">홈으로 가기</Link>
-        <MainNav />
-      </div>
+      <PageTopBar />
 
       <section className="pageHero">
         <div>
@@ -76,41 +72,21 @@ function SearchPageContent({ stocks, risks }) {
         .container {
           max-width: 1180px;
           margin: 0 auto;
-          padding: 32px 24px 80px;
+          padding: 18px 24px 80px;
           color: #0f172a;
         }
-        .topLinks {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 26px;
-          flex-wrap: wrap;
-        }
-        .homeBtn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 14px;
-          padding: 12px 16px;
-          text-decoration: none;
-          font-weight: 800;
-          border: 1px solid #0f172a;
-          background: #0f172a;
-          color: #fff;
-        }
         .pageHero {
-          margin-bottom: 22px;
+          margin-bottom: 18px;
         }
         .badge {
           display: inline-flex;
           padding: 8px 14px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
+          border-radius: var(--radius-pill);
+          background: var(--color-surface-tint);
+          color: var(--color-primary);
           font-size: 0.82rem;
           font-weight: 800;
-          margin: 0 0 18px;
+          margin: 0 0 14px;
         }
         h1 {
           margin: 0 0 12px;
@@ -146,7 +122,7 @@ function SearchPageContent({ stocks, risks }) {
           transition: all 0.18s ease;
         }
         .tabBtn.active {
-          background: #0f172a;
+          background: var(--color-primary);
           color: #fff;
         }
         @media (max-width: 640px) {

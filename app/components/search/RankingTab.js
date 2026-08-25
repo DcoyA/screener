@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import WishlistButton from "../WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
@@ -332,7 +332,6 @@ export default function RankingTab({ stocks }) {
   const [query, setQuery] = useState("");
   const [openGroup, setOpenGroup] = useState(null);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const sentinelRef = useRef(null);
 
   const updateRoute = (nextView, nextRisk) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -374,28 +373,13 @@ export default function RankingTab({ stocks }) {
     );
   }, [filteredByRisk, query]);
 
-  // 필터/검색이 바뀌면 처음부터 PAGE_SIZE개만 다시 보여준다(무한스크롤 진행분 초기화).
+  // 필터/검색이 바뀌면 처음부터 PAGE_SIZE개만 다시 보여준다("더보기" 진행분 초기화).
+  // 무한스크롤(IntersectionObserver)은 스크롤 중 예상치 못한 시점에 카드가 붙어
+  // 사용자가 위치를 놓치기 쉽다는 피드백으로 제거하고, 명시적 클릭인 "더보기" 버튼만 남겼다.
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [activeView, activeRisk, query]);
 
   const visibleStocks = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
-
-  useEffect(() => {
-    if (!hasMore) return undefined;
-    const node = sentinelRef.current;
-    if (!node) return undefined;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filtered.length));
-        }
-      },
-      { rootMargin: "400px" }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [hasMore, filtered.length]);
 
   const topEligibleCount = useMemo(() => stocks.filter((item) => item?.rankMeta?.topRankEligible).length, []);
   const undervalueEligibleCount = useMemo(() => stocks.filter((item) => item?.undervalueMeta?.eligible).length, []);
@@ -593,7 +577,6 @@ export default function RankingTab({ stocks }) {
 
         {hasMore && (
           <div className="loadMoreRow">
-            <div ref={sentinelRef} className="scrollSentinel" aria-hidden="true" />
             <button type="button" className="loadMoreBtn" onClick={() => setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filtered.length))}>
               더보기 ({visibleStocks.length}/{filtered.length})
             </button>
@@ -671,9 +654,8 @@ export default function RankingTab({ stocks }) {
         .riskBtn, .detailBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; padding: 10px 16px; font-weight: 800; text-decoration: none; font-size: .88rem; }
         .riskBtn { background: #fff; border: 1px solid #dbe3f0; color: #0f172a; }
         .detailBtn { background: #0f172a; color: #fff; }
-        .loadMoreRow { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 20px; }
-        .scrollSentinel { width: 100%; height: 1px; }
-        .loadMoreBtn { border: 1px solid var(--color-primary); background: #fff; color: var(--color-primary); border-radius: var(--radius-button); padding: 12px 22px; font-weight: 800; cursor: pointer; }
+        .loadMoreRow { display: flex; justify-content: center; margin-top: 20px; }
+        .loadMoreBtn { border: 1px solid var(--color-primary); background: #fff; color: var(--color-primary); border-radius: var(--radius-pill); padding: 12px 26px; font-weight: 800; cursor: pointer; }
         @media (max-width: 900px) {
           .rtHero { flex-direction: column; }
           .heroMeta { width: 100%; }

@@ -6,10 +6,13 @@ import { usePathname } from "next/navigation";
 // "마이페이지"/"구독관리"에 해당하는 전용 라우트가 코드베이스에 없어(로그인 마이페이지,
 // 구독 관리 화면 모두 부재), 실제 존재하는 라우트 중 개인화된 데이터를 다루는
 // /wishlist(관심종목)를 가장 가까운 대체 라우트로 사용한다.
+// 상단 데스크톱 네비(app/config/nav-items.js)와 동일한 4개 목적지로 맞춘다.
+// "리포트"는 /premium/reports(구독자 전용 아카이브)가 아니라 /reports(무료
+// 리포트 + 성과 통합 허브)로 연결해야 데스크톱 네비와 행선지가 일치한다.
 const TABS = [
   { href: "/", label: "홈", icon: "🏠" },
   { href: "/search", label: "스크리너", icon: "📊" },
-  { href: "/premium/reports", label: "리포트", icon: "📰" },
+  { href: "/reports", label: "리포트", icon: "📰" },
   { href: "/wishlist", label: "마이페이지", icon: "⭐" },
 ];
 

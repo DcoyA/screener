@@ -150,8 +150,8 @@ export default function MainNav({ className = "" }) {
           border-color: #cbd5e1;
         }
         .navLink.active {
-          background: #0f172a;
-          border-color: #0f172a;
+          background: var(--color-primary);
+          border-color: var(--color-primary);
           color: #ffffff;
         }
         .navLinkMuted {
