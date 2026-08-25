@@ -341,7 +341,18 @@ export default function NoticePage() {
     setSubmitError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed.toLowerCase() }),
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        setSubmitError(data?.error || "저장 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
       setIsSubmitted(true);
     } catch (error) {
       setSubmitError("저장 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");

@@ -14,30 +14,6 @@ import NoticePreview from "./NoticePreview";
 import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
 import PortfolioSummaryCard from "./PortfolioSummaryCard";
 
-const SUBSCRIBE_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbxTLAQ_ejctFLsfAy08wENtSIot0668R347i4neTXB7K6lEmgFwYsvjgg_X8xld37-q7A/exec";
-
-function formatKstDateTime(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const get = (type) => parts.find((part) => part.type === type)?.value || "00";
-  return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")}`;
-}
-
-function createUnsubscribeToken(emailValue) {
-  const safeEmail = emailValue.toLowerCase().replace(/[^a-z0-9]/gi, "");
-  const randomPart = Math.random().toString(36).slice(2, 10);
-  return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
-}
-
 export default function HomeClient({ stocks, notices }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -71,27 +47,19 @@ export default function HomeClient({ stocks, notices }) {
     setIsSubmitting(true);
     setSubmitError("");
 
-    const payload = {
-      email: normalizedEmail,
-      subscribed_at: formatKstDateTime(),
-      plan: "premium",
-      status: "active",
-      source: "site_popup",
-      last_sent_at: "",
-      last_report_id: "",
-      unsubscribe_token: createUnsubscribeToken(normalizedEmail),
-    };
-
     try {
-      const body = new URLSearchParams(payload).toString();
-      await fetch(SUBSCRIBE_ENDPOINT, {
+      const res = await fetch("/api/subscribe", {
         method: "POST",
-        mode: "no-cors",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        },
-        body,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
       });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data?.success) {
+        setSubmitError(data?.error || "신청 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
       setIsSubmitted(true);
       setEmail("");
     } catch (err) {
