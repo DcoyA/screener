@@ -4,6 +4,8 @@ import { kstTodayStr } from "./lib/date.mjs";
 // TODO: 실제 도메인 인증 후 발신 주소 교체
 const FROM_ADDRESS = "onboarding@resend.dev";
 
+const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -24,18 +26,24 @@ async function fetchTodayDraftReports() {
   return data;
 }
 
-async function fetchActiveSubscriberEmails() {
+async function fetchActiveSubscribers() {
   const { data, error } = await supabase
-    .from("subscribers")
-    .select("email")
-    .not("email", "is", null)
-    .eq("consent_status", "active");
+    .from("report_subscribers")
+    .select("email, unsubscribe_token")
+    .eq("status", "active");
 
   if (error) {
-    console.error("subscribers 조회 실패:", error);
+    console.error("report_subscribers 조회 실패:", error);
     process.exit(1);
   }
-  return data.map((row) => row.email);
+  return data;
+}
+
+// TODO: unsubscribe 라우트 별도 구현 필요
+function buildHtmlWithUnsubscribeLink(htmlBody, unsubscribeToken) {
+  if (!unsubscribeToken) return htmlBody;
+  const unsubscribeLink = `${UNSUBSCRIBE_BASE_URL}?token=${unsubscribeToken}`;
+  return `${htmlBody}<p style="margin-top:24px;font-size:12px;color:#888;"><a href="${unsubscribeLink}">구독취소</a></p>`;
 }
 
 async function sendOneEmail(to, subject, htmlBody) {
@@ -60,15 +68,17 @@ async function sendOneEmail(to, subject, htmlBody) {
   return { ok: true };
 }
 
-async function sendReportToSubscribers(report, emails) {
-  let successCount = 0;
+async function sendReportToSubscribers(report, subscribers) {
+  const succeededSubscribers = [];
 
-  for (const email of emails) {
-    const result = await sendOneEmail(email, report.topic_title, report.html_body);
+  for (const subscriber of subscribers) {
+    const htmlWithUnsubscribe = buildHtmlWithUnsubscribeLink(report.html_body, subscriber.unsubscribe_token);
+    const result = await sendOneEmail(subscriber.email, report.topic_title, htmlWithUnsubscribe);
+
     if (result.ok) {
-      successCount += 1;
+      succeededSubscribers.push(subscriber);
     } else {
-      console.error(`이메일 발송 실패 (${email}): ${result.status} - ${result.error}`);
+      console.error(`이메일 발송 실패 (${subscriber.email}): ${result.status} - ${result.error}`);
       if (result.status === 401) {
         console.error("Resend API 인증 실패(401)로 발송을 중단합니다.");
         process.exit(1);
@@ -76,19 +86,10 @@ async function sendReportToSubscribers(report, emails) {
     }
   }
 
-  return successCount;
+  return succeededSubscribers;
 }
 
-async function recordSendLog(reportId, successCount) {
-  // recipient_count가 개인정보(수신자 목록)가 아니라 집계값이므로 그대로 기록한다
-  const report = await supabase
-    .from("reports")
-    .select("topic_title")
-    .eq("id", reportId)
-    .single();
-
-  const summaryText = report.data?.topic_title || "";
-
+async function recordSendLog(reportId, successCount, topicTitle) {
   const { error } = await supabase.from("send_logs").insert({
     report_id: reportId,
     channel: "email",
@@ -96,7 +97,7 @@ async function recordSendLog(reportId, successCount) {
     recipient_count: successCount,
     open_count: 0,
     click_count: 0,
-    summary_text: summaryText,
+    summary_text: topicTitle,
   });
 
   if (error) {
@@ -119,24 +120,40 @@ async function markReportAsSent(reportId) {
   return true;
 }
 
-async function processReport(report, emails) {
-  if (emails.length === 0) {
+async function markSubscribersAsSent(succeededSubscribers, reportId) {
+  const emails = succeededSubscribers.map((s) => s.email);
+  if (emails.length === 0) return;
+
+  const { error } = await supabase
+    .from("report_subscribers")
+    .update({ last_sent_at: new Date().toISOString(), last_report_id: reportId })
+    .in("email", emails);
+
+  if (error) {
+    console.error("report_subscribers.last_sent_at/last_report_id 업데이트 실패:", error);
+  }
+}
+
+async function processReport(report, subscribers) {
+  if (subscribers.length === 0) {
     console.log(`[발송] 발송 대상 구독자가 없어 report_id=${report.id} 발송을 스킵합니다`);
     return;
   }
 
-  const successCount = await sendReportToSubscribers(report, emails);
+  const succeededSubscribers = await sendReportToSubscribers(report, subscribers);
+  const successCount = succeededSubscribers.length;
 
-  const logSaved = await recordSendLog(report.id, successCount);
+  const logSaved = await recordSendLog(report.id, successCount, report.topic_title);
   if (!logSaved) {
     console.error(`[발송] report_id=${report.id} send_logs 저장 실패로 status 업데이트를 건너뜁니다`);
     return;
   }
 
   await markReportAsSent(report.id);
+  await markSubscribersAsSent(succeededSubscribers, report.id);
 
   console.log(
-    `[발송] report_id=${report.id}, 성공 ${successCount}건 / 전체 ${emails.length}건, status를 sent로 업데이트 완료`
+    `[발송] report_id=${report.id}, 성공 ${successCount}건 / 전체 ${subscribers.length}건, status를 sent로 업데이트 완료`
   );
 }
 
@@ -148,10 +165,10 @@ async function main() {
     return;
   }
 
-  const emails = await fetchActiveSubscriberEmails();
+  const subscribers = await fetchActiveSubscribers();
 
   for (const report of reports) {
-    await processReport(report, emails);
+    await processReport(report, subscribers);
   }
 }
 
