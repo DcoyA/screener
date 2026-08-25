@@ -9,12 +9,12 @@ function createUnsubscribeToken(emailValue) {
   return `sub_${safeEmail.slice(0, 12)}_${Date.now()}_${randomPart}`;
 }
 
-// consent_logs.subscriber_id는 uuid 타입이라 report_subscribers.id(bigint)를 담을 수 없다.
-// consent_logs에는 email/source 컬럼도 없어(action, subscriber_id, created_at 뿐) 누가 신청했는지는
-// 남기지 못하고 action 발생 사실만 best-effort로 기록한다. 실패해도 구독 응답에는 영향 주지 않는다.
-async function logConsent(supabase, action) {
+// consent_logs insert 실패는 구독 응답 자체에 영향을 주지 않는다.
+async function logConsent(supabase, { action, email, source, reportSubscriberId }) {
   try {
-    const { error } = await supabase.from("consent_logs").insert({ action });
+    const { error } = await supabase
+      .from("consent_logs")
+      .insert({ action, email, source, report_subscriber_id: reportSubscriberId });
     if (error) console.error("consent_logs insert 실패:", error);
   } catch (e) {
     console.error("consent_logs insert 중 예외:", e);
@@ -48,20 +48,24 @@ export async function POST(request) {
     return NextResponse.json({ success: true, message: "이미 신청된 이메일입니다" });
   }
 
-  const { error: insertError } = await supabase.from("report_subscribers").insert({
-    email,
-    plan: "premium",
-    status: "active",
-    source,
-    unsubscribe_token: createUnsubscribeToken(email),
-  });
+  const { data: inserted, error: insertError } = await supabase
+    .from("report_subscribers")
+    .insert({
+      email,
+      plan: "premium",
+      status: "active",
+      source,
+      unsubscribe_token: createUnsubscribeToken(email),
+    })
+    .select("id")
+    .single();
 
   if (insertError) {
     console.error("report_subscribers insert 실패:", insertError);
     return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
   }
 
-  await logConsent(supabase, "subscribe");
+  await logConsent(supabase, { action: "subscribe", email, source, reportSubscriberId: inserted.id });
 
   return NextResponse.json({ success: true });
 }

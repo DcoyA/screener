@@ -4,6 +4,7 @@ import { kstTodayStr } from "./lib/date.mjs";
 // TODO: 실제 도메인 인증 후 발신 주소 교체
 const FROM_ADDRESS = "onboarding@resend.dev";
 
+const SITE_URL = "https://www.hellomedia.win/";
 const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
 // app/reports는 기존 무료 스크리너 리포트 페이지가 이미 쓰고 있어(app/reports/page.js),
 // 프리미엄 아카이브는 충돌을 피해 /premium/reports 경로를 쓴다.
@@ -29,6 +30,21 @@ async function fetchTodayDraftReports() {
   return data;
 }
 
+async function fetchLatestReport() {
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, topic_title, html_body")
+    .order("issue_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("reports 조회 실패:", error);
+    process.exit(1);
+  }
+  return data;
+}
+
 async function fetchActiveSubscribers() {
   const { data, error } = await supabase
     .from("report_subscribers")
@@ -42,16 +58,22 @@ async function fetchActiveSubscribers() {
   return data;
 }
 
-// TODO: unsubscribe 라우트 별도 구현 필요
-function buildHtmlWithUnsubscribeLink(htmlBody, unsubscribeToken) {
-  if (!unsubscribeToken) return htmlBody;
-  const unsubscribeLink = `${UNSUBSCRIBE_BASE_URL}?token=${unsubscribeToken}`;
-  return `${htmlBody}<p style="margin-top:24px;font-size:12px;color:#888;"><a href="${unsubscribeLink}">구독취소</a></p>`;
-}
-
-function buildHtmlWithWebviewLink(htmlBody, reportId) {
+// html_body(LLM 생성 원본)는 손대지 않고, 발송용 사본에만 상/하단 고정 링크를 감싸서 붙인다.
+// 최상단: 사이트 바로가기 + 웹에서 보기, 최하단: 구독취소 + 사이트 바로가기(반복).
+function buildEmailHtml(reportHtmlBody, reportId, unsubscribeToken) {
   const webviewLink = `${WEBVIEW_BASE_URL}/${reportId}`;
-  return `<p><a href="${webviewLink}">웹에서 보기</a></p>${htmlBody}`;
+  const unsubscribeLink = `${UNSUBSCRIBE_BASE_URL}?token=${unsubscribeToken}`;
+
+  const header =
+    `<p><a href="${SITE_URL}">우량주 스카우터 바로가기</a></p>` +
+    `<p><a href="${webviewLink}">웹에서 보기</a></p>`;
+
+  const footer =
+    `<p style="margin-top:24px;font-size:12px;color:#888;">` +
+    `<a href="${unsubscribeLink}">구독취소</a> | ` +
+    `<a href="${SITE_URL}">우량주 스카우터 바로가기</a></p>`;
+
+  return `${header}${reportHtmlBody}${footer}`;
 }
 
 async function sendOneEmail(to, subject, htmlBody, reportId) {
@@ -81,9 +103,8 @@ async function sendReportToSubscribers(report, subscribers) {
   const succeededSubscribers = [];
 
   for (const subscriber of subscribers) {
-    const htmlWithWebview = buildHtmlWithWebviewLink(report.html_body, report.id);
-    const htmlWithUnsubscribe = buildHtmlWithUnsubscribeLink(htmlWithWebview, subscriber.unsubscribe_token);
-    const result = await sendOneEmail(subscriber.email, report.topic_title, htmlWithUnsubscribe, report.id);
+    const html = buildEmailHtml(report.html_body, report.id, subscriber.unsubscribe_token);
+    const result = await sendOneEmail(subscriber.email, report.topic_title, html, report.id);
 
     if (result.ok) {
       succeededSubscribers.push(subscriber);
@@ -167,7 +188,34 @@ async function processReport(report, subscribers) {
   );
 }
 
+// report_subscribers/consent_logs/send_logs/reports를 전혀 건드리지 않는 운영 안전 테스트 모드.
+// TEST_RECIPIENT_EMAIL 환경변수가 설정된 경우에만 진입한다.
+async function runTestMode(testEmail) {
+  const report = await fetchLatestReport();
+
+  if (!report) {
+    console.error("테스트 발송할 reports 행이 없습니다");
+    process.exit(1);
+  }
+
+  const html = buildEmailHtml(report.html_body, report.id, "test-mode-token");
+  const result = await sendOneEmail(testEmail, report.topic_title, html, report.id);
+
+  if (!result.ok) {
+    console.error(`테스트 발송 실패: ${result.status} - ${result.error}`);
+    process.exit(1);
+  }
+
+  console.log(`[테스트] ${testEmail}로 report_id=${report.id} 테스트 발송 완료`);
+}
+
 async function main() {
+  const testEmail = process.env.TEST_RECIPIENT_EMAIL;
+  if (testEmail) {
+    await runTestMode(testEmail);
+    return;
+  }
+
   const reports = await fetchTodayDraftReports();
 
   if (reports.length === 0) {
