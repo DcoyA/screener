@@ -1,9 +1,7 @@
 "use client";
 
 import { Suspense, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import MainNav from "../components/MainNav";
+import PageTopBar from "../components/PageTopBar";
 import { useDemoAccount } from "./hooks/useDemoAccount";
 import { useWishlist } from "./hooks/useWishlist";
 import { useQuote } from "./hooks/useQuote";
@@ -62,15 +60,10 @@ function DemoTradeContent() {
     <main style={styles.page}>
       <style>{responsiveCss}</style>
 
-      <header style={styles.demoHeader} className="dt-demo-header">
-        <Link href="/" style={styles.demoBrand} aria-label="우량주 스카우터 홈으로 이동">
-          <Image src="/logo.png" alt="우량주 스카우터 로고" width={32} height={32} style={styles.demoLogo} priority />
-          <span style={styles.demoBrandText}>우량주 스카우터</span>
-        </Link>
-        <nav style={styles.demoNavWrap} className="dt-demo-nav-wrap" aria-label="주요 메뉴">
-          <MainNav className="dt-demo-nav" />
-        </nav>
-      </header>
+      <div style={styles.pageInner}>
+      <div className="dt-demo-header">
+        <PageTopBar />
+      </div>
 
       <section style={styles.topBar} className="dt-topbar">
         <div>
@@ -161,6 +154,7 @@ function DemoTradeContent() {
         />
         <OrderHistoryList orders={ordersState.orders} />
       </section>
+      </div>
     </main>
   );
 }

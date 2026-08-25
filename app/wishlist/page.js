@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import stocks from "../data/stocks.json";
 import risks from "../data/risks.json";
-import MainNav from "../components/MainNav";
+import PageTopBar from "../components/PageTopBar";
 import WishlistButton from "../components/WishlistButton";
 import { getWishlist } from "../lib/wishlist";
 
@@ -66,16 +66,11 @@ export default function WishlistPage() {
   if (!mounted) return null;
 
   return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 24px 80px", color: "#0f172a" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, marginBottom: 26, flexWrap: "wrap" }}>
-        <Link href="/" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 16px", textDecoration: "none", fontWeight: 800, border: "1px solid #0f172a", background: "#0f172a", color: "#fff" }}>
-          홈으로 가기
-        </Link>
-        <MainNav />
-      </div>
+    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a" }}>
+      <PageTopBar />
 
       <section style={{ marginBottom: 26 }}>
-        <p style={{ display: "inline-flex", padding: "8px 14px", borderRadius: 999, background: "#eef2ff", color: "#4f46e5", fontSize: "0.82rem", fontWeight: 900, marginBottom: 16 }}>WISHLIST</p>
+        <p style={{ display: "inline-flex", padding: "8px 14px", borderRadius: 999, background: "var(--color-surface-tint)", color: "var(--color-primary)", fontSize: "0.82rem", fontWeight: 900, marginBottom: 16 }}>WISHLIST</p>
         <h1 style={{ margin: "0 0 12px", fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.04em" }}>내 관심종목</h1>
         <p style={{ margin: 0, color: "#475569", lineHeight: 1.8, fontSize: "1.02rem" }}>
           랭킹·위험진단·실전투자·종목상세 페이지에서 ☆ 버튼을 눌러 추가한 종목을 한곳에서 모아봅니다. 이 목록은 브라우저에만 저장되며 서버로 전송되지 않습니다.
@@ -84,18 +79,18 @@ export default function WishlistPage() {
 
       {insight ? (
         <section style={{ marginBottom: 26 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
-            <div style={{ border: "1px solid #e5e7eb", borderRadius: 20, padding: 18, background: "#fff" }}>
-              <span style={{ display: "block", marginBottom: 8, color: "#64748b", fontSize: "0.84rem", fontWeight: 800 }}>평균 상승여력</span>
-              <strong style={{ fontSize: "1.4rem" }}>{formatPercent(insight.avgUpside)}</strong>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, borderRadius: "var(--radius-card)", background: "var(--color-primary-dark)", padding: 20 }}>
+            <div>
+              <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>평균 상승여력</span>
+              <strong style={{ fontSize: "1.4rem", color: "#fff" }}>{formatPercent(insight.avgUpside)}</strong>
             </div>
-            <div style={{ border: "1px solid #e5e7eb", borderRadius: 20, padding: 18, background: "#fff" }}>
-              <span style={{ display: "block", marginBottom: 8, color: "#64748b", fontSize: "0.84rem", fontWeight: 800 }}>위험 주의 종목</span>
-              <strong style={{ fontSize: "1.4rem", color: insight.riskyCount > 0 ? "#dc2626" : "#15803d" }}>{insight.riskyCount}개</strong>
+            <div>
+              <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>위험 주의 종목</span>
+              <strong style={{ fontSize: "1.4rem", color: insight.riskyCount > 0 ? "#fca5a5" : "#86efac" }}>{insight.riskyCount}개</strong>
             </div>
-            <div style={{ border: "1px solid #e5e7eb", borderRadius: 20, padding: 18, background: "#fff" }}>
-              <span style={{ display: "block", marginBottom: 8, color: "#64748b", fontSize: "0.84rem", fontWeight: 800 }}>가장 많이 담은 업종</span>
-              <strong style={{ fontSize: "1.4rem" }}>{insight.topSector ? `${insight.topSector[0]} (${insight.topSector[1]})` : "-"}</strong>
+            <div>
+              <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>가장 많이 담은 업종</span>
+              <strong style={{ fontSize: "1.4rem", color: "#fff" }}>{insight.topSector ? `${insight.topSector[0]} (${insight.topSector[1]})` : "-"}</strong>
             </div>
           </div>
         </section>

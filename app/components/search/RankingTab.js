@@ -393,37 +393,36 @@ export default function RankingTab({ stocks }) {
   return (
     <>
       <section className="rtHero">
-        <div>
-          <h2>{activeViewMeta.title}</h2>
-          <p className="rtDesc">
-            {activeViewMeta.desc}<br />
-            {activeRisk !== "all" ? `현재는 "${activeRiskMeta.title}" 필터가 적용된 리스트를 보고 있습니다.` : "아래 퀵 선택 또는 필터 바에서 바로 원하는 보기로 이동할 수 있습니다."}
-          </p>
+        <h2>{activeViewMeta.title}</h2>
+        <p className="rtDesc">
+          {activeViewMeta.desc}<br />
+          {activeRisk !== "all" ? `현재는 "${activeRiskMeta.title}" 필터가 적용된 리스트를 보고 있습니다.` : "아래 퀵 선택 또는 필터 바에서 바로 원하는 보기로 이동할 수 있습니다."}
+        </p>
+        <div className="quickStatGrid">
+          <button type="button" className={`quickStatCard ${activeView === "total" && activeRisk === "all" ? "active" : ""}`} onClick={() => handleQuickCardClick("total")}>
+            <span className="quickLabel">종합 우선 후보</span>
+            <strong>{topEligibleCount}종목</strong>
+          </button>
+          <button type="button" className={`quickStatCard ${activeView === "undervalue" && activeRisk === "all" ? "active" : ""}`} onClick={() => handleQuickCardClick("undervalue")}>
+            <span className="quickLabel">저평가 후보</span>
+            <strong>{undervalueEligibleCount}종목</strong>
+          </button>
+          <button type="button" className={`quickStatCard warn ${activeRisk === "highDebt" ? "active" : ""}`} onClick={() => handleQuickCardClick("highDebt")}>
+            <span className="quickLabel">고부채</span>
+            <strong>{highDebtCount}종목</strong>
+          </button>
+          <button type="button" className={`quickStatCard warn ${activeRisk === "unstableEarnings" ? "active" : ""}`} onClick={() => handleQuickCardClick("unstableEarnings")}>
+            <span className="quickLabel">이익 불안정</span>
+            <strong>{unstableEarningsCount}종목</strong>
+          </button>
         </div>
-        <div className="heroMeta">
-          <div className="quickStatGrid">
-            <button type="button" className={`quickStatCard ${activeView === "total" && activeRisk === "all" ? "active" : ""}`} onClick={() => handleQuickCardClick("total")}>
-              <span className="quickLabel">종합 우선 후보</span>
-              <strong>{topEligibleCount}종목</strong>
-            </button>
-            <button type="button" className={`quickStatCard ${activeView === "undervalue" && activeRisk === "all" ? "active" : ""}`} onClick={() => handleQuickCardClick("undervalue")}>
-              <span className="quickLabel">저평가 후보</span>
-              <strong>{undervalueEligibleCount}종목</strong>
-            </button>
-            <button type="button" className={`quickStatCard warn ${activeRisk === "highDebt" ? "active" : ""}`} onClick={() => handleQuickCardClick("highDebt")}>
-              <span className="quickLabel">고부채</span>
-              <strong>{highDebtCount}종목</strong>
-            </button>
-            <button type="button" className={`quickStatCard warn ${activeRisk === "unstableEarnings" ? "active" : ""}`} onClick={() => handleQuickCardClick("unstableEarnings")}>
-              <span className="quickLabel">이익 불안정</span>
-              <strong>{unstableEarningsCount}종목</strong>
-            </button>
-          </div>
-          <div className="metaCard light fullSearchCard">
-            <span className="metaLabel">검색</span>
-            <input className="searchInput" placeholder="종목명 / 종목코드" value={query} onChange={(e) => setQuery(e.target.value)} />
-            <p className="searchGuide">현재 보기 결과 {filtered.length}개 / 저유동성 종목 {lowLiquidityCount}개</p>
-          </div>
+      </section>
+
+      <section className="searchSection">
+        <div className="metaCard light fullSearchCard">
+          <span className="metaLabel">검색</span>
+          <input className="searchInput" placeholder="종목명 / 종목코드" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <p className="searchGuide">현재 보기 결과 {filtered.length}개 / 저유동성 종목 {lowLiquidityCount}개</p>
         </div>
       </section>
 
@@ -585,16 +584,22 @@ export default function RankingTab({ stocks }) {
       </section>
 
       <style jsx>{`
-        .rtHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 24px; flex-wrap: wrap; }
-        .rtHero h2 { margin: 0 0 12px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; }
-        .rtDesc { margin: 0; max-width: 700px; color: #475569; line-height: 1.8; font-size: 0.98rem; }
-        .heroMeta { display: grid; gap: 12px; min-width: 300px; width: 320px; }
-        .quickStatGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-        .quickStatCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.05); text-align: left; cursor: pointer; transition: all .18s ease; }
-        .quickStatCard:hover { transform: translateY(-1px); border-color: #cbd5e1; background: #fbfdff; }
-        .quickStatCard.warn { background: #fffdfa; }
-        .quickStatCard.active { border-color: #0f172a; box-shadow: 0 0 0 2px rgba(15,23,42,.08); }
-        .quickLabel { display: block; margin-bottom: 10px; color: #64748b; font-size: .88rem; font-weight: 700; }
+        /* CLEO 스타일 - 진한 인디고 '면'으로 채운 히어로 패널. 예전엔 좌우 2단
+           flex(space-between)라 좁은 화면에서 가운데에 불필요한 빈 공간이 컸다. */
+        .rtHero { border-radius: var(--radius-card); background: var(--color-primary-dark); padding: 28px; margin-bottom: 20px; }
+        .rtHero h2 { margin: 0 0 10px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; color: #fff; }
+        .rtDesc { margin: 0 0 22px; max-width: 700px; color: rgba(255,255,255,0.72); line-height: 1.8; font-size: 0.98rem; }
+        .searchSection { margin-bottom: 22px; }
+        .quickStatGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .quickStatCard { border: 1px solid rgba(255,255,255,0.14); border-radius: var(--radius-tile); padding: 16px; background: rgba(255,255,255,0.06); text-align: left; cursor: pointer; transition: all .18s ease; }
+        .quickStatCard:hover { background: rgba(255,255,255,0.12); }
+        /* 액센트(오렌지)는 화면당 1개의 핵심 CTA 전용이라, 필터 선택 상태에는 쓰지 않고
+           밝은 흰색 배경으로 "선택됨"을 표시한다. */
+        .quickStatCard.active { border-color: #fff; background: #fff; }
+        .quickStatCard.active .quickLabel { color: #64748b; }
+        .quickStatCard.active strong { color: var(--color-primary-dark); }
+        .quickLabel { display: block; margin-bottom: 10px; color: rgba(255,255,255,0.65); font-size: .82rem; font-weight: 700; }
+        .quickStatCard strong { color: #fff; }
         .quickStatCard strong { font-size: 1.8rem; letter-spacing: -0.04em; }
         .metaCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.05); }
         .metaCard.light { background: #f8fbff; }
@@ -651,14 +656,13 @@ export default function RankingTab({ stocks }) {
         .reasonCard p { margin: 0; color: #475569; line-height: 1.7; }
         .summary { margin: 0 0 16px; color: #64748b; line-height: 1.7; font-size: .92rem; }
         .linkRow { display: flex; gap: 10px; flex-wrap: wrap; }
-        .riskBtn, .detailBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; padding: 10px 16px; font-weight: 800; text-decoration: none; font-size: .88rem; }
-        .riskBtn { background: #fff; border: 1px solid #dbe3f0; color: #0f172a; }
-        .detailBtn { background: #0f172a; color: #fff; }
+        .riskBtn, .detailBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-pill); padding: 10px 18px; font-weight: 800; text-decoration: none; font-size: .88rem; }
+        .riskBtn { background: #fff; border: 1px solid var(--color-primary); color: var(--color-primary); }
+        .detailBtn { background: var(--color-primary); color: #fff; }
         .loadMoreRow { display: flex; justify-content: center; margin-top: 20px; }
         .loadMoreBtn { border: 1px solid var(--color-primary); background: #fff; color: var(--color-primary); border-radius: var(--radius-pill); padding: 12px 26px; font-weight: 800; cursor: pointer; }
         @media (max-width: 900px) {
-          .rtHero { flex-direction: column; }
-          .heroMeta { width: 100%; }
+          .quickStatGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .metricRow { grid-template-columns: repeat(2, minmax(0,1fr)); }
         }
       `}</style>
