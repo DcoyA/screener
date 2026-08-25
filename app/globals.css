@@ -1,3 +1,16 @@
+:root {
+  /* 디자인 토큰 - 신규/재구성 화면은 하드코딩 헥스 대신 이 값들을 재사용한다 */
+  --color-primary: #6c4fe0;
+  --color-accent: #ff6b2c;
+  --color-bg: #f7f5fc;
+  --color-card-bg: #ffffff;
+  --color-score-good: #22c55e;
+  --color-score-mid: #f59e0b;
+  --color-score-bad: #ef4444;
+  --radius-card: 12px;
+  --radius-button: 8px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -7,8 +20,15 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  background: #f6f8fb;
+  background: var(--color-bg);
   color: #111827;
+}
+
+@media (max-width: 768px) {
+  /* 모바일 하단 고정 네비(MobileBottomNav)에 콘텐츠가 가려지지 않도록 여백 확보 */
+  body {
+    padding-bottom: 64px;
+  }
 }
 
 a {

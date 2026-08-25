@@ -1,11 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import WishlistButton from "../WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../GradeBadge";
+import { getScoreGaugeColor } from "../../lib/scoreGauge";
+
+const PAGE_SIZE = 30;
+// 종합 점수(0~100 스케일)로 해석 가능한 보기에서만 게이지 색상 규칙(70/40)을 적용한다.
+// undervalue(가치 점수)와 upside(상승여력 %)는 스케일이 달라 같은 규칙을 적용하면 오해를 부른다.
+const SCORE_GAUGE_VIEWS = new Set(["total", "short", "annual", "long"]);
+
+const FILTER_GROUPS = [
+  { key: "basic", label: "기본 랭킹" },
+  { key: "strategy", label: "전략별 보기" },
+  { key: "risk", label: "피해야 할 타입 필터" },
+];
 
 const VIEW_CONFIG = {
   total: { label: "종합", title: "종합 랭킹", desc: "기본 조건 통과 여부와 총점을 함께 반영한 기본 랭킹입니다." },
@@ -210,6 +222,12 @@ function computeLongSuitability(stock) {
   const roePart = clamp((roe / 20) * 30, 0, 30);
   return Math.round(valuePart + debtPart + roePart);
 }
+function getGaugeScoreValue(stock, activeView) {
+  if (activeView === "short") return computeShortSuitability(stock);
+  if (activeView === "annual") return computeAnnualSuitability(stock);
+  if (activeView === "long") return computeLongSuitability(stock);
+  return Math.round(Number(stock?.totalScore ?? 0));
+}
 function getScorePresentation(stock, activeView) {
   if (activeView === "short") {
     return { label: "단기 적합도", valueText: `${computeShortSuitability(stock)} / 100`, tooltip: "예상 수익률이 아니라 최근 흐름·유동성·상승여력 조합을 반영한 단기 관점 적합도 점수입니다." };
@@ -312,6 +330,9 @@ export default function RankingTab({ stocks }) {
   const [activeView, setActiveView] = useState(initialView);
   const [activeRisk, setActiveRisk] = useState(initialRisk);
   const [query, setQuery] = useState("");
+  const [openGroup, setOpenGroup] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef(null);
 
   const updateRoute = (nextView, nextRisk) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -352,6 +373,29 @@ export default function RankingTab({ stocks }) {
       String(item.name || "").toLowerCase().includes(q) || String(item.code || "").toLowerCase().includes(q)
     );
   }, [filteredByRisk, query]);
+
+  // 필터/검색이 바뀌면 처음부터 PAGE_SIZE개만 다시 보여준다(무한스크롤 진행분 초기화).
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [activeView, activeRisk, query]);
+
+  const visibleStocks = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const hasMore = visibleCount < filtered.length;
+
+  useEffect(() => {
+    if (!hasMore) return undefined;
+    const node = sentinelRef.current;
+    if (!node) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filtered.length));
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, filtered.length]);
 
   const topEligibleCount = useMemo(() => stocks.filter((item) => item?.rankMeta?.topRankEligible).length, []);
   const undervalueEligibleCount = useMemo(() => stocks.filter((item) => item?.undervalueMeta?.eligible).length, []);
@@ -402,45 +446,62 @@ export default function RankingTab({ stocks }) {
       <section className="guideSection">
         <div className="guideCard compact">
           <div className="guideHeader"><h3>보기 전환</h3></div>
-          <div className="controlPanel">
-            <div className="controlBlock">
-              <span className="groupLabel">기본 랭킹</span>
+
+          <div className="groupChipRow">
+            {FILTER_GROUPS.map((group) => (
+              <button
+                key={group.key}
+                type="button"
+                className={`groupChip ${openGroup === group.key ? "open" : ""}`}
+                onClick={() => setOpenGroup(openGroup === group.key ? null : group.key)}
+                aria-expanded={openGroup === group.key}
+              >
+                {group.label}
+                <span className="groupCaret">{openGroup === group.key ? "▲" : "▼"}</span>
+              </button>
+            ))}
+          </div>
+
+          {openGroup === "basic" && (
+            <div className="accordionPanel">
               <div className="chipRow">
                 {[["total", "종합"], ["undervalue", "저평가"], ["upside", "상승여력"]].map(([key, label]) => (
                   <button key={key} type="button" className={`filterChip ${activeView === key ? "active" : ""}`} onClick={() => handleViewChange(key)}>{label}</button>
                 ))}
               </div>
             </div>
-            <div className="controlBlock">
-              <span className="groupLabel">전략별 보기</span>
+          )}
+          {openGroup === "strategy" && (
+            <div className="accordionPanel">
               <div className="chipRow">
                 {[["short", "단기 투자"], ["annual", "연간 투자"], ["long", "장기 투자"]].map(([key, label]) => (
                   <button key={key} type="button" className={`filterChip alt ${activeView === key ? "active" : ""}`} onClick={() => handleViewChange(key)}>{label}</button>
                 ))}
               </div>
             </div>
-            <div className="controlBlock">
-              <span className="groupLabel">피해야 할 타입 필터</span>
+          )}
+          {openGroup === "risk" && (
+            <div className="accordionPanel">
               <div className="chipRow">
                 {[["all", "전체"], ["highDebt", "고부채"], ["lowLiquidity", "저유동성"], ["unstableEarnings", "이익 불안정"]].map(([key, label]) => (
                   <button key={key} type="button" className={`filterChip risk ${activeRisk === key ? "active" : ""}`} onClick={() => handleRiskChange(key)}>{label}</button>
                 ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
       <section className="statusSection">
         <div className="statusCard">
           <div><strong>현재 보기</strong><p>{activeViewMeta.title} · {activeRiskMeta.title}</p></div>
-          <span>{filtered.length}개 노출</span>
+          <span>{visibleStocks.length} / {filtered.length}개 노출</span>
         </div>
       </section>
 
       <section className="listSection">
         <div className="listGrid">
-          {filtered.map((stock) => {
+          {visibleStocks.map((stock) => {
             const eligible = !!stock?.rankMeta?.topRankEligible;
             const rankFlags = stock?.rankMeta?.flags || [];
             const undervalueFlags = stock?.undervalueMeta?.flags || [];
@@ -448,6 +509,9 @@ export default function RankingTab({ stocks }) {
             const displayRank = rankMap.get(String(stock.code)) ?? "-";
             const scorePresentation = getScorePresentation(stock, activeView);
             const unifiedGrade = getUnifiedGrade(stock);
+            const gaugeColor = SCORE_GAUGE_VIEWS.has(activeView)
+              ? getScoreGaugeColor(getGaugeScoreValue(stock, activeView))
+              : null;
 
             return (
               <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
@@ -470,7 +534,7 @@ export default function RankingTab({ stocks }) {
                         <span className="tooltipBubble">{scorePresentation.tooltip}</span>
                       </span>
                     </div>
-                    <strong>{scorePresentation.valueText}</strong>
+                    <strong style={gaugeColor ? { color: gaugeColor } : undefined}>{scorePresentation.valueText}</strong>
                     {activeView === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
                       <span className="rawScore">원점수 {stock.rawTotalScore}</span>
                     ) : null}
@@ -526,6 +590,15 @@ export default function RankingTab({ stocks }) {
             );
           })}
         </div>
+
+        {hasMore && (
+          <div className="loadMoreRow">
+            <div ref={sentinelRef} className="scrollSentinel" aria-hidden="true" />
+            <button type="button" className="loadMoreBtn" onClick={() => setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filtered.length))}>
+              더보기 ({visibleStocks.length}/{filtered.length})
+            </button>
+          </div>
+        )}
       </section>
 
       <style jsx>{`
@@ -549,9 +622,11 @@ export default function RankingTab({ stocks }) {
         .guideCard, .statusCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,.06); }
         .guideCard.compact { padding: 22px; }
         .guideHeader h3 { margin: 0 0 16px; font-size: 1.25rem; }
-        .controlPanel { display: grid; gap: 18px; }
-        .controlBlock { display: grid; gap: 10px; }
-        .groupLabel { color: #64748b; font-size: .82rem; font-weight: 800; }
+        .groupChipRow { display: flex; gap: 8px; flex-wrap: wrap; }
+        .groupChip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--color-primary); background: #fff; color: var(--color-primary); border-radius: var(--radius-button); padding: 10px 16px; font-weight: 800; font-size: .9rem; cursor: pointer; }
+        .groupChip.open { background: var(--color-primary); color: #fff; }
+        .groupCaret { font-size: .7rem; }
+        .accordionPanel { margin-top: 14px; padding-top: 14px; border-top: 1px solid #eef2f7; }
         .chipRow { display: flex; gap: 8px; flex-wrap: wrap; }
         .filterChip { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 700; font-size: .88rem; cursor: pointer; color: #475569; }
         .filterChip.active { background: #0f172a; border-color: #0f172a; color: #fff; }
@@ -596,6 +671,9 @@ export default function RankingTab({ stocks }) {
         .riskBtn, .detailBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; padding: 10px 16px; font-weight: 800; text-decoration: none; font-size: .88rem; }
         .riskBtn { background: #fff; border: 1px solid #dbe3f0; color: #0f172a; }
         .detailBtn { background: #0f172a; color: #fff; }
+        .loadMoreRow { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 20px; }
+        .scrollSentinel { width: 100%; height: 1px; }
+        .loadMoreBtn { border: 1px solid var(--color-primary); background: #fff; color: var(--color-primary); border-radius: var(--radius-button); padding: 12px 22px; font-weight: 800; cursor: pointer; }
         @media (max-width: 900px) {
           .rtHero { flex-direction: column; }
           .heroMeta { width: 100%; }

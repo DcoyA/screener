@@ -13,8 +13,11 @@ import QuickLinksSection from "./QuickLinksSection";
 import NoticePreview from "./NoticePreview";
 import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
 import PortfolioSummaryCard from "./PortfolioSummaryCard";
+import ReportHeroCard from "./ReportHeroCard";
+import TopScoresSection from "./TopScoresSection";
+import ScreenerLinkSection from "./ScreenerLinkSection";
 
-export default function HomeClient({ stocks, notices }) {
+export default function HomeClient({ stocks, notices, latestReport }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -85,6 +88,10 @@ export default function HomeClient({ stocks, notices }) {
           </Link>
           <MainNav className="mainNav" />
         </header>
+
+        <ReportHeroCard report={latestReport} />
+        <TopScoresSection stocks={stocks} />
+        <ScreenerLinkSection />
 
         <HeroSection updatedAt={updatedAt} stocks={stocks} />
         <PortfolioSummaryCard />
