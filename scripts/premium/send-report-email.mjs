@@ -5,6 +5,9 @@ import { kstTodayStr } from "./lib/date.mjs";
 const FROM_ADDRESS = "onboarding@resend.dev";
 
 const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
+// app/reports는 기존 무료 스크리너 리포트 페이지가 이미 쓰고 있어(app/reports/page.js),
+// 프리미엄 아카이브는 충돌을 피해 /premium/reports 경로를 쓴다.
+const WEBVIEW_BASE_URL = "https://www.hellomedia.win/premium/reports";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -46,7 +49,12 @@ function buildHtmlWithUnsubscribeLink(htmlBody, unsubscribeToken) {
   return `${htmlBody}<p style="margin-top:24px;font-size:12px;color:#888;"><a href="${unsubscribeLink}">구독취소</a></p>`;
 }
 
-async function sendOneEmail(to, subject, htmlBody) {
+function buildHtmlWithWebviewLink(htmlBody, reportId) {
+  const webviewLink = `${WEBVIEW_BASE_URL}/${reportId}`;
+  return `<p><a href="${webviewLink}">웹에서 보기</a></p>${htmlBody}`;
+}
+
+async function sendOneEmail(to, subject, htmlBody, reportId) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -58,6 +66,7 @@ async function sendOneEmail(to, subject, htmlBody) {
       to: [to],
       subject,
       html: htmlBody,
+      tags: [{ name: "report_id", value: String(reportId) }],
     }),
   });
 
@@ -72,8 +81,9 @@ async function sendReportToSubscribers(report, subscribers) {
   const succeededSubscribers = [];
 
   for (const subscriber of subscribers) {
-    const htmlWithUnsubscribe = buildHtmlWithUnsubscribeLink(report.html_body, subscriber.unsubscribe_token);
-    const result = await sendOneEmail(subscriber.email, report.topic_title, htmlWithUnsubscribe);
+    const htmlWithWebview = buildHtmlWithWebviewLink(report.html_body, report.id);
+    const htmlWithUnsubscribe = buildHtmlWithUnsubscribeLink(htmlWithWebview, subscriber.unsubscribe_token);
+    const result = await sendOneEmail(subscriber.email, report.topic_title, htmlWithUnsubscribe, report.id);
 
     if (result.ok) {
       succeededSubscribers.push(subscriber);
