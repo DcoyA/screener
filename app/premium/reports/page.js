@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PageTopBar from "../../components/PageTopBar";
+import Icon from "../../components/icons/Icon";
 import { createSupabaseAdminClient } from "../../lib/supabase/admin";
 
 const styles = {
@@ -50,7 +51,7 @@ const styles = {
     padding: "0 18px",
     background: "rgba(247,245,252,0.88)",
   },
-  lockLabel: { display: "flex", alignItems: "center", gap: 8, fontWeight: 800, color: "#475569" },
+  lockLabel: { display: "flex", alignItems: "center", gap: 6, fontWeight: 800, color: "#475569" },
   // 화면당 오렌지(accent) 버튼은 1개만 유지하는 원칙에 따라, 잠긴 카드마다 반복되는
   // 이 버튼은 보라 아웃라인으로 두고 오렌지 CTA는 아래 subscribeBanner에 1개만 둔다.
   subscribeBtn: {
@@ -152,7 +153,7 @@ export default async function PremiumReportsArchivePage() {
                 <span style={styles.reportTitle}>{report.topic_title}</span>
               </Link>
               <div style={styles.lockOverlay}>
-                <span style={styles.lockLabel}>🔒 잠긴 리포트</span>
+                <span style={styles.lockLabel}><Icon name="lock" size={16} /> 잠긴 리포트</span>
                 <Link href="/" style={styles.subscribeBtn}>구독하고 전체 보기</Link>
               </div>
             </li>

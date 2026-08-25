@@ -74,21 +74,23 @@ export default function HomeClient({ stocks, notices }) {
 
   return (
     <>
-      <main className="container">
-        <header className="topBar">
+      <header className="topBar">
+        <div className="topBarInner">
           <Link href="/" className="brandArea">
             <Image
               src="/logo.png"
               alt="우량주 스카우터 로고"
-              width={32}
-              height={32}
+              width={30}
+              height={30}
               className="brandLogo"
             />
             <span className="brandTitle">우량주 스카우터</span>
           </Link>
           <MainNav className="mainNav" />
-        </header>
+        </div>
+      </header>
 
+      <main className="container">
         <SubscribeHeroBanner openModal={openModal} />
 
         <div className="topStack">
@@ -140,11 +142,26 @@ export default function HomeClient({ stocks, notices }) {
           color: #0f172a;
         }
         .topBar {
+          background: var(--color-primary);
+          padding: 14px 24px;
+          margin-bottom: 40px;
+          /* MainNav의 pill 색을 흰색 변형으로 덮어쓴다(기본값은 흰 배경용) */
+          --nav-pill-border: rgba(255, 255, 255, 0.35);
+          --nav-pill-bg: transparent;
+          --nav-pill-color: #ffffff;
+          --nav-pill-hover-bg: rgba(255, 255, 255, 0.12);
+          --nav-pill-hover-border: rgba(255, 255, 255, 0.55);
+          --nav-pill-active-bg: #ffffff;
+          --nav-pill-active-color: var(--color-primary);
+          --nav-pill-muted-color: rgba(255, 255, 255, 0.6);
+        }
+        .topBarInner {
+          max-width: 1180px;
+          margin: 0 auto;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 20px;
-          margin-bottom: 40px;
           flex-wrap: wrap;
         }
         .brandArea {
@@ -154,14 +171,16 @@ export default function HomeClient({ stocks, notices }) {
           text-decoration: none;
         }
         .brandLogo {
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           object-fit: contain;
+          border-radius: 8px;
+          background: #ffffff;
         }
         .brandTitle {
           font-size: 1.05rem;
           font-weight: 800;
-          color: #0f172a;
+          color: #ffffff;
           letter-spacing: -0.02em;
         }
         .topStack {
@@ -256,6 +275,7 @@ export default function HomeClient({ stocks, notices }) {
         .noticePreviewBadge {
           display: inline-flex;
           align-items: center;
+          gap: 6px;
           padding: 8px 14px;
           border-radius: var(--radius-pill);
           background: var(--color-surface-tint);

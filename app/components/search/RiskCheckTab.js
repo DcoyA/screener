@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../../components/GradeBadge";
+import Icon from "../../components/icons/Icon";
 
 const RISK_FILTER_CONFIG = {
   all: { label: "전체", title: "전체 리스크" },
@@ -246,7 +247,7 @@ function RiskCheckTabContent({ stocks, risks }) {
 
           <div className="searchRow">
             <div className="searchInputWrap">
-              <span className="searchIcon" aria-hidden="true">🔍</span>
+              <Icon name="search" size={16} className="searchIcon" />
               <input
                 type="text"
                 className="searchInput"
@@ -382,7 +383,7 @@ function RiskCheckTabContent({ stocks, risks }) {
         .searchDesc { margin: 0; color: #64748b; line-height: 1.7; }
         .searchRow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .searchInputWrap { position: relative; flex: 1 1 560px; min-width: 0; }
-        .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1rem; pointer-events: none; }
+        .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
         .searchInput { width: 100%; height: 52px; border-radius: 16px; border: 1px solid #dbe3f0; padding: 0 16px 0 44px; font-size: 1rem; color: #0f172a; background: #fff; box-sizing: border-box; outline: none; }
         .searchInput:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
         .filterResetBtn, .resetBtn, .detailBtn, .ghostBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; height: 52px; padding: 0 16px; font-weight: 800; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 0.95rem; }

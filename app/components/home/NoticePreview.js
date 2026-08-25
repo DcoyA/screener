@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Icon from "../icons/Icon";
 
 export default function NoticePreview({ latestNotice }) {
   if (!latestNotice) return null;
@@ -8,7 +9,9 @@ export default function NoticePreview({ latestNotice }) {
       <div className="noticePreviewWrap">
         <Link href="/notice" className="noticePreviewCard">
           <div className="noticePreviewTopLine">
-            <span className="noticePreviewBadge">📢 업데이트 안내</span>
+            <span className="noticePreviewBadge">
+              <Icon name="megaphone" size={14} /> 업데이트 안내
+            </span>
             <span className="noticePreviewDate">{latestNotice.date}</span>
           </div>
           <div className="noticePreviewBody">

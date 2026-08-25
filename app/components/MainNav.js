@@ -126,16 +126,19 @@ export default function MainNav({ className = "" }) {
         .navGroup {
           position: relative;
         }
+        /* 기본값은 흰 배경 위에서 안전하게 보이는 색이다. 인디고 헤더 안에
+           쓰일 때는 부모가 --nav-pill-* 커스텀 프로퍼티를 덮어써서 흰색
+           변형으로 바뀐다(HomeClient 헤더, PageTopBar 참고). */
         .navLink {
           display: inline-flex;
           align-items: center;
           justify-content: center;
           min-height: 40px;
           padding: 0 14px;
-          border-radius: 999px;
-          border: 1px solid #dbe3f0;
-          background: #ffffff;
-          color: #334155;
+          border-radius: var(--radius-pill);
+          border: 1px solid var(--nav-pill-border, #dbe3f0);
+          background: var(--nav-pill-bg, #ffffff);
+          color: var(--nav-pill-color, #334155);
           font-weight: 800;
           font-size: 0.92rem;
           transition: all 0.18s ease;
@@ -146,24 +149,24 @@ export default function MainNav({ className = "" }) {
           text-decoration: none;
         }
         .navLink:hover {
-          background: #f8fafc;
-          border-color: #cbd5e1;
+          background: var(--nav-pill-hover-bg, #f8fafc);
+          border-color: var(--nav-pill-hover-border, #cbd5e1);
         }
         .navLink.active {
-          background: var(--color-primary);
-          border-color: var(--color-primary);
-          color: #ffffff;
+          background: var(--nav-pill-active-bg, var(--color-primary));
+          border-color: var(--nav-pill-active-bg, var(--color-primary));
+          color: var(--nav-pill-active-color, #ffffff);
         }
         .navLinkMuted {
           background: transparent;
           border-color: transparent;
-          color: #94a3b8;
+          color: var(--nav-pill-muted-color, #94a3b8);
           font-weight: 600;
           font-size: 0.85rem;
         }
         .navLinkMuted:hover {
-          background: #f1f5f9;
-          color: #64748b;
+          background: var(--nav-pill-hover-bg, #f1f5f9);
+          color: var(--nav-pill-color, #64748b);
         }
         .navGroupTrigger {
           gap: 6px;

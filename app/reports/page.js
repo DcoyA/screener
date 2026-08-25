@@ -4,6 +4,7 @@ import Link from "next/link";
 import reports from "../data/reports.json";
 import stocks from "../data/stocks.json";
 import PageTopBar from "../components/PageTopBar";
+import Icon from "../components/icons/Icon";
 
 
 export default function ReportsPage() {
@@ -33,7 +34,7 @@ export default function ReportsPage() {
         {/* 상단 네비를 4개로 통합하면서 "성과/백테스트"가 네비에서 빠져
             여기서 진입 경로를 열어둔다 (리포트<->성과 상호 링크). */}
         <Link href="/performance" className="performanceCrossLink">
-          📈 이 전략들의 실제 성과/백테스트 결과 보기 →
+          <Icon name="trendingUp" size={16} /> 이 전략들의 실제 성과/백테스트 결과 보기 →
         </Link>
 
         <div className="reportList">
@@ -104,6 +105,8 @@ export default function ReportsPage() {
         }
         .performanceCrossLink {
           display: inline-flex;
+          align-items: center;
+          gap: 6px;
           margin-bottom: 20px;
           color: var(--color-primary);
           font-weight: 800;

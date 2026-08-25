@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Icon from "./icons/Icon";
 
 // "마이페이지"/"구독관리"에 해당하는 전용 라우트가 코드베이스에 없어(로그인 마이페이지,
 // 구독 관리 화면 모두 부재), 실제 존재하는 라우트 중 개인화된 데이터를 다루는
@@ -10,10 +11,10 @@ import { usePathname } from "next/navigation";
 // "리포트"는 /premium/reports(구독자 전용 아카이브)가 아니라 /reports(무료
 // 리포트 + 성과 통합 허브)로 연결해야 데스크톱 네비와 행선지가 일치한다.
 const TABS = [
-  { href: "/", label: "홈", icon: "🏠" },
-  { href: "/search", label: "스크리너", icon: "📊" },
-  { href: "/reports", label: "리포트", icon: "📰" },
-  { href: "/wishlist", label: "마이페이지", icon: "⭐" },
+  { href: "/", label: "홈", icon: "home" },
+  { href: "/search", label: "스크리너", icon: "chart" },
+  { href: "/reports", label: "리포트", icon: "newspaper" },
+  { href: "/wishlist", label: "마이페이지", icon: "user" },
 ];
 
 export default function MobileBottomNav() {
@@ -25,7 +26,7 @@ export default function MobileBottomNav() {
         const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
         return (
           <Link key={tab.href} href={tab.href} className={`mobileNavItem ${isActive ? "active" : ""}`}>
-            <span className="mobileNavIcon" aria-hidden="true">{tab.icon}</span>
+            <Icon name={tab.icon} size={22} className="mobileNavIcon" />
             <span className="mobileNavLabel">{tab.label}</span>
           </Link>
         );
@@ -62,7 +63,7 @@ export default function MobileBottomNav() {
           color: var(--color-primary);
         }
         .mobileNavIcon {
-          font-size: 1.2rem;
+          display: block;
         }
         .mobileNavLabel {
           font-size: 0.7rem;
