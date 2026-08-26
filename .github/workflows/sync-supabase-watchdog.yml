@@ -3,13 +3,32 @@ name: Verify today's snapshot exists
 on:
   schedule:
     - cron: "0 8 * * 1-5"   # 평일 UTC 08:00 = KST 17:00
+  workflow_dispatch:
+    inputs:
+      force_fail:
+        description: "true면 실제 데이터 상태와 무관하게 강제로 실패시켜 슬랙 알림 경로만 테스트한다"
+        type: boolean
+        default: false
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: node scripts/verify-today-ingested.mjs
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Node dependencies
+        run: npm install @supabase/supabase-js
+        continue-on-error: false
+
+      - name: Verify today's snapshot
+        run: node scripts/verify-today-ingested.mjs
+        continue-on-error: false
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+          FORCE_FAIL: ${{ inputs.force_fail && '1' || '' }}
