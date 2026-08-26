@@ -112,6 +112,13 @@ jobs:
           timeout_minutes: 30
           command: python scripts/update_data.py
 
+      - name: Validate pipeline output (quality gate)
+        run: python scripts/validate_pipeline_output.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: Build ETF universe
         uses: nick-fields/retry@v3
         with:

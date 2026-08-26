@@ -1,0 +1,42 @@
+name: _tmp Quality Gate Verify
+
+# 검증 전용 임시 워크플로. validate_pipeline_output.py의 WARN 슬랙 발송을
+# 실제 Slack 웹훅으로 확인한 뒤 삭제할 것 (로컬엔 SLACK_WEBHOOK_URL이 없어
+# 로컬 실행으로는 슬랙 전송까지 검증 불가능해 이 방식을 사용함).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build 섹터 미매핑 24% 픽스처 (실 stocks.json 기반, 원본은 안 건드림)
+        run: |
+          node -e "
+          const fs = require('fs');
+          const stocks = JSON.parse(fs.readFileSync('app/data/stocks.json', 'utf-8'));
+          const existingUnmapped = stocks.filter(s => !s.sectorCode).length;
+          const targetUnmapped = Math.round(stocks.length * 0.24);
+          let toUnmap = Math.max(0, targetUnmapped - existingUnmapped);
+          const fixture = stocks.map((s) => {
+            if (s.sectorCode && toUnmap > 0) { toUnmap--; return { ...s, sectorCode: null }; }
+            return s;
+          });
+          fs.writeFileSync('/tmp/fixture_sector_unmapped.json', JSON.stringify(fixture));
+          console.log('unmapped:', fixture.filter(s => !s.sectorCode).length, '/', stocks.length);
+          "
+
+      - name: 품질 게이트 실행 (기대값 - WARN, exit 0, 슬랙 발송)
+        run: python scripts/validate_pipeline_output.py
+        env:
+          STOCKS_JSON_PATH: /tmp/fixture_sector_unmapped.json
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
