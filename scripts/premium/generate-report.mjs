@@ -242,30 +242,6 @@ async function notifyGenerationFailure(errors) {
   }
 }
 
-// TASK 5-3(emailTemplate.mjs)가 들어오기 전까지 쓰는 최소 HTML.
-// LLM에게 HTML을 직접 쓰게 하지 않는다 - 구조화된 JSON만 받고 렌더링은
-// 우리 코드가 한다(각주에 원문 그대로 노출되는 사고나 스타일 붕괴를 막음).
-function buildFallbackHtml(report) {
-  const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
-
-  const sectionsHtml = (report.sections || [])
-    .map(
-      (s) => `
-      <h2>${esc(s.title)}</h2>
-      <p><strong>무슨 일이 있었나</strong><br/>${esc(s.what_happened)}</p>
-      <p><strong>왜 중요한가</strong><br/>${esc(s.why_it_matters)}</p>
-      <p><strong>이 관점이 틀렸다고 볼 조건</strong><br/>${esc(s.invalidation)}</p>
-    `
-    )
-    .join("<hr/>");
-
-  return `<div>
-    <p>${esc(report.cover?.market_temp)}</p>
-    ${sectionsHtml}
-    <p style="font-size:12px;color:#888;">${esc(report.disclaimer)}</p>
-  </div>`;
-}
-
 async function main() {
   const today = kstTodayStr();
 
@@ -326,7 +302,9 @@ async function main() {
     day_type: candidates[0].day_type,
     topic_title: generated.cover?.headline || "(제목 없음)",
     content_json: generated,
-    html_body: buildFallbackHtml(generated),
+    // emailTemplate.mjs가 content_json으로부터 발송 시점에 렌더링한다
+    // (admin 미리보기도 같은 함수를 써서 실제 발송본과 100% 동일하게 봄).
+    html_body: null,
     status: "draft",
     pdf_url: null,
   };

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
+import { buildEmailHtml } from "../../../../../scripts/premium/lib/emailTemplate.mjs";
 
 const STATUS_LABEL = {
   draft: "초안(검수 대기)",
@@ -39,7 +40,6 @@ const styles = {
   followupBadge: { padding: "2px 8px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 800, marginRight: 8 },
   divider: { margin: "40px 0", border: "none", borderTop: "2px dashed #cbd5e1" },
   htmlPreviewLabel: { fontWeight: 800, marginBottom: 12 },
-  htmlBody: { border: "1px solid #e2e8f0", borderRadius: 12, padding: 20 },
 };
 
 // 관리자 인증 시스템이 아직 없어(로그인/세션 없음), 최소한의 방어로
@@ -69,7 +69,7 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
   const supabase = createSupabaseAdminClient();
   const { data: report, error } = await supabase
     .from("reports")
-    .select("id, issue_date, day_type, topic_title, content_json, html_body, status")
+    .select("id, issue_date, day_type, topic_title, content_json, status")
     .eq("id", id)
     .maybeSingle();
 
@@ -85,6 +85,12 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
   const sections = content.sections || [];
   const followup = content.followup || [];
   const nextWeekCalendar = content.next_week_calendar || [];
+
+  // 미리보기 전용 - 실제 구독자 개별 토큰이 아니라 예시 URL로 렌더링한다.
+  const emailHtml = buildEmailHtml(report, {
+    webviewUrl: `https://www.hellomedia.win/premium/reports/${report.id}`,
+    unsubscribeUrl: "https://www.hellomedia.win/unsubscribe?token=preview",
+  });
 
   return (
     <main style={styles.container}>
@@ -185,8 +191,13 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
       <hr style={styles.divider} />
 
       <p style={styles.htmlPreviewLabel}>실제 발송될 이메일 HTML 미리보기</p>
-      {/* 관리자 전용 페이지이고 우리 파이프라인이 생성한 콘텐츠만 렌더링한다. */}
-      <div style={styles.htmlBody} dangerouslySetInnerHTML={{ __html: report.html_body || "" }} />
+      {/* emailHtml은 완전한 <html> 문서라 iframe으로 격리해서 보여준다
+          (페이지 자체의 html/body 안에 또 다른 html/body를 넣을 수 없음). */}
+      <iframe
+        title="이메일 미리보기"
+        srcDoc={emailHtml}
+        style={{ width: "100%", height: 900, border: "1px solid #e2e8f0", borderRadius: 12 }}
+      />
     </main>
   );
 }

@@ -1,30 +1,40 @@
 import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
+import { buildEmailHtml } from "./lib/emailTemplate.mjs";
 
-// TODO: 실제 도메인 인증 후 발신 주소 교체
-const FROM_ADDRESS = "onboarding@resend.dev";
+// 도메인 인증(SPF/DKIM/DMARC) 완료 후 실사용 가능. 인증 전엔 Resend가
+// 이 주소로의 발송을 거부하거나 스팸함으로 갈 수 있다 - TEST_RECIPIENT_EMAIL
+// 모드로 먼저 확인할 것.
+const FROM_ADDRESS = "report@hellomedia.win";
 
-const SITE_URL = "https://www.hellomedia.win/";
+const SITE_URL = "https://www.hellomedia.win";
 const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
 // app/reports는 기존 무료 스크리너 리포트 페이지가 이미 쓰고 있어(app/reports/page.js),
 // 프리미엄 아카이브는 충돌을 피해 /premium/reports 경로를 쓴다.
 const WEBVIEW_BASE_URL = "https://www.hellomedia.win/premium/reports";
+
+const BATCH_SIZE = 10;
+const BATCH_DELAY_MS = 1000;
+const MAX_ATTEMPTS = 3;
+const FAILURE_RATE_ALERT_THRESHOLD = 0.1;
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // report_id가 지정되면 그 리포트 하나만(승인된 상태인지도 재확인) 발송한다.
 // 지정 없으면 오늘 issue_date의 approved 리포트를 찾는다(정상 경로에선
 // 하루 1건만 존재 - generate-report.mjs가 issue_date당 1건으로 막아둠).
 async function fetchApprovedReports(reportId) {
-  let query = supabase.from("reports").select("id, topic_title, html_body").eq("status", "approved");
-
+  let query = supabase.from("reports").select("id, issue_date, topic_title, content_json").eq("status", "approved");
   query = reportId ? query.eq("id", reportId) : query.eq("issue_date", kstTodayStr());
 
   const { data, error } = await query;
-
   if (error) {
     console.error("reports 조회 실패:", error);
     process.exit(1);
@@ -35,7 +45,7 @@ async function fetchApprovedReports(reportId) {
 async function fetchLatestReport() {
   const { data, error } = await supabase
     .from("reports")
-    .select("id, topic_title, html_body")
+    .select("id, issue_date, topic_title, content_json")
     .order("issue_date", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -60,25 +70,14 @@ async function fetchActiveSubscribers() {
   return data;
 }
 
-// html_body(LLM 생성 원본)는 손대지 않고, 발송용 사본에만 상/하단 고정 링크를 감싸서 붙인다.
-// 최상단: 사이트 바로가기 + 웹에서 보기, 최하단: 구독취소 + 사이트 바로가기(반복).
-function buildEmailHtml(reportHtmlBody, reportId, unsubscribeToken) {
-  const webviewLink = `${WEBVIEW_BASE_URL}/${reportId}`;
-  const unsubscribeLink = `${UNSUBSCRIBE_BASE_URL}?token=${unsubscribeToken}`;
-
-  const header =
-    `<p><a href="${SITE_URL}">우량주 스카우터 바로가기</a></p>` +
-    `<p><a href="${webviewLink}">웹에서 보기</a></p>`;
-
-  const footer =
-    `<p style="margin-top:24px;font-size:12px;color:#888;">` +
-    `<a href="${unsubscribeLink}">구독취소</a> | ` +
-    `<a href="${SITE_URL}">우량주 스카우터 바로가기</a></p>`;
-
-  return `${header}${reportHtmlBody}${footer}`;
+function buildLinksFor(reportId, unsubscribeToken) {
+  return {
+    webviewUrl: `${WEBVIEW_BASE_URL}/${reportId}`,
+    unsubscribeUrl: `${UNSUBSCRIBE_BASE_URL}?token=${unsubscribeToken}`,
+  };
 }
 
-async function sendOneEmail(to, subject, htmlBody, reportId) {
+async function sendOneEmail(to, subject, htmlBody, reportId, unsubscribeUrl) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -90,6 +89,13 @@ async function sendOneEmail(to, subject, htmlBody, reportId) {
       to: [to],
       subject,
       html: htmlBody,
+      // Gmail/야후 대량 발송 정책상 필수. One-Click 방식이라 메일 클라이언트가
+      // 확인 페이지 없이 바로 구독취소 요청을 보낼 수 있어야 하므로,
+      // app/api/unsubscribe가 GET만으로도 처리 가능한지 별도 확인 필요.
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
       tags: [{ name: "report_id", value: String(reportId) }],
     }),
   });
@@ -101,28 +107,72 @@ async function sendOneEmail(to, subject, htmlBody, reportId) {
   return { ok: true };
 }
 
-async function sendReportToSubscribers(report, subscribers) {
-  const succeededSubscribers = [];
+// 401/403(인증 자체가 잘못됨)은 재시도해도 성공할 수 없으니 즉시 fatal로
+// 반환한다. 그 외 실패는 지수 백오프(2s/4s)로 최대 3회 시도한다.
+async function sendWithRetry(subscriber, report, subject, unsubscribeUrl, html) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const result = await sendOneEmail(subscriber.email, subject, html, report.id, unsubscribeUrl);
+    if (result.ok) return { ok: true, subscriber };
 
-  for (const subscriber of subscribers) {
-    const html = buildEmailHtml(report.html_body, report.id, subscriber.unsubscribe_token);
-    const result = await sendOneEmail(subscriber.email, report.topic_title, html, report.id);
+    if (result.status === 401 || result.status === 403) {
+      return { ok: false, subscriber, fatal: true, status: result.status, error: result.error };
+    }
 
-    if (result.ok) {
-      succeededSubscribers.push(subscriber);
+    if (attempt < MAX_ATTEMPTS) {
+      const waitMs = 2 ** attempt * 1000;
+      console.warn(
+        `이메일 발송 실패 (${subscriber.email}): ${result.status} - ${result.error} - ${waitMs}ms 후 재시도 (${attempt}/${MAX_ATTEMPTS})`
+      );
+      await sleep(waitMs);
     } else {
-      console.error(`이메일 발송 실패 (${subscriber.email}): ${result.status} - ${result.error}`);
-      if (result.status === 401) {
-        console.error("Resend API 인증 실패(401)로 발송을 중단합니다.");
-        process.exit(1);
+      console.error(`이메일 발송 최종 실패 (${subscriber.email}): ${result.status} - ${result.error}`);
+      return { ok: false, subscriber, fatal: false, status: result.status, error: result.error };
+    }
+  }
+}
+
+// 10건씩 동시 발송, 배치 사이 1초 대기. 401/403은 "현재 배치가 끝난 뒤"
+// 다음 배치를 시작하지 않는 방식으로 중단한다 - 이미 병렬로 날아간 같은
+// 배치 내 나머지 요청까지 완벽히 막을 수는 없다(동시 발송과 즉시 중단은
+// 본질적으로 트레이드오프).
+async function sendReportToSubscribers(report, subscribers, subject) {
+  const succeeded = [];
+  const failed = [];
+  let aborted = false;
+
+  for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+    const batch = subscribers.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map((subscriber) => {
+        const { webviewUrl, unsubscribeUrl } = buildLinksFor(report.id, subscriber.unsubscribe_token);
+        const html = buildEmailHtml(report, { webviewUrl, unsubscribeUrl });
+        return sendWithRetry(subscriber, report, subject, unsubscribeUrl, html);
+      })
+    );
+
+    for (const r of results) {
+      if (r.ok) {
+        succeeded.push(r.subscriber);
+      } else {
+        failed.push({ email: r.subscriber.email, status: r.status, error: r.error });
+        if (r.fatal) aborted = true;
       }
+    }
+
+    if (aborted) {
+      console.error("Resend API 인증 실패(401/403)로 이후 배치 발송을 중단합니다.");
+      break;
+    }
+
+    if (i + BATCH_SIZE < subscribers.length) {
+      await sleep(BATCH_DELAY_MS);
     }
   }
 
-  return succeededSubscribers;
+  return { succeeded, failed, aborted };
 }
 
-async function recordSendLog(reportId, successCount, topicTitle) {
+async function recordSendLog(reportId, successCount, failedEmails, topicTitle) {
   const { error } = await supabase.from("send_logs").insert({
     report_id: reportId,
     channel: "email",
@@ -131,6 +181,8 @@ async function recordSendLog(reportId, successCount, topicTitle) {
     open_count: 0,
     click_count: 0,
     summary_text: topicTitle,
+    failed_count: failedEmails.length,
+    failed_emails: failedEmails.map((f) => f.email),
   });
 
   if (error) {
@@ -167,26 +219,56 @@ async function markSubscribersAsSent(succeededSubscribers, reportId) {
   }
 }
 
+async function notifyHighFailureRate(reportId, failed, total) {
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+  const rate = ((failed.length / total) * 100).toFixed(1);
+  const text =
+    `🟡 [프리미엄 리포트 발송] report_id=${reportId} 실패율 ${rate}% (${failed.length}/${total}건)\n` +
+    failed
+      .slice(0, 10)
+      .map((f) => `- ${f.email}: ${f.status}`)
+      .join("\n");
+
+  if (!webhookUrl) {
+    console.log("[발송] SLACK_WEBHOOK_URL 없음 - 실패율 경고를 콘솔에만 출력\n" + text);
+    return;
+  }
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) {
+    console.error(`슬랙 전송 실패: ${res.status} - ${await res.text()}`);
+  }
+}
+
 async function processReport(report, subscribers) {
   if (subscribers.length === 0) {
     console.log(`[발송] 발송 대상 구독자가 없어 report_id=${report.id} 발송을 스킵합니다`);
     return;
   }
 
-  const succeededSubscribers = await sendReportToSubscribers(report, subscribers);
-  const successCount = succeededSubscribers.length;
+  const subject = report.content_json?.cover?.headline || report.topic_title;
+  const { succeeded, failed } = await sendReportToSubscribers(report, subscribers, subject);
 
-  const logSaved = await recordSendLog(report.id, successCount, report.topic_title);
+  const logSaved = await recordSendLog(report.id, succeeded.length, failed, report.topic_title);
   if (!logSaved) {
     console.error(`[발송] report_id=${report.id} send_logs 저장 실패로 status 업데이트를 건너뜁니다`);
     return;
   }
 
   await markReportAsSent(report.id);
-  await markSubscribersAsSent(succeededSubscribers, report.id);
+  await markSubscribersAsSent(succeeded, report.id);
+
+  const failureRate = failed.length / subscribers.length;
+  if (failureRate > FAILURE_RATE_ALERT_THRESHOLD) {
+    await notifyHighFailureRate(report.id, failed, subscribers.length);
+  }
 
   console.log(
-    `[발송] report_id=${report.id}, 성공 ${successCount}건 / 전체 ${subscribers.length}건, status를 sent로 업데이트 완료`
+    `[발송] report_id=${report.id}, 성공 ${succeeded.length}건 / 실패 ${failed.length}건 / 전체 ${subscribers.length}건, status를 sent로 업데이트 완료`
   );
 }
 
@@ -194,14 +276,15 @@ async function processReport(report, subscribers) {
 // TEST_RECIPIENT_EMAIL 환경변수가 설정된 경우에만 진입한다.
 async function runTestMode(testEmail) {
   const report = await fetchLatestReport();
-
   if (!report) {
     console.error("테스트 발송할 reports 행이 없습니다");
     process.exit(1);
   }
 
-  const html = buildEmailHtml(report.html_body, report.id, "test-mode-token");
-  const result = await sendOneEmail(testEmail, report.topic_title, html, report.id);
+  const { webviewUrl, unsubscribeUrl } = buildLinksFor(report.id, "test-mode-token");
+  const html = buildEmailHtml(report, { webviewUrl, unsubscribeUrl });
+  const subject = report.content_json?.cover?.headline || report.topic_title;
+  const result = await sendOneEmail(testEmail, subject, html, report.id, unsubscribeUrl);
 
   if (!result.ok) {
     console.error(`테스트 발송 실패: ${result.status} - ${result.error}`);
