@@ -9,25 +9,25 @@ import SubscribeSection from "./SubscribeSection";
 import SubscribeHeroBanner from "./SubscribeHeroBanner";
 import StrategySection from "./StrategySection";
 import AvoidSection from "./AvoidSection";
-import BridgeSection from "./BridgeSection";
 import QuickLinksSection from "./QuickLinksSection";
-import NoticePreview from "./NoticePreview";
+import TodayHeadline from "./TodayHeadline";
+import PerformanceSummaryCard from "./PerformanceSummaryCard";
 import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
 import PortfolioSummaryCard from "./PortfolioSummaryCard";
 import TopScoresSection from "./TopScoresSection";
 import ScreenerLinkSection from "./ScreenerLinkSection";
 
-export default function HomeClient({ stocks, notices }) {
+export default function HomeClient({ stocks, marketState, performanceSummary }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const latestNotice = [...notices].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
   const strategyCards = useMemo(() => buildStrategyCards(stocks), []);
   const avoidSummary = useMemo(() => buildAvoidSummary(stocks), []);
   const updatedAt = stocks[0]?.updatedAt || "-";
+  const avgTotalScore = marketState?.signals?.avgTotalScore;
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -91,7 +91,7 @@ export default function HomeClient({ stocks, notices }) {
       </header>
 
       <main className="container" style={{ background: "var(--bg-home)" }}>
-        <SubscribeHeroBanner openModal={openModal} />
+        <TodayHeadline marketState={marketState} />
 
         <div className="topStack">
           <div className="topStackSearch">
@@ -116,15 +116,15 @@ export default function HomeClient({ stocks, notices }) {
           handleSubscribe={handleSubscribe}
         />
 
-        <StrategySection strategyCards={strategyCards} />
+        <StrategySection strategyCards={strategyCards} avgTotalScore={avgTotalScore} />
 
         <AvoidSection avoidSummary={avoidSummary} />
 
-        <BridgeSection />
+        <PerformanceSummaryCard performanceSummary={performanceSummary} />
+
+        <SubscribeHeroBanner openModal={openModal} />
 
         <QuickLinksSection />
-
-        <NoticePreview latestNotice={latestNotice} />
       </main>
 
       <footer className="footer">
@@ -270,9 +270,7 @@ export default function HomeClient({ stocks, notices }) {
         .badge,
         .subscribeEyebrow,
         .modalBadge,
-        .bridgeBadge,
-        .strategyBadge,
-        .noticePreviewBadge {
+        .strategyBadge {
           display: inline-flex;
           align-items: center;
           gap: 6px;
@@ -299,7 +297,6 @@ export default function HomeClient({ stocks, notices }) {
           margin: 0;
         }
         .desc strong,
-        .bridgeDesc strong,
         .subscribeDesc strong {
           color: #0f172a;
         }
@@ -527,168 +524,64 @@ export default function HomeClient({ stocks, notices }) {
         }
         .sectionTitle {
           margin: 0 0 8px;
-          font-size: 2rem;
+          font-size: var(--font-hero);
+          font-weight: var(--font-hero-weight);
           letter-spacing: -0.03em;
         }
-        .sectionDesc,
-        .strategyDesc {
+        .sectionDesc {
           margin: 0;
           color: #64748b;
           line-height: 1.7;
         }
         .strategySection,
         .avoidSection,
-        .bridgeSection,
         .subscribeSection,
         .quickLinksSection {
           margin-top: 40px;
         }
         .strategyGrid,
-        .bridgeGrid,
-        .quickLinksGrid,
-        .avoidGrid {
+        .quickLinksGrid {
           display: grid;
           gap: 18px;
         }
-        .strategyGrid,
-        .bridgeGrid {
+        .strategyGrid {
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
-        .avoidGrid,
         .quickLinksGrid {
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
         .strategyCard,
-        .avoidCard,
-        .bridgeCard,
-        .quickLinksCard,
-        .subscribeCard,
-        .noticePreviewWrap {
-          border-radius: 28px;
-          border: 1px solid #e5e7eb;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-          box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
-        }
-        .strategyCard,
-        .avoidCard,
-        .bridgeCard,
         .quickLinksCard,
         .subscribeCard {
+          border-radius: var(--radius-card);
+          border: 1px solid #e5e7eb;
+          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          box-shadow: var(--shadow-card);
           padding: 24px;
         }
-        .strategyHeader,
-        .noticePreviewTopLine {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        .strategyStockTop {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-          margin-top: 18px;
-          margin-bottom: 12px;
-        }
-        .strategyStockTop h4 {
-          margin: 0 0 6px;
-          font-size: 1.35rem;
+        .strategyCard h3 {
+          margin: 14px 0 10px;
+          font-size: 1.3rem;
           letter-spacing: -0.03em;
         }
-        .scoreChip {
+        .gradeBadge {
           display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          padding: 8px 12px;
-          background: #0f172a;
-          color: #fff;
-          font-size: 0.82rem;
-          font-weight: 800;
-          white-space: nowrap;
-        }
-        .stockCode,
-        .noticePreviewDate {
-          color: #64748b;
-          font-size: 0.88rem;
-        }
-        .candidatePriceMeta {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
-          margin-bottom: 10px;
-        }
-        .candidatePriceItem {
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          padding: 12px;
-          background: #f8fafc;
-        }
-        .candidatePriceLabel {
-          display: block;
-          margin-bottom: 6px;
-          color: #64748b;
+          padding: 6px 12px;
+          border-radius: var(--radius-chip);
           font-size: 0.8rem;
-          font-weight: 700;
-        }
-        .priceLine,
-        .targetLine {
-          display: block;
-          margin: 0;
-          font-weight: 900;
-          letter-spacing: -0.01em;
-        }
-        .priceLine {
-          color: #0ea5e9;
-        }
-        .targetLine {
-          color: #0f172a;
-        }
-        .upsideLine {
-          margin: 0 0 10px;
-          font-weight: 900;
-        }
-        .upsidePositive {
-          color: #0ea5e9;
-        }
-        .upsideNegative,
-        .upsideNeutral {
-          color: #64748b;
-        }
-        .reasonBox {
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
-          padding: 14px;
-          background: #f8fbff;
+          font-weight: 800;
           margin-bottom: 12px;
         }
-        .reasonLabel {
-          display: block;
-          margin-bottom: 8px;
-          color: #0f172a;
-          font-size: 0.84rem;
-          font-weight: 800;
+        .conclusionLine {
+          margin: 0 0 8px;
+          color: #334155;
+          line-height: 1.7;
         }
-        .reasonBox p,
-        .emptyStateBox p,
-        .bridgeDesc,
-        .subscribeDesc,
-        .modalDesc,
-        .noticePreviewText,
-        .summaryText,
-        .bridgeItem ul,
-        .quickLinkItem span,
-        .avoidItem p {
-          margin: 0;
-          color: #475569;
-          line-height: 1.8;
-        }
-        .summaryText.short {
-          min-height: auto;
-          margin: 10px 0 18px;
-          word-break: keep-all;
+        .compareLine {
+          margin: 0 0 16px;
+          color: #64748b;
+          font-size: 0.86rem;
+          font-weight: 700;
         }
         .emptyStateBox {
           margin-top: 18px;
@@ -697,9 +590,18 @@ export default function HomeClient({ stocks, notices }) {
           padding: 18px;
           background: #ffffff;
         }
+        .emptyStateBox p,
+        .subscribeDesc,
+        .modalDesc,
+        .quickLinkItem span {
+          margin: 0;
+          color: #475569;
+          line-height: 1.8;
+        }
         .avoidItem {
+          max-width: 480px;
           border: 1px solid #e5e7eb;
-          border-radius: 18px;
+          border-radius: var(--radius-card);
           padding: 18px;
           background: #ffffff;
           display: flex;
@@ -722,28 +624,16 @@ export default function HomeClient({ stocks, notices }) {
           font-weight: 800;
           font-size: 0.9rem;
         }
-        .bridgeCard h2,
+        .avoidItem p {
+          margin: 0;
+          color: #475569;
+          line-height: 1.8;
+        }
         .quickLinksCard h2,
-        .subscribeCard h2,
-        .noticePreviewBody h2 {
+        .subscribeCard h2 {
           margin: 0 0 16px;
           font-size: 1.6rem;
           letter-spacing: -0.03em;
-        }
-        .bridgeItem {
-          border: 1px solid #e5e7eb;
-          border-radius: 20px;
-          padding: 20px;
-          background: #ffffff;
-        }
-        .bridgeItem.premium {
-          background: #f8fbff;
-        }
-        .bridgeItemLabel {
-          display: block;
-          margin-bottom: 12px;
-          color: #0f172a;
-          font-weight: 900;
         }
         .quickLinkItem {
           display: flex;
@@ -764,33 +654,6 @@ export default function HomeClient({ stocks, notices }) {
         }
         .quickLinkItem span {
           color: rgba(255, 255, 255, 0.78);
-        }
-        .noticePreviewSection {
-          margin: 28px 0 34px;
-        }
-        .noticePreviewWrap {
-          padding: 22px;
-        }
-        .noticePreviewCard {
-          display: block;
-          text-decoration: none;
-          border: 1px solid #e5e7eb;
-          border-radius: 22px;
-          padding: 22px 24px;
-          background: #ffffff;
-          color: #0f172a;
-        }
-        .noticePreviewDate {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 120px;
-          padding: 12px 16px;
-          border-radius: 16px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          font-weight: 800;
-          text-align: center;
         }
         .footer {
           border-top: 1px solid #e5e7eb;
@@ -877,18 +740,26 @@ export default function HomeClient({ stocks, notices }) {
           justify-content: flex-start;
         }
         @media (max-width: 1100px) {
-          .strategyGrid,
-          .bridgeGrid,
-          .quickLinksGrid,
-          .avoidGrid {
+          .strategyGrid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
         @media (max-width: 900px) {
-          .strategyGrid,
-          .bridgeGrid,
-          .quickLinksGrid,
-          .avoidGrid {
+          /* 문서 스펙: 모바일에서는 그리드가 아니라 가로 스와이프 캐러셀로,
+             한 번에 1.2장 정도 보이게 한다. */
+          .strategyGrid {
+            display: flex;
+            grid-template-columns: none;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 14px;
+            padding-bottom: 4px;
+          }
+          .strategyGrid .strategyCard {
+            flex: 0 0 82%;
+            scroll-snap-align: start;
+          }
+          .quickLinksGrid {
             grid-template-columns: 1fr;
           }
           .heroTop {
@@ -975,24 +846,10 @@ export default function HomeClient({ stocks, notices }) {
             width: 100%;
           }
           .strategyCard,
-          .avoidCard,
-          .bridgeCard,
           .quickLinksCard,
           .subscribeCard,
-          .modalCard,
-          .noticePreviewWrap {
+          .modalCard {
             padding: 22px;
-          }
-          .candidatePriceMeta {
-            grid-template-columns: 1fr;
-          }
-          .strategyStockTop,
-          .noticePreviewTopLine {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-          .noticePreviewDate {
-            width: 100%;
           }
         }
       `}</style>

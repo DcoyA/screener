@@ -190,7 +190,9 @@ function LockedReportView({ report }) {
             height: 48,
             padding: "0 24px",
             borderRadius: "var(--radius-button)",
-            background: "var(--color-accent)",
+            // "화면당 오렌지 1개" - PageTopBar의 MainNav가 이미 상시 CTA로
+            // --color-accent를 쓰고 있어서 여기선 primary로 뺀다.
+            background: "var(--color-primary)",
             color: "#fff",
             fontWeight: 800,
             textDecoration: "none",

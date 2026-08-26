@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Icon from "../icons/Icon";
 
-// 상단 네비를 홈/스크리너/리포트/마이 4개로 줄이면서 밀려난 항목들을 여기로 옮겼다.
+// TASK 4-2(디자인·IA 개편): 네비가 5개(오늘/종목찾기/성적표/리포트/내 종목)로
+// 재편되면서 ETF·리스크체크는 "종목찾기"(/screener) 탭으로 이미 도달 가능해져
+// 여기 있을 이유가 없어졌다. 네비 어디에도 없는 모의투자·이용가이드만 남긴다.
 const LINKS = [
   { href: "/demo-trade", icon: "wallet", title: "모의투자", desc: "가상 자금으로 미리 연습" },
-  { href: "/alternative", icon: "box", title: "ETF", desc: "대안투자 후보 살펴보기" },
-  { href: "/screener?tab=risk", icon: "alertTriangle", title: "리스크 체크", desc: "주의 종목과 체크포인트" },
   { href: "/notice", icon: "megaphone", title: "이용가이드", desc: "사이트 사용법과 공지" },
 ];
 

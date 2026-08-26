@@ -1,8 +1,25 @@
 import Link from "next/link";
-import { formatPrice, getUpsideClass, formatUpsideDisplay, formatTargetPriceBand } from "../../lib/homeData";
 import { cleanStockName } from "../../lib/stockName";
+import { getUnifiedGrade } from "../../lib/grade";
 
-export default function StrategySection({ strategyCards }) {
+// TASK 4-1 블록②. 문서 스펙: "카드 내용 = 종목명 / 한 줄 결론 / 등급 배지 /
+// 비교 기준 1개 - 지금처럼 지표 5개를 다 넣지 않는다." 예전 카드는 가격·
+// 적정가밴드·상승여력·근거박스·요약까지 다 넣고 있었어서 통째로 줄였다.
+// "한 줄 결론"은 app/lib/grade.js의 등급별 설명(이미 한 문장)을 그대로
+// 쓰고, "비교 기준 1개"는 market_state.json의 전체 평균 총점 대비로 만든다
+// (없는 지표를 새로 만들지 않고 이미 계산되어 있는 값만 쓴다).
+function buildCompareLine(stock, avgTotalScore) {
+  const score = Number(stock?.finalPickMeta?.finalScore ?? stock?.totalScore);
+  const avg = Number(avgTotalScore);
+  if (!Number.isFinite(score) || !Number.isFinite(avg)) return null;
+  const diff = score - avg;
+  if (Math.abs(diff) < 0.5) return `총점 ${Math.round(score)}점, 전체 평균이랑 비슷해요`;
+  return diff > 0
+    ? `총점 ${Math.round(score)}점, 전체 평균(${Math.round(avg)}점)보다 높아요`
+    : `총점 ${Math.round(score)}점, 전체 평균(${Math.round(avg)}점)보다 낮아요`;
+}
+
+export default function StrategySection({ strategyCards, avgTotalScore }) {
   return (
     <section className="strategySection">
       <div className="sectionHeaderRow">
@@ -15,78 +32,37 @@ export default function StrategySection({ strategyCards }) {
       </div>
 
       <div className="strategyGrid">
-        {strategyCards.map((section) => (
-          <div className="strategyCard" key={section.key}>
-            <div className="strategyHeader">
+        {strategyCards.map((section) => {
+          const stock = section.stock;
+          const grade = stock ? getUnifiedGrade(stock) : null;
+          const compareLine = stock ? buildCompareLine(stock, avgTotalScore) : null;
+
+          return (
+            <div className="strategyCard" key={section.key}>
               <span className="strategyBadge">{section.badge}</span>
-              <Link href={section.actionHref} className="miniActionLink">
-                {section.actionLabel}
-              </Link>
+
+              {stock ? (
+                <>
+                  <h3>{cleanStockName(stock.name)}</h3>
+                  {grade && (
+                    <span className="gradeBadge" style={{ color: grade.color, background: grade.bg }}>
+                      {grade.label}
+                    </span>
+                  )}
+                  <p className="conclusionLine">{grade?.description}</p>
+                  {compareLine && <p className="compareLine">{compareLine}</p>}
+                  <Link className="linkBtn" href={`/stock/${stock.code}`}>
+                    자세히 보기
+                  </Link>
+                </>
+              ) : (
+                <div className="emptyStateBox">
+                  <p>현재 기준으로 이 관점에 맞는 후보가 충분하지 않습니다.</p>
+                </div>
+              )}
             </div>
-            <h3>{section.title}</h3>
-            <p className="strategyDesc">{section.desc}</p>
-
-            {section.stock ? (
-              <>
-                <div className="strategyStockTop">
-                  <div>
-                    <h4>{cleanStockName(section.stock.name)}</h4>
-                    <p className="stockCode">{section.stock.market} · {section.stock.code}</p>
-                  </div>
-                  <div className="scoreChip">총점 {Number(section.stock.totalScore || 0).toFixed(0)}점</div>
-                </div>
-
-                <div className="candidatePriceMeta strategyMetaGrid">
-                  <div className="candidatePriceItem">
-                    <span className="candidatePriceLabel">최근 종가</span>
-                    <strong className="priceLine">{formatPrice(section.stock.metrics?.closePrice)}</strong>
-                  </div>
-                  <div className="candidatePriceItem">
-                    <span className="candidatePriceLabel">적정가 추정</span>
-                    <strong className="targetLine">{formatTargetPriceBand(section.stock)}</strong>
-                    {section.stock.holdingDiscount && section.stock.metrics?.targetPrice ? (
-                      <small style={{ display: "block", marginTop: 2, color: "#94a3b8", fontSize: ".68rem", fontWeight: 700 }}>지주사 할인 30% 반영</small>
-                    ) : null}
-                  </div>
-                </div>
-
-                <p className={getUpsideClass(section.stock.metrics?.upside)}>
-                  상승여력 {formatUpsideDisplay(section.stock)}
-                </p>
-
-                {section.momentumWarning ? (
-                  <p
-                    style={{
-                      margin: "0 0 10px",
-                      padding: "6px 10px",
-                      borderRadius: 10,
-                      background: "#fffbeb",
-                      color: "#92400e",
-                      fontSize: "0.78rem",
-                      fontWeight: 800,
-                    }}
-                  >
-                    ⚠ 최근 이미 많이 올랐습니다
-                  </p>
-                ) : null}
-
-                <div className="reasonBox">
-                  <span className="reasonLabel">왜 이 관점에서 보나</span>
-                  <p>{section.reason}</p>
-                </div>
-
-                <p className="summaryText short">{section.stock.summary}</p>
-                <Link className="linkBtn" href={`/stock/${section.stock.code}`}>
-                  종목 상세 보기
-                </Link>
-              </>
-            ) : (
-              <div className="emptyStateBox">
-                <p>현재 기준으로 이 관점에 맞는 후보가 충분하지 않습니다.</p>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

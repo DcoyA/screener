@@ -113,13 +113,12 @@ export default function PortfolioSummaryCard() {
     });
   }
 
+  // TASK 4-2(디자인·IA 개편): 로그인 여부를 비동기로 확인하는 동안 항상
+  // "불러오는 중..." 문구가 한 박자 노출됐다 사라졌는데, 비로그인 사용자가
+  // 대부분이라 매번 의미 없는 로딩 문구만 보고 지나가는 셈이었다. 로딩
+  // 중에는 아무것도 렌더링하지 않는다.
   if (status === "loading") {
-    return (
-      <section className="portfolioCard portfolioCardLoading">
-        <p>내 가상계좌 정보를 불러오는 중입니다...</p>
-        <style jsx>{portfolioStyles}</style>
-      </section>
-    );
+    return null;
   }
 
   if (status === "guest") {
@@ -197,10 +196,6 @@ const portfolioStyles = `
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
     margin-top: 24px;
-  }
-  .portfolioCardLoading {
-    color: #64748b;
-    font-size: 0.95rem;
   }
   .portfolioEyebrow {
     margin: 0 0 8px;

@@ -51,7 +51,9 @@ export default function SubscribeHeroBanner({ openModal }) {
           padding: 16px 32px;
           font-weight: 800;
           font-size: 1.02rem;
-          background: var(--color-accent);
+          /* "화면당 오렌지 1개" - 상단 네비 CTA(navSubscribeCta)가 이미
+             --color-accent를 쓰고 있어서 여기선 primary로 뺀다. */
+          background: var(--color-primary);
           color: #ffffff;
           cursor: pointer;
         }
