@@ -14,6 +14,14 @@ function formatPrice(value) {
   return `${num.toLocaleString("ko-KR")}원`;
 }
 
+// "2026-08-25" -> "8/25" (벤치마크 기준일 표기용)
+function formatMonthDay(dateStr) {
+  if (!dateStr) return "-";
+  const parts = String(dateStr).split("-");
+  if (parts.length !== 3) return dateStr;
+  return `${Number(parts[1])}/${Number(parts[2])}`;
+}
+
 function formatIndex(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return "-";
@@ -29,6 +37,15 @@ function formatPercent(value) {
   if (!Number.isFinite(num)) return "-";
   const sign = num > 0 ? "+" : "";
   return `${sign}${num.toFixed(1)}%`;
+}
+
+// 승률은 증감이 아니라 비율이라 +/- 부호를 붙이지 않는다(formatPercent와
+// 구분 - 수익률/초과수익 같은 "증감"에는 부호가 맞지만 비율에는 안 맞다).
+function formatRatio(value) {
+  if (value === null || value === undefined || value === "") return "-";
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "-";
+  return `${num.toFixed(1)}%`;
 }
 
 function calcReturnRate(baseValue, currentValue) {
@@ -47,9 +64,8 @@ function getToneClass(value) {
 }
 
 function getRowStatusLabel(returnRate, benchmarkReturn, options = {}) {
-  const { hasCurrentPrice = true, isLatestSnapshot = false } = options;
+  const { isLatestSnapshot = false } = options;
   if (isLatestSnapshot) return { text: "집계 중", className: "statusBadge neutral" };
-  if (!hasCurrentPrice) return { text: "데이터 없음", className: "statusBadge neutral" };
   const r = Number(returnRate);
   const b = Number(benchmarkReturn);
   if (!Number.isFinite(r)) return { text: "결과 확인 중", className: "statusBadge neutral" };
@@ -87,18 +103,57 @@ export default function PerformancePage() {
     []
   );
 
+  // TASK 4-2: 종목이 top500 유니버스에서 빠지면(상장폐지가 아니라 순위 밖으로
+  // 밀려난 경우가 대부분) 조용히 계산에서 빼면 "부진한 종목이 사라지는"
+  // 생존자 편향이 생긴다. history.json 자체가 각 종목이 top10에 마지막으로
+  // 뽑혔을 때의 selectedPrice를 갖고 있으므로, 그 마지막 가격으로 "동결"해서
+  // 계속 평균/승률에 포함시킨다. 벤치마크도 같은 날짜 기준으로 동결해야
+  // 초과수익 비교가 왜곡되지 않는다.
+  const lastKnownPriceByCode = useMemo(() => {
+    const map = new Map();
+    for (const entry of history) {
+      for (const pick of entry.top10 || []) {
+        const existing = map.get(pick.code);
+        if (!existing || entry.snapshotDate > existing.date) {
+          map.set(pick.code, { price: pick.selectedPrice, date: entry.snapshotDate });
+        }
+      }
+    }
+    return map;
+  }, []);
+
+  const benchmarkCloseByDate = useMemo(() => {
+    const map = new Map();
+    for (const entry of history) {
+      const close = Number(entry?.benchmark?.close);
+      if (Number.isFinite(close)) map.set(entry.snapshotDate, close);
+    }
+    return map;
+  }, []);
+
   const performanceData = useMemo(() => {
     const weeklyRows = history.map((entry) => {
       const isLatestSnapshot = entry.snapshotDate === latestDate;
       const picks = (entry.top10 || []).map((pick) => {
         const currentStock = stockMap[pick.code];
+        const trackingStatus = currentStock ? "tracked" : "out_of_universe";
         const rawCurrentPrice = currentPriceMap[pick.code];
         const currentPriceNum = Number(rawCurrentPrice);
         const hasCurrentPrice = Number.isFinite(currentPriceNum) && currentPriceNum > 0;
         const currentPrice = hasCurrentPrice ? currentPriceNum : null;
-        const returnRate = hasCurrentPrice ? calcReturnRate(pick.selectedPrice, currentPrice) : null;
+
+        // 라이브 현재가가 없으면(대부분 out_of_universe, 드물게 실시간 데이터
+        // 결측) history.json에 남아있는 이 종목의 마지막 확인 가격으로
+        // 동결해서 계산한다 - 제외하지 않는다(생존자 편향 방지).
+        const frozen = lastKnownPriceByCode.get(pick.code) || null;
+        const effectivePrice = hasCurrentPrice ? currentPrice : frozen?.price ?? null;
+        const returnRate = effectivePrice != null ? calcReturnRate(pick.selectedPrice, effectivePrice) : null;
+
         const benchmarkBase = Number(entry?.benchmark?.close);
-        const benchmarkReturnForPick = calcReturnRate(benchmarkBase, latestBenchmarkClose);
+        const benchmarkCompareClose = hasCurrentPrice
+          ? latestBenchmarkClose
+          : benchmarkCloseByDate.get(frozen?.date) ?? latestBenchmarkClose;
+        const benchmarkReturnForPick = calcReturnRate(benchmarkBase, benchmarkCompareClose);
         const excessReturnForPick =
           Number.isFinite(returnRate) && Number.isFinite(benchmarkReturnForPick)
             ? returnRate - benchmarkReturnForPick
@@ -113,6 +168,9 @@ export default function PerformancePage() {
           ...pick,
           currentPrice,
           hasCurrentPrice,
+          trackingStatus,
+          frozenAsOfDate: hasCurrentPrice ? null : frozen?.date ?? null,
+          effectivePrice,
           isLatestSnapshot,
           returnRate,
           benchmarkReturnForPick,
@@ -177,6 +235,13 @@ export default function PerformancePage() {
     const benchmarkAvg = benchmarkReturns.length ? benchmarkReturns.reduce((a, b) => a + b, 0) / benchmarkReturns.length : null;
     const excessAvg = excessReturns.length ? excessReturns.reduce((a, b) => a + b, 0) / excessReturns.length : null;
 
+    // TASK 4-2: out_of_universe 종목도 동결 가격으로 평균에 포함시키긴
+    // 하지만, 그 비율 자체가 너무 높으면("추적 대상이 계속 이탈한다") 별개로
+    // 알려줄 가치가 있는 신호다.
+    const outOfUniverseCount = allPicks.filter((p) => p.trackingStatus === "out_of_universe").length;
+    const outOfUniverseRatio = allPicks.length ? outOfUniverseCount / allPicks.length : 0;
+    const survivorshipWarning = outOfUniverseRatio > 0.2;
+
     const sortedByReturn = [...allPicks]
       .filter((item) => Number.isFinite(item.returnRate))
       .sort((a, b) => b.returnRate - a.returnRate);
@@ -226,10 +291,23 @@ export default function PerformancePage() {
       overallWorst,
       benchmarkAvg,
       excessAvg,
+      validReturnCount: allReturns.length,
+      outOfUniverseCount,
+      outOfUniverseRatio,
+      survivorshipWarning,
+      latestBenchmarkDate: history[0]?.snapshotDate || null,
       bestPicks: sortedByReturn.slice(0, 3),
       worstPicks: [...sortedByReturn].reverse().slice(0, 3),
     };
-  }, [currentPriceMap, latestBenchmarkClose, latestDate, selectedSnapshotDate, stockMap]);
+  }, [
+    benchmarkCloseByDate,
+    currentPriceMap,
+    lastKnownPriceByCode,
+    latestBenchmarkClose,
+    latestDate,
+    selectedSnapshotDate,
+    stockMap,
+  ]);
 
   const selectedWeek = performanceData.selectedWeek;
   const controversialPick = performanceData.controversialPick;
@@ -320,11 +398,19 @@ export default function PerformancePage() {
         </section>
 
         <section className="kpiSection">
+          {performanceData.survivorshipWarning ? (
+            <p className="survivorshipWarning">
+              ⚠ 추적 범위 밖(top500 이탈) 종목이 전체의 {formatRatio(performanceData.outOfUniverseRatio * 100)}로 다소 높습니다 -
+              생존 편향 가능성을 감안해 해석하세요. (이탈 종목도 마지막 확인 가격으로 동결해 아래 수치에 포함돼 있습니다)
+            </p>
+          ) : null}
           <div className="kpiGrid">
             <div className="kpiCard">
               <span className="kpiLabel">전략 평균 수익률</span>
               <strong className={getToneClass(performanceData.overallAvg)}>{formatPercent(performanceData.overallAvg)}</strong>
-              <p>추천 종목 전체 평균 기준</p>
+              <p>
+                추천 종목 전체 평균 기준 ({performanceData.validReturnCount}/{performanceData.totalPicks} 종목 기준)
+              </p>
             </div>
             <div className="kpiCard">
               <span className="kpiLabel">KOSPI 평균 수익률</span>
@@ -334,11 +420,14 @@ export default function PerformancePage() {
             <div className="kpiCard">
               <span className="kpiLabel">평균 초과수익</span>
               <strong className={getToneClass(performanceData.excessAvg)}>{formatPercent(performanceData.excessAvg)}</strong>
-              <p>전략 수익률 - KOSPI 수익률</p>
+              <p className="sampleCaveat">
+                표본 {performanceData.totalSnapshots}주차 · 약 {Math.max(1, Math.round(performanceData.totalSnapshots / 4.33))}개월.
+                통계적으로 확정적이지 않습니다.
+              </p>
             </div>
             <div className="kpiCard">
               <span className="kpiLabel">전체 승률</span>
-              <strong>{formatPercent(performanceData.overallWinRate)}</strong>
+              <strong>{formatRatio(performanceData.overallWinRate)}</strong>
               <p>수익률이 플러스인 종목 비율</p>
             </div>
             <div className="kpiCard">
@@ -423,7 +512,7 @@ export default function PerformancePage() {
                       <td className={getToneClass(row.avgReturn)}>{row.isLatestSnapshot ? "집계 중" : formatPercent(row.avgReturn)}</td>
                       <td className={getToneClass(row.benchmarkReturn)}>{formatPercent(row.benchmarkReturn)}</td>
                       <td className={getToneClass(row.excessReturn)}>{row.isLatestSnapshot ? "-" : formatPercent(row.excessReturn)}</td>
-                      <td>{row.isLatestSnapshot ? "-" : formatPercent(row.winRate)}</td>
+                      <td>{row.isLatestSnapshot ? "-" : formatRatio(row.winRate)}</td>
                       <td>{row.isLatestSnapshot ? "-" : `${formatPercent(row.bestReturn)} / ${formatPercent(row.worstReturn)}`}</td>
                       <td>
                         <button type="button" className={`detailBtn ${selectedSnapshotDate === row.snapshotDate ? "active" : ""}`} onClick={() => setSelectedSnapshotDate(row.snapshotDate)}>보기</button>
@@ -464,7 +553,7 @@ export default function PerformancePage() {
             <p className="tableNote">
               ※ KOSPI 비교값은 각 스냅샷에 저장된 benchmark.close와 최신 스냅샷의 benchmark.close를 비교해 계산합니다.
               <br />
-              ※ &lsquo;집계 중&rsquo;은 오늘 처음 추천되어 아직 성과를 판단할 시간이 지나지 않은 상태입니다. &lsquo;데이터 없음&rsquo;은 상장폐지·코드 변경 등으로 현재가를 찾을 수 없는 경우입니다.
+              ※ &lsquo;집계 중&rsquo;은 오늘 처음 추천되어 아직 성과를 판단할 시간이 지나지 않은 상태입니다. &lsquo;추적 범위 밖&rsquo;은 시가총액·거래대금 기준 상위 500위 밖으로 이동해 일간 갱신 대상에서 제외된 종목으로, 상장폐지를 의미하지 않습니다 - 이 경우 마지막으로 확인된 가격으로 동결해 수익률/승률 계산에 그대로 포함합니다(빼면 부진한 종목만 조용히 사라지는 생존자 편향이 생기기 때문입니다).
             </p>
           </div>
         </section>
@@ -483,7 +572,10 @@ export default function PerformancePage() {
                 <div className="benchmarkSummary">
                   <span>KOSPI 기준값</span>
                   <strong>{formatIndex(selectedWeek.benchmarkBase)}</strong>
-                  <span>현재 KOSPI</span>
+                  <span>
+                    현재 KOSPI
+                    {performanceData.latestBenchmarkDate ? ` (${formatMonthDay(performanceData.latestBenchmarkDate)} 종가 기준)` : ""}
+                  </span>
                   <strong>{formatIndex(selectedWeek.benchmarkCurrent)}</strong>
                   <span>벤치마크 수익률</span>
                   <strong className={getToneClass(selectedWeek.benchmarkReturn)}>{formatPercent(selectedWeek.benchmarkReturn)}</strong>
@@ -507,7 +599,6 @@ export default function PerformancePage() {
                     <tbody>
                       {selectedWeek.picks.map((pick) => {
                         const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn, {
-                          hasCurrentPrice: pick.hasCurrentPrice,
                           isLatestSnapshot: selectedWeek.isLatestSnapshot,
                         });
                         return (
@@ -517,13 +608,29 @@ export default function PerformancePage() {
                               <div className="stockCell">
                                 <strong>{cleanStockName(pick.name)}</strong>
                                 <span>{pick.market} · {pick.code}</span>
+                                {pick.trackingStatus === "out_of_universe" ? (
+                                  <span
+                                    className="statusBadge neutral"
+                                    style={{ marginTop: 4, width: "fit-content" }}
+                                    title="시가총액·거래대금 기준 상위 500위 밖으로 이동해 일간 갱신 대상에서 제외됨. 상장폐지를 의미하지 않습니다."
+                                  >
+                                    추적 범위 밖
+                                  </span>
+                                ) : null}
                               </div>
                             </td>
                             <td><span className={status.className}>{status.text}</span></td>
                             <td>{formatPrice(pick.selectedPrice)}</td>
-                            <td>{pick.hasCurrentPrice ? formatPrice(pick.currentPrice) : "데이터 없음"}</td>
-                            <td className={getToneClass(pick.returnRate)}>{pick.hasCurrentPrice ? formatPercent(pick.returnRate) : "-"}</td>
-                            <td className={getToneClass(pick.excessReturnForPick)}>{pick.hasCurrentPrice ? formatPercent(pick.excessReturnForPick) : "-"}</td>
+                            <td>
+                              {formatPrice(pick.effectivePrice)}
+                              {pick.trackingStatus === "out_of_universe" && pick.frozenAsOfDate ? (
+                                <span style={{ display: "block", fontSize: "0.72rem", color: "#94a3b8", fontWeight: 700 }}>
+                                  {formatMonthDay(pick.frozenAsOfDate)} 마지막 확인
+                                </span>
+                              ) : null}
+                            </td>
+                            <td className={getToneClass(pick.returnRate)}>{formatPercent(pick.returnRate)}</td>
+                            <td className={getToneClass(pick.excessReturnForPick)}>{formatPercent(pick.excessReturnForPick)}</td>
                             <td>{formatPrice(pick.targetPrice)}</td>
                             <td className={getToneClass(pick.upsideRaw)}>{pick.upsideDisplay}</td>
                             <td className={getToneClass(pick.currentUpsideRaw)}>{pick.currentUpsideDisplay}</td>
@@ -547,7 +654,6 @@ export default function PerformancePage() {
                 <div className="trustGrid">
                   {performanceData.selectedWeekSortedPicks.slice(0, 4).map((pick) => {
                     const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn, {
-                      hasCurrentPrice: pick.hasCurrentPrice,
                       isLatestSnapshot: selectedWeek.isLatestSnapshot,
                     });
                     return (
@@ -557,6 +663,14 @@ export default function PerformancePage() {
                             <p className="pickRank">#{pick.rank}</p>
                             <h3>{cleanStockName(pick.name)}</h3>
                             <p className="pickMetaLine">{pick.market} · {pick.code}</p>
+                            {pick.trackingStatus === "out_of_universe" ? (
+                              <span
+                                className="statusBadge neutral"
+                                title="시가총액·거래대금 기준 상위 500위 밖으로 이동해 일간 갱신 대상에서 제외됨. 상장폐지를 의미하지 않습니다."
+                              >
+                                추적 범위 밖
+                              </span>
+                            ) : null}
                           </div>
                           <span className={status.className}>{status.text}</span>
                         </div>
@@ -704,6 +818,8 @@ export default function PerformancePage() {
         .kpiLabel { display: block; margin-bottom: 10px; color: #64748b; font-size: 0.9rem; font-weight: 700; }
         .kpiCard strong { display: block; font-size: 2rem; line-height: 1; letter-spacing: -0.04em; margin-bottom: 10px; }
         .kpiCard p { margin: 0; color: #64748b; line-height: 1.7; font-size: 0.92rem; }
+        .sampleCaveat { color: #92400e !important; font-weight: 700; }
+        .survivorshipWarning { margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: #fef2f2; color: #991b1b; font-weight: 700; font-size: 0.9rem; line-height: 1.6; }
         .graphHeader, .detailHeader, .controversyHeader, .sectionHeaderInline { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
         .graphDesc, .detailDesc, .controversyDesc { margin: 0; color: #64748b; line-height: 1.7; }
         .legendWrap { display: flex; gap: 12px; flex-wrap: wrap; }
