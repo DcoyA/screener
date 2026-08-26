@@ -2,10 +2,11 @@ import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
 import { buildEmailHtml } from "./lib/emailTemplate.mjs";
 
-// 도메인 인증(SPF/DKIM/DMARC) 완료 후 실사용 가능. 인증 전엔 Resend가
-// 이 주소로의 발송을 거부하거나 스팸함으로 갈 수 있다 - TEST_RECIPIENT_EMAIL
-// 모드로 먼저 확인할 것.
-const FROM_ADDRESS = "report@hellomedia.win";
+// Resend에 인증한 도메인이 report.hellomedia.win(서브도메인)이라 발신
+// 주소도 이 서브도메인이어야 한다(hellomedia.win 자체가 아님). DKIM이
+// 아직 Pending이면(DNS 전파 대기) 인증 완료 전까지 실사용 불가 -
+// TEST_RECIPIENT_EMAIL 모드로 먼저 확인할 것.
+const FROM_ADDRESS = "news@report.hellomedia.win";
 
 const SITE_URL = "https://www.hellomedia.win";
 const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
