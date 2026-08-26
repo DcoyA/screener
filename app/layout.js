@@ -1,6 +1,9 @@
 import "./globals.css";
 import FloatingKakao from "./components/FloatingKakao";
 import MobileBottomNav from "./components/MobileBottomNav";
+import DataFreshnessBadge from "./components/DataFreshnessBadge";
+import stocks from "./data/stocks.json";
+import { getStocksBasisDate } from "./lib/dataFreshness";
 
 export const metadata = {
   metadataBase: new URL("https://www.hellomedia.win"),
@@ -26,9 +29,12 @@ export const metadata = {
 
 
 export default function RootLayout({ children }) {
+  const basisDate = getStocksBasisDate(stocks);
+
   return (
     <html lang="ko">
       <body>
+        <DataFreshnessBadge basisDate={basisDate} />
         {children}
 
         <FloatingKakao url="https://open.kakao.com/o/srEOdDai" />
