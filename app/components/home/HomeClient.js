@@ -14,7 +14,6 @@ import TodayHeadline from "./TodayHeadline";
 import PerformanceSummaryCard from "./PerformanceSummaryCard";
 import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
 import PortfolioSummaryCard from "./PortfolioSummaryCard";
-import TopScoresSection from "./TopScoresSection";
 import ScreenerLinkSection from "./ScreenerLinkSection";
 
 export default function HomeClient({ stocks, marketState, performanceSummary }) {
@@ -93,15 +92,8 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
       <main className="container" style={{ background: "var(--bg-home)" }}>
         <TodayHeadline marketState={marketState} />
 
-        <div className="topStack">
-          <div className="topStackSearch">
-            <HeroSection updatedAt={updatedAt} stocks={stocks} />
-          </div>
-          <div className="topStackScores">
-            <TopScoresSection stocks={stocks} />
-            <ScreenerLinkSection />
-          </div>
-        </div>
+        <HeroSection updatedAt={updatedAt} stocks={stocks} />
+        <ScreenerLinkSection />
 
         <PortfolioSummaryCard />
 
@@ -182,27 +174,6 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
           font-weight: 800;
           color: #ffffff;
           letter-spacing: -0.02em;
-        }
-        .topStack {
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-          margin-top: 32px;
-        }
-        .topStackSearch {
-          order: 1;
-        }
-        .topStackScores {
-          order: 2;
-        }
-        @media (max-width: 768px) {
-          /* 모바일에서는 검색바보다 TOP5(빠른 가치 확인)를 먼저 보여준다 */
-          .topStackSearch {
-            order: 2;
-          }
-          .topStackScores {
-            order: 1;
-          }
         }
         .hero {
           position: relative;

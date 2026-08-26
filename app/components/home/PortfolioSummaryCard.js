@@ -105,14 +105,6 @@ export default function PortfolioSummaryCard() {
     };
   }, []);
 
-  async function handleKakaoLogin() {
-    const supabase = createSupabaseBrowserClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "kakao",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/demo-trade` },
-    });
-  }
-
   // TASK 4-2(디자인·IA 개편): 로그인 여부를 비동기로 확인하는 동안 항상
   // "불러오는 중..." 문구가 한 박자 노출됐다 사라졌는데, 비로그인 사용자가
   // 대부분이라 매번 의미 없는 로딩 문구만 보고 지나가는 셈이었다. 로딩
@@ -121,24 +113,11 @@ export default function PortfolioSummaryCard() {
     return null;
   }
 
+  // TASK 4(디자인·IA 개편, 재검토): 첫 방문자는 정의상 항상 guest 상태다.
+  // 계좌가 없는 사람에게 "계좌 요약" 카드를 보여주는 건 빈 껍데기라, 홈에서는
+  // 아예 렌더하지 않는다(모의투자 진입은 QuickLinksSection이 이미 담당).
   if (status === "guest") {
-    return (
-      <section className="portfolioCard">
-        <div className="portfolioGuestRow">
-          <div>
-            <p className="portfolioEyebrow">가상계좌</p>
-            <h3 className="portfolioGuestTitle">1억 가상현금으로 매수 판단을 먼저 검증해보세요</h3>
-            <p className="portfolioGuestDesc">
-              카카오 로그인 한 번이면 가상계좌가 자동으로 만들어집니다. 실제 돈 없이 매수·매도를 연습해볼 수 있어요.
-            </p>
-          </div>
-          <button type="button" className="portfolioLoginBtn" onClick={handleKakaoLogin}>
-            카카오로 시작하기
-          </button>
-        </div>
-        <style jsx>{portfolioStyles}</style>
-      </section>
-    );
+    return null;
   }
 
   if (status === "error" || !summary) {
@@ -207,38 +186,6 @@ const portfolioStyles = `
     font-size: 0.78rem;
     font-weight: 800;
   }
-  .portfolioGuestRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  .portfolioGuestTitle {
-    margin: 0 0 8px;
-    font-size: 1.15rem;
-    letter-spacing: -0.02em;
-  }
-  .portfolioGuestDesc {
-    margin: 0;
-    color: #64748b;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    max-width: 480px;
-  }
-  .portfolioLoginBtn {
-    flex-shrink: 0;
-    padding: 14px 22px;
-    border-radius: 14px;
-    border: none;
-    background: #0f172a;
-    color: #fff;
-    font-weight: 800;
-    cursor: pointer;
-  }
-  .portfolioLoginBtn:hover {
-    background: #111827;
-  }
   .portfolioTopRow {
     display: flex;
     justify-content: space-between;
@@ -291,13 +238,6 @@ const portfolioStyles = `
   @media (max-width: 640px) {
     .portfolioStatsRow {
       grid-template-columns: 1fr;
-    }
-    .portfolioGuestRow {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .portfolioLoginBtn {
-      width: 100%;
     }
   }
 `;

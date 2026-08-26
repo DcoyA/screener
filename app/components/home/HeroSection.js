@@ -121,6 +121,7 @@ export default function HeroSection({ stocks = [], updatedAt }) {
       <style jsx>{`
         .compactSearchHero {
           position: relative;
+          margin-top: 24px;
         }
         .updatedAtCaption {
           margin: 10px 0 0;
