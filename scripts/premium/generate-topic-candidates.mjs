@@ -177,6 +177,7 @@ function scoreEconomicCalendarItems(items) {
       }`,
       related_codes: [],
       related_sectors: item.related_sectors || [],
+      meta: { daysUntil },
     };
   });
 }
@@ -195,6 +196,7 @@ function scoreMarketIssueItems(items) {
       }`.trim(),
       related_codes: item.impacted_codes || [],
       related_sectors: item.impacted_sectors || [],
+      meta: { confidence: item.confidence, direction: item.direction },
     };
   });
 }
@@ -210,6 +212,7 @@ function scoreDisclosureEventItems(items) {
       rationale: `${item.disclosure_date} ${item.code} 종목의 ${item.type} 공시. ${item.summary || ""}`.trim(),
       related_codes: item.code ? [item.code] : [],
       related_sectors: [],
+      meta: { disclosureType: item.type },
     };
   });
 }
@@ -233,6 +236,7 @@ function scoreFlowSignalItems(items) {
     rationale: `${item.date} 기준 외국인 순매수 ${foreign.toLocaleString()}, 기관 순매수 ${inst.toLocaleString()}, 공매도잔고 변동 ${shortChange}%.`,
     related_codes: item.code ? [item.code] : [],
     related_sectors: [],
+    meta: { zscore: item.foreign_zscore_20d ?? null },
   }));
 }
 
@@ -340,6 +344,7 @@ async function fetchRotationCandidates(table, sourceLabel, categoryLabel) {
     rationale: `${categoryLabel} 소재뱅크 로테이션 (last_used_at=${row.last_used_at || "없음(최우선)"})`,
     related_codes: [],
     related_sectors: [],
+    meta: { category: row.category },
     _topicBankRow: { table, id: row.id },
   }));
 }
@@ -483,6 +488,8 @@ async function main() {
     related_codes: c.related_codes || [],
     related_sectors: c.related_sectors || [],
     status: "proposed",
+    source: c.source,
+    meta: c.meta || {},
   }));
 
   const { error } = await supabase.from("topic_candidates").insert(rows);

@@ -6,6 +6,34 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+const SOURCE_TAG = {
+  market_issues: "[시장이슈]",
+  flow_signals: "[수급]",
+  disclosure_events: "[공시]",
+  economic_calendar: "[일정]",
+  evergreen_topics: "[상식]",
+  literacy_topics: "[교육]",
+};
+
+function buildBadge(candidate) {
+  const meta = candidate.meta || {};
+  switch (candidate.source) {
+    case "market_issues":
+      return `신뢰도 ${meta.confidence || "-"}`;
+    case "flow_signals":
+      return Number.isFinite(meta.zscore) ? `z=${meta.zscore.toFixed(1)}` : "z=-";
+    case "disclosure_events":
+      return meta.disclosureType || "-";
+    case "economic_calendar":
+      return Number.isFinite(meta.daysUntil) ? `D-${meta.daysUntil}` : "-";
+    case "evergreen_topics":
+    case "literacy_topics":
+      return "로테이션";
+    default:
+      return "";
+  }
+}
+
 async function fetchTodayProposedCandidates() {
   const today = kstTodayStr();
   const { data, error } = await supabase
@@ -22,53 +50,55 @@ async function fetchTodayProposedCandidates() {
   return data;
 }
 
-function buildBlocksForCandidate(candidate) {
-  const sectors = (candidate.related_sectors || []).join(", ") || "-";
-  return [
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*${candidate.title}*\n${candidate.rationale}\n_관련 섹터: ${sectors}_`,
-      },
-    },
-    {
-      type: "actions",
-      block_id: `candidate_${candidate.id}`,
-      elements: [
-        {
-          type: "button",
-          text: { type: "plain_text", text: "승인" },
-          style: "primary",
-          action_id: "approve_candidate",
-          value: String(candidate.id),
-        },
-        {
-          type: "button",
-          text: { type: "plain_text", text: "거부" },
-          style: "danger",
-          action_id: "reject_candidate",
-          value: String(candidate.id),
-        },
-      ],
-    },
-    { type: "divider" },
-  ];
-}
-
 function buildSlackMessage(candidates) {
-  const blocks = [
-    {
-      type: "header",
-      text: { type: "plain_text", text: `오늘의 리포트 주제 후보 (${candidates.length}건)` },
-    },
-    { type: "divider" },
-    ...candidates.flatMap(buildBlocksForCandidate),
-  ];
+  const allIds = candidates.map((c) => c.id).join(",");
 
   return {
-    text: `오늘의 리포트 주제 후보 ${candidates.length}건`,
-    blocks,
+    text: `${kstTodayStr()}(${KST_WEEKDAY_NAME[kstWeekday()]}) 리포트 후보 ${candidates.length}건`,
+    blocks: [
+      {
+        type: "header",
+        text: { type: "plain_text", text: `📋 ${kstTodayStr()}(${KST_WEEKDAY_NAME[kstWeekday()]}) 리포트 후보 ${candidates.length}건` },
+      },
+      { type: "divider" },
+      {
+        type: "actions",
+        block_id: "candidate_checkboxes",
+        elements: [
+          {
+            type: "checkboxes",
+            action_id: "select_candidates",
+            options: candidates.map((c, i) => ({
+              text: {
+                type: "mrkdwn",
+                text: `*${i + 1}. ${SOURCE_TAG[c.source] || "[기타]"}* ${c.title} — ${buildBadge(c)}`,
+              },
+              value: String(c.id),
+            })),
+          },
+        ],
+      },
+      {
+        type: "actions",
+        block_id: "candidate_submit",
+        elements: [
+          {
+            type: "button",
+            text: { type: "plain_text", text: "선택한 항목으로 초안 생성" },
+            style: "primary",
+            action_id: "generate_selected_candidates",
+            value: allIds,
+          },
+          {
+            type: "button",
+            text: { type: "plain_text", text: "전체 스킵" },
+            style: "danger",
+            action_id: "skip_all_candidates",
+            value: allIds,
+          },
+        ],
+      },
+    ],
   };
 }
 
