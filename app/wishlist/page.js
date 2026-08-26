@@ -7,18 +7,12 @@ import risks from "../data/risks.json";
 import PageTopBar from "../components/PageTopBar";
 import WishlistButton from "../components/WishlistButton";
 import { getWishlist } from "../lib/wishlist";
+import { formatUpsideDisplay, formatUpsidePercent } from "../lib/formatUpside";
 
 function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
   return `${num.toLocaleString("ko-KR")}원`;
-}
-
-function formatPercent(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
 }
 
 function buildRiskMap(items) {
@@ -82,7 +76,7 @@ export default function WishlistPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, borderRadius: "var(--radius-card)", background: "var(--color-primary-dark)", padding: 20 }}>
             <div>
               <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>평균 상승여력</span>
-              <strong style={{ fontSize: "1.4rem", color: "#fff" }}>{formatPercent(insight.avgUpside)}</strong>
+              <strong style={{ fontSize: "1.4rem", color: "#fff" }}>{formatUpsidePercent(insight.avgUpside)}</strong>
             </div>
             <div>
               <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>위험 주의 종목</span>
@@ -123,7 +117,7 @@ export default function WishlistPage() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <span style={{ display: "block", fontSize: "0.8rem", color: "#64748b" }}>상승여력</span>
-                      <strong>{formatPercent(stock?.metrics?.upside)}</strong>
+                      <strong>{formatUpsideDisplay(stock)}</strong>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <span style={{ display: "block", fontSize: "0.8rem", color: "#64748b" }}>위험도</span>

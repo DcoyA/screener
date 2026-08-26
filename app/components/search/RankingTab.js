@@ -7,6 +7,7 @@ import WishlistButton from "../WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../GradeBadge";
 import { getScoreGaugeColor } from "../../lib/scoreGauge";
+import { formatUpsideDisplay } from "../../lib/formatUpside";
 
 const PAGE_SIZE = 30;
 // 종합 점수(0~100 스케일)로 해석 가능한 보기에서만 게이지 색상 규칙(70/40)을 적용한다.
@@ -53,15 +54,6 @@ function formatKrwCompact(value) {
   if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
   if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
   return `${num.toLocaleString("ko-KR")}원`;
-}
-// 상승여력 표시값(fair-value v2): display.upsideLabel이 있으면(캡 초과)
-// 숫자 대신 라벨을 보여준다. 없으면 display.upsideCapped(캡 적용된 값,
-// 없는 옛 데이터는 원본 upside)를 퍼센트로 보여준다.
-function formatUpsideDisplay(stock) {
-  const label = stock?.display?.upsideLabel;
-  if (label) return label;
-  const capped = stock?.display?.upsideCapped;
-  return formatPercent(capped ?? stock?.metrics?.upside);
 }
 // 적정가 밴드 표시값(fair-value v2): 보수~낙관 범위, 둘 다 없으면 단일값.
 function formatTargetPriceBand(stock) {

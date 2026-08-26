@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade, GRADE_META, GRADE_ORDER } from "../../lib/grade";
+import { formatUpsideDisplay } from "../../lib/formatUpside";
 
 const GROUP_DESC = {
   S: "재무·타이밍·리스크를 모두 다시 통과한 후보입니다.",
@@ -37,13 +38,6 @@ function formatPercent(value) {
   return `${sign}${num.toFixed(1)}%`;
 }
 
-// 상승여력 표시값(fair-value v2): 캡 초과 시 라벨, 아니면 캡 적용값(옛 데이터는 원본)
-function formatUpsideDisplay(stock) {
-  const label = stock?.display?.upsideLabel;
-  if (label) return label;
-  const capped = stock?.display?.upsideCapped;
-  return formatPercent(capped ?? stock?.metrics?.upside);
-}
 // 적정가는 단일값이 아니라 보수~낙관 밴드로 표시한다.
 function formatTargetPriceBand(stock) {
   const lo = Number(stock?.metrics?.targetPriceConservative);

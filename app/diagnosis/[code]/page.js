@@ -140,7 +140,7 @@ export default async function DiagnosisPage({ params }) {
         />
         <Metric
           label="상승여력"
-          value={stock.upsideLabel || formatPercent(stock.upsideDisplay ?? stock.upside)}
+          value={stock.upsideDisplay}
           accent
         />
         <Metric label="부채비율" value={formatRatio(stock.debtRatio)} />

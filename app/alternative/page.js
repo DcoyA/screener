@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import marketState from "../data/market_state.json";
 import etfUniverse from "../data/etf_universe.json";
 import MainNav from "../components/MainNav";
+import { formatUpsidePercent } from "../lib/formatUpside";
 
 function formatPercent(value) {
   const num = Number(value);
@@ -225,7 +226,7 @@ export default function AlternativePage() {
     {
       key: "avgUpside",
       label: "상위 평균 상승여력",
-      value: formatPercent(avgUpside),
+      value: formatUpsidePercent(avgUpside),
       method: "상위 후보군의 적정가 대비 upside 평균",
       scope: "상승 가능성 그 자체보다 밸류 괴리 참고용",
       meaning: getUpsideBand(avgUpside),
@@ -314,7 +315,7 @@ export default function AlternativePage() {
             <div className="signalMetricGrid">
               <div className="metricCard"><span>종합 후보 비중</span><strong>{formatPercent(eligibleRatio * 100)}</strong></div>
               <div className="metricCard"><span>상위 평균 총점</span><strong>{avgTotalScore.toFixed(1)}점</strong></div>
-              <div className="metricCard"><span>상위 평균 상승여력</span><strong>{formatPercent(avgUpside)}</strong></div>
+              <div className="metricCard"><span>상위 평균 상승여력</span><strong>{formatUpsidePercent(avgUpside)}</strong></div>
               <div className="metricCard"><span>상위 평균 유동성</span><strong>{formatKrwCompact(avgLiquidity5d)}</strong></div>
               <div className="metricCard"><span>모멘텀 지지 비율</span><strong>{formatPercent(momentumSupportRatio * 100)}</strong></div>
               <div className="metricCard"><span>위험 집중도</span><strong>{formatPercent(riskConcentration * 100)}</strong></div>
@@ -487,7 +488,7 @@ export default function AlternativePage() {
                     <h4>{todayStock.name}</h4>
                     <p className="codeLine">{todayStock.market} · {todayStock.code} · {todayStock.sector || "미분류"}</p>
                     <div className="metricInline">총점 <b>{Number(todayStock.totalScore || 0).toFixed(0)}점</b></div>
-                    <div className="metricInline">상승여력 <b>{formatPercent(todayStock.upside)}</b></div>
+                    <div className="metricInline">상승여력 <b>{formatUpsidePercent(todayStock.upside)}</b></div>
                     <div className="metricInline">유동성 <b>{formatKrwCompact(todayStock.avgTradeValue5d)}</b></div>
                     <div className="infoBlock"><b>왜 지금 보는가</b><p>{todayStock.whyNow || todayStock.summary || "현재 기준으로 가장 균형이 좋은 종목입니다."}</p></div>
                     <Link href={`/stock/${todayStock.code}`} className="detailBtn">종목 상세 보기</Link>

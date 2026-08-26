@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import history from "../data/history.json";
 import stocks from "../data/stocks.json";
 import PageTopBar from "../components/PageTopBar";
+import { formatUpside } from "../lib/formatUpside";
 
 function formatPrice(value) {
   const num = Number(value);
@@ -102,6 +103,11 @@ export default function PerformancePage() {
             ? returnRate - benchmarkReturnForPick
             : null;
 
+        // 상승여력은 원문 %를 그대로 노출하지 않고 app/lib/formatUpside.js를 거친다
+        // (+60% 상한/-40% 하한 라벨 처리, fairValue 결측 시 "산출 보류").
+        const upsideAtPick = formatUpside(pick.selectedPrice, pick.targetPrice);
+        const currentUpsideResult = formatUpside(currentPrice, currentStock?.metrics?.targetPrice);
+
         return {
           ...pick,
           currentPrice,
@@ -110,8 +116,11 @@ export default function PerformancePage() {
           returnRate,
           benchmarkReturnForPick,
           excessReturnForPick,
+          upsideDisplay: upsideAtPick.display,
+          upsideRaw: upsideAtPick.raw,
           currentTargetPrice: currentStock?.metrics?.targetPrice ?? null,
-          currentUpside: currentStock?.metrics?.upside ?? null,
+          currentUpsideDisplay: currentUpsideResult.display,
+          currentUpsideRaw: currentUpsideResult.raw,
           currentSummary: currentStock?.summary || "",
           currentRisk: currentStock?.risk || "",
           currentDescription: currentStock?.description || "",
@@ -515,8 +524,8 @@ export default function PerformancePage() {
                             <td className={getToneClass(pick.returnRate)}>{pick.hasCurrentPrice ? formatPercent(pick.returnRate) : "-"}</td>
                             <td className={getToneClass(pick.excessReturnForPick)}>{pick.hasCurrentPrice ? formatPercent(pick.excessReturnForPick) : "-"}</td>
                             <td>{formatPrice(pick.targetPrice)}</td>
-                            <td className={getToneClass(pick.upside)}>{formatPercent(pick.upside)}</td>
-                            <td className={getToneClass(pick.currentUpside)}>{formatPercent(pick.currentUpside)}</td>
+                            <td className={getToneClass(pick.upsideRaw)}>{pick.upsideDisplay}</td>
+                            <td className={getToneClass(pick.currentUpsideRaw)}>{pick.currentUpsideDisplay}</td>
                           </tr>
                         );
                       })}
@@ -573,7 +582,7 @@ export default function PerformancePage() {
                           ))}
                         </div>
                         <p className="trustReason">
-                          추천 당시 상승여력 {formatPercent(pick.upside)} / 현재 상승여력 {formatPercent(pick.currentUpside)}.
+                          추천 당시 상승여력 {pick.upsideDisplay} / 현재 상승여력 {pick.currentUpsideDisplay}.
                           {pick.currentSummary ? ` 현재 요약: ${pick.currentSummary}` : ""}
                         </p>
                       </div>
@@ -633,15 +642,15 @@ export default function PerformancePage() {
                 <div className="controversyMetric"><span>추천 당시</span><strong>{formatPrice(controversialPick.selectedPrice)}</strong></div>
                 <div className="controversyMetric"><span>현재가</span><strong>{formatPrice(controversialPick.currentPrice)}</strong></div>
                 <div className="controversyMetric"><span>현재 수익률</span><strong className={getToneClass(controversialPick.returnRate)}>{formatPercent(controversialPick.returnRate)}</strong></div>
-                <div className="controversyMetric"><span>당시 상승여력</span><strong className={getToneClass(controversialPick.upside)}>{formatPercent(controversialPick.upside)}</strong></div>
+                <div className="controversyMetric"><span>당시 상승여력</span><strong className={getToneClass(controversialPick.upsideRaw)}>{controversialPick.upsideDisplay}</strong></div>
               </div>
               <div className="controversyReasonGrid">
                 <div className="controversyReasonBox">
                   <h3>왜 주목됐나</h3>
                   <ul>
-                    {Number.isFinite(controversialPick.upside) ? <li>당시 상승여력 {formatPercent(controversialPick.upside)}로 기대치가 높았습니다.</li> : null}
+                    {Number.isFinite(controversialPick.upsideRaw) ? <li>당시 상승여력 {controversialPick.upsideDisplay}로 기대치가 높았습니다.</li> : null}
                     {Number.isFinite(controversialPick.totalScore) ? <li>추천 당시 총점 {controversialPick.totalScore}점으로 상위권에 포함되었습니다.</li> : null}
-                    {Number.isFinite(controversialPick.currentUpside) ? <li>현재 상승여력은 {formatPercent(controversialPick.currentUpside)}로 변했습니다.</li> : null}
+                    {Number.isFinite(controversialPick.currentUpsideRaw) ? <li>현재 상승여력은 {controversialPick.currentUpsideDisplay}로 변했습니다.</li> : null}
                   </ul>
                 </div>
                 <div className="controversyReasonBox soft">

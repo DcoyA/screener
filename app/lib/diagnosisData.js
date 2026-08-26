@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "./supabase/server";
+import { formatUpside } from "./formatUpside";
 
 export async function getStockDiagnosisData(code) {
   const supabase = await createSupabaseServerClient();
@@ -12,22 +13,24 @@ export async function getStockDiagnosisData(code) {
 
   const rawData = snapshot.raw_data || {};
   const rawMetrics = rawData.metrics || {};
+  const currentPrice = snapshot.current_price ?? rawMetrics.closePrice ?? null;
+  const upsideResult = formatUpside(currentPrice, rawMetrics.targetPrice);
 
   return {
     code: snapshot.code,
     name: stockRow?.name || rawData.name || snapshot.code,
     market: stockRow?.market || rawData.market || "",
-    currentPrice: snapshot.current_price ?? rawMetrics.closePrice ?? null,
+    currentPrice,
     changePercent: snapshot.change_percent,
     // fair-value v2: 적정가는 단일값이 아니라 보수/중립/낙관 밴드다.
     targetPrice: rawMetrics.targetPrice ?? null,
     targetPriceConservative: rawMetrics.targetPriceConservative ?? null,
     targetPriceOptimistic: rawMetrics.targetPriceOptimistic ?? null,
-    // 계산값(캡 없는 원본)과 표시값(캡+라벨 적용)을 분리해서 함께 내려준다.
-    upside: rawMetrics.upside ?? null,
-    upsideDisplay: rawData.display?.upsideCapped ?? rawMetrics.upside ?? null,
-    upsideLabel: rawData.display?.upsideLabel ?? null,
-    upsideLabelReason: rawData.display?.upsideLabelReason ?? null,
+    // app/lib/formatUpside.js의 formatUpside(currentPrice, targetPrice)로 통일 -
+    // Python이 미리 계산해두던 display.upsideCapped/upsideLabel은 더 이상 읽지 않는다.
+    upsideDisplay: upsideResult.display,
+    upsideIsCapped: upsideResult.isCapped,
+    upsideRaw: upsideResult.raw,
     // 지주회사 할인(30%)이 적정가에 이미 반영됐는지 - 화면에 "지주사 할인
     // 30% 반영" 문구를 보여줄지 판단하는 데 쓴다.
     holdingDiscount: rawData.holdingDiscount ?? false,

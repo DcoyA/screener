@@ -1,3 +1,5 @@
+import { formatUpsideDisplay } from "./formatUpside";
+
 function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
@@ -25,14 +27,6 @@ function getUpsideClass(value) {
   if (num > 0) return "upsideLine upsidePositive";
   if (num < 0) return "upsideLine upsideNegative";
   return "upsideLine upsideNeutral";
-}
-
-// 상승여력 표시값(fair-value v2): 캡 초과 시 라벨, 아니면 캡 적용값(옛 데이터는 원본).
-function formatUpsideDisplay(stock) {
-  const label = stock?.display?.upsideLabel;
-  if (label) return label;
-  const capped = stock?.display?.upsideCapped;
-  return formatPercent(capped ?? stock?.metrics?.upside);
 }
 
 // 적정가는 단일값이 아니라 보수~낙관 밴드로 표시한다.
