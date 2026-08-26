@@ -1,0 +1,60 @@
+name: "Notify Slack"
+description: "파이프라인 성공/실패를 Slack Block Kit 메시지로 알린다"
+
+inputs:
+  webhook_url:
+    description: "Slack Incoming Webhook URL"
+    required: true
+  status:
+    description: "success 또는 failure"
+    required: true
+  job_name:
+    description: "알림에 표시할 작업/워크플로 이름"
+    required: true
+  message:
+    description: "추가로 붙일 메시지(선택)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      env:
+        WEBHOOK_URL: ${{ inputs.webhook_url }}
+        STATUS: ${{ inputs.status }}
+        JOB_NAME: ${{ inputs.job_name }}
+        MESSAGE: ${{ inputs.message }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        if [ -z "$WEBHOOK_URL" ]; then
+          echo "webhook_url이 비어있어 슬랙 전송을 생략합니다"
+          exit 0
+        fi
+
+        if [ "$STATUS" = "failure" ]; then
+          EMOJI="🔴"
+          LABEL="실패"
+        else
+          EMOJI="✅"
+          LABEL="성공"
+        fi
+
+        TEXT="${EMOJI} *${JOB_NAME}* - ${LABEL}"
+        if [ -n "$MESSAGE" ]; then
+          TEXT="${TEXT}$(printf '\n')${MESSAGE}"
+        fi
+        TEXT="${TEXT}$(printf '\n')<${RUN_URL}|실행 로그 보기>"
+
+        PAYLOAD=$(jq -n --arg text "$TEXT" '{blocks: [{type: "section", text: {type: "mrkdwn", text: $text}}]}')
+
+        HTTP_CODE=$(curl -s -o /tmp/notify-slack-response.txt -w "%{http_code}" \
+          -X POST -H 'Content-type: application/json' \
+          --data "$PAYLOAD" "$WEBHOOK_URL")
+
+        if [ "$HTTP_CODE" -ge 300 ]; then
+          echo "슬랙 전송 실패(HTTP $HTTP_CODE): $(cat /tmp/notify-slack-response.txt)"
+          exit 1
+        fi
+
+        echo "슬랙 전송 완료(HTTP $HTTP_CODE)"
