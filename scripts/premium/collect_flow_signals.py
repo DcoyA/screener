@@ -2,9 +2,13 @@ import os
 import sys
 import time
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
+from pathlib import Path
 from pykrx import stock
 from supabase import create_client
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.lib.kst import kst_now, kst_today_str, kst_weekday  # noqa: E402
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
@@ -19,14 +23,9 @@ TOP_N = int(os.environ.get("TOP_N", "300"))
 # 종목 처리 사이 최소 지연 시간(초)
 SLEEP_SECONDS = float(os.environ.get("SLEEP_SECONDS", "1.2"))
 
-# 요일별로 몇 묶음(chunk)으로 나눌지. 월/화/목/금 = 4묶음
-WEEKDAY_TO_CHUNK = {
-    0: 0,  # 월요일 -> 1번 묶음
-    1: 1,  # 화요일 -> 2번 묶음
-    3: 2,  # 목요일 -> 3번 묶음
-    4: 3,  # 금요일 -> 4번 묶음
-}
-TOTAL_CHUNKS = 4
+# 20일 z-score를 계산하기 위한 최소 표본 수. 이보다 적으면 통계가 불안정해
+# None으로 둔다(상장 직후 종목, 데이터 누락 등으로 표본이 적을 수 있음).
+MIN_ZSCORE_SAMPLE = 10
 
 
 def safe_call(func, *args, max_retries=3, **kwargs):
@@ -62,22 +61,42 @@ def get_market_cap_ranked_codes(target_date):
     return []
 
 
-def get_today_chunk(all_codes, target_date):
-    """오늘 요일에 해당하는 묶음(전체의 1/4)만 잘라서 반환한다."""
-    weekday = target_date.weekday()  # 0=월 1=화 2=수 3=목 4=금 5=토 6=일
-    chunk_index = WEEKDAY_TO_CHUNK.get(weekday)
+def _safe_float(value):
+    if value is None:
+        return None
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        return None
+    return None if f != f else f  # NaN 체크
 
-    if chunk_index is None:
-        print(f"[INFO] 오늘 요일({weekday})은 지정된 수집일이 아닙니다. 첫 묶음으로 실행합니다.")
-        chunk_index = 0
 
-    chunk_size = max(1, len(all_codes) // TOTAL_CHUNKS)
-    start = chunk_index * chunk_size
-    end = start + chunk_size if chunk_index < TOTAL_CHUNKS - 1 else len(all_codes)
-    chunk = all_codes[start:end]
-    print(f"오늘은 {chunk_index + 1}/{TOTAL_CHUNKS}번 묶음 처리: {len(chunk)}개 종목 "
-          f"(전체 {len(all_codes)}개 중 {start}~{end})")
-    return chunk
+def compute_flow_metrics(df):
+    """30일치 수급 df(날짜 오름차순, df.iloc[-1]이 최신)에서
+    1일치(하위호환)/5일 누적/20일 z-score를 함께 계산한다."""
+    foreign_series = df["외국인합계"].astype(float)
+    inst_series = df["기관합계"].astype(float)
+
+    foreign_net_1d = _safe_float(foreign_series.iloc[-1])
+    inst_net_1d = _safe_float(inst_series.iloc[-1])
+
+    foreign_net_5d = _safe_float(foreign_series.tail(5).sum())
+    inst_net_5d = _safe_float(inst_series.tail(5).sum())
+
+    window20 = foreign_series.tail(20).dropna()
+    foreign_zscore_20d = None
+    if len(window20) >= MIN_ZSCORE_SAMPLE and foreign_net_1d is not None:
+        std = window20.std(ddof=0)
+        if std and std > 0:
+            foreign_zscore_20d = round((foreign_net_1d - window20.mean()) / std, 3)
+
+    return {
+        "foreign_net_buy": foreign_net_1d,
+        "inst_net_buy": inst_net_1d,
+        "foreign_net_5d": foreign_net_5d,
+        "inst_net_5d": inst_net_5d,
+        "foreign_zscore_20d": foreign_zscore_20d,
+    }
 
 
 def fetch_flow_for_code(code, target_date):
@@ -105,41 +124,40 @@ def compute_short_balance_change(code, target_date):
 
 
 def main():
-    target_date = datetime.now()
-    date_str = target_date.strftime("%Y-%m-%d")
+    target_date = kst_now()
+    date_str = kst_today_str()
 
     ranked_codes = get_market_cap_ranked_codes(target_date)
     if not ranked_codes:
         print("시가총액 순위를 가져오지 못해 종료합니다.")
         sys.exit(1)
 
-    codes = get_today_chunk(ranked_codes, target_date)
-    print(f"오늘 실제 수급 데이터 수집 대상: {len(codes)}개 종목 (기준일 {date_str})")
+    # SLEEP_SECONDS=1.2 x 300종목 ≈ 6분(실측 최대 23분)이라 요일별로 나눌
+    # 필요가 없다 - 매일 전체 종목을 수집한다.
+    print(f"오늘 실제 수급 데이터 수집 대상: {len(ranked_codes)}개 종목 "
+          f"(기준일 {date_str}, KST 요일 {kst_weekday()})")
 
     rows = []
     skipped = 0
-    for i, code in enumerate(codes, start=1):
+    for i, code in enumerate(ranked_codes, start=1):
         df = fetch_flow_for_code(code, target_date)
         if df is None:
             skipped += 1
             time.sleep(SLEEP_SECONDS)
             continue
 
-        latest_row = df.iloc[-1]
-        foreign_net = latest_row.get("외국인합계", 0)
-        inst_net = latest_row.get("기관합계", 0)
+        metrics = compute_flow_metrics(df)
         short_change = compute_short_balance_change(code, target_date)
 
         rows.append({
             "code": code,
             "date": date_str,
-            "foreign_net_buy": float(foreign_net) if foreign_net is not None else None,
-            "inst_net_buy": float(inst_net) if inst_net is not None else None,
+            **metrics,
             "short_balance_change_pct": short_change,
         })
 
         if i % 20 == 0:
-            print(f"진행 상황: {i}/{len(codes)} (스킵 {skipped}건)")
+            print(f"진행 상황: {i}/{len(ranked_codes)} (스킵 {skipped}건)")
 
         time.sleep(SLEEP_SECONDS)
 
