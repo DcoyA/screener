@@ -7,6 +7,7 @@ import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../../components/GradeBadge";
 import Icon from "../../components/icons/Icon";
+import { cleanStockName } from "../../lib/stockName";
 
 const RISK_FILTER_CONFIG = {
   all: { label: "전체", title: "전체 리스크" },
@@ -294,7 +295,7 @@ function RiskCheckTabContent({ stocks, risks }) {
                   <div className="cardTop">
                     <div>
                       <p className="dateText">{item.date}</p>
-                      <h3>{renderHighlightedName(item.name, searchTerm)}</h3>
+                      <h3>{renderHighlightedName(cleanStockName(item.name), searchTerm)}</h3>
                       <p className="codeText">종목코드 {item.code}</p>
                       <p className="priceText">최근 종가 {currentPrice}</p>
                       <div style={{ marginTop: 10, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>

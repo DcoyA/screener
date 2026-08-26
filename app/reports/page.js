@@ -5,6 +5,7 @@ import reports from "../data/reports.json";
 import stocks from "../data/stocks.json";
 import PageTopBar from "../components/PageTopBar";
 import Icon from "../components/icons/Icon";
+import { cleanStockName } from "../lib/stockName";
 
 
 export default function ReportsPage() {
@@ -61,7 +62,7 @@ export default function ReportsPage() {
                     {topPicks.map((stock) => (
                       <div className="miniCard" key={stock.code}>
                         <p className="marketBadge">{stock.market}</p>
-                        <h4>{stock.name}</h4>
+                        <h4>{cleanStockName(stock.name)}</h4>
                         <p className="stockCode">{stock.code}</p>
                         <p className="scoreLine">총점 {stock.totalScore}점</p>
                         <Link className="miniLink" href={`/stock/${stock.code}`}>

@@ -5,6 +5,7 @@ import WishlistButton from "../../components/WishlistButton";
 import GradeBadge from "../../components/GradeBadge";
 import { getUnifiedGrade } from "../../lib/grade";
 import { getStockDiagnosisData, getSimilarStocks, getHoldingForCurrentUser } from "../../lib/diagnosisData";
+import { cleanStockName } from "../../lib/stockName";
 import ScoreAccordion from "./components/ScoreAccordion";
 
 const SCORE_GROUPS = [
@@ -124,7 +125,7 @@ export default async function DiagnosisPage({ params }) {
           <GradeBadge grade={grade} showDescription />
           <WishlistButton code={stock.code} name={stock.name} />
         </div>
-        <h1 style={{ margin: "0 0 8px", fontSize: "2.1rem", letterSpacing: "-0.03em" }}>{stock.name}</h1>
+        <h1 style={{ margin: "0 0 8px", fontSize: "2.1rem", letterSpacing: "-0.03em" }}>{cleanStockName(stock.name)}</h1>
         <p style={{ margin: "0 0 18px", color: "#64748b", fontWeight: 700 }}>{stock.market} · {stock.code}</p>
         <div style={{ border: "1px solid #e5e7eb", borderRadius: 20, padding: 20, background: "#f8fbff" }}>
           <p style={{ margin: 0, fontSize: "1.08rem", lineHeight: 1.7, fontWeight: 700 }}>{oneLiner}</p>
@@ -210,7 +211,7 @@ export default async function DiagnosisPage({ params }) {
                 href={`/diagnosis/${item.code}`}
                 style={{ padding: "10px 16px", borderRadius: 14, border: "1px solid #e5e7eb", textDecoration: "none", color: "#0f172a", fontWeight: 800 }}
               >
-                {item.name} <span style={{ color: "#94a3b8", fontWeight: 600 }}>{item.code}</span>
+                {cleanStockName(item.name)} <span style={{ color: "#94a3b8", fontWeight: 600 }}>{item.code}</span>
               </Link>
             ))}
           </div>

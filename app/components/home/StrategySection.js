@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatPrice, getUpsideClass, formatUpsideDisplay, formatTargetPriceBand } from "../../lib/homeData";
+import { cleanStockName } from "../../lib/stockName";
 
 export default function StrategySection({ strategyCards }) {
   return (
@@ -29,7 +30,7 @@ export default function StrategySection({ strategyCards }) {
               <>
                 <div className="strategyStockTop">
                   <div>
-                    <h4>{section.stock.name}</h4>
+                    <h4>{cleanStockName(section.stock.name)}</h4>
                     <p className="stockCode">{section.stock.market} · {section.stock.code}</p>
                   </div>
                   <div className="scoreChip">총점 {Number(section.stock.totalScore || 0).toFixed(0)}점</div>

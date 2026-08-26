@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade, GRADE_META, GRADE_ORDER } from "../../lib/grade";
 import { formatUpsideDisplay } from "../../lib/formatUpside";
+import { cleanStockName } from "../../lib/stockName";
 
 const GROUP_DESC = {
   S: "재무·타이밍·리스크를 모두 다시 통과한 후보입니다.",
@@ -181,7 +182,7 @@ function PickCard({ item }) {
             <Chip>{getSectorTypeLabel(item.sectorType)}</Chip>
             {item?.rankMeta?.topRankEligible ? <Chip color="#0284c7" bg="#e0f2fe">랭킹 적격</Chip> : null}
           </div>
-          <h3 style={{ margin: "0 0 8px", fontSize: "1.72rem", letterSpacing: "-0.03em", wordBreak: "keep-all" }}>{item.name}</h3>
+          <h3 style={{ margin: "0 0 8px", fontSize: "1.72rem", letterSpacing: "-0.03em", wordBreak: "keep-all" }}>{cleanStockName(item.name)}</h3>
           <p style={{ margin: 0, color: "#64748b" }}>{item.market} · {item.code} · {item.sector || "업종 미분류"}</p>
           <div style={{ marginTop: 10 }}>
             <WishlistButton code={item.code} name={item.name} size="sm" />

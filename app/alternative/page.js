@@ -6,6 +6,7 @@ import marketState from "../data/market_state.json";
 import etfUniverse from "../data/etf_universe.json";
 import MainNav from "../components/MainNav";
 import { formatUpsidePercent } from "../lib/formatUpside";
+import { cleanStockName } from "../lib/stockName";
 
 function formatPercent(value) {
   const num = Number(value);
@@ -485,7 +486,7 @@ export default function AlternativePage() {
                 <h3>오늘의 1종목</h3>
                 {todayStock ? (
                   <>
-                    <h4>{todayStock.name}</h4>
+                    <h4>{cleanStockName(todayStock.name)}</h4>
                     <p className="codeLine">{todayStock.market} · {todayStock.code} · {todayStock.sector || "미분류"}</p>
                     <div className="metricInline">총점 <b>{Number(todayStock.totalScore || 0).toFixed(0)}점</b></div>
                     <div className="metricInline">상승여력 <b>{formatUpsidePercent(todayStock.upside)}</b></div>

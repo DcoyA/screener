@@ -8,6 +8,7 @@ import PageTopBar from "../components/PageTopBar";
 import WishlistButton from "../components/WishlistButton";
 import { getWishlist } from "../lib/wishlist";
 import { formatUpsideDisplay, formatUpsidePercent } from "../lib/formatUpside";
+import { cleanStockName } from "../lib/stockName";
 
 function formatPrice(value) {
   const num = Number(value || 0);
@@ -107,7 +108,7 @@ export default function WishlistPage() {
               return (
                 <article key={stock.code} style={{ border: "1px solid #e5e7eb", borderRadius: 24, padding: 20, background: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                   <div>
-                    <h3 style={{ margin: "0 0 6px", fontSize: "1.2rem" }}>{stock.name}</h3>
+                    <h3 style={{ margin: "0 0 6px", fontSize: "1.2rem" }}>{cleanStockName(stock.name)}</h3>
                     <p style={{ margin: 0, color: "#64748b" }}>{stock.market} · {stock.code}</p>
                   </div>
                   <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>

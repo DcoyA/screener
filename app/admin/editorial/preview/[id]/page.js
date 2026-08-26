@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
 import { buildEmailHtml } from "../../../../../scripts/premium/lib/emailTemplate.mjs";
+import { cleanStockName } from "../../../../lib/stockName";
 
 const STATUS_LABEL = {
   draft: "초안(검수 대기)",
@@ -137,7 +138,7 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
               {s.related_stocks.map((rs, j) => (
                 <div key={j} style={styles.stockRow}>
                   <strong>
-                    {rs.name}({rs.code})
+                    {cleanStockName(rs.name)}({rs.code})
                   </strong>
                   <span>
                     등급 {rs.grade_4w_ago ? `${rs.grade_4w_ago} → ` : ""}

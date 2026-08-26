@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getScoreGaugeColor } from "../../lib/scoreGauge";
+import { cleanStockName } from "../../lib/stockName";
 
 export default function TopScoresSection({ stocks = [] }) {
   const top5 = [...stocks]
@@ -16,7 +17,7 @@ export default function TopScoresSection({ stocks = [] }) {
           const score = Math.round(Number(stock?.totalScore ?? 0));
           return (
             <Link href={`/stock/${stock.code}`} key={stock.code} className="scoreCard">
-              <p className="scoreCardName">{stock.name}</p>
+              <p className="scoreCardName">{cleanStockName(stock.name)}</p>
               <p className="scoreCardCode">{stock.market} · {stock.code}</p>
               <strong className="scoreCardValue" style={{ color: getScoreGaugeColor(score) }}>
                 {score}점

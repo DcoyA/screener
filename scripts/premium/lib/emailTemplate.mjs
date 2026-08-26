@@ -4,6 +4,8 @@
 // 색상은 app/globals.css의 디자인 토큰 실제 값을 그대로 하드코딩했다(이메일
 // 클라이언트 대부분이 CSS 변수를 지원하지 않아 인라인 리터럴이 필수).
 // 토큰이 바뀌면 이 파일도 같이 고쳐야 한다 - 자동 동기화 수단은 없다.
+import { cleanStockName } from "../../../app/lib/stockName.js";
+
 const COLOR_PRIMARY = "#4b3fff"; // --color-primary
 const COLOR_SURFACE_TINT = "#f1effe"; // --color-surface-tint
 const COLOR_TEXT = "#0f172a";
@@ -37,7 +39,7 @@ function renderSection(section, index) {
     .map(
       (rs) => `
       <tr><td style="padding:6px 0;font-size:13px;color:${COLOR_TEXT};">
-        <strong>${esc(rs.name)}(${esc(rs.code)})</strong>
+        <strong>${esc(cleanStockName(rs.name))}(${esc(rs.code)})</strong>
         · 등급 ${rs.grade_4w_ago ? `${esc(rs.grade_4w_ago)} → ` : ""}${esc(rs.grade)}
         · ${esc(rs.one_liner)}
       </td></tr>`

@@ -8,6 +8,7 @@ import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../GradeBadge";
 import { getScoreGaugeColor } from "../../lib/scoreGauge";
 import { formatUpsideDisplay } from "../../lib/formatUpside";
+import { cleanStockName } from "../../lib/stockName";
 
 const PAGE_SIZE = 30;
 // 종합 점수(0~100 스케일)로 해석 가능한 보기에서만 게이지 색상 규칙(70/40)을 적용한다.
@@ -494,7 +495,7 @@ export default function RankingTab({ stocks }) {
                   <div className="rankWrap">
                     <span className="rankBadge">#{displayRank}</span>
                     <div>
-                      <h3>{stock.name}</h3>
+                      <h3>{cleanStockName(stock.name)}</h3>
                       <p className="stockMeta">{stock.market} · {stock.code}</p>
                       <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                         <GradeBadge grade={unifiedGrade} size="sm" />

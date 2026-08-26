@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { cleanStockName } from "../../lib/stockName";
 
 const MAX_SUGGESTIONS = 8;
 
@@ -97,7 +98,7 @@ export default function HeroSection({ stocks = [], updatedAt }) {
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => goToStock(stock.code)}
                       >
-                        <span className="searchResultName">{stock.name}</span>
+                        <span className="searchResultName">{cleanStockName(stock.name)}</span>
                         <span className="searchResultCode">{stock.code}</span>
                         {stock.market && (
                           <span className="searchResultMarket">{stock.market}</span>

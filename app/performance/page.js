@@ -6,6 +6,7 @@ import history from "../data/history.json";
 import stocks from "../data/stocks.json";
 import PageTopBar from "../components/PageTopBar";
 import { formatUpside } from "../lib/formatUpside";
+import { cleanStockName } from "../lib/stockName";
 
 function formatPrice(value) {
   const num = Number(value);
@@ -514,7 +515,7 @@ export default function PerformancePage() {
                             <td>{pick.rank}</td>
                             <td>
                               <div className="stockCell">
-                                <strong>{pick.name}</strong>
+                                <strong>{cleanStockName(pick.name)}</strong>
                                 <span>{pick.market} · {pick.code}</span>
                               </div>
                             </td>
@@ -554,7 +555,7 @@ export default function PerformancePage() {
                         <div className="trustItemTop">
                           <div>
                             <p className="pickRank">#{pick.rank}</p>
-                            <h3>{pick.name}</h3>
+                            <h3>{cleanStockName(pick.name)}</h3>
                             <p className="pickMetaLine">{pick.market} · {pick.code}</p>
                           </div>
                           <span className={status.className}>{status.text}</span>
@@ -602,7 +603,7 @@ export default function PerformancePage() {
                 {performanceData.bestPicks.map((item, index) => (
                   <div className="pickItem" key={`${item.code}-${index}`}>
                     <div>
-                      <p className="pickName">{item.name}</p>
+                      <p className="pickName">{cleanStockName(item.name)}</p>
                       <p className="pickMeta">{item.market} · {item.code}</p>
                     </div>
                     <strong className={getToneClass(item.returnRate)}>{formatPercent(item.returnRate)}</strong>
@@ -616,7 +617,7 @@ export default function PerformancePage() {
                 {performanceData.worstPicks.map((item, index) => (
                   <div className="pickItem" key={`${item.code}-${index}`}>
                     <div>
-                      <p className="pickName">{item.name}</p>
+                      <p className="pickName">{cleanStockName(item.name)}</p>
                       <p className="pickMeta">{item.market} · {item.code}</p>
                     </div>
                     <strong className={getToneClass(item.returnRate)}>{formatPercent(item.returnRate)}</strong>
@@ -633,7 +634,7 @@ export default function PerformancePage() {
               <div className="controversyHeader">
                 <div>
                   <p className="controversyBadge">논란 종목 분석</p>
-                  <h2>{controversialPick.name} ({controversialPick.code})</h2>
+                  <h2>{cleanStockName(controversialPick.name)} ({controversialPick.code})</h2>
                   <p className="controversyDesc">기대치와 실제 성과 사이의 간극이 큰 종목을 자동으로 골라 해석하는 영역입니다.</p>
                 </div>
                 <span className="detailBadge">{selectedWeek?.weekLabel || "-"}</span>
