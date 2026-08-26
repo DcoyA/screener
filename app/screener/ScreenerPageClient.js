@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import PageTopBar from "../components/PageTopBar";
 import RankingTab from "../components/search/RankingTab";
 import RiskCheckTab from "../components/search/RiskCheckTab";
@@ -15,25 +15,23 @@ const TABS = [
   { key: "alternative", label: "대안투자", desc: "개별주 외에 ETF/배당 같은 대안 접근을 살펴봅니다." },
 ];
 
-function ScreenerPageContent({ stocks, risks }) {
-  const searchParams = useSearchParams();
+// TASK 5(디자인·IA 개편): tab/view/risk 초기값은 서버 컴포넌트(page.js)가
+// searchParams를 읽어 props로 내려준다. 여기서 useSearchParams()를 쓰지
+// 않아야(그 훅을 쓰는 순간 이 트리 전체가 다시 Suspense fallback으로
+// 빠진다) 서버가 첫 응답에 진짜 랭킹 목록을 담아 보낼 수 있다. 탭 전환
+// 등 이후 URL 갱신은 useRouter/usePathname만으로 충분하다 - 둘 다
+// useSearchParams와 달리 Suspense가 필요 없다.
+export default function ScreenerPageClient({ stocks, risks, initialTab, initialView, initialRisk }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const requestedTab = (searchParams.get("tab") || "").trim();
-  const initialTab = TABS.some((t) => t.key === requestedTab) ? requestedTab : "ranking";
-  const [activeTab, setActiveTab] = useState(initialTab);
-
-  useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+  const resolvedInitialTab = TABS.some((t) => t.key === initialTab) ? initialTab : "ranking";
+  const [activeTab, setActiveTab] = useState(resolvedInitialTab);
 
   const handleTabChange = (nextTab) => {
     setActiveTab(nextTab);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
     params.set("tab", nextTab);
-    // 탭을 바꿀 때는 이전 탭의 서브 파라미터(view/risk/level/code 등)를 정리한다.
-    ["view", "risk", "level", "code", "name"].forEach((key) => params.delete(key));
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
@@ -66,7 +64,9 @@ function ScreenerPageContent({ stocks, risks }) {
         </div>
       </section>
 
-      {activeTab === "ranking" && <RankingTab stocks={stocks} />}
+      {activeTab === "ranking" && (
+        <RankingTab stocks={stocks} initialView={initialView} initialRisk={initialRisk} />
+      )}
       {activeTab === "final" && <FinalPicksTab stocks={stocks} risks={risks} />}
       {activeTab === "risk" && <RiskCheckTab stocks={stocks} risks={risks} />}
       {activeTab === "alternative" && <AlternativeTab />}
@@ -139,23 +139,5 @@ function ScreenerPageContent({ stocks, risks }) {
         }
       `}</style>
     </main>
-  );
-}
-
-function ScreenerPageFallback() {
-  return (
-    <main className="container" style={{ padding: "32px 24px 80px", color: "#0f172a", background: "var(--bg-screen)" }}>
-      <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <p style={{ color: "#64748b", fontWeight: 700 }}>검색 화면을 불러오는 중...</p>
-      </div>
-    </main>
-  );
-}
-
-export default function ScreenerPageClient({ stocks, risks }) {
-  return (
-    <Suspense fallback={<ScreenerPageFallback />}>
-      <ScreenerPageContent stocks={stocks} risks={risks} />
-    </Suspense>
   );
 }

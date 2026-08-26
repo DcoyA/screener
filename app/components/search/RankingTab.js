@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import WishlistButton from "../WishlistButton";
 import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../GradeBadge";
@@ -310,15 +310,17 @@ function buildWarningLine(stock, activeView, activeRisk) {
   return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
 }
 
-export default function RankingTab({ stocks }) {
-  const searchParams = useSearchParams();
+// TASK 5(디자인·IA 개편): view/risk 초기값은 상위(ScreenerPageClient)가
+// 서버에서 읽은 searchParams를 그대로 props로 내려준 것을 쓴다.
+// useSearchParams()를 여기서 직접 부르면 이 컴포넌트가 통째로 Suspense
+// fallback으로 빠져서 랭킹 목록(문서 TASK 5의 SSR 대상)이 서버 응답에
+// 안 담긴다.
+export default function RankingTab({ stocks, initialView: rawInitialView, initialRisk: rawInitialRisk }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const requestedView = (searchParams.get("view") || "").trim();
-  const requestedRisk = (searchParams.get("risk") || "").trim();
-  const initialView = VIEW_CONFIG[requestedView] ? requestedView : "total";
-  const initialRisk = RISK_CONFIG[requestedRisk] ? requestedRisk : "all";
+  const initialView = VIEW_CONFIG[rawInitialView] ? rawInitialView : "total";
+  const initialRisk = RISK_CONFIG[rawInitialRisk] ? rawInitialRisk : "all";
 
   const [activeView, setActiveView] = useState(initialView);
   const [activeRisk, setActiveRisk] = useState(initialRisk);
@@ -327,10 +329,8 @@ export default function RankingTab({ stocks }) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const updateRoute = (nextView, nextRisk) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
     params.set("tab", "ranking");
-    params.delete("view");
-    params.delete("risk");
     if (nextView && nextView !== "total") params.set("view", nextView);
     if (nextRisk && nextRisk !== "all") params.set("risk", nextRisk);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -350,9 +350,6 @@ export default function RankingTab({ stocks }) {
     if (kind === "highDebt") { setActiveRisk("highDebt"); updateRoute(activeView, "highDebt"); return; }
     if (kind === "unstableEarnings") { setActiveRisk("unstableEarnings"); updateRoute(activeView, "unstableEarnings"); }
   };
-
-  useEffect(() => { setActiveView(initialView); }, [initialView]);
-  useEffect(() => { setActiveRisk(initialRisk); }, [initialRisk]);
 
   const sortedStocks = useMemo(() => buildSortedStocks(stocks, activeView), [activeView]);
   const filteredByRisk = useMemo(() => applyRiskFilter(sortedStocks, activeRisk), [sortedStocks, activeRisk]);
