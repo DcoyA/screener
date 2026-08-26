@@ -5,9 +5,8 @@ export default function sitemap() {
     "",
     "/ranking",
     "/risk",
-    "/report",
+    "/reports",
     "/notice",
-    "/faq",
 
     // SEO pages
     "/seo/low-pbr",
@@ -24,7 +23,7 @@ export default function sitemap() {
     lastModified: now,
     changeFrequency: path.startsWith("/seo/")
       ? "weekly"
-      : path === "/ranking" || path === "/risk" || path === "/report"
+      : path === "/ranking" || path === "/risk" || path === "/reports"
       ? "weekly"
       : "monthly",
     priority:
@@ -32,7 +31,7 @@ export default function sitemap() {
         ? 1.0
         : path === "/ranking"
         ? 0.9
-        : path === "/risk" || path === "/report"
+        : path === "/risk" || path === "/reports"
         ? 0.8
         : path.startsWith("/seo/")
         ? 0.7

@@ -26,6 +26,13 @@ export async function getStockDiagnosisData(code) {
     targetPrice: rawMetrics.targetPrice ?? null,
     targetPriceConservative: rawMetrics.targetPriceConservative ?? null,
     targetPriceOptimistic: rawMetrics.targetPriceOptimistic ?? null,
+    per: rawMetrics.per ?? null,
+    pbr: rawMetrics.pbr ?? null,
+    roe: rawMetrics.roe ?? null,
+    priceChangeRate: rawMetrics.priceChangeRate ?? null,
+    sectorName: rawData.sector ?? null,
+    // TASK 2: 섹터 내 PER/PBR/ROE 상대 위치(update_data.py가 계산해 저장).
+    sectorRelativeMeta: rawData.sectorRelativeMeta ?? null,
     // app/lib/formatUpside.js의 formatUpside(currentPrice, targetPrice)로 통일 -
     // Python이 미리 계산해두던 display.upsideCapped/upsideLabel은 더 이상 읽지 않는다.
     upsideDisplay: upsideResult.display,
