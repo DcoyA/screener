@@ -65,6 +65,17 @@ REGRESSION_LAMBDA_FULL = 0.3
 REGRESSION_LAMBDA_LOW = 0.15
 MIN_SECTOR_SAMPLE = 5
 
+# leave-one-out 최소 표본: 섹터/시장 중앙값 표본에 자기 자신의 PER이 섞여 있으면
+# 표본이 작을 때(특히 1개, 즉 자기 자신뿐일 때) 회귀가 자기 자신으로 수렴해
+# target_price == close_price가 수학적으로 강제되는 문제가 있었다. 자기 자신을
+# 제외(leave-one-out)한 뒤에도 이 개수 미만이면 그 표본은 신뢰하지 않는다.
+MIN_LOO_SECTOR_SAMPLE = 2
+MIN_LOO_MARKET_SAMPLE = 10
+
+# PER이 이 값을 넘으면 정규화 순이익이 0에 가까워 생긴 통계적 이상치로 보고
+# 목표가 계산 자체를 포기한다(outlier_rejected).
+MAX_PLAUSIBLE_PER = 300.0
+
 # 지주회사 할인: KSIC상 지주회사가 "금융및보험업"(64)으로 분류돼 실제 사업과
 # 무관한 금융업 중앙값으로 목표가가 끌려 올라가는 문제 보완. 업계 통상
 # NAV 대비 30~50% 할인 중 보수적으로 30%를 목표가(전 구간)에 곱한다.
@@ -198,6 +209,22 @@ def percentile_stats(values):
         return s[idx]
 
     return {"p25": _p(25), "p50": _p(50), "p75": _p(75), "n": n}
+
+
+def leave_one_out_stats(bucket, own_value):
+    """bucket에서 own_value 하나(자기 자신 몫)를 제외한 뒤 percentile_stats를 계산한다.
+
+    섹터/시장 중앙값 표본에 자기 자신의 PER이 포함된 채로 회귀에 쓰면, 표본이
+    작을 때(특히 섹터 표본이 1개, 즉 자기 자신뿐일 때) 회귀 목표가 자기 자신의
+    PER로 수렴해 target_price == close_price가 나온다. 동일 PER을 가진 다른
+    종목과 자신을 값만으로는 구분할 수 없어 첫 번째 일치 값 하나만 제거한다
+    (서로 다른 두 종목이 완전히 같은 PER을 가질 확률은 낮고, 그런 경우에도
+    통계적 효과는 동일하다).
+    """
+    remaining = list(bucket)
+    if own_value in remaining:
+        remaining.remove(own_value)
+    return percentile_stats(remaining)
 
 
 def http_get_json(base_url, params):
@@ -1014,18 +1041,30 @@ def build_news_meta(stock):
 def build_timing_meta(stock):
     metrics = stock.get("metrics", {})
     price_change_5d = float(metrics.get("priceChangeRate", 0) or 0)
-    upside = float(metrics.get("upside", 0) or 0)
     liquidity = float(metrics.get("avgTradeValue5d", 0) or 0)
+
+    # upside가 None(목표가 계산 불가)인 종목을 0%로 취급하면 "적정가 대비
+    # 중립"이라는 가짜 신호를 준다 - 대신 이 항목 자체를 빼고 가중치(0.15)를
+    # 모멘텀 항(0.8)으로 재배분한다.
+    raw_upside = metrics.get("upside")
+    has_upside = raw_upside is not None
+    upside = float(raw_upside) if has_upside else 0.0
+    momentum_weight = 0.8 if has_upside else (0.8 + 0.15)
+    upside_weight = 0.15 if has_upside else 0.0
 
     recent_spike_flag = price_change_5d >= 20
     volume_spike_flag = liquidity >= 300_0000_0000
-    expensive_flag = upside < -20
+    expensive_flag = has_upside and upside < -20
 
     overheat_penalty = 12 if recent_spike_flag else 0
     expensive_penalty = 10 if expensive_flag else 0
 
     score = clamp(
-        55 + price_change_5d * 0.8 + upside * 0.15 - overheat_penalty - expensive_penalty
+        55
+        + price_change_5d * momentum_weight
+        + upside * upside_weight
+        - overheat_penalty
+        - expensive_penalty
     )
 
     reason_parts = []
@@ -1756,6 +1795,8 @@ def main():
         metrics = s["metrics"]
         per_value = metrics.get("per")
         close_price = metrics.get("closePrice") or 0
+        sector_code = s.get("sectorCode")
+
         if not per_value or per_value <= 0 or not close_price:
             # per(정규화된 순이익 기준)이 없으면 목표가/upside 자체를 계산할
             # 근거가 없다 — 종목을 빼지 않고 관련 필드만 null로 남긴다.
@@ -1767,37 +1808,76 @@ def main():
                 "upsideCapped": None,
             }
             s["fairValueMeta"] = {
-                "sectorCode": s.get("sectorCode"),
+                "sectorCode": sector_code,
                 "sectorSampleTier": "fixed",
                 "sectorSampleSize": 0,
                 "regressionLambda": 0.0,
                 "sectorMedianPerUsed": None,
+                "status": "negative_earnings",
             }
             continue
 
-        sector_code = s.get("sectorCode")
-        stats = sector_per_stats.get(sector_code) if sector_code else None
-        if stats and stats["n"] >= MIN_SECTOR_SAMPLE:
+        if per_value > MAX_PLAUSIBLE_PER:
+            # 정규화 순이익이 0에 가까워 PER이 통계적으로 의미 없는 값까지
+            # 튄 경우 - 이 PER로 회귀를 돌리면 목표가 자체가 이상치가 된다.
+            s["display"] = {
+                "upsideLabel": None,
+                "upsideLabelReason": None,
+                "upsideCapped": None,
+            }
+            s["fairValueMeta"] = {
+                "sectorCode": sector_code,
+                "sectorSampleTier": "fixed",
+                "sectorSampleSize": 0,
+                "regressionLambda": 0.0,
+                "sectorMedianPerUsed": None,
+                "status": "outlier_rejected",
+            }
+            continue
+
+        fair_value_status = None if sector_code else "sector_unmapped"
+
+        # leave-one-out: 섹터/시장 표본에서 자기 자신의 PER 몫을 빼고 통계를
+        # 낸다. 안 그러면 섹터 표본이 자기 자신뿐이거나(n=1) 자신이 표본의
+        # 중앙값인 경우 회귀가 자기 자신으로 수렴해 target_price가
+        # close_price와 정확히 같아지는 문제가 있었다.
+        sector_bucket = sector_per_buckets.get(sector_code, []) if sector_code else []
+        loo_sector_stats = leave_one_out_stats(sector_bucket, per_value) if sector_code else None
+        loo_market_stats = leave_one_out_stats(market_per_values, per_value)
+
+        if loo_sector_stats and loo_sector_stats["n"] >= MIN_SECTOR_SAMPLE:
+            stats = loo_sector_stats
             lam = REGRESSION_LAMBDA_FULL
             sample_tier = "sector"
-        elif stats:
+        elif loo_sector_stats and loo_sector_stats["n"] >= MIN_LOO_SECTOR_SAMPLE:
+            stats = loo_sector_stats
             lam = REGRESSION_LAMBDA_LOW
             sample_tier = "sector_small"
-        elif market_per_stats:
-            stats = market_per_stats
+        elif loo_market_stats and loo_market_stats["n"] >= MIN_LOO_MARKET_SAMPLE:
+            stats = loo_market_stats
             lam = REGRESSION_LAMBDA_LOW
             sample_tier = "market"
         else:
-            stats = None
-            lam = 0.0
-            sample_tier = "fixed"
+            # 자기 자신을 뺀 뒤에도 섹터/시장 어느 쪽으로도 비교할 표본이
+            # 부족하다 - 회귀를 강행하지 않고 목표가를 포기한다.
+            s["display"] = {
+                "upsideLabel": None,
+                "upsideLabelReason": None,
+                "upsideCapped": None,
+            }
+            s["fairValueMeta"] = {
+                "sectorCode": sector_code,
+                "sectorSampleTier": "fixed",
+                "sectorSampleSize": loo_sector_stats["n"] if loo_sector_stats else 0,
+                "regressionLambda": 0.0,
+                "sectorMedianPerUsed": None,
+                "status": "insufficient_data",
+            }
+            continue
 
-        if stats:
-            target_per_low = per_value + lam * (stats["p25"] - per_value)
-            target_per_mid = per_value + lam * (stats["p50"] - per_value)
-            target_per_high = per_value + lam * (stats["p75"] - per_value)
-        else:
-            target_per_low = target_per_mid = target_per_high = per_value
+        target_per_low = per_value + lam * (stats["p25"] - per_value)
+        target_per_mid = per_value + lam * (stats["p50"] - per_value)
+        target_per_high = per_value + lam * (stats["p75"] - per_value)
 
         target_price_low = int(close_price * (target_per_low / per_value))
         target_price_mid = int(close_price * (target_per_mid / per_value))
@@ -1844,6 +1924,7 @@ def main():
             "sectorSampleSize": stats["n"] if stats else 0,
             "regressionLambda": lam,
             "sectorMedianPerUsed": stats["p50"] if stats else None,
+            "status": fair_value_status,
         }
 
         # timingMeta는 build_stock_item()에서 upside=None인 채로 이미 한 번
