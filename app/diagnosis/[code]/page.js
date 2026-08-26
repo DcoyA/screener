@@ -5,6 +5,7 @@ import WishlistButton from "../../components/WishlistButton";
 import GradeBadge from "../../components/GradeBadge";
 import { getUnifiedGrade } from "../../lib/grade";
 import { getStockDiagnosisData, getSimilarStocks, getHoldingForCurrentUser } from "../../lib/diagnosisData";
+import { getGradeHistory } from "../../lib/gradeHistory";
 import { cleanStockName } from "../../lib/stockName";
 import ScoreAccordion from "./components/ScoreAccordion";
 
@@ -106,9 +107,10 @@ export default async function DiagnosisPage({ params }) {
     score: stock[`${group.key}Score`],
   }));
 
-  const [similarStocks, holding] = await Promise.all([
+  const [similarStocks, holding, gradeHistory] = await Promise.all([
     getSimilarStocks(stock.code, grade.code),
     getHoldingForCurrentUser(stock.code),
+    getGradeHistory(stock.code, stock.unifiedGradeCode),
   ]);
 
   return (
@@ -146,6 +148,51 @@ export default async function DiagnosisPage({ params }) {
         />
         <Metric label="부채비율" value={formatRatio(stock.debtRatio)} />
       </section>
+
+      {gradeHistory.timeline.some((p) => p.grade) && (
+        <section style={{ marginBottom: 28, border: "1px solid #e5e7eb", borderRadius: 20, padding: 18, background: "#fff" }}>
+          <h2 style={{ margin: "0 0 14px", fontSize: "1.1rem" }}>등급 변동</h2>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {gradeHistory.timeline.map((point, idx) => (
+              <div key={point.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {idx > 0 && <span style={{ color: "#cbd5e1", fontWeight: 900 }}>→</span>}
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      minWidth: 36,
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                      fontWeight: 900,
+                      background: point.grade ? "#f1effe" : "#f8fafc",
+                      color: point.grade ? "#4b3fff" : "#cbd5e1",
+                    }}
+                  >
+                    {point.grade || "-"}
+                  </div>
+                  <span style={{ display: "block", marginTop: 4, fontSize: "0.72rem", color: "#94a3b8", fontWeight: 700 }}>
+                    {point.label}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {gradeHistory.bigSwing ? (
+            <p
+              style={{
+                margin: "14px 0 0",
+                padding: "10px 14px",
+                borderRadius: 10,
+                background: "#fffbeb",
+                color: "#92400e",
+                fontWeight: 700,
+                fontSize: "0.88rem",
+              }}
+            >
+              ⚠ 최근 등급 변동이 큽니다. 실적 발표나 주가 급변동을 확인하세요.
+            </p>
+          ) : null}
+        </section>
+      )}
 
       {holding && (
         <section style={{ marginBottom: 28, border: "1px solid #bfdbfe", borderRadius: 20, padding: 18, background: "#eff6ff" }}>
