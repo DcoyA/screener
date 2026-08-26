@@ -105,10 +105,20 @@ jobs:
           fi
 
       - name: Run update_data.py
-        run: python scripts/update_data.py
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 300
+          timeout_minutes: 30
+          command: python scripts/update_data.py
 
       - name: Build ETF universe
-        run: python scripts/update_etf_universe.py
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: 3
+          retry_wait_seconds: 300
+          timeout_minutes: 30
+          command: python scripts/update_etf_universe.py
 
       - name: Generate market state JSON
         run: |
