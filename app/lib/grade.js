@@ -3,11 +3,11 @@
 export const GRADE_ORDER = ["S", "A", "B", "C", "D"];
 
 export const GRADE_META = {
-  S: { label: "우량 후보", color: "#0f766e", bg: "#ccfbf1" },
-  A: { label: "관심 후보", color: "#b45309", bg: "#fff7ed" },
-  B: { label: "중립·관망", color: "#2563eb", bg: "#dbeafe" },
-  C: { label: "신중 필요", color: "#ea580c", bg: "#ffedd5" },
-  D: { label: "제외 권장", color: "#be123c", bg: "#ffe4e6" },
+  S: { label: "지금 봐도 됨", color: "#0f766e", bg: "#ccfbf1" },
+  A: { label: "좀 더 확인하고", color: "#b45309", bg: "#fff7ed" },
+  B: { label: "아직은 지켜보기", color: "#2563eb", bg: "#dbeafe" },
+  C: { label: "조심해야 함", color: "#ea580c", bg: "#ffedd5" },
+  D: { label: "지금은 아님", color: "#be123c", bg: "#ffe4e6" },
 };
 
 // 등급은 원칙적으로 scripts/update_data.py가 전체 종목 분포를 놓고

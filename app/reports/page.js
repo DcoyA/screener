@@ -51,7 +51,7 @@ export default async function ReportsPage() {
         {/* 상단 네비를 4개로 통합하면서 "성과/백테스트"가 네비에서 빠져
             여기서 진입 경로를 열어둔다 (리포트<->성과 상호 링크). */}
         <Link href="/performance" className="performanceCrossLink">
-          <Icon name="trendingUp" size={16} /> 이 전략들의 실제 성과/백테스트 결과 보기 →
+          <Icon name="trendingUp" size={16} /> 이 전략들, 우리 성적표로 확인하기 →
         </Link>
 
         <div className="reportList">

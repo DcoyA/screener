@@ -359,11 +359,11 @@ export default function PerformancePage() {
         <section className="pageHero">
           <div>
             <p className="badge">PERFORMANCE</p>
-            <h1>성과/백테스트</h1>
+            <h1>우리 성적표</h1>
             <p className="desc">
-              추천 결과를 주차별로 기록하고, 시간이 지나면서 실제 성과를 공개하는 페이지입니다.
+              우리가 뭘 골랐고, 그게 맞았는지 다 까놨어요.
               <br />
-              KOSPI 기준수익률과 비교한 초과수익까지 함께 추적하며, 추천 당시 판단과 현재 결과를 같은 화면에서 확인할 수 있습니다.
+              코스피랑 비교한 초과수익도 같이 보여드려요. 그때 판단과 지금 결과, 한 화면에서 다 봐요.
             </p>
           </div>
           <div className="updateBox">

@@ -7,9 +7,9 @@ export default function StrategySection({ strategyCards }) {
     <section className="strategySection">
       <div className="sectionHeaderRow">
         <div>
-          <h2 className="sectionTitle">오늘의 투자 전략 3가지</h2>
+          <h2 className="sectionTitle">오늘 볼 만한 거 3개</h2>
           <p className="sectionDesc">
-            종합/저평가 같은 기술적 기준보다, 지금 시장에서 실제로 어떻게 들고 갈지에 맞춘 관점으로 나눴습니다.
+            얼마나 오래 들고 갈지에 따라 나눠봤어요.
           </p>
         </div>
       </div>

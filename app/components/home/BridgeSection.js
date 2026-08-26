@@ -5,10 +5,10 @@ export default function BridgeSection() {
         <div className="bridgeHeader">
           <div>
             <p className="bridgeBadge">FREE → PREMIUM</p>
-            <h2>무료에서 검증하고, 프리미엄에서 행동합니다</h2>
+            <h2>공짜로 확인하고, 확신 들면 구독하세요</h2>
             <p className="bridgeDesc">
-              무료 페이지는 “왜 추천 / 왜 제외 / 실제 결과”를 검증하는 영역입니다.
-              프리미엄은 그 위에 <strong>행동 가능한 주간 시나리오</strong>를 얹는 구조로 준비 중입니다.
+              무료 페이지에서 “왜 추천했는지 / 왜 뺐는지 / 결과가 어땠는지”를 먼저 확인해보세요.
+              프리미엄은 그 위에 <strong>행동 가능한 주간 시나리오</strong>를 더한 구조로 준비 중이에요.
             </p>
           </div>
         </div>
@@ -19,7 +19,7 @@ export default function BridgeSection() {
               <li>종합/저평가/상승여력 랭킹</li>
               <li>리스크 체크 포인트</li>
               <li>상세페이지 해석</li>
-              <li>성과/백테스트 공개</li>
+              <li>우리 성적표 공개</li>
             </ul>
           </div>
           <div className="bridgeItem premium">

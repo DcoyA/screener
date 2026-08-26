@@ -6,9 +6,9 @@ export default function AvoidSection({ avoidSummary }) {
       <div className="avoidCard">
         <div className="sectionHeaderRow compactHeader">
           <div>
-            <h2 className="sectionTitle">오늘은 피해야 할 타입</h2>
+            <h2 className="sectionTitle">오늘은 이런 거 조심</h2>
             <p className="sectionDesc">
-              추천만 보여주면 오해가 생기니까, 지금 시장에서 같이 조심해야 할 타입도 따로 분리했습니다.
+              좋은 것만 보여주면 반쪽짜리니까, 조심할 것도 같이 알려드려요.
             </p>
           </div>
         </div>
