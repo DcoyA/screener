@@ -30,6 +30,36 @@
 
 
 
+\## 운영 참고 (GitHub Actions 스케줄)
+
+\- GitHub은 저장소에 60일간 활동(커밋/PR 등)이 없으면 scheduled workflow를
+
+&#x20; 자동으로 비활성화한다. 데이터 파이프라인이 갑자기 안 도는 것처럼 보이면
+
+&#x20; 이 정책부터 의심하고, Actions 탭에서 workflow가 비활성화돼 있지 않은지
+
+&#x20; 확인한다(재활성화는 워크플로 파일을 아무 커밋에 포함시키거나 Actions
+
+&#x20; 탭에서 직접 Enable 하면 된다).
+
+\- `weekly-json-update.yml`은 평일 09:07 KST 스케줄에 11:07 KST 백업 스케줄을
+
+&#x20; 추가로 둔다. `check` 잡이 `app/data/stocks.json`의 `updatedAt`이 이미
+
+&#x20; 오늘(KST) 날짜면 스킵하므로, 백업 스케줄은 평소엔 아무 일도 안 하고
+
+&#x20; 09:07 실행이 지연/누락됐을 때만 실제로 파이프라인을 돌린다.
+
+\- `sync-supabase-watchdog.yml`(`scripts/verify-today-ingested.mjs`)이 매일
+
+&#x20; 평일 KST 17:00에 오늘자 Supabase 스냅샷 존재 여부·직전 대비 행 수·
+
+&#x20; targetPrice 결측 비율·S등급 비율을 검사해서, 하나라도 이상하면
+
+&#x20; `SLACK_WEBHOOK_URL`로 알림을 보낸다.
+
+
+
 \## 디렉토리 구조
 
 \- `app/` — Next App Router 페이지

@@ -3,6 +3,10 @@ name: Weekday JSON Update
 on:
   schedule:
     - cron: "7 0 * * 1-5" # 09:07 KST weekdays
+    # 백업 실행: 09:07 실행이 GitHub Actions 스케줄 지연/누락으로 안 돌았을 때
+    # 대비. "check" 잡의 스킵 가드가 이미 오늘자 데이터가 있으면 알아서
+    # 건너뛰므로, 정상적인 날엔 그냥 아무 일도 안 하고 끝난다.
+    - cron: "7 2 * * 1-5" # 11:07 KST weekdays (백업)
   workflow_dispatch:
     inputs:
       krx_debug:
@@ -22,7 +26,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        name: 오늘 이미 갱신됐는지 확인
+        run: |
+          TODAY=$(TZ=Asia/Seoul date +%Y-%m-%d)
+          CURRENT=$(jq -r '.[0].updatedAt // empty' app/data/stocks.json 2>/dev/null || echo "")
+          echo "오늘(KST)=$TODAY, stocks.json의 updatedAt=$CURRENT"
+          if [ "$TODAY" = "$CURRENT" ]; then
+            echo "이미 오늘자로 갱신됨 - 이번 실행은 스킵합니다(백업 cron 등 중복 실행 대비)"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
   update:
+    needs: check
+    if: needs.check.outputs.skip != 'true'
     runs-on: ubuntu-latest
 
     env:
