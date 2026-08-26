@@ -53,6 +53,22 @@ export default function StrategySection({ strategyCards }) {
                   상승여력 {formatUpsideDisplay(section.stock)}
                 </p>
 
+                {section.momentumWarning ? (
+                  <p
+                    style={{
+                      margin: "0 0 10px",
+                      padding: "6px 10px",
+                      borderRadius: 10,
+                      background: "#fffbeb",
+                      color: "#92400e",
+                      fontSize: "0.78rem",
+                      fontWeight: 800,
+                    }}
+                  >
+                    ⚠ 최근 이미 많이 올랐습니다
+                  </p>
+                ) : null}
+
                 <div className="reasonBox">
                   <span className="reasonLabel">왜 이 관점에서 보나</span>
                   <p>{section.reason}</p>

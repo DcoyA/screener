@@ -40,6 +40,47 @@ function formatTargetPriceBand(stock) {
   return formatPrice(stock?.metrics?.targetPrice);
 }
 
+const MIN_STRATEGY_SCORE = 40;
+const MIN_STRATEGY_LIQUIDITY = 10_0000_0000; // 10억원 (buildAvoidSummary의 저유동성 기준과 동일)
+// 문서 스펙은 "최근 20일 수익률"이지만, 파이프라인이 실제로 계산해 저장하는
+// 값은 5일 수익률(metrics.priceChangeRate)뿐이다(20일치 가격 히스토리 자체가
+// 수집되지 않음). 20일 지표를 새로 만드는 건 이번 수정 범위를 넘어서므로,
+// 있는 유일한 모멘텀 지표(5일)에 문서와 동일한 임계값을 적용한다.
+const SHORT_TERM_MOMENTUM_WARN_PCT = 25;
+const SHORT_TERM_MOMENTUM_EXCLUDE_PCT = 50;
+
+// 전 슬롯 공통 하드 필터. 초보자 대상 화면에 부적격 종목이 올라가는 걸 막는
+// 최소 안전장치라 정렬 로직보다 먼저 적용한다.
+function passesHardFilter(stock) {
+  const score = Number(stock?.totalScore ?? 0);
+  if (score < MIN_STRATEGY_SCORE) return false;
+
+  const targetPrice = Number(stock?.metrics?.targetPrice);
+  if (!Number.isFinite(targetPrice) || targetPrice <= 0) return false; // fairValue 결측
+
+  const liquidity = Number(stock?.metrics?.avgTradeValue5d ?? 0);
+  if (liquidity < MIN_STRATEGY_LIQUIDITY) return false;
+
+  return true;
+}
+
+// "단기" 슬롯 전용 추가 필터. 최근 영업손실(연간 수치 - 분기 합산 데이터는
+// 파이프라인에 없음) 종목과, 이미 단기간에 과도하게 오른 종목을 제외한다.
+function passesShortTermFilter(stock) {
+  const operatingIncome = Number(stock?.metrics?.operatingIncome ?? 0);
+  if (operatingIncome < 0) return false;
+
+  const momentum = Number(stock?.metrics?.priceChangeRate ?? 0);
+  if (momentum > SHORT_TERM_MOMENTUM_EXCLUDE_PCT) return false;
+
+  return true;
+}
+
+function needsMomentumWarning(stock) {
+  const momentum = Number(stock?.metrics?.priceChangeRate ?? 0);
+  return momentum > SHORT_TERM_MOMENTUM_WARN_PCT;
+}
+
 function sortForShortTerm(items) {
   return [...items].sort((a, b) => {
     const aMomentum = Number(a?.metrics?.priceChangeRate ?? a?.metrics?.momentum ?? 0);
@@ -157,26 +198,37 @@ export function buildAvoidSummary(items) {
   ];
 }
 
+// 슬롯 간 중복 배제. 우선순위 장기 → 연간 → 단기로 순차 선정하고, 이미 다른
+// 슬롯에 뽑힌 종목은 다음 슬롯 후보 풀에서 제외한다.
 export function buildStrategyCards(items) {
-  const shortTerm = sortForShortTerm(items)[0] || null;
-  const annual = sortForAnnual(items)[0] || null;
-  const longTerm = sortForLongTerm(items)[0] || null;
+  const eligible = items.filter(passesHardFilter);
+
+  const longTerm = sortForLongTerm(eligible)[0] || null;
+  const usedCodes = new Set([longTerm?.code].filter(Boolean));
+
+  const annualPool = eligible.filter((item) => !usedCodes.has(item.code));
+  const annual = sortForAnnual(annualPool)[0] || null;
+  if (annual) usedCodes.add(annual.code);
+
+  const shortPool = eligible.filter((item) => !usedCodes.has(item.code) && passesShortTermFilter(item));
+  const shortTerm = sortForShortTerm(shortPool)[0] || null;
 
   return [
     {
       key: "short",
       badge: "1주~1개월",
-      title: "단기 투자에 좋은 후보",
+      title: "최근 거래가 몰린 종목",
       desc: "최근 흐름, 거래대금, 상승여력을 같이 봐서 지금 당장 반응 가능한 쪽을 고릅니다.",
       stock: shortTerm,
       reason: shortTerm ? buildShortReason(shortTerm) : "단기 관점 후보가 아직 부족합니다.",
+      momentumWarning: shortTerm ? needsMomentumWarning(shortTerm) : false,
       actionLabel: "단기 흐름 더 보기",
       actionHref: "/search?tab=ranking&view=short",
     },
     {
       key: "annual",
       badge: "6개월~1년",
-      title: "연간 투자에 좋은 후보",
+      title: "올해 안에 다시 볼 종목",
       desc: "종합 점수, 실적 안정성, 성장 흐름을 묶어서 올해 안에 다시 볼 만한 종목을 고릅니다.",
       stock: annual,
       reason: annual ? buildAnnualReason(annual) : "연간 관점 후보가 아직 부족합니다.",
@@ -186,7 +238,7 @@ export function buildStrategyCards(items) {
     {
       key: "long",
       badge: "1년 이상",
-      title: "장기 투자에 좋은 후보",
+      title: "구조를 보고 담을 종목",
       desc: "저평가와 재무 안정성 기준으로, 당장보다 구조를 보고 들고 갈 만한 종목을 고릅니다.",
       stock: longTerm,
       reason: longTerm ? buildLongReason(longTerm) : "장기 관점 후보가 아직 부족합니다.",
