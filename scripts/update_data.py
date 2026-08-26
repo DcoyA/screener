@@ -81,10 +81,6 @@ MAX_PLAUSIBLE_PER = 300.0
 # NAV 대비 30~50% 할인 중 보수적으로 30%를 목표가(전 구간)에 곱한다.
 HOLDING_DISCOUNT_RATE = 0.30
 
-# 상승여력 표시 캡(계산값 자체는 캡 없이 보존, 표시용 필드만 자름)
-UPSIDE_CAP_HIGH = 80.0
-UPSIDE_CAP_LOW = -40.0
-
 # 등급 백분위 컷오프 (INCLUDED 종목 기준, decision==EXCLUDED는 항상 D)
 GRADE_S_PCT = 0.07
 GRADE_A_PCT = 0.25
@@ -1802,11 +1798,6 @@ def main():
             # 근거가 없다 — 종목을 빼지 않고 관련 필드만 null로 남긴다.
             # metrics.targetPrice*/upside는 build_stock_item()에서 이미
             # None으로 초기화돼 있으므로 여기서 건드릴 필요 없다.
-            s["display"] = {
-                "upsideLabel": None,
-                "upsideLabelReason": None,
-                "upsideCapped": None,
-            }
             s["fairValueMeta"] = {
                 "sectorCode": sector_code,
                 "sectorSampleTier": "fixed",
@@ -1820,11 +1811,6 @@ def main():
         if per_value > MAX_PLAUSIBLE_PER:
             # 정규화 순이익이 0에 가까워 PER이 통계적으로 의미 없는 값까지
             # 튄 경우 - 이 PER로 회귀를 돌리면 목표가 자체가 이상치가 된다.
-            s["display"] = {
-                "upsideLabel": None,
-                "upsideLabelReason": None,
-                "upsideCapped": None,
-            }
             s["fairValueMeta"] = {
                 "sectorCode": sector_code,
                 "sectorSampleTier": "fixed",
@@ -1860,11 +1846,6 @@ def main():
         else:
             # 자기 자신을 뺀 뒤에도 섹터/시장 어느 쪽으로도 비교할 표본이
             # 부족하다 - 회귀를 강행하지 않고 목표가를 포기한다.
-            s["display"] = {
-                "upsideLabel": None,
-                "upsideLabelReason": None,
-                "upsideCapped": None,
-            }
             s["fairValueMeta"] = {
                 "sectorCode": sector_code,
                 "sectorSampleTier": "fixed",
@@ -1899,25 +1880,12 @@ def main():
         metrics["targetPriceConservative"] = target_price_low
         metrics["targetPrice"] = target_price_mid
         metrics["targetPriceOptimistic"] = target_price_high
+        # 표시용 캡/라벨(구 display.upsideCapped/upsideLabel)은 더 이상 여기서
+        # 계산하지 않는다 - app/lib/formatUpside.js가 closePrice/targetPrice
+        # 원값으로부터 매번 다시 계산해서 화면에 보여준다(+60%/-40%, 단일
+        # 창구). upside_raw 자체는 그대로 보존한다.
         metrics["upside"] = round(upside_raw, 1)
 
-        display_label = None
-        display_reason = None
-        upside_capped = round(upside_raw, 1)
-        if upside_raw > UPSIDE_CAP_HIGH:
-            upside_capped = UPSIDE_CAP_HIGH
-            display_label = "구조적 저평가 구간"
-            display_reason = "지주사할인" if holding_discount_applied else "실적변동성"
-        elif upside_raw < UPSIDE_CAP_LOW:
-            upside_capped = UPSIDE_CAP_LOW
-            display_label = "구조적 고평가 구간"
-            display_reason = "지주사할인" if holding_discount_applied else "실적변동성"
-
-        s["display"] = {
-            "upsideLabel": display_label,
-            "upsideLabelReason": display_reason,
-            "upsideCapped": upside_capped,
-        }
         s["fairValueMeta"] = {
             "sectorCode": sector_code,
             "sectorSampleTier": sample_tier,

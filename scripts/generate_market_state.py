@@ -491,7 +491,10 @@ def build_today_stock_reason(stock: Dict[str, Any]) -> str:
         chunks.append("종합 조건 통과")
     if stock["totalScore"] >= 70:
         chunks.append(f"총점 {int(round(stock['totalScore']))}점")
-    if stock["upside"] > 0:
+    # CLAUDE.md 상승여력 표기 상한(+60%): 원문 숫자를 그대로 문장에 구워 넣지 않는다.
+    if stock["upside"] > 60:
+        chunks.append("상승여력 구조적 할인 구간")
+    elif stock["upside"] > 0:
         chunks.append(f"상승여력 {round(stock['upside'], 1)}%")
     if stock.get("liquidityBurst"):
         chunks.append("거래대금 증가 신호")

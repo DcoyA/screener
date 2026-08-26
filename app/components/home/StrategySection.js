@@ -49,7 +49,7 @@ export default function StrategySection({ strategyCards }) {
                   </div>
                 </div>
 
-                <p className={getUpsideClass(section.stock.display?.upsideCapped ?? section.stock.metrics?.upside)}>
+                <p className={getUpsideClass(section.stock.metrics?.upside)}>
                   상승여력 {formatUpsideDisplay(section.stock)}
                 </p>
 
