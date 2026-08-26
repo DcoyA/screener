@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
 import { buildEmailHtml } from "./lib/emailTemplate.mjs";
+import { createReportLinkToken } from "../../app/lib/reportLinkToken.js";
 
 // Resend에 인증한 도메인이 report.hellomedia.win(서브도메인)이라 발신
 // 주소도 이 서브도메인이어야 한다(hellomedia.win 자체가 아님). DKIM이
@@ -10,9 +11,11 @@ const FROM_ADDRESS = "news@report.hellomedia.win";
 
 const SITE_URL = "https://www.hellomedia.win";
 const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
-// app/reports는 기존 무료 스크리너 리포트 페이지가 이미 쓰고 있어(app/reports/page.js),
-// 프리미엄 아카이브는 충돌을 피해 /premium/reports 경로를 쓴다.
-const WEBVIEW_BASE_URL = "https://www.hellomedia.win/premium/reports";
+// TASK 7(디자인·IA 개편): /reports/[id]가 서버에서 실제 열람 권한을 판정하는
+// 정식 경로다(app/lib/reportAccess.js). /reports/page.js(목록)와 경로가
+// 겹치지 않는다 - Next.js는 /reports/page.js와 /reports/[id]/page.js를
+// 동시에 지원한다.
+const WEBVIEW_BASE_URL = "https://www.hellomedia.win/reports";
 
 const BATCH_SIZE = 10;
 const BATCH_DELAY_MS = 1000;
@@ -71,9 +74,15 @@ async function fetchActiveSubscribers() {
   return data;
 }
 
-function buildLinksFor(reportId, unsubscribeToken) {
+// reportLinkToken은 reportId+만료시각만 서명한 값이라(구독자별로 다르지
+// 않음) 리포트당 한 번만 만들면 된다 - 호출 측(processReport)이 만들어서
+// 넘겨준다.
+function buildLinksFor(reportId, unsubscribeToken, reportLinkToken) {
+  const webviewUrl = reportLinkToken
+    ? `${WEBVIEW_BASE_URL}/${reportId}?token=${reportLinkToken}`
+    : `${WEBVIEW_BASE_URL}/${reportId}`;
   return {
-    webviewUrl: `${WEBVIEW_BASE_URL}/${reportId}`,
+    webviewUrl,
     unsubscribeUrl: `${UNSUBSCRIBE_BASE_URL}?token=${unsubscribeToken}`,
   };
 }
@@ -136,7 +145,7 @@ async function sendWithRetry(subscriber, report, subject, unsubscribeUrl, html) 
 // 다음 배치를 시작하지 않는 방식으로 중단한다 - 이미 병렬로 날아간 같은
 // 배치 내 나머지 요청까지 완벽히 막을 수는 없다(동시 발송과 즉시 중단은
 // 본질적으로 트레이드오프).
-async function sendReportToSubscribers(report, subscribers, subject) {
+async function sendReportToSubscribers(report, subscribers, subject, reportLinkToken) {
   const succeeded = [];
   const failed = [];
   let aborted = false;
@@ -145,7 +154,7 @@ async function sendReportToSubscribers(report, subscribers, subject) {
     const batch = subscribers.slice(i, i + BATCH_SIZE);
     const results = await Promise.all(
       batch.map((subscriber) => {
-        const { webviewUrl, unsubscribeUrl } = buildLinksFor(report.id, subscriber.unsubscribe_token);
+        const { webviewUrl, unsubscribeUrl } = buildLinksFor(report.id, subscriber.unsubscribe_token, reportLinkToken);
         const html = buildEmailHtml(report, { webviewUrl, unsubscribeUrl });
         return sendWithRetry(subscriber, report, subject, unsubscribeUrl, html);
       })
@@ -251,8 +260,17 @@ async function processReport(report, subscribers) {
     return;
   }
 
+  // REPORT_LINK_SECRET이 없으면 토큰 없는 링크가 나가고, 그 링크는
+  // app/lib/reportAccess.js가 무조건 잠금 화면으로 막는다 - 구독자조차
+  // 못 읽는 발송이 조용히 나가는 것보다는 여기서 막는 게 낫다.
+  const reportLinkToken = createReportLinkToken(report.id);
+  if (!reportLinkToken) {
+    console.error(`REPORT_LINK_SECRET 미설정으로 report_id=${report.id} 발송을 중단합니다(토큰 없는 링크는 구독자도 못 엽니다)`);
+    process.exit(1);
+  }
+
   const subject = report.content_json?.cover?.headline || report.topic_title;
-  const { succeeded, failed } = await sendReportToSubscribers(report, subscribers, subject);
+  const { succeeded, failed } = await sendReportToSubscribers(report, subscribers, subject, reportLinkToken);
 
   const logSaved = await recordSendLog(report.id, succeeded.length, failed, report.topic_title);
   if (!logSaved) {
@@ -282,7 +300,11 @@ async function runTestMode(testEmail) {
     process.exit(1);
   }
 
-  const { webviewUrl, unsubscribeUrl } = buildLinksFor(report.id, "test-mode-token");
+  const reportLinkToken = createReportLinkToken(report.id);
+  if (!reportLinkToken) {
+    console.error("REPORT_LINK_SECRET 미설정 - 테스트 발송도 토큰 없는(잠긴) 링크가 나갑니다. 계속하려면 그대로 두거나 키를 설정하세요.");
+  }
+  const { webviewUrl, unsubscribeUrl } = buildLinksFor(report.id, "test-mode-token", reportLinkToken);
   const html = buildEmailHtml(report, { webviewUrl, unsubscribeUrl });
   const subject = report.content_json?.cover?.headline || report.topic_title;
   const result = await sendOneEmail(testEmail, subject, html, report.id, unsubscribeUrl);

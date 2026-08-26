@@ -32,6 +32,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           REPORT_ID: ${{ inputs.report_id }}
+          REPORT_LINK_SECRET: ${{ secrets.REPORT_LINK_SECRET }}
 
       - name: Notify on failure
         if: failure()

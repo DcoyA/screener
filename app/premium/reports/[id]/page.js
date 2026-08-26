@@ -1,41 +1,13 @@
-import { notFound } from "next/navigation";
-import PageTopBar from "../../../components/PageTopBar";
-import { createSupabaseAdminClient } from "../../../lib/supabase/admin";
+// app/premium/reports/[id]/page.js
+// TASK 3-2/TASK 7(디자인·IA 개편): 실제 열람 권한 판정이 있는 /reports/[id]로
+// 통합했다. 이메일에 이미 나간 링크의 토큰(?token=)을 그대로 보존해서 넘긴다.
+import { redirect } from "next/navigation";
 
-const styles = {
-  container: { maxWidth: 760, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a" },
-  reportDate: { color: "#64748b", fontWeight: 700, margin: "0 0 8px" },
-  title: { margin: "0 0 24px", letterSpacing: "-0.03em" },
-  body: { lineHeight: 1.8 },
-};
-
-export default async function PremiumReportDetailPage({ params }) {
+export default async function PremiumReportDetailRedirect({ params, searchParams }) {
   const { id } = await params;
-  const supabase = createSupabaseAdminClient();
-
-  const { data: report, error } = await supabase
-    .from("reports")
-    .select("id, issue_date, day_type, topic_title, html_body, status")
-    .eq("id", id)
-    .maybeSingle();
-
-  if (error) {
-    console.error("premium report 상세 조회 실패:", error);
-  }
-
-  if (!report || report.status !== "sent") {
-    notFound();
-  }
-
-  return (
-    <main style={styles.container}>
-      <PageTopBar backHref="/premium/reports" backLabel="목록으로" />
-
-      <p style={styles.reportDate}>{report.issue_date}</p>
-      <h1 style={styles.title}>{report.topic_title}</h1>
-
-      {/* TODO: 향후 sanitize-html 도입 고려 */}
-      <div style={styles.body} dangerouslySetInnerHTML={{ __html: report.html_body }} />
-    </main>
-  );
+  const sp = await searchParams;
+  const params2 = new URLSearchParams();
+  if (sp?.token) params2.set("token", String(sp.token));
+  const query = params2.toString();
+  redirect(`/reports/${id}${query ? `?${query}` : ""}`);
 }

@@ -1,15 +1,31 @@
-"use client";
-
 import Link from "next/link";
 import reports from "../data/reports.json";
 import stocks from "../data/stocks.json";
 import PageTopBar from "../components/PageTopBar";
 import Icon from "../components/icons/Icon";
 import { cleanStockName } from "../lib/stockName";
+import { createSupabaseAdminClient } from "../lib/supabase/admin";
+import ReportsPageStyles from "./PageStyles";
 
+async function fetchPremiumReports() {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, issue_date, day_type, topic_title")
+    .eq("status", "sent")
+    .order("issue_date", { ascending: false });
 
-export default function ReportsPage() {
+  if (error) {
+    console.error("premium reports 조회 실패:", error);
+    return [];
+  }
+  return data || [];
+}
+
+export default async function ReportsPage() {
   const updatedAt = reports[0]?.publishedAt || "-";
+  const premiumReports = await fetchPremiumReports();
+  const [latestPremium, ...restPremium] = premiumReports;
 
   return (
     <>
@@ -95,190 +111,54 @@ export default function ReportsPage() {
             );
           })}
         </div>
+
+        {/* TASK 3-2(디자인·IA 개편): /premium/reports를 여기 하단 섹션으로
+            흡수. 실제 열람 권한 판정은 /reports/[id](app/lib/reportAccess.js)가
+            서버에서 하므로, 여기 링크는 그냥 /reports/{id}로 보내면 된다 -
+            토큰이 없으면 그 페이지가 알아서 잠금 화면을 보여준다. */}
+        <section className="premiumSection">
+          <div className="premiumHeader">
+            <p className="badge premiumBadge">PREMIUM</p>
+            <h2>프리미엄 주간 리포트</h2>
+          </div>
+
+          {!latestPremium && <p className="detailText">발행된 프리미엄 리포트가 아직 없습니다.</p>}
+
+          {latestPremium && (
+            <Link href={`/reports/${latestPremium.id}`} className="latestCard">
+              <span className="latestBadge">최신 리포트</span>
+              <p className="premiumDate">{latestPremium.issue_date}</p>
+              <h3 className="premiumTitle">{latestPremium.topic_title}</h3>
+            </Link>
+          )}
+
+          {restPremium.length > 0 && (
+            <div className="subscribeBanner">
+              <span className="subscribeBannerText">이전 리포트 {restPremium.length}건은 구독자만 볼 수 있습니다.</span>
+              <Link href="/" className="subscribeBannerBtn">구독하고 전체 보기</Link>
+            </div>
+          )}
+
+          {restPremium.length > 0 && (
+            <ul className="premiumList">
+              {restPremium.map((report) => (
+                <li key={report.id} className="premiumItemWrap">
+                  <Link href={`/reports/${report.id}`} className="premiumItemLink">
+                    <span className="reportDateChip">{report.issue_date}</span>
+                    <span className="reportDayType">{report.day_type}</span>
+                    <span className="premiumTitleInline">{report.topic_title}</span>
+                  </Link>
+                  <div className="lockOverlay">
+                    <span className="lockLabel"><Icon name="lock" size={16} /> 잠긴 리포트</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
 
-      <style jsx>{`
-        .container {
-          max-width: 1180px;
-          margin: 0 auto;
-          padding: 32px 24px 80px;
-          color: #0f172a;
-        }
-        .performanceCrossLink {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          margin-bottom: 20px;
-          color: var(--color-primary);
-          font-weight: 800;
-          text-decoration: none;
-        }
-        .subNav {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-        }
-        .subNav a {
-          color: #475569;
-          text-decoration: none;
-          font-weight: 700;
-        }
-        .pageHero {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 24px;
-          margin-bottom: 28px;
-          flex-wrap: wrap;
-        }
-        .badge {
-          display: inline-flex;
-          padding: 8px 14px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
-          font-size: 0.82rem;
-          font-weight: 800;
-          margin: 0 0 18px;
-        }
-        h1 {
-          margin: 0 0 12px;
-          font-size: clamp(2rem, 4vw, 3rem);
-          letter-spacing: -0.04em;
-        }
-        .desc {
-          margin: 0;
-          max-width: 760px;
-          color: #475569;
-          line-height: 1.8;
-          font-size: 1.02rem;
-        }
-        .updateBox {
-          min-width: 180px;
-          padding: 16px 18px;
-          border-radius: 18px;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
-          text-align: right;
-        }
-        .updateLabel,
-        .stockCode,
-        .scoreLine {
-          color: #64748b;
-        }
-        .updateLabel {
-          display: block;
-          margin-bottom: 6px;
-          font-size: 0.88rem;
-          font-weight: 700;
-        }
-        .reportList {
-          display: grid;
-          gap: 20px;
-        }
-        .reportCard {
-          border-radius: 26px;
-          padding: 24px;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
-        }
-        .reportHead {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 16px;
-          margin-bottom: 16px;
-          flex-wrap: wrap;
-        }
-        h2 {
-          margin: 6px 0 10px;
-          font-size: 1.8rem;
-          letter-spacing: -0.03em;
-        }
-        .reportDate {
-          padding: 12px 14px;
-          border-radius: 14px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          font-weight: 800;
-          color: #334155;
-        }
-        .summaryText,
-        .detailText,
-        .bulletList li {
-          color: #475569;
-          line-height: 1.8;
-        }
-        .reportSection {
-          margin-top: 18px;
-        }
-        .reportSection h3 {
-          margin: 0 0 12px;
-          font-size: 1.1rem;
-        }
-        .miniCardWrap {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 14px;
-        }
-        .miniCard {
-          border-radius: 20px;
-          padding: 18px;
-          background: #f8fbff;
-          border: 1px solid #e5e7eb;
-        }
-        .marketBadge {
-          display: inline-flex;
-          padding: 6px 10px;
-          border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
-          font-size: 0.78rem;
-          font-weight: 800;
-          margin: 0 0 12px;
-        }
-        h4 {
-          margin: 0 0 8px;
-          font-size: 1.1rem;
-        }
-        .miniLink {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: var(--radius-button);
-          padding: 10px 14px;
-          text-decoration: none;
-          font-weight: 800;
-          border: 1px solid #dbe3f0;
-          margin-top: 12px;
-          background: #fff;
-          color: #0f172a;
-        }
-        .bulletList {
-          margin: 0;
-          padding-left: 20px;
-        }
-        @media (max-width: 900px) {
-          .miniCardWrap {
-            grid-template-columns: 1fr;
-          }
-        }
-        @media (max-width: 720px) {
-          .container {
-            padding: 24px 18px 64px;
-          }
-          .pageHero,
-          .reportHead {
-            flex-direction: column;
-          }
-          .updateBox {
-            width: 100%;
-            text-align: left;
-          }
-        }
-      `}</style>
+      <ReportsPageStyles />
     </>
   );
 }
