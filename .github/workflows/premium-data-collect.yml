@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 20 * * 0,1,3,4"  # UTC 기준, KST 월/화/목/금 오전 5시
   workflow_dispatch:
+    inputs:
+      force_day_type:
+        description: "generate-topic-candidates.mjs의 day_type을 강제 지정(mon/tue/thu/fri). 평일 수동 검증용 - 비워두면 실제 KST 요일을 따름"
+        type: string
+        required: false
 
 jobs:
   collect:
@@ -64,6 +69,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          FORCE_DAY_TYPE: ${{ inputs.force_day_type }}
 
       - name: Notify editor via Slack
         run: node scripts/premium/notify-editor.mjs
