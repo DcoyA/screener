@@ -8,14 +8,18 @@ const supabase = createClient(
 
 const SITE_URL = "https://www.hellomedia.win";
 
-// TASK 3(스키마 개편)에서 cover.reading_time_min이 생기면 이 어림값 대신
-// 그 값을 쓰도록 교체할 것. 그때까진 섹션 텍스트 길이로 대략 추정한다.
+// cover.reading_time_min은 LLM이 채운다(reportSchema.mjs). 혹시 없는 경우
+// (스키마 위반 응답이 검증을 어찌어찌 통과한 예외적 상황 등)에만 섹션
+// 텍스트 길이로 대략 추정한다.
 const CHARS_PER_MINUTE = 400;
 
 function estimateReadingMinutes(report) {
+  const provided = report.content_json?.cover?.reading_time_min;
+  if (Number.isFinite(provided) && provided > 0) return provided;
+
   const sections = report.content_json?.sections || [];
   const textLength = sections.reduce(
-    (sum, s) => sum + (s.summary?.length || 0) + (s.implication?.length || 0),
+    (sum, s) => sum + (s.what_happened?.length || 0) + (s.why_it_matters?.length || 0),
     0
   );
   return Math.max(1, Math.round(textLength / CHARS_PER_MINUTE));
@@ -25,7 +29,9 @@ function countRelatedStockCodes(report) {
   const sections = report.content_json?.sections || [];
   const codes = new Set();
   for (const s of sections) {
-    for (const c of s.related_codes || []) codes.add(c);
+    for (const rs of s.related_stocks || []) {
+      if (rs.code) codes.add(rs.code);
+    }
   }
   return codes.size;
 }

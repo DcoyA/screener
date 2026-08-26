@@ -1,10 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
+import { FORBIDDEN_PHRASES, MAX_ABS_UPSIDE_PERCENT, REPORT_JSON_EXAMPLE } from "./lib/reportSchema.mjs";
+import { buildContextSummary } from "./lib/buildContextSummary.mjs";
+import { validateReport } from "./lib/validateReport.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+const GRADE_LOOKBACK_DAYS = 28;
+
+function daysAgoStr(days) {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString().slice(0, 10);
+}
 
 async function safeFetchContext(label, queryFn) {
   try {
@@ -21,7 +32,44 @@ async function safeFetchContext(label, queryFn) {
   }
 }
 
-async function fetchAdditionalContext(relatedCodes, relatedSectors) {
+// related_stocks[]에 채울 등급/섹터 정보. LLM이 지어내지 않도록 실제 조회한
+// 값만 넘긴다 - 4주 전 등급은 파이프라인 누적 기간이 짧으면(현재 약
+// 10일치) 없을 수 있고, 그 경우 null로 넘겨 LLM이 "데이터 미축적"이라고
+// 정직하게 쓰게 한다(지어내지 않게).
+async function fetchRelatedStockDetails(relatedCodes) {
+  if (relatedCodes.length === 0) return [];
+
+  const current = await safeFetchContext("latest_stock_snapshots(관련종목)", () =>
+    supabase.from("latest_stock_snapshots").select("code, unified_grade_code, raw_data").in("code", relatedCodes)
+  );
+  if (current.length === 0) return [];
+
+  const cutoff = daysAgoStr(GRADE_LOOKBACK_DAYS);
+  const past = await safeFetchContext("stock_daily_snapshots(4주 전 등급)", () =>
+    supabase
+      .from("stock_daily_snapshots")
+      .select("code, unified_grade_code, snapshot_date")
+      .in("code", relatedCodes)
+      .lte("snapshot_date", cutoff)
+      .order("snapshot_date", { ascending: false })
+  );
+
+  const pastGradeByCode = new Map();
+  for (const row of past) {
+    if (!pastGradeByCode.has(row.code)) pastGradeByCode.set(row.code, row.unified_grade_code);
+  }
+
+  return current.map((row) => ({
+    code: row.code,
+    name: row.raw_data?.name || row.code,
+    grade: row.unified_grade_code,
+    grade_4w_ago: pastGradeByCode.get(row.code) || null,
+    sector_strength_score: row.raw_data?.sectorMeta?.strengthScore ?? null,
+    sector_leader: row.raw_data?.sectorMeta?.leaderFlag || false,
+  }));
+}
+
+async function fetchAdditionalContext(relatedCodes, relatedSectors, followup) {
   const marketIssues = relatedSectors.length
     ? await safeFetchContext("market_issues", () =>
         supabase.from("market_issues").select("*").overlaps("impacted_sectors", relatedSectors)
@@ -44,10 +92,19 @@ async function fetchAdditionalContext(relatedCodes, relatedSectors) {
     supabase.from("economic_calendar").select("*").eq("importance", "high")
   );
 
-  return { market_issues: marketIssues, disclosure_events: disclosureEvents, flow_signals: flowSignals, economic_calendar: economicCalendar };
+  const relatedStockDetails = await fetchRelatedStockDetails(relatedCodes);
+
+  return {
+    market_issues: marketIssues,
+    disclosure_events: disclosureEvents,
+    flow_signals: flowSignals,
+    economic_calendar: economicCalendar,
+    related_stock_details: relatedStockDetails,
+    followup: followup || [],
+  };
 }
 
-function buildPrompt(candidates, context) {
+function buildPrompt(candidates, context, retryFeedback) {
   const candidatesText = candidates
     .map(
       (c, i) =>
@@ -55,7 +112,11 @@ function buildPrompt(candidates, context) {
     )
     .join("\n\n");
 
-  const contextText = JSON.stringify(context).slice(0, 6000);
+  const contextSummary = buildContextSummary(context);
+
+  const retryBlock = retryFeedback
+    ? `\n\n[이전 시도 실패 사유 - 반드시 고쳐서 다시 출력할 것]\n${retryFeedback.map((e) => `- ${e}`).join("\n")}\n`
+    : "";
 
   return `너는 국내 주식시장 프리미엄 리포트 에디터의 초안 작성을 돕는 어시스턴트다.
 
@@ -63,31 +124,35 @@ function buildPrompt(candidates, context) {
 
 ${candidatesText}
 
-아래는 관련 종목/섹터로 추가 조회한 보조 컨텍스트 데이터(JSON, 비어 있을 수도 있음)다:
-${contextText}
+아래는 관련 종목/섹터로 추가 조회한 보조 컨텍스트 데이터(마크다운 요약, 비어 있을 수도 있음)다:
 
-위 내용을 종합해 오늘자 프리미엄 리포트 초안을 아래 JSON 스키마로만 출력하라 (다른 설명 문장 절대 넣지 말 것, 반드시 하나의 JSON 객체로만 출력):
+${contextSummary}
 
-{
-  "topic_title": "오늘 리포트 전체를 대표하는 한 줄 제목",
-  "sections": [
-    {
-      "title": "이 섹션(후보)의 제목",
-      "summary": "핵심 요약 2~4문장",
-      "related_codes": ["종목코드", "..."],
-      "related_sectors": ["섹터명", "..."],
-      "implication": "시사점 1~2문장"
-    }
-  ],
-  "html_body": "이메일 발송용 HTML 전체 문자열 (인라인 스타일 포함, <html>...</html> 형태)"
+위 내용을 종합해 오늘자 프리미엄 리포트 초안을 아래와 정확히 같은 키/중첩 구조의 JSON 하나로만 출력하라 (다른 설명 문장 절대 넣지 말 것):
+
+${JSON.stringify(REPORT_JSON_EXAMPLE, null, 2)}
+
+sections는 위 후보 개수만큼 만들어라.
+
+[표현 금지 — 위반 시 출력 전체 무효]
+${FORBIDDEN_PHRASES.map((p) => `- "${p}"`).join("\n")}
+- 매수/매도 타이밍을 지시하는 모든 문구
+- 목표주가를 단일 숫자로 단정하는 표현
+
+[필수 규칙]
+- 모든 사실 주장에는 sources 배열에 근거 URL과 날짜를 넣는다
+- 컨텍스트 데이터에 없는 사실은 절대 생성하지 않는다 (related_stocks의 grade/grade_4w_ago/
+  sector_percentile은 위 컨텍스트의 "관련 종목 상세" 값만 그대로 옮겨 적어라. 데이터가 없으면
+  null로 두거나 "데이터 없음"이라고 써라 - 지어내지 마라)
+- 상승여력을 언급할 때 ±${MAX_ABS_UPSIDE_PERCENT}%를 넘는 수치는 숫자로 쓰지 않는다
+- invalidation은 검증 가능한 조건이어야 한다
+  (X) "시장 상황이 나빠지면"
+  (O) "3분기 영업이익이 전년 동기 대비 감소로 전환하면"
+- followup 컨텍스트가 있으면 반드시 followup 필드에 반영하고, verdict가 "틀림"이어도
+  숨기거나 완곡하게 쓰지 마라 - 틀린 것도 그대로 싣는다${retryBlock}`;
 }
 
-sections는 위 후보 개수만큼 만들어라. 후보 목록과 컨텍스트 데이터에 없는 사실을 새로 지어내지 마라.`;
-}
-
-async function generateReportContent(candidates, context) {
-  const prompt = buildPrompt(candidates, context);
-
+async function callAnthropic(prompt) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -104,33 +169,100 @@ async function generateReportContent(candidates, context) {
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error(`Anthropic API 호출 실패: ${res.status} - ${errText}`);
-    process.exit(1);
+    throw new Error(`Anthropic API 호출 실패: ${res.status} - ${errText}`);
   }
 
   const data = await res.json();
   const textBlock = (data?.content || []).find((block) => block.type === "text");
-
   if (!textBlock) {
-    console.error("응답 content 배열에 type='text' 블록이 없습니다. 원문:", JSON.stringify(data));
-    process.exit(1);
+    throw new Error(`응답 content 배열에 type='text' 블록이 없습니다. 원문: ${JSON.stringify(data)}`);
   }
 
   const text = textBlock.text || "";
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-
   if (!jsonMatch) {
-    console.error("LLM 응답에서 JSON 객체를 찾지 못했습니다. 원문:", text);
-    process.exit(1);
+    throw new Error(`LLM 응답에서 JSON 객체를 찾지 못했습니다. 원문: ${text}`);
   }
 
   try {
     return JSON.parse(jsonMatch[0]);
   } catch (e) {
-    console.error("JSON 파싱 실패:", e.message);
-    console.error("파싱 시도했던 원문:", jsonMatch[0]);
-    process.exit(1);
+    throw new Error(`JSON 파싱 실패(${e.message}). 파싱 시도했던 원문: ${jsonMatch[0]}`);
   }
+}
+
+// LLM 생성 -> 후처리 검증. 실패하면 실패 사유를 프롬프트에 붙여 1회만 재생성.
+// 그래도 실패하면 null을 반환한다(호출 측이 슬랙 알림 후 종료).
+async function generateReportContent(candidates, context) {
+  let retryFeedback = null;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const prompt = buildPrompt(candidates, context, retryFeedback);
+    let parsed;
+    try {
+      parsed = await callAnthropic(prompt);
+    } catch (e) {
+      console.error(`[생성] 시도 ${attempt}/2 실패(API/파싱 오류): ${e.message}`);
+      if (attempt === 2) return { ok: false, errors: [e.message] };
+      retryFeedback = [e.message];
+      continue;
+    }
+
+    const { ok, errors } = await validateReport(parsed, { supabase });
+    if (ok) {
+      console.log(`[생성] 시도 ${attempt}/2에서 검증 통과`);
+      return { ok: true, report: parsed };
+    }
+
+    console.warn(`[생성] 시도 ${attempt}/2 검증 실패:\n${errors.map((e) => `  - ${e}`).join("\n")}`);
+    if (attempt === 2) return { ok: false, errors };
+    retryFeedback = errors;
+  }
+
+  return { ok: false, errors: ["알 수 없는 오류"] };
+}
+
+async function notifyGenerationFailure(errors) {
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+  const text = `🔴 [프리미엄 리포트] 생성 실패, 사유:\n${errors.map((e) => `- ${e}`).join("\n")}\n(발송되지 않았습니다)`;
+
+  if (!webhookUrl) {
+    console.log("[생성] SLACK_WEBHOOK_URL 없음 - 콘솔에만 출력\n" + text);
+    return;
+  }
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) {
+    console.error(`슬랙 전송 실패: ${res.status} - ${await res.text()}`);
+  }
+}
+
+// TASK 5-3(emailTemplate.mjs)가 들어오기 전까지 쓰는 최소 HTML.
+// LLM에게 HTML을 직접 쓰게 하지 않는다 - 구조화된 JSON만 받고 렌더링은
+// 우리 코드가 한다(각주에 원문 그대로 노출되는 사고나 스타일 붕괴를 막음).
+function buildFallbackHtml(report) {
+  const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+  const sectionsHtml = (report.sections || [])
+    .map(
+      (s) => `
+      <h2>${esc(s.title)}</h2>
+      <p><strong>무슨 일이 있었나</strong><br/>${esc(s.what_happened)}</p>
+      <p><strong>왜 중요한가</strong><br/>${esc(s.why_it_matters)}</p>
+      <p><strong>이 관점이 틀렸다고 볼 조건</strong><br/>${esc(s.invalidation)}</p>
+    `
+    )
+    .join("<hr/>");
+
+  return `<div>
+    <p>${esc(report.cover?.market_temp)}</p>
+    ${sectionsHtml}
+    <p style="font-size:12px;color:#888;">${esc(report.disclaimer)}</p>
+  </div>`;
 }
 
 async function main() {
@@ -170,16 +302,26 @@ async function main() {
 
   const relatedCodes = [...new Set(candidates.flatMap((c) => c.related_codes || []))];
   const relatedSectors = [...new Set(candidates.flatMap((c) => c.related_sectors || []))];
-  const context = await fetchAdditionalContext(relatedCodes, relatedSectors);
+  // build-followup.mjs(TASK 4)가 채워줄 자리 - 아직 없으면 빈 배열로 진행.
+  const followup = [];
+  const context = await fetchAdditionalContext(relatedCodes, relatedSectors, followup);
 
-  const generated = await generateReportContent(candidates, context);
+  const result = await generateReportContent(candidates, context);
+
+  if (!result.ok) {
+    await notifyGenerationFailure(result.errors);
+    console.error("[생성] 검증을 통과한 리포트를 만들지 못해 종료합니다(발송 안 함)");
+    process.exit(1);
+  }
+
+  const generated = result.report;
 
   const row = {
     issue_date: today,
     day_type: candidates[0].day_type,
-    topic_title: generated.topic_title,
-    content_json: { topic_title: generated.topic_title, sections: generated.sections || [] },
-    html_body: generated.html_body,
+    topic_title: generated.cover?.headline || "(제목 없음)",
+    content_json: generated,
+    html_body: buildFallbackHtml(generated),
     status: "draft",
     pdf_url: null,
   };
