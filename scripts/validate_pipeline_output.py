@@ -187,16 +187,24 @@ def check_stock_count(stocks, prev_stocks):
 
 
 def check_fair_value_null(stocks):
-    total = len(stocks)
-    null_count = sum(1 for s in stocks if s.get("metrics", {}).get("targetPrice") is None)
+    # 적자 종목(negative_earnings)은 PER 기반 적정가를 원천적으로 계산할 수
+    # 없는 구조적 사유라 결측이 정상이다 - 데이터 결함 신호가 아니므로 분모/
+    # 분자에서 제외하고, 진짜 결측(sector_unmapped/outlier_rejected 등)만 본다.
+    eligible = [s for s in stocks if (s.get("fairValueMeta") or {}).get("status") != "negative_earnings"]
+    excluded = len(stocks) - len(eligible)
+    total = len(eligible)
+    null_count = sum(1 for s in eligible if s.get("metrics", {}).get("targetPrice") is None)
     ratio = null_count / total if total else 0
     warn_thr = _threshold("fair_value_null_ratio", "warn")
     block_thr = _threshold("fair_value_null_ratio", "block")
     tier = tier_for_max(ratio, warn_thr, block_thr)
-    print(f"[품질게이트] fairValue(targetPrice) 결측: {null_count}/{total}건 ({ratio * 100:.1f}%) -> {tier}")
+    print(
+        f"[품질게이트] fairValue(targetPrice) 결측(유효): {null_count}/{total}건 ({ratio * 100:.1f}%, "
+        f"negative_earnings {excluded}건 제외) -> {tier}"
+    )
     return MetricResult(
-        "fair_value_null_ratio", "fairValue 결측 비율", ratio,
-        f"{ratio * 100:.1f}% ({null_count}/{total})",
+        "fair_value_null_ratio", "fairValue 결측 비율(유효)", ratio,
+        f"{ratio * 100:.1f}% ({null_count}/{total}, negative_earnings {excluded}건 제외)",
         f"WARN>{warn_thr * 100:.0f}% / BLOCK>{block_thr * 100:.0f}%",
         tier,
     )
