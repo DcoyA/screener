@@ -350,7 +350,7 @@ export default function PerformancePage() {
 
   return (
     <>
-      <main className="container">
+      <main className="container" style={{ background: "var(--bg-perf)" }}>
         <PageTopBar />
 
         {/* 상단 네비를 4개로 통합하면서 "성과/백테스트"가 네비에서 빠져 여기서 진입 경로를 열어둔다 */}

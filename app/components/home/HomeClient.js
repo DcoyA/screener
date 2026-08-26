@@ -90,7 +90,7 @@ export default function HomeClient({ stocks, notices }) {
         </div>
       </header>
 
-      <main className="container">
+      <main className="container" style={{ background: "var(--bg-home)" }}>
         <SubscribeHeroBanner openModal={openModal} />
 
         <div className="topStack">

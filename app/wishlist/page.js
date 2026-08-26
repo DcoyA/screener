@@ -61,7 +61,7 @@ export default function WishlistPage() {
   if (!mounted) return null;
 
   return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a" }}>
+    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a", background: "var(--bg-me)" }}>
       <PageTopBar />
 
       <section style={{ marginBottom: 26 }}>

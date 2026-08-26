@@ -13,7 +13,7 @@ export default function ReportsPage() {
 
   return (
     <>
-      <main className="container">
+      <main className="container" style={{ background: "var(--bg-report)" }}>
         <PageTopBar />
 
         <section className="pageHero">

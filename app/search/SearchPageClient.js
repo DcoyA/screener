@@ -38,7 +38,7 @@ function SearchPageContent({ stocks, risks }) {
   const activeMeta = TABS.find((t) => t.key === activeTab) || TABS[0];
 
   return (
-    <main className="container">
+    <main className="container" style={{ background: "var(--bg-screen)" }}>
       <PageTopBar />
 
       <section className="pageHero">
@@ -141,7 +141,7 @@ function SearchPageContent({ stocks, risks }) {
 
 function SearchPageFallback() {
   return (
-    <main className="container" style={{ padding: "32px 24px 80px", color: "#0f172a" }}>
+    <main className="container" style={{ padding: "32px 24px 80px", color: "#0f172a", background: "var(--bg-screen)" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <p style={{ color: "#64748b", fontWeight: 700 }}>검색 화면을 불러오는 중...</p>
       </div>

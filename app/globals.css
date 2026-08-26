@@ -10,10 +10,37 @@
   --color-score-good: #22c55e;
   --color-score-mid: #f59e0b;
   --color-score-bad: #ef4444;
-  --radius-card: 16px;
+  --radius-card: 20px;
   --radius-tile: 20px;
-  --radius-button: 8px;
+  --radius-button: 999px;
   --radius-pill: 999px;
+  --radius-chip: 999px;
+  --radius-input: 14px;
+
+  /* 타이포 스케일 - 핵심 숫자 1개(display) > 섹션 헤드라인(hero) > 제목(title)
+     > 본문(body) > 캡션 순. 화면마다 이 다섯 단만 쓰고 임의 크기를 만들지 않는다 */
+  --font-display: 44px;
+  --font-display-weight: 900;
+  --font-hero: 30px;
+  --font-hero-weight: 800;
+  --font-title: 20px;
+  --font-title-weight: 700;
+  --font-body: 15px;
+  --font-body-weight: 400;
+  --font-caption: 13px;
+  --font-caption-weight: 400;
+  --line-tight: 1.15;
+  --line-normal: 1.6;
+
+  /* 섹션별 배경색 - 최상위 라우트 <main>에 적용. 사용자가 색만 보고 위치를 안다 */
+  --bg-home: #f7f5fc;
+  --bg-screen: #eef6ff;
+  --bg-perf: #eafff4;
+  --bg-report: #fff4ec;
+  --bg-me: #f5f3ff;
+
+  --shadow-card: 0 2px 12px rgba(108, 79, 224, 0.06);
+  --shadow-lift: 0 8px 24px rgba(108, 79, 224, 0.12);
 }
 
 * {
