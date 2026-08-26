@@ -563,11 +563,11 @@ export default function NoticePage() {
         <div className="ctaCard">
           <h2>이제 바로 시작해보세요</h2>
           <div className="ctaButtons">
-            <Link href="/search?tab=ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "#0f172a", color: "#fff" }}>
+            <Link href="/screener?tab=ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "#0f172a", color: "#fff" }}>
               랭킹 보러 가기
             </Link>
-            <Link href="/search?tab=risk" className="primaryBtn">리스크</Link>
-            <Link href="/search?tab=final" className="primaryBtn">실전투자</Link>
+            <Link href="/screener?tab=risk" className="primaryBtn">리스크</Link>
+            <Link href="/screener?tab=final" className="primaryBtn">실전투자</Link>
             <Link href="/alternative" className="primaryBtn">대안투자</Link>
             <Link href="/reports" className="primaryBtn">리포트</Link>
             <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 리포트 신청</button>

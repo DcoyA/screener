@@ -2,5 +2,5 @@
 import { redirect } from "next/navigation";
 
 export default function FinalPicksRedirectPage() {
-  redirect("/search?tab=final");
+  redirect("/screener?tab=final");
 }

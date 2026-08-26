@@ -109,6 +109,10 @@ export default function MainNav({ className = "" }) {
             </button>
           );
         })}
+        <button type="button" onClick={() => handleMove("/reports")} className="navSubscribeCta">
+          주 4회 리포트 받기
+        </button>
+
         <span className="navAuthSlot">
           <AuthButton />
         </span>
@@ -170,6 +174,27 @@ export default function MainNav({ className = "" }) {
         }
         .navGroupTrigger {
           gap: 6px;
+        }
+        /* TASK 3-3(디자인·IA 개편): 전 페이지 공통 상시 CTA. "화면당 오렌지
+           1개" 원칙 - 이 CTA가 있는 화면에서는 다른 오렌지 버튼을 쓰지 않는다. */
+        .navSubscribeCta {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 40px;
+          padding: 0 16px;
+          border-radius: var(--radius-pill);
+          border: none;
+          background: var(--color-accent);
+          color: #ffffff;
+          font-weight: 800;
+          font-size: 0.88rem;
+          cursor: pointer;
+          white-space: nowrap;
+          margin-left: auto;
+        }
+        .navSubscribeCta:hover {
+          filter: brightness(1.05);
         }
         .navCaret {
           font-size: 0.7rem;

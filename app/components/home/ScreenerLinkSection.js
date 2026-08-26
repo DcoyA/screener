@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function ScreenerLinkSection() {
   return (
     <section className="screenerLinkSection">
-      <Link href="/search" className="screenerLink">
+      <Link href="/screener" className="screenerLink">
         전체 스크리너 보기 →
       </Link>
 

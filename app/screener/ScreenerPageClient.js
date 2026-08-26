@@ -6,14 +6,16 @@ import PageTopBar from "../components/PageTopBar";
 import RankingTab from "../components/search/RankingTab";
 import RiskCheckTab from "../components/search/RiskCheckTab";
 import FinalPicksTab from "../components/search/FinalPicksTab";
+import AlternativeTab from "../components/search/AlternativeTab";
 
 const TABS = [
   { key: "ranking", label: "랭킹", desc: "전체 종목을 점수로 정렬해서 봅니다." },
   { key: "final", label: "실전투자", desc: "통합 등급(S~D) 기준으로 최종 후보를 압축해서 봅니다." },
   { key: "risk", label: "리스크 체크", desc: "종목별 위험 신호와 체크 포인트를 확인합니다." },
+  { key: "alternative", label: "대안투자", desc: "개별주 외에 ETF/배당 같은 대안 접근을 살펴봅니다." },
 ];
 
-function SearchPageContent({ stocks, risks }) {
+function ScreenerPageContent({ stocks, risks }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -67,6 +69,7 @@ function SearchPageContent({ stocks, risks }) {
       {activeTab === "ranking" && <RankingTab stocks={stocks} />}
       {activeTab === "final" && <FinalPicksTab stocks={stocks} risks={risks} />}
       {activeTab === "risk" && <RiskCheckTab stocks={stocks} risks={risks} />}
+      {activeTab === "alternative" && <AlternativeTab />}
 
       <style jsx>{`
         .container {
@@ -139,7 +142,7 @@ function SearchPageContent({ stocks, risks }) {
   );
 }
 
-function SearchPageFallback() {
+function ScreenerPageFallback() {
   return (
     <main className="container" style={{ padding: "32px 24px 80px", color: "#0f172a", background: "var(--bg-screen)" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
@@ -149,10 +152,10 @@ function SearchPageFallback() {
   );
 }
 
-export default function SearchPageClient({ stocks, risks }) {
+export default function ScreenerPageClient({ stocks, risks }) {
   return (
-    <Suspense fallback={<SearchPageFallback />}>
-      <SearchPageContent stocks={stocks} risks={risks} />
+    <Suspense fallback={<ScreenerPageFallback />}>
+      <ScreenerPageContent stocks={stocks} risks={risks} />
     </Suspense>
   );
 }

@@ -3,8 +3,8 @@ export default function sitemap() {
 
   const staticPages = [
     "",
-    "/ranking",
-    "/risk",
+    "/screener",
+    "/performance",
     "/reports",
     "/notice",
 
@@ -23,15 +23,15 @@ export default function sitemap() {
     lastModified: now,
     changeFrequency: path.startsWith("/seo/")
       ? "weekly"
-      : path === "/ranking" || path === "/risk" || path === "/reports"
+      : path === "/screener" || path === "/performance" || path === "/reports"
       ? "weekly"
       : "monthly",
     priority:
       path === ""
         ? 1.0
-        : path === "/ranking"
+        : path === "/screener"
         ? 0.9
-        : path === "/risk" || path === "/reports"
+        : path === "/performance" || path === "/reports"
         ? 0.8
         : path.startsWith("/seo/")
         ? 0.7

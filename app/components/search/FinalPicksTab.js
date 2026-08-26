@@ -240,7 +240,7 @@ function PickCard({ item }) {
 
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
           <Link href={`/stock/${item.code}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 46, padding: "0 16px", borderRadius: 14, fontWeight: 800, textDecoration: "none", background: "#0f172a", color: "#fff" }}>종목 상세 보기</Link>
-          <Link href={`/search?tab=risk&code=${item.code}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 46, padding: "0 16px", borderRadius: 14, fontWeight: 800, textDecoration: "none", background: "#fff", color: "#0f172a", border: "1px solid #dbe3f0" }}>리스크 확인</Link>
+          <Link href={`/screener?tab=risk&code=${item.code}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", height: 46, padding: "0 16px", borderRadius: 14, fontWeight: 800, textDecoration: "none", background: "#fff", color: "#0f172a", border: "1px solid #dbe3f0" }}>리스크 확인</Link>
         </div>
       </div>
     </article>

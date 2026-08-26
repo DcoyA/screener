@@ -5,7 +5,7 @@ import Icon from "../icons/Icon";
 const LINKS = [
   { href: "/demo-trade", icon: "wallet", title: "모의투자", desc: "가상 자금으로 미리 연습" },
   { href: "/alternative", icon: "box", title: "ETF", desc: "대안투자 후보 살펴보기" },
-  { href: "/search?tab=risk", icon: "alertTriangle", title: "리스크 체크", desc: "주의 종목과 체크포인트" },
+  { href: "/screener?tab=risk", icon: "alertTriangle", title: "리스크 체크", desc: "주의 종목과 체크포인트" },
   { href: "/notice", icon: "megaphone", title: "이용가이드", desc: "사이트 사용법과 공지" },
 ];
 

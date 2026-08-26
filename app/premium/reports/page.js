@@ -87,7 +87,9 @@ const styles = {
     borderRadius: "var(--radius-button)",
     padding: "10px 20px",
     fontWeight: 800,
-    background: "var(--color-accent)",
+    // TASK 3-3: 전 페이지 상단에 상시 오렌지 CTA(리포트 받기)가 생겨서
+    // "화면당 오렌지 1개" 원칙상 이 배너는 원색을 쓰지 않는다.
+    background: "var(--color-primary)",
     color: "#fff",
     textDecoration: "none",
   },

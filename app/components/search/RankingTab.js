@@ -559,7 +559,7 @@ export default function RankingTab({ stocks }) {
                 <p className="summary">{stock.summary}</p>
 
                 <div className="linkRow">
-                  <Link href={`/search?tab=risk&code=${stock.code}#risk-${stock.code}`} className="riskBtn">리스크 보기</Link>
+                  <Link href={`/screener?tab=risk&code=${stock.code}#risk-${stock.code}`} className="riskBtn">리스크 보기</Link>
                   <Link href={`/stock/${stock.code}`} className="detailBtn">상세 보기</Link>
                 </div>
               </article>

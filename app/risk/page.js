@@ -7,5 +7,5 @@ export default function RiskRedirectPage({ searchParams }) {
   if (searchParams?.code) params.set("code", String(searchParams.code));
   if (searchParams?.name) params.set("name", String(searchParams.name));
   if (searchParams?.level) params.set("level", String(searchParams.level));
-  redirect(`/search?${params.toString()}`);
+  redirect(`/screener?${params.toString()}`);
 }

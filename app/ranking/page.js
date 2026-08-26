@@ -6,5 +6,5 @@ export default function RankingRedirectPage({ searchParams }) {
   params.set("tab", "ranking");
   if (searchParams?.view) params.set("view", String(searchParams.view));
   if (searchParams?.risk) params.set("risk", String(searchParams.risk));
-  redirect(`/search?${params.toString()}`);
+  redirect(`/screener?${params.toString()}`);
 }
