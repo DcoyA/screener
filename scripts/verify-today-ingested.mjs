@@ -59,9 +59,11 @@ function buildActionsLink() {
 }
 
 async function sendSlackAlert(failures) {
-  const webhookUrl = process.env.ALERT_WEBHOOK_URL;
+  // 전용 ALERT_WEBHOOK_URL 시크릿은 만들지 않고, 이미 존재하는
+  // SLACK_WEBHOOK_URL(프리미엄 에디터 알림과 같은 채널)을 재사용한다.
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
   if (!webhookUrl) {
-    console.error("ALERT_WEBHOOK_URL 미설정 - 슬랙 전송을 생략합니다");
+    console.error("SLACK_WEBHOOK_URL 미설정 - 슬랙 전송을 생략합니다");
     return;
   }
 
