@@ -76,6 +76,11 @@ MIN_LOO_MARKET_SAMPLE = 10
 # 목표가 계산 자체를 포기한다(outlier_rejected).
 MAX_PLAUSIBLE_PER = 300.0
 
+# 섹터 상대 위치(백분위) 최소 표본. 이 미만이면 ksic_대분류(더 넓은 카테고리)로
+# 폴백하고, 그것도 부족하면 비교 자체를 포기한다(percentile=None - 화면에서
+# 비교 문구를 아예 숨긴다. 거짓 안심을 주지 않기 위함).
+MIN_SECTOR_PERCENTILE_SAMPLE = 5
+
 # 지주회사 할인: KSIC상 지주회사가 "금융및보험업"(64)으로 분류돼 실제 사업과
 # 무관한 금융업 중앙값으로 목표가가 끌려 올라가는 문제 보완. 업계 통상
 # NAV 대비 30~50% 할인 중 보수적으로 30%를 목표가(전 구간)에 곱한다.
@@ -221,6 +226,37 @@ def leave_one_out_stats(bucket, own_value):
     if own_value in remaining:
         remaining.remove(own_value)
     return percentile_stats(remaining)
+
+
+def sector_major_category(stock_code):
+    """대분류(ksic_대분류) 코드. 섹터(중분류) 표본이 부족할 때 폴백용."""
+    info = SECTOR_MAP.get(stock_code) or {}
+    major = info.get("ksic_대분류") or {}
+    return major.get("code")
+
+
+def compute_percentile_rank(bucket, own_value):
+    """bucket에서 own_value 자신의 몫을 제외(leave-one-out)한 뒤, 그 안에서
+    own_value가 오름차순으로 몇 번째/몇 %에 해당하는지 계산한다.
+
+    낮을수록 저평가인 지표(PER/PBR)든 높을수록 좋은 지표(ROE)든 이 함수는
+    그냥 "오름차순 순위/백분위"만 계산한다 - "쌈"/"비쌈" 같은 방향 해석은
+    화면(JS) 쪽에서 지표별로 판단한다.
+
+    표본이 MIN_SECTOR_PERCENTILE_SAMPLE 미만이면 None을 반환한다 - 호출 측이
+    이 경우 더 넓은 카테고리로 재시도하거나 포기한다.
+    """
+    if own_value is None:
+        return None
+    remaining = list(bucket)
+    if own_value in remaining:
+        remaining.remove(own_value)
+    n = len(remaining)
+    if n < MIN_SECTOR_PERCENTILE_SAMPLE:
+        return None
+    rank = sum(1 for v in remaining if v < own_value) + 1
+    percentile = round((rank - 1) / n * 100, 1)
+    return {"rank": rank, "peerCount": n, "percentile": percentile}
 
 
 def http_get_json(base_url, params):
@@ -1899,6 +1935,68 @@ def main():
         # 계산됐다 — 방금 채운 실제 upside로 다시 계산해야 한다.
         s["timingMeta"] = build_timing_meta(s)
     # === FAIR VALUE V2: 목표가 밴드 끝 (등급 백분위는 finalPickMeta 계산 뒤에) ===
+
+    # === 섹터 상대 위치(백분위): "PER 3.6배"처럼 절대값만 보여주면 초보자는
+    # 싼지 비싼지 판단할 근거가 없다. 같은 업종 내 PER/PBR/ROE 순위를 같이
+    # 보여준다. sector_per_buckets(PER)는 위 FAIR VALUE V2 블록에서 이미
+    # 만들어진 걸 재사용하고, PBR/ROE는 여기서 새로 모은다.
+    sector_pbr_buckets = {}
+    sector_roe_buckets = {}
+    major_per_buckets = {}
+    major_pbr_buckets = {}
+    major_roe_buckets = {}
+
+    for s in stocks:
+        m = s.get("metrics", {})
+        code = s.get("code")
+        sector_code = s.get("sectorCode")
+        major_code = sector_major_category(code)
+
+        per_value = m.get("per")
+        if per_value and per_value > 0 and major_code:
+            major_per_buckets.setdefault(major_code, []).append(per_value)
+
+        pbr_value = m.get("pbr")
+        if pbr_value and pbr_value > 0:
+            if sector_code:
+                sector_pbr_buckets.setdefault(sector_code, []).append(pbr_value)
+            if major_code:
+                major_pbr_buckets.setdefault(major_code, []).append(pbr_value)
+
+        roe_value = m.get("roe")
+        if roe_value is not None:
+            if sector_code:
+                sector_roe_buckets.setdefault(sector_code, []).append(roe_value)
+            if major_code:
+                major_roe_buckets.setdefault(major_code, []).append(roe_value)
+
+    def rank_with_major_fallback(sector_bucket_map, major_bucket_map, sector_code, major_code, value):
+        rank = compute_percentile_rank(sector_bucket_map.get(sector_code, []) if sector_code else [], value)
+        if rank is not None:
+            rank["usedMajorFallback"] = False
+            return rank
+        if major_code:
+            rank = compute_percentile_rank(major_bucket_map.get(major_code, []), value)
+            if rank is not None:
+                rank["usedMajorFallback"] = True
+                return rank
+        return None
+
+    for s in stocks:
+        m = s.get("metrics", {})
+        code = s.get("code")
+        sector_code = s.get("sectorCode")
+        major_code = sector_major_category(code)
+        major_info = (SECTOR_MAP.get(code) or {}).get("ksic_대분류") or {}
+
+        s["sectorRelativeMeta"] = {
+            "sectorName": s.get("sector"),
+            "majorCategoryName": major_info.get("name"),
+            "per": rank_with_major_fallback(sector_per_buckets, major_per_buckets, sector_code, major_code, m.get("per")),
+            "pbr": rank_with_major_fallback(sector_pbr_buckets, major_pbr_buckets, sector_code, major_code, m.get("pbr")),
+            "roe": rank_with_major_fallback(sector_roe_buckets, major_roe_buckets, sector_code, major_code, m.get("roe")),
+        }
+    # === 섹터 상대 위치 끝 ===
 
     stocks = attach_investment_meta(stocks)
 
