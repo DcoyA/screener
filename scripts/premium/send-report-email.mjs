@@ -15,13 +15,15 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-async function fetchTodayDraftReports() {
-  const today = kstTodayStr();
-  const { data, error } = await supabase
-    .from("reports")
-    .select("id, topic_title, html_body")
-    .eq("issue_date", today)
-    .eq("status", "draft");
+// report_id가 지정되면 그 리포트 하나만(승인된 상태인지도 재확인) 발송한다.
+// 지정 없으면 오늘 issue_date의 approved 리포트를 찾는다(정상 경로에선
+// 하루 1건만 존재 - generate-report.mjs가 issue_date당 1건으로 막아둠).
+async function fetchApprovedReports(reportId) {
+  let query = supabase.from("reports").select("id, topic_title, html_body").eq("status", "approved");
+
+  query = reportId ? query.eq("id", reportId) : query.eq("issue_date", kstTodayStr());
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("reports 조회 실패:", error);
@@ -216,10 +218,11 @@ async function main() {
     return;
   }
 
-  const reports = await fetchTodayDraftReports();
+  const reportId = process.env.REPORT_ID || null;
+  const reports = await fetchApprovedReports(reportId);
 
   if (reports.length === 0) {
-    console.log("[발송] 오늘 발송할 draft 상태의 리포트가 없습니다");
+    console.log("[발송] 발송할 approved 상태의 리포트가 없습니다");
     return;
   }
 

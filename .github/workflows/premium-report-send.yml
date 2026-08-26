@@ -1,10 +1,17 @@
-name: Premium Report - Generate
+name: Premium Report - Send
 
+# 사람이 슬랙에서 "승인하고 발송"을 누른 뒤(app/api/slack/interactions)에만
+# 트리거된다. schedule 없음 - 이 워크플로가 자동으로 도는 일은 절대 없다.
 on:
   workflow_dispatch:
+    inputs:
+      report_id:
+        description: "발송할 reports.id (안전장치 - 지정 시 이 리포트만 발송)"
+        type: string
+        required: false
 
 jobs:
-  generate:
+  send:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,20 +24,14 @@ jobs:
       - name: Install Node deps
         run: npm install @supabase/supabase-js
 
-      - name: Generate report
-        run: node scripts/premium/generate-report.mjs
+      - name: Send report email
+        run: node scripts/premium/send-report-email.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
-      - name: Notify draft ready (사람 검수 요청 - 여기서 발송 안 함)
-        run: node scripts/premium/notify-draft-ready.mjs
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          EDITORIAL_PREVIEW_TOKEN: ${{ secrets.EDITORIAL_PREVIEW_TOKEN }}
+          REPORT_ID: ${{ inputs.report_id }}
 
       - name: Notify on failure
         if: failure()
