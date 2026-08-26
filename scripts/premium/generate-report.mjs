@@ -3,6 +3,7 @@ import { kstTodayStr } from "./lib/date.mjs";
 import { FORBIDDEN_PHRASES, MAX_ABS_UPSIDE_PERCENT, REPORT_JSON_EXAMPLE } from "./lib/reportSchema.mjs";
 import { buildContextSummary } from "./lib/buildContextSummary.mjs";
 import { validateReport } from "./lib/validateReport.mjs";
+import { buildFollowup } from "./build-followup.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -302,8 +303,7 @@ async function main() {
 
   const relatedCodes = [...new Set(candidates.flatMap((c) => c.related_codes || []))];
   const relatedSectors = [...new Set(candidates.flatMap((c) => c.related_sectors || []))];
-  // build-followup.mjs(TASK 4)가 채워줄 자리 - 아직 없으면 빈 배열로 진행.
-  const followup = [];
+  const followup = await buildFollowup();
   const context = await fetchAdditionalContext(relatedCodes, relatedSectors, followup);
 
   const result = await generateReportContent(candidates, context);
@@ -315,6 +315,11 @@ async function main() {
   }
 
   const generated = result.report;
+  // followup은 build-followup.mjs가 실제 시세/등급 비교로 이미 객관적으로
+  // 판정한 값이다. LLM이 프롬프트 지시를 따르지 않고 "틀림"을 순화해서
+  // 다시 쓸 가능성을 원천 차단하기 위해, LLM이 생성한 followup을 신뢰하지
+  // 않고 계산된 값으로 강제 덮어쓴다.
+  generated.followup = followup;
 
   const row = {
     issue_date: today,
