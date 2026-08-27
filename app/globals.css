@@ -791,3 +791,39 @@ h1 {
   }
 }
 
+/* ── 스켈레톤 (loading.js 라우트 전환 무반응 구간 제거, STEP 8) ──────
+   App Router는 서버 응답 도착 전까지 화면 전환을 시작하지 않는다.
+   각 라우트의 loading.js가 이 클래스로 골격을 즉시 그린다. */
+.skeleton {
+  --skeleton-base: var(--ruby-100);
+  background-color: var(--skeleton-base);
+  background-image: linear-gradient(
+    90deg,
+    var(--skeleton-base) 0%,
+    #ffffff 50%,
+    var(--skeleton-base) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+
+/* 금융 서비스 상시 모션 금지 규칙과 동일 - 모션 축소면 shimmer를 끄고
+   정적인 --ruby-100 면만 남긴다. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background-image: none;
+  }
+}
+

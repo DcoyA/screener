@@ -39,6 +39,7 @@ export default function MainNav() {
         <Link
           key={item.id}
           href={item.href}
+          prefetch
           className={`mainNavIconBtn${active ? " active" : ""}`}
           style={accentStyle}
           aria-label={item.label}
@@ -54,6 +55,7 @@ export default function MainNav() {
       <Link
         key={item.id}
         href={item.href}
+        prefetch
         className={`mainNavPill${active ? " active" : ""}${inSheet ? " sheetItem" : ""}`}
         style={accentStyle}
         aria-current={active ? "page" : undefined}
@@ -77,7 +79,7 @@ export default function MainNav() {
         <span className="mainNavDivider" aria-hidden="true" />
         {NAV_ICONS.map((item) => renderItem(item))}
         {showCta ? (
-          <Link href="/reports" className="mainNavCta rubyCta">
+          <Link href="/reports" prefetch className="mainNavCta rubyCta">
             프리미엄 리포트 구독
           </Link>
         ) : null}
@@ -101,7 +103,7 @@ export default function MainNav() {
           <div id="mainNavSheet" className="mainNavSheet" role="menu">
             {NAV_SHEET_ITEMS.map((item) => renderItem(item, { inSheet: true }))}
             {showCta ? (
-              <Link href="/reports" className="mainNavCta rubyCta sheetItem" role="menuitem">
+              <Link href="/reports" prefetch className="mainNavCta rubyCta sheetItem" role="menuitem">
                 프리미엄 리포트 구독
               </Link>
             ) : null}
