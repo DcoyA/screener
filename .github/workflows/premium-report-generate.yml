@@ -13,9 +13,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'scripts/premium/package-lock.json'
 
       - name: Install Node deps
-        run: npm install @supabase/supabase-js
+        run: npm ci --prefix scripts/premium
 
       - name: Generate report
         run: node scripts/premium/generate-report.mjs
