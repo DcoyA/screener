@@ -406,7 +406,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  background: var(--color-bg);
+  /* 뷰포트 전체를 페이지 배경색으로. 예전엔 흰색이라 1180px 컨테이너 바깥
+     (좌우 여백)만 흰색으로 떠 보였다. */
+  background: var(--page-bg);
   color: #111827;
 }
 
