@@ -18,8 +18,8 @@ function PriceBasisTag({ priceBasis, marketOpen }) {
         borderRadius: "999px",
         fontSize: "11px",
         fontWeight: 800,
-        background: isRealtime ? "#e0f2fe" : "var(--ruby-100)",
-        color: isRealtime ? "#0369a1" : "var(--ruby-700)",
+        background: isRealtime ? "var(--ruby-100)" : "var(--ruby-100)",
+        color: isRealtime ? "var(--ruby-700)" : "var(--ruby-700)",
       }}
     >
       {isRealtime ? "장중 실시간" : "종가 기준 모의체결"}
@@ -62,7 +62,7 @@ function CandleArea({ quoteState, candles, candleInterval, chartData, tradeMarke
               ...styles.wick,
               top: `${item.highTop}%`,
               height: `${Math.max(item.lowTop - item.highTop, 2)}%`,
-              background: item.isUp ? "#ef4444" : "#2563eb",
+              background: item.isUp ? "var(--signal-up)" : "var(--signal-down)",
             }}
           />
           <div
@@ -70,7 +70,7 @@ function CandleArea({ quoteState, candles, candleInterval, chartData, tradeMarke
               ...styles.realCandle,
               top: `${item.bodyTop}%`,
               height: `${item.bodyHeight}%`,
-              background: item.isUp ? "#ef4444" : "#2563eb",
+              background: item.isUp ? "var(--signal-up)" : "var(--signal-down)",
             }}
           />
           {index % 5 === 0 && <span style={styles.timeLabel}>{item.label}</span>}
@@ -126,7 +126,7 @@ export default function ChartPanel({
           {code && (
             <Link
               href={`/stock/${code}`}
-              style={{ display: "inline-block", marginTop: "6px", fontSize: "13px", fontWeight: 800, color: "#0369a1", textDecoration: "none" }}
+              style={{ display: "inline-block", marginTop: "6px", fontSize: "13px", fontWeight: 800, color: "var(--ruby-700)", textDecoration: "none" }}
             >
               종목 상세 진단 보기 →
             </Link>

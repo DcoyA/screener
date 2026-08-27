@@ -509,14 +509,14 @@ export default function AlternativeTab() {
         .desc, .sectionDesc, .noteText, .infoBlock p, .compareCard p, .summaryCard p, .subInfo { color:#475569; line-height:1.8; }
         .desc { max-width:760px; margin:0; }
         .heroSide { display:grid; gap:12px; min-width:290px; width:320px; }
-        .heroBox, .summaryCard, .sectionCard { border:1px solid #e5e7eb; border-radius:28px; background:linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
+        .heroBox, .summaryCard, .sectionCard { border:1px solid #e5e7eb; border-radius:28px; background:linear-gradient(180deg, #fff 0%, var(--ruby-50) 100%); box-shadow:0 20px 50px rgba(15,23,42,.06); }
         .heroBox { padding:18px; }
         .summaryCard, .sectionCard { padding:24px; }
         .metaLabel { display:block; margin-bottom:8px; color:#64748b; font-size:.88rem; font-weight:700; }
         .toneChip { display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:999px; font-weight:800; font-size:.84rem; }
         .toneChip.good { background:#dcfce7; color:#15803d; }
-        .toneChip.warn { background:#fff7ed; color:#c2410c; }
-        .toneChip.info { background:#e0f2fe; color:#0284c7; }
+        .toneChip.warn { background:var(--warn-bg); color:var(--warn-600); }
+        .toneChip.info { background:var(--ruby-100); color:var(--ruby-700); }
         .toneChip.neutral { background:#f1f5f9; color:#475569; }
         .chipRow { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
         .signalsSection, .approachSection, .etfSection, .sectorSection, .compareSection, .notesSection, .summarySection { margin-top:24px; }
@@ -524,7 +524,7 @@ export default function AlternativeTab() {
         .metricCard { border:1px solid #e5e7eb; border-radius:18px; background:#fff; padding:18px; }
         .metricCard span { display:block; margin-bottom:10px; color:#64748b; font-size:.86rem; font-weight:700; }
         .metricCard strong { font-size:1.65rem; letter-spacing:-0.03em; }
-        .signalHelpBox { margin-top:18px; padding:18px; border-radius:20px; background:#fffdfa; border:1px solid #fde68a; }
+        .signalHelpBox { margin-top:18px; padding:18px; border-radius:20px; background:var(--ruby-50); border:1px solid var(--warn-bg); }
         .signalHelpBox h3 { margin:0 0 12px; }
         .signalHelpBox ul { margin:0; padding-left:18px; color:#475569; line-height:1.8; }
         .guideGrid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; margin-top:18px; }
@@ -537,12 +537,12 @@ export default function AlternativeTab() {
         .etfGrid { display:grid; gap:14px; margin-top:16px; }
         .etfGrid.wide { grid-template-columns:repeat(2, minmax(0,1fr)); }
         .approachCard, .etfCard, .compareCard { border:1px solid #e5e7eb; border-radius:22px; background:#fff; padding:18px; }
-        .etfCard.rich.recommended { border-color:#93c5fd; box-shadow:0 0 0 3px rgba(59,130,246,.08); }
+        .etfCard.rich.recommended { border-color:var(--ruby-300); box-shadow:0 0 0 3px rgba(59,130,246,.08); }
         .approachHeader, .sectionHeaderRow { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
         .sectionHeaderRow { flex-wrap:wrap; }
         .statusBadge { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; }
-        .statusBadge.good { background:#ecfeff; color:#0891b2; }
-        .statusBadge.warn { background:#fff7ed; color:#c2410c; }
+        .statusBadge.good { background:var(--ruby-100); color:var(--ruby-700); }
+        .statusBadge.warn { background:var(--warn-bg); color:var(--warn-600); }
         .statusBadge.neutral { background:#f1f5f9; color:#475569; }
         .scoreText, .metricInline, .codeLine { color:#0f172a; font-weight:700; }
         .scoreText { margin-top:12px; }
@@ -553,17 +553,17 @@ export default function AlternativeTab() {
         .holdingChip { background:#f8fafc; color:#334155; border:1px solid #e2e8f0; }
         .etfMetaRow, .holdingList, .returnsRow { display:flex; gap:8px; flex-wrap:wrap; }
         .etfHeaderRow { display:flex; justify-content:space-between; align-items:flex-start; gap:14px; margin-bottom:14px; }
-        .scorePanel { min-width:128px; border:1px solid #e5e7eb; border-radius:18px; padding:14px; background:#f8fbff; text-align:center; }
+        .scorePanel { min-width:128px; border:1px solid #e5e7eb; border-radius:18px; padding:14px; background:var(--ruby-50); text-align:center; }
         .scorePanel span { display:block; margin-bottom:6px; color:#64748b; font-size:.84rem; font-weight:700; }
         .scorePanel strong { display:block; font-size:1.7rem; line-height:1; }
         .scorePanel small { display:block; margin-top:8px; color:#64748b; line-height:1.5; }
         .detailGrid, .splitInfoGrid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-top:14px; }
-        .miniBox { border:1px solid #e5e7eb; border-radius:16px; padding:14px; background:#f8fbff; }
+        .miniBox { border:1px solid #e5e7eb; border-radius:16px; padding:14px; background:var(--ruby-50); }
         .miniBox span { display:block; margin-bottom:8px; color:#64748b; font-size:.84rem; font-weight:700; }
         .miniBox strong { font-size:.96rem; line-height:1.6; }
         .returnsBox, .compositionBox, .infoBlock.emphasis { margin-top:14px; padding:14px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; }
         .returnsBox b, .compositionBox b, .infoBlock b { display:block; margin-bottom:8px; }
-        .returnItem { min-width:88px; border:1px solid #e5e7eb; border-radius:14px; padding:10px 12px; background:#f8fbff; }
+        .returnItem { min-width:88px; border:1px solid #e5e7eb; border-radius:14px; padding:10px 12px; background:var(--ruby-50); }
         .returnItem span { display:block; margin-bottom:6px; color:#64748b; font-size:.8rem; font-weight:700; }
         .returnItem strong { font-size:.95rem; }
         .emptyText, .mutedText { color:#64748b; }

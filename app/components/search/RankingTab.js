@@ -538,19 +538,19 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
         .quickStatCard strong { color: #fff; }
         .quickStatCard strong { font-size: 1.8rem; letter-spacing: -0.04em; }
         .metaCard { border: 1px solid #e5e7eb; border-radius: 20px; padding: 18px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.05); }
-        .metaCard.light { background: #f8fbff; }
+        .metaCard.light { background: var(--ruby-50); }
         .metaLabel { display: block; margin-bottom: 8px; color: #64748b; font-size: .88rem; font-weight: 700; }
         .searchInput { width: 100%; height: 44px; border-radius: 12px; border: 1px solid #dbe3f0; padding: 0 14px; font-size: .95rem; box-sizing: border-box; }
         .searchGuide { margin: 10px 0 0; color: #64748b; font-size: .9rem; }
         .guideSection, .statusSection, .listSection { margin-top: 22px; }
-        .guideCard, .statusCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #fff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,.06); }
+        .guideCard, .statusCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #fff 0%, var(--ruby-50) 100%); box-shadow: 0 20px 50px rgba(15,23,42,.06); }
         .guideCard.compact { padding: 22px; }
         .guideHeader h3 { margin: 0 0 16px; font-size: 1.25rem; }
         .groupChipRow { display: flex; gap: 8px; flex-wrap: wrap; }
         .groupChip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--color-primary); background: #fff; color: var(--color-primary); border-radius: var(--radius-button); padding: 10px 16px; font-weight: 800; font-size: .9rem; cursor: pointer; }
         .groupChip.open { background: var(--color-primary); color: #fff; }
         .groupCaret { font-size: .7rem; }
-        .accordionPanel { margin-top: 14px; padding-top: 14px; border-top: 1px solid #eef2f7; }
+        .accordionPanel { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--ruby-50); }
         .chipRow { display: flex; gap: 8px; flex-wrap: wrap; }
         .filterChip { border: 1px solid #dbe3f0; background: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 700; font-size: .88rem; cursor: pointer; color: #475569; }
         .filterChip.active { background: #0f172a; border-color: #0f172a; color: #fff; }
@@ -574,20 +574,20 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
         .scoreWrap strong { font-size: 1.5rem; letter-spacing: -0.03em; }
         .scoreSub { display: block; color: #94a3b8; font-size: .74rem; font-weight: 700; margin-top: 3px; white-space: nowrap; }
         .metricRow { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
-        .metricBox { border: 1px solid #eef2f7; border-radius: 14px; padding: 12px; background: #fbfdff; }
+        .metricBox { border: 1px solid var(--ruby-50); border-radius: 14px; padding: 12px; background: var(--ruby-50); }
         .metricBox span { display: block; color: #94a3b8; font-size: .76rem; margin-bottom: 4px; }
         .metricBox strong { font-size: .98rem; }
-        .metricBox strong.sky { color: #0ea5e9; }
+        .metricBox strong.sky { color: var(--ruby-700); }
         .badgeRow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
         .smallBadge { display: inline-flex; padding: 6px 12px; border-radius: 999px; font-size: .78rem; font-weight: 800; }
         .smallBadge.good { background: #dcfce7; color: #15803d; }
         .smallBadge.warn { background: #fee2e2; color: #dc2626; }
-        .smallBadge.info { background: #dbeafe; color: #2563eb; }
+        .smallBadge.info { background: var(--ruby-100); color: var(--ruby-700); }
         .smallBadge.muted { background: #f1f5f9; color: #64748b; }
-        .smallBadge.soft { background: #fef3c7; color: #b45309; }
+        .smallBadge.soft { background: var(--warn-bg); color: var(--warn-600); }
         .reasonCard { border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 10px; }
-        .reasonCard.goodCard { background: #f8fbff; }
-        .reasonCard.warnCard { background: #fffdfa; }
+        .reasonCard.goodCard { background: var(--ruby-50); }
+        .reasonCard.warnCard { background: var(--ruby-50); }
         .reasonLabel { display: block; margin-bottom: 6px; font-size: .8rem; font-weight: 800; }
         .reasonCard p { margin: 0; color: #475569; line-height: 1.7; }
         .summary { margin: 0 0 16px; color: #64748b; line-height: 1.7; font-size: .92rem; }

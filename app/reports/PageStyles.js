@@ -128,7 +128,7 @@ export default function ReportsPageStyles() {
       .miniCard {
         border-radius: 20px;
         padding: 18px;
-        background: #f8fbff;
+        background: var(--ruby-50);
         border: 1px solid #e5e7eb;
       }
       .marketBadge {
@@ -153,7 +153,7 @@ export default function ReportsPageStyles() {
         padding: 10px 14px;
         text-decoration: none;
         font-weight: 800;
-        border: 1px solid #dbe3f0;
+        border: 1px solid var(--ink-300);
         margin-top: 12px;
         background: #fff;
         color: #0f172a;

@@ -132,7 +132,7 @@ function buildFinalPicks(stocksData, risksData) {
 }
 
 const S = {
-  card: { border: "1px solid #e5e7eb", borderRadius: 28, background: "linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)", boxShadow: "0 20px 50px rgba(15,23,42,.06)" },
+  card: { border: "1px solid #e5e7eb", borderRadius: 28, background: "linear-gradient(180deg,#ffffff 0%,var(--ruby-50) 100%)", boxShadow: "0 20px 50px rgba(15,23,42,.06)" },
   badge: { display: "inline-flex", padding: "8px 14px", borderRadius: 999, background: "var(--ruby-100)", color: "var(--ruby-700)", fontSize: ".82rem", fontWeight: 900, marginBottom: 16 },
 };
 
@@ -144,7 +144,7 @@ function Metric({ label, value, accent, note }) {
   return (
     <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#fff" }}>
       <span style={{ display: "block", marginBottom: 8, color: "#64748b", fontSize: ".84rem", fontWeight: 800 }}>{label}</span>
-      <strong style={{ display: "block", fontSize: "1.08rem", lineHeight: 1.35, color: accent ? "#0ea5e9" : "#0f172a" }}>{value}</strong>
+      <strong style={{ display: "block", fontSize: "1.08rem", lineHeight: 1.35, color: accent ? "var(--ruby-700)" : "#0f172a" }}>{value}</strong>
       {note ? (
         <span style={{ display: "block", marginTop: 4, color: "#94a3b8", fontSize: ".72rem", fontWeight: 700 }}>{note}</span>
       ) : null}
@@ -155,7 +155,7 @@ function Metric({ label, value, accent, note }) {
 function DebugScore({ label, value }) {
   const display = Number.isFinite(Number(value)) ? Math.round(Number(value)) : "-";
   return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 16, padding: 12, background: "#fbfdff" }}>
+    <div style={{ border: "1px solid #e5e7eb", borderRadius: 16, padding: 12, background: "var(--ruby-50)" }}>
       <span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: ".78rem", fontWeight: 800 }}>{label}</span>
       <strong style={{ display: "block", fontSize: "1.15rem" }}>{display}</strong>
     </div>
@@ -176,9 +176,9 @@ function PickCard({ item }) {
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             <Chip color="var(--ruby-700)" bg="var(--ruby-100)">기존 랭킹 #{item.baselineRank ?? "-"}</Chip>
             <Chip color={color} bg={bg}>{item.decision.title}</Chip>
-            <Chip color={item.riskLevel === "주의" ? "#dc2626" : item.riskLevel === "보통" ? "#b45309" : "#15803d"} bg={item.riskLevel === "주의" ? "#fee2e2" : item.riskLevel === "보통" ? "#fef3c7" : "#dcfce7"}>리스크 {item.riskLevel}</Chip>
+            <Chip color={item.riskLevel === "주의" ? "#dc2626" : item.riskLevel === "보통" ? "var(--warn-600)" : "#15803d"} bg={item.riskLevel === "주의" ? "#fee2e2" : item.riskLevel === "보통" ? "var(--warn-bg)" : "#dcfce7"}>리스크 {item.riskLevel}</Chip>
             <Chip>{getSectorTypeLabel(item.sectorType)}</Chip>
-            {item?.rankMeta?.topRankEligible ? <Chip color="#0284c7" bg="#e0f2fe">랭킹 적격</Chip> : null}
+            {item?.rankMeta?.topRankEligible ? <Chip color="var(--ruby-700)" bg="var(--ruby-100)">랭킹 적격</Chip> : null}
           </div>
           <h3 style={{ margin: "0 0 8px", fontSize: "1.72rem", letterSpacing: "-0.03em", wordBreak: "keep-all" }}>{cleanStockName(item.name)}</h3>
           <p style={{ margin: 0, color: "#64748b" }}>{item.market} · {item.code} · {item.sector || "업종 미분류"}</p>
@@ -193,7 +193,7 @@ function PickCard({ item }) {
         </div>
       </div>
 
-      <div style={{ border: "1px solid #e5e7eb", borderRadius: 24, background: "linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)", padding: 20, boxShadow: "0 18px 40px rgba(15,23,42,.06)" }}>
+      <div style={{ border: "1px solid #e5e7eb", borderRadius: 24, background: "linear-gradient(180deg,#ffffff 0%,var(--ruby-50) 100%)", padding: 20, boxShadow: "0 18px 40px rgba(15,23,42,.06)" }}>
         <div className="metricGrid" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 12, marginBottom: 14 }}>
           <Metric label="현재가" value={formatPrice(item?.metrics?.closePrice)} />
           <Metric
@@ -231,7 +231,7 @@ function PickCard({ item }) {
           <DebugScore label="유동성" value={debug.liquidityScore} />
         </div>
 
-        <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "#fbfdff" }}>
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: 18, padding: 16, background: "var(--ruby-50)" }}>
           <span style={{ display: "block", marginBottom: 8, fontSize: ".84rem", fontWeight: 900 }}>읽는 법</span>
           <p style={{ margin: 0, color: "#475569", lineHeight: 1.78 }}>랭킹 상위 종목도 테마성 업종, 타이밍 약화, 뉴스 플래그, 시장 부적합성이 있으면 주의 또는 제외로 내려갑니다. 이 페이지는 매수 추천이 아니라 실전 검토 우선순위 정리입니다.</p>
         </div>
@@ -259,7 +259,7 @@ export default function FinalPicksTab({ stocks, risks }) {
             <p style={S.badge}>FINAL PICKS</p>
             <h1 style={{ margin: "0 0 12px", fontSize: "clamp(2rem,4vw,3rem)", letterSpacing: "-0.04em", wordBreak: "keep-all" }}>랭킹 이후, 실전 투자 후보만 한 번 더 걸러봅니다</h1>
             <p style={{ margin: 0, color: "#475569", lineHeight: 1.8, fontSize: "1.02rem" }}>랭킹이 1차 후보를 만든다면, 실전투자 탭은 finalPickMeta를 기준으로 업종 성격, 시장 적합도, 타이밍, 뉴스/리스크 플래그를 다시 반영해 후보를 압축합니다.</p>
-            {!hasFinalPickMeta ? <div style={{ marginTop: 16, border: "1px solid #fde68a", borderRadius: 18, background: "#fffbeb", color: "#92400e", padding: "14px 16px", fontWeight: 900, lineHeight: 1.65 }}>아직 stocks.json에 finalPickMeta가 없습니다. 수정된 update_data.py로 데이터 업데이트 워크플로우를 먼저 실행해야 새 실전투자 로직이 완전히 반영됩니다.</div> : null}
+            {!hasFinalPickMeta ? <div style={{ marginTop: 16, border: "1px solid var(--warn-bg)", borderRadius: 18, background: "var(--warn-bg)", color: "var(--warn-600)", padding: "14px 16px", fontWeight: 900, lineHeight: 1.65 }}>아직 stocks.json에 finalPickMeta가 없습니다. 수정된 update_data.py로 데이터 업데이트 워크플로우를 먼저 실행해야 새 실전투자 로직이 완전히 반영됩니다.</div> : null}
           </div>
 
           <div className="heroCountGrid" style={{ display: "grid", gridTemplateColumns: "repeat(5,minmax(0,1fr))", gap: 10, minWidth: 500, width: 560 }}>

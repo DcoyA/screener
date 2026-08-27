@@ -106,7 +106,7 @@ export default function OrderForm({
           {side === "BUY" ? "가상 매수" : "가상 매도"}
         </button>
         {!canOrder && orderDisabledReason ? (
-          <div style={{ ...styles.orderStatus, color: "#b45309" }}>{orderDisabledReason}</div>
+          <div style={{ ...styles.orderStatus, color: "var(--warn-600)" }}>{orderDisabledReason}</div>
         ) : null}
         {orderStatus && <div style={styles.orderStatus}>{orderStatus}</div>}
       </div>

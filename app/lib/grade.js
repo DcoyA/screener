@@ -2,12 +2,14 @@
 
 export const GRADE_ORDER = ["S", "A", "B", "C", "D"];
 
+// 루비 + 골드 팔레트 5단 스케일 (VERIFY 후속 색 통일).
+//  S = 골드(최상), A = 루비, B = 중립 잉크, C = 앰버 경고, D = 흐린 그레이-루비.
 export const GRADE_META = {
-  S: { label: "지금 봐도 됨", color: "#0f766e", bg: "#ccfbf1" },
-  A: { label: "좀 더 확인하고", color: "#b45309", bg: "#fff7ed" },
-  B: { label: "아직은 지켜보기", color: "#2563eb", bg: "#dbeafe" },
-  C: { label: "조심해야 함", color: "#ea580c", bg: "#ffedd5" },
-  D: { label: "지금은 아님", color: "#be123c", bg: "#ffe4e6" },
+  S: { label: "지금 봐도 됨", color: "#8a6d2c", bg: "#f6ecd2" },
+  A: { label: "좀 더 확인하고", color: "#7a0c1f", bg: "#f7e4e8" },
+  B: { label: "아직은 지켜보기", color: "#6b5a5e", bg: "#f1f0f0" },
+  C: { label: "조심해야 함", color: "#b45309", bg: "#fef3c7" },
+  D: { label: "지금은 아님", color: "#8a6f73", bg: "#efe8e9" },
 };
 
 // 등급은 원칙적으로 scripts/update_data.py가 전체 종목 분포를 놓고

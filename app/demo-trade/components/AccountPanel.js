@@ -18,18 +18,18 @@ export default function AccountPanel({ account, authUser, resetting, onKakaoLogi
           {/* 초기화는 이력이 통째로 날아가므로 위계를 낮추고 2단계 확인을 붙인다. */}
           <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
             {confirming ? (
-              <div style={{ fontSize: "12px", color: "#cbd5e1" }}>
+              <div style={{ fontSize: "12px", color: "var(--ruby-300)" }}>
                 <div style={{ marginBottom: "8px" }}>초기화하면 주문·보유 이력이 모두 삭제돼요. 되돌릴 수 없어요.</div>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button
-                    style={{ ...styles.miniButton, background: "#334155" }}
+                    style={{ ...styles.miniButton, background: "var(--ruby-800)" }}
                     onClick={() => setConfirming(false)}
                     disabled={resetting}
                   >
                     취소
                   </button>
                   <button
-                    style={{ ...styles.miniButton, background: "#b91c1c" }}
+                    style={{ ...styles.miniButton, background: "var(--signal-up)" }}
                     onClick={async () => {
                       await onReset();
                       setConfirming(false);

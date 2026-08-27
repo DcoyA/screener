@@ -59,9 +59,9 @@ export default function StockSearchPanel({
                   style={{
                     padding: "8px 14px",
                     borderRadius: "999px",
-                    border: item.code === code ? "1px solid #111827" : "1px solid #dbe3f0",
+                    border: item.code === code ? "1px solid var(--ruby-700)" : "1px solid var(--gold-500)",
                     background: item.code === code ? "#111827" : "#fff",
-                    color: item.code === code ? "#fff" : "#334155",
+                    color: item.code === code ? "#fff" : "var(--ink-600)",
                     fontWeight: 800,
                     fontSize: "13px",
                     cursor: "pointer",

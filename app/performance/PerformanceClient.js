@@ -566,15 +566,15 @@ export default function PerformanceClient({ history, stocks }) {
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
         .badge, .methodBadge, .controversyBadge, .detailBadge { display: inline-flex; padding: 8px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
         .badge { background: var(--ruby-100); color: var(--ruby-700); }
-        .methodBadge { background: #ecfeff; color: #0891b2; }
-        .controversyBadge, .detailBadge { background: #ecfeff; color: #0891b2; }
+        .methodBadge { background: var(--ruby-100); color: var(--ruby-700); }
+        .controversyBadge, .detailBadge { background: var(--ruby-100); color: var(--ruby-700); }
         h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em; }
         .desc { margin: 0; max-width: 760px; color: #475569; line-height: 1.8; font-size: 1.02rem; }
         .updateBox { min-width: 180px; padding: 16px 18px; border-radius: 18px; background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05); text-align: right; }
         .updateLabel { display: block; margin-bottom: 6px; color: #64748b; font-size: 0.88rem; font-weight: 700; }
         .updateBox strong { display: block; font-size: 1.15rem; color: #0f172a; }
         .methodSection, .kpiSection, .graphSection, .historySection, .detailSection, .trustSection, .pickSection, .controversySection, .noticeSection { margin-top: 24px; }
-        .methodCard, .kpiCard, .graphCard, .sectionCard, .noticeCard, .pickCard, .controversyCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06); }
+        .methodCard, .kpiCard, .graphCard, .sectionCard, .noticeCard, .pickCard, .controversyCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, var(--ruby-50) 100%); box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06); }
         .methodHeader h2, .graphCard h2, .sectionCard h2, .noticeCard h2, .pickCard h2, .controversyCard h2 { margin: 0 0 10px; font-size: 1.5rem; letter-spacing: -0.03em; }
         .methodGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
         .methodItem { border: 1px solid #e5e7eb; border-radius: 18px; padding: 18px; background: #ffffff; }
@@ -584,25 +584,25 @@ export default function PerformanceClient({ history, stocks }) {
         .kpiLabel { display: block; margin-bottom: 10px; color: #64748b; font-size: 0.9rem; font-weight: 700; }
         .kpiCard strong { display: block; font-size: 2rem; line-height: 1; letter-spacing: -0.04em; margin-bottom: 10px; }
         .kpiCard p { margin: 0; color: #64748b; line-height: 1.7; font-size: 0.92rem; }
-        .sampleCaveat { color: #92400e !important; font-weight: 700; }
-        .survivorshipWarning { margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: #fef2f2; color: #991b1b; font-weight: 700; font-size: 0.9rem; line-height: 1.6; }
+        .sampleCaveat { color: var(--warn-600) !important; font-weight: 700; }
+        .survivorshipWarning { margin: 0 0 14px; padding: 12px 16px; border-radius: 14px; background: var(--warn-bg); color: var(--warn-600); font-weight: 700; font-size: 0.9rem; line-height: 1.6; }
         .graphHeader, .detailHeader, .controversyHeader, .sectionHeaderInline { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
         .graphDesc, .detailDesc, .controversyDesc { margin: 0; color: #64748b; line-height: 1.7; }
         .legendWrap { display: flex; gap: 12px; flex-wrap: wrap; }
         .legendItem { display: inline-flex; align-items: center; gap: 6px; color: #475569; font-size: 0.92rem; font-weight: 700; }
         .legendLine { width: 22px; height: 0; border-top: 3px solid; display: inline-block; }
-        .legendLine.strategy { border-color: #2563eb; }
+        .legendLine.strategy { border-color: var(--ruby-700); }
         .legendLine.benchmark { border-color: #94a3b8; }
-        .legendLine.excess { border-color: #14b8a6; border-top-style: dashed; }
+        .legendLine.excess { border-color: var(--gold-500); border-top-style: dashed; }
         .chartWrap { width: 100%; overflow-x: auto; }
         .chartSvg { width: 100%; min-width: 860px; height: auto; display: block; }
         .gridLine { stroke: #e5e7eb; stroke-width: 1; }
         .gridLine.strong { stroke: #cbd5e1; }
         .zeroLine { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 6 6; }
         .chartLine { fill: none; stroke-width: 3; }
-        .chartLine.strategy { stroke: #2563eb; }
+        .chartLine.strategy { stroke: var(--ruby-700); }
         .chartLine.benchmark { stroke: #94a3b8; }
-        .chartLine.excess { stroke: #14b8a6; stroke-dasharray: 10 8; }
+        .chartLine.excess { stroke: var(--gold-500); stroke-dasharray: 10 8; }
         .gridLabel, .xLabel { fill: #94a3b8; font-size: 12px; }
         .tableWrap { overflow-x: auto; }
         .historyTable, .detailTable { width: 100%; border-collapse: collapse; }
@@ -610,8 +610,8 @@ export default function PerformanceClient({ history, stocks }) {
         .historyTable th, .detailTable th { color: #64748b; font-size: 0.86rem; font-weight: 800; }
         .historyTable td, .detailTable td { color: #0f172a; font-size: 0.95rem; }
         .tableNote { margin: 14px 0 0; color: #64748b; font-size: 0.92rem; line-height: 1.7; }
-        .detailBtn { height: 38px; padding: 0 14px; border-radius: 12px; border: 1px solid #dbe3f0; background: #ffffff; color: #0f172a; font-weight: 800; cursor: pointer; }
-        .detailBtn.active { background: #0f172a; color: #ffffff; border-color: #0f172a; }
+        .detailBtn { height: 38px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--gold-500); background: #ffffff; color: #0f172a; font-weight: 800; cursor: pointer; }
+        .detailBtn.active { background: var(--ruby-700); color: #ffffff; border-color: var(--ruby-700); }
         .benchmarkSummary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; align-items: center; }
         .benchmarkSummary span { color: #64748b; font-size: 0.85rem; font-weight: 700; }
         .benchmarkSummary strong { font-size: 1rem; font-weight: 900; }
@@ -619,9 +619,9 @@ export default function PerformanceClient({ history, stocks }) {
         .stockCell strong { color: #0f172a; }
         .stockCell span { color: #64748b; font-size: 0.88rem; }
         .statusBadge { display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; white-space: nowrap; }
-        .statusBadge.good { background: #ecfeff; color: #0891b2; }
-        .statusBadge.warn { background: #fff7ed; color: #c2410c; }
-        .statusBadge.mid { background: #fef3c7; color: #b45309; }
+        .statusBadge.good { background: var(--ruby-100); color: var(--ruby-700); }
+        .statusBadge.warn { background: var(--warn-bg); color: var(--warn-600); }
+        .statusBadge.mid { background: var(--warn-bg); color: var(--warn-600); }
         .statusBadge.neutral { background: #f1f5f9; color: #475569; }
         .trustGrid, .pickGrid, .noticeGrid, .controversyReasonGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
         .trustItem, .pickItem, .noticeItem, .controversyMetric, .controversyReasonBox { border: 1px solid #e5e7eb; border-radius: 18px; padding: 16px; background: #ffffff; }
@@ -635,11 +635,11 @@ export default function PerformanceClient({ history, stocks }) {
         .trustMetricBox strong { font-size: 1rem; font-weight: 900; }
         .badgeRow { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
         .smallBadge { display: inline-flex; align-items: center; justify-content: center; padding: 7px 11px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; }
-        .smallBadge.good { background: #ecfeff; color: #0891b2; }
-        .smallBadge.warn { background: #fff7ed; color: #c2410c; }
+        .smallBadge.good { background: var(--ruby-100); color: var(--ruby-700); }
+        .smallBadge.warn { background: var(--warn-bg); color: var(--warn-600); }
         .smallBadge.muted { background: #f1f5f9; color: #475569; }
         .smallBadge.soft { background: var(--ruby-100); color: var(--ruby-700); }
-        .smallBadge.info { background: #e0f2fe; color: #0284c7; }
+        .smallBadge.info { background: var(--ruby-100); color: var(--ruby-700); }
         .trustReason { margin: 0; color: #475569; line-height: 1.75; }
         .pickList { display: grid; gap: 12px; }
         .pickItem { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
@@ -655,8 +655,8 @@ export default function PerformanceClient({ history, stocks }) {
         .noticeItem { display: flex; flex-direction: column; gap: 8px; }
         .noticeItem strong { font-size: 1rem; color: #0f172a; }
         .noticeItem span { color: #64748b; line-height: 1.7; }
-        .tonePositive { color: #0ea5e9; }
-        .toneNegative { color: #64748b; }
+        .tonePositive { color: var(--signal-up); }
+        .toneNegative { color: var(--signal-down); }
         .toneNeutral { color: #0f172a; }
         @media (max-width: 900px) {
           .methodGrid, .kpiGrid, .trustGrid, .pickGrid, .noticeGrid, .controversyGrid, .controversyReasonGrid, .benchmarkSummary, .trustMetricRow { grid-template-columns: 1fr; }

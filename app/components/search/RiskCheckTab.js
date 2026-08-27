@@ -371,10 +371,10 @@ function RiskCheckTabContent({ stocks, risks }) {
         .miniStatCard span { display: block; margin-bottom: 8px; font-size: 0.82rem; font-weight: 700; }
         .miniStatCard strong { font-size: 1.3rem; line-height: 1; letter-spacing: -0.03em; }
         .miniStatCard.low span, .miniStatCard.low strong { color: #15803d; }
-        .miniStatCard.mid span, .miniStatCard.mid strong { color: #b45309; }
+        .miniStatCard.mid span, .miniStatCard.mid strong { color: var(--warn-600); }
         .miniStatCard.high span, .miniStatCard.high strong { color: #dc2626; }
         .guideSection, .searchSection, .listSection, .emptySection { margin-top: 24px; }
-        .guideCard, .searchCard, .riskCard, .emptyCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%); box-shadow: 0 20px 50px rgba(15,23,42,0.06); }
+        .guideCard, .searchCard, .riskCard, .emptyCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, var(--ruby-50) 100%); box-shadow: 0 20px 50px rgba(15,23,42,0.06); }
         .guideCard h2, .searchCard h2, .emptyCard h2 { margin: 0 0 16px; font-size: 1.4rem; letter-spacing: -0.03em; }
         .guideGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
         .guideItem { border: 1px solid #e5e7eb; border-radius: 18px; padding: 16px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
@@ -397,14 +397,14 @@ function RiskCheckTabContent({ stocks, risks }) {
         .dateText { margin: 0 0 12px; color: #64748b; font-size: 0.92rem; font-weight: 700; }
         .riskCard h3 { margin: 0 0 8px; font-size: 2rem; letter-spacing: -0.04em; word-break: keep-all; }
         .codeText { margin: 0 0 8px; color: #475569; font-weight: 700; }
-        .priceText { margin: 0; color: #0ea5e9; font-weight: 900; font-size: 1.05rem; }
+        .priceText { margin: 0; color: var(--ruby-700); font-weight: 900; font-size: 1.05rem; }
         .riskBadge { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 900; flex-shrink: 0; }
         .riskLow { background: #dcfce7; color: #15803d; }
-        .riskMid { background: #fef3c7; color: #b45309; }
+        .riskMid { background: var(--warn-bg); color: var(--warn-600); }
         .riskHigh { background: #fee2e2; color: #dc2626; }
         .reasonCard { border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px; margin-bottom: 12px; }
-        .goodCard { background: #f8fbff; }
-        .warnCard { background: #fffdfa; }
+        .goodCard { background: var(--ruby-50); }
+        .warnCard { background: var(--ruby-50); }
         .reasonLabel { display: block; margin-bottom: 8px; color: #0f172a; font-size: .84rem; font-weight: 800; }
         .reasonCard p { margin: 0; color: #475569; line-height: 1.75; }
         .riskBody h4 { margin: 0 0 12px; font-size: 1.6rem; letter-spacing: -0.03em; }
@@ -413,7 +413,7 @@ function RiskCheckTabContent({ stocks, risks }) {
         .checkPointLabel { display: block; margin-bottom: 8px; color: #0f172a; font-weight: 900; }
         .checkPointBox p { margin: 0; color: #475569; line-height: 1.75; }
         .cardActions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-        .nameMark { background: #fef3c7; color: #92400e; padding: 0 2px; border-radius: 4px; }
+        .nameMark { background: var(--warn-bg); color: var(--warn-600); padding: 0 2px; border-radius: 4px; }
         .targetCard { border-color: var(--ruby-300); box-shadow: 0 0 0 4px rgba(122, 12, 31, 0.12), 0 20px 50px rgba(15,23,42,0.06); }
         @media (max-width: 900px) {
           .pageHero { flex-direction: column; }
