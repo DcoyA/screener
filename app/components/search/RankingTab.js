@@ -72,13 +72,19 @@ function isUnstableEarnings(item) {
   return Number(item?.metrics?.operatingIncome ?? 0) <= 0 || Number(item?.metrics?.netIncome ?? 0) <= 0;
 }
 
+// 화면에 표시하는 종합판단점수 = finalPickMeta.finalScore (VERIFY F-3).
+// 정렬도 같은 값을 써야 "78점이 75점보다 아래"가 안 생긴다. totalScore는 내부 중간값.
+function finalScoreOf(item) {
+  return Number(item?.finalPickMeta?.finalScore ?? 0);
+}
+
 function sortTotal(items) {
   return [...items].sort((a, b) => {
     const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
     const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
     if (bEligible !== aEligible) return bEligible - aEligible;
-    const aScore = Number(a?.totalScore ?? 0);
-    const bScore = Number(b?.totalScore ?? 0);
+    const aScore = finalScoreOf(a);
+    const bScore = finalScoreOf(b);
     if (bScore !== aScore) return bScore - aScore;
     const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
@@ -130,7 +136,7 @@ function sortShort(items) {
     const aLiquidity = Number(a?.metrics?.avgTradeValue5d ?? 0);
     const bLiquidity = Number(b?.metrics?.avgTradeValue5d ?? 0);
     if (bLiquidity !== aLiquidity) return bLiquidity - aLiquidity;
-    return Number(b?.totalScore ?? 0) - Number(a?.totalScore ?? 0);
+    return finalScoreOf(b) - finalScoreOf(a);
   });
 }
 function sortAnnual(items) {
@@ -138,8 +144,8 @@ function sortAnnual(items) {
     const aEligible = a?.rankMeta?.topRankEligible ? 1 : 0;
     const bEligible = b?.rankMeta?.topRankEligible ? 1 : 0;
     if (bEligible !== aEligible) return bEligible - aEligible;
-    const aScore = Number(a?.totalScore ?? 0);
-    const bScore = Number(b?.totalScore ?? 0);
+    const aScore = finalScoreOf(a);
+    const bScore = finalScoreOf(b);
     if (bScore !== aScore) return bScore - aScore;
     const aGrowth = Number(a?.metrics?.operatingIncomeGrowth ?? 0) + Number(a?.metrics?.revenueGrowth ?? 0);
     const bGrowth = Number(b?.metrics?.operatingIncomeGrowth ?? 0) + Number(b?.metrics?.revenueGrowth ?? 0);
