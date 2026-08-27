@@ -2,6 +2,12 @@ import { getAllStocksFromSnapshots } from "../lib/stocksData";
 import risks from "../data/risks.json";
 import ScreenerPageClient from "./ScreenerPageClient";
 
+// STEP 8: Supabase 조회는 stocksData.js에서 unstable_cache(tags:["stocks"])로
+// 감쌌다. 이 라우트는 searchParams를 읽어 동적 렌더라서 전체 페이지 ISR은
+// 안 걸리지만, revalidate 값은 unstable_cache의 자동 갱신 주기와 맞춰 명시한다.
+// 즉시 갱신은 파이프라인 성공 후 /api/revalidate → revalidateTag("stocks").
+export const revalidate = 3600;
+
 // TASK 5(디자인·IA 개편): 예전엔 tab/view/risk를 전부 클라이언트의
 // useSearchParams()로 읽었는데, 그 훅을 쓰는 컴포넌트는 Suspense
 // 경계 안에서 "정적 렌더링에서 제외"되어 실제 데이터 대신 fallback
