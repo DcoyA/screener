@@ -3,23 +3,23 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS, isNavItemActive } from "../config/nav-items";
+import { NAV_ITEMS, NAV_ICONS, NAV_SHEET_ITEMS, isNavItemActive } from "../config/nav-items";
 import Icon from "./icons/Icon";
 import AuthButton from "./AuthButton";
 
-// 스타일은 app/globals.css의 .mainNav* 규칙. 항상 .rubySurface(SiteHeader) 안에서
-// 렌더된다고 가정하고 흰색 아웃라인 pill로 그린다.
-// 데스크톱: 가로 pill 행. 모바일(≤768px): 햄버거 → 세로 시트로 7항목 전부.
+// 스타일은 app/globals.css의 .mainNav* 규칙. 항상 .rubySurface(SiteHeader) 안.
+//   ≥1280px       텍스트 pill 6 + 구분선 + 아이콘 2 + 구독 CTA
+//   1024~1279px   pill을 아이콘+툴팁으로 축소(라벨 축약 금지)
+//   ≤1023px       햄버거 → 세로 시트로 전체
+//   ≤768px        + 하단 고정 네비 5개(MobileBottomNav)
 export default function MainNav() {
   const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
 
-  // 라우트가 바뀌면 모바일 시트를 닫는다.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // 시트가 열려 있을 때 ESC로 닫기.
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => {
@@ -33,12 +33,13 @@ export default function MainNav() {
     const active = isNavItemActive(item, pathname);
     const accentStyle = { "--nav-accent": `var(${item.accent})` };
 
-    if (item.variant === "avatar" && !inSheet) {
+    // 아이콘 전용 항목(검색·사용자)은 데스크톱에서 정사각 아이콘 버튼.
+    if (item.variant === "icon" && !inSheet) {
       return (
         <Link
           key={item.id}
           href={item.href}
-          className={`mainNavAvatar${active ? " active" : ""}`}
+          className={`mainNavIconBtn${active ? " active" : ""}`}
           style={accentStyle}
           aria-label={item.label}
           aria-current={active ? "page" : undefined}
@@ -56,33 +57,30 @@ export default function MainNav() {
         className={`mainNavPill${active ? " active" : ""}${inSheet ? " sheetItem" : ""}`}
         style={accentStyle}
         aria-current={active ? "page" : undefined}
+        title={item.label}
       >
-        {inSheet ? <Icon name={item.icon} size={18} /> : null}
+        <Icon name={item.icon} size={18} className="mainNavPillIcon" />
         <span>{item.label}</span>
       </Link>
     );
   };
 
   // 홈에는 멤버십 히어로 섹션이 그 자체로 구독 CTA다("이 화면의 유일한 강조색"
-  // 규칙). 헤더 CTA와 중복 + 강조색 2개가 되므로 홈에서는 헤더 CTA를 숨긴다.
+  // 규칙). 헤더 CTA와 중복되므로 홈에서는 헤더 CTA를 숨긴다.
   const showCta = pathname !== "/";
 
   return (
     <nav className="mainNav" aria-label="메인 메뉴">
       {/* 데스크톱 가로 네비 */}
       <div className="mainNavRow">
-        {NAV_ITEMS.map((item) => [
-          renderItem(item),
-          item.groupEnd ? <span className="mainNavDivider" aria-hidden="true" key={`${item.id}-div`} /> : null,
-        ])}
+        {NAV_ITEMS.map((item) => renderItem(item))}
+        <span className="mainNavDivider" aria-hidden="true" />
+        {NAV_ICONS.map((item) => renderItem(item))}
         {showCta ? (
           <Link href="/reports" className="mainNavCta rubyCta">
-            주 4회 리포트 받기
+            프리미엄 리포트 구독
           </Link>
         ) : null}
-        <span className="mainNavAuth">
-          <AuthButton />
-        </span>
       </div>
 
       {/* 모바일 햄버거 */}
@@ -101,10 +99,10 @@ export default function MainNav() {
         <>
           <button type="button" className="mainNavScrim" aria-hidden="true" tabIndex={-1} onClick={() => setOpen(false)} />
           <div id="mainNavSheet" className="mainNavSheet" role="menu">
-            {NAV_ITEMS.map((item) => renderItem(item, { inSheet: true }))}
+            {NAV_SHEET_ITEMS.map((item) => renderItem(item, { inSheet: true }))}
             {showCta ? (
               <Link href="/reports" className="mainNavCta rubyCta sheetItem" role="menuitem">
-                주 4회 리포트 받기
+                프리미엄 리포트 구독
               </Link>
             ) : null}
             <span className="mainNavSheetAuth">

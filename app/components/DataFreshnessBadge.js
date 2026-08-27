@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { getDataFreshness } from "../lib/dataFreshness";
 
+// 데이터 기준일 바 - 신뢰도 직결 요소라 항상 노출한다. 정상 상태는 루비 톤,
+// 지연/경고 상태만 앰버/레드 시맨틱을 쓴다.
 const LEVEL_STYLE = {
   ok: {
-    background: "var(--color-surface-tint)",
-    color: "var(--color-primary-dark)",
+    background: "var(--ruby-100)",
+    color: "var(--ruby-950)",
   },
   stale: {
     background: "#fffbeb",

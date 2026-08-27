@@ -3,13 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon from "./icons/Icon";
-import { NAV_ITEMS, MOBILE_BOTTOM_IDS, isNavItemActive } from "../config/nav-items";
+import { MOBILE_BOTTOM, isNavItemActive } from "../config/nav-items";
 
 // 하단 고정 네비는 5개만(홈/Top10/검색/관심종목/성적표). 나머지 2개
 // (모의투자·사용자정보)는 상단 햄버거 시트(MainNav)로 들어간다.
-const TABS = MOBILE_BOTTOM_IDS
-  .map((id) => NAV_ITEMS.find((item) => item.id === id))
-  .filter(Boolean);
+const TABS = MOBILE_BOTTOM;
 
 export default function MobileBottomNav() {
   const pathname = usePathname() || "/";

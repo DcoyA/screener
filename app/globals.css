@@ -147,7 +147,7 @@
   .rubySurface::before,
   .rubyCta,
   .mainNavPill,
-  .mainNavAvatar {
+  .mainNavIconBtn {
     transition: none;
   }
   .rubySurface:hover::before {
@@ -229,6 +229,10 @@
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
+/* 데스크톱 텍스트 모드에서는 pill 안의 아이콘을 숨긴다(1024~1279 구간에서만 표시). */
+.mainNavRow .mainNavPill .mainNavPillIcon {
+  display: none;
+}
 .mainNavPill:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.55);
@@ -252,7 +256,7 @@
 .mainNavSheet .mainNavDivider {
   display: none;
 }
-.mainNavAvatar {
+.mainNavIconBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -266,11 +270,11 @@
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
-.mainNavAvatar:hover {
+.mainNavIconBtn:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.55);
 }
-.mainNavAvatar.active {
+.mainNavIconBtn.active {
   background: #ffffff;
   border-color: #ffffff;
   color: var(--nav-accent, var(--ruby-700));
@@ -294,8 +298,28 @@
   display: none;
 }
 
-/* 7항목 + CTA + 로그인이 한 줄에 안 들어가는 폭에서는 햄버거로 전환한다. */
-@media (max-width: 1120px) {
+/* 1024~1279px: pill 6개가 텍스트로는 안 들어간다. 라벨을 축약하지 말고
+   아이콘 + title 툴팁으로 전환한다. 구독 CTA는 텍스트 유지. */
+@media (max-width: 1279px) and (min-width: 1024px) {
+  .mainNavRow .mainNavPill {
+    padding: 0;
+    width: 38px;
+    justify-content: center;
+    gap: 0;
+  }
+  .mainNavRow .mainNavPill span {
+    display: none;
+  }
+  .mainNavRow .mainNavPill .mainNavPillIcon {
+    display: inline-flex;
+  }
+  .mainNavDivider {
+    display: none;
+  }
+}
+
+/* ≤1023px: 6 pill + 아이콘 2 + CTA를 한 줄에 못 담으므로 햄버거로 전환. */
+@media (max-width: 1023px) {
   .mainNavRow {
     display: none;
   }
