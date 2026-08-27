@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import MainNav from "../components/MainNav";
+import SiteHeader from "../components/SiteHeader";
 
 const quickCards = [
   {
@@ -363,10 +363,7 @@ export default function NoticePage() {
 
   return (
     <main className="container">
-      <div className="topLinks">
-        <Link href="/" className="homeBtn">홈으로 가기</Link>
-        <MainNav />
-      </div>
+      <SiteHeader />
 
       <section className="heroCard">
         <div className="heroText">

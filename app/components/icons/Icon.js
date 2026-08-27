@@ -76,6 +76,22 @@ const ICONS = {
       <line x1="15.3" y1="15.3" x2="20.5" y2="20.5" />
     </>
   ),
+  star: (
+    <path d="M12 3.5l2.6 5.27 5.82.85-4.21 4.1.99 5.79L12 16.78l-5.2 2.73.99-5.79-4.21-4.1 5.82-.85L12 3.5Z" />
+  ),
+  menu: (
+    <>
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </>
+  ),
+  close: (
+    <>
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 20, strokeWidth = 2, style, className }) {

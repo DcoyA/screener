@@ -3,29 +3,31 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Icon from "./icons/Icon";
+import { NAV_ITEMS, MOBILE_BOTTOM_IDS, isNavItemActive } from "../config/nav-items";
 
-// 상단 데스크톱 네비(app/config/nav-items.js)와 동일한 5개 목적지로 맞춘다
-// (TASK 3, 디자인·IA 개편) - /me가 새로 생기면서 예전엔 없던 "마이페이지"
-// 전용 라우트 불일치가 해소됨.
-const TABS = [
-  { href: "/", label: "오늘", icon: "home" },
-  { href: "/screener", label: "종목찾기", icon: "search" },
-  { href: "/performance", label: "성적표", icon: "trendingUp" },
-  { href: "/reports", label: "리포트", icon: "newspaper" },
-  { href: "/me", label: "내 종목", icon: "user" },
-];
+// 하단 고정 네비는 5개만(홈/Top10/검색/관심종목/성적표). 나머지 2개
+// (모의투자·사용자정보)는 상단 햄버거 시트(MainNav)로 들어간다.
+const TABS = MOBILE_BOTTOM_IDS
+  .map((id) => NAV_ITEMS.find((item) => item.id === id))
+  .filter(Boolean);
 
 export default function MobileBottomNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
 
   return (
     <nav className="mobileBottomNav" aria-label="모바일 하단 메뉴">
       {TABS.map((tab) => {
-        const isActive = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
+        const isActive = isNavItemActive(tab, pathname);
         return (
-          <Link key={tab.href} href={tab.href} className={`mobileNavItem ${isActive ? "active" : ""}`}>
+          <Link
+            key={tab.id}
+            href={tab.href}
+            className={`mobileNavItem ${isActive ? "active" : ""}`}
+            style={{ "--nav-accent": `var(${tab.accent})` }}
+            aria-current={isActive ? "page" : undefined}
+          >
             <Icon name={tab.icon} size={22} className="mobileNavIcon" />
-            <span className="mobileNavLabel">{tab.label}</span>
+            <span className="mobileNavLabel">{tab.shortLabel || tab.label}</span>
           </Link>
         );
       })}
@@ -53,19 +55,24 @@ export default function MobileBottomNav() {
           flex-direction: column;
           align-items: center;
           gap: 2px;
-          padding: 6px 4px;
+          padding: 6px 2px;
+          min-width: 0;
           color: #94a3b8;
           text-decoration: none;
         }
         .mobileNavItem.active {
-          color: var(--color-primary);
+          color: var(--nav-accent, var(--ruby-700));
         }
         .mobileNavIcon {
           display: block;
         }
         .mobileNavLabel {
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           font-weight: 700;
+          white-space: nowrap;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       `}</style>
     </nav>

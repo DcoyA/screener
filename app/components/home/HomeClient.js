@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import Image from "next/image";
-import MainNav from "../MainNav";
+import SiteHeader from "../SiteHeader";
 import HeroSection from "./HeroSection";
 import SubscribeSection from "./SubscribeSection";
 import SubscribeHeroBanner from "./SubscribeHeroBanner";
@@ -73,21 +71,7 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
 
   return (
     <>
-      <header className="topBar">
-        <div className="topBarInner">
-          <Link href="/" className="brandArea">
-            <Image
-              src="/logo.png"
-              alt="우량주 스카우터 로고"
-              width={30}
-              height={30}
-              className="brandLogo"
-            />
-            <span className="brandTitle">우량주 스카우터</span>
-          </Link>
-          <MainNav className="mainNav" />
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="container" style={{ background: "var(--bg-home)" }}>
         <TodayHeadline marketState={marketState} />
@@ -133,48 +117,7 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
           padding: 32px 24px 80px;
           color: #0f172a;
         }
-        .topBar {
-          background: var(--color-primary);
-          padding: 14px 24px;
-          margin-bottom: 40px;
-          /* MainNav의 pill 색을 흰색 변형으로 덮어쓴다(기본값은 흰 배경용) */
-          --nav-pill-border: rgba(255, 255, 255, 0.35);
-          --nav-pill-bg: transparent;
-          --nav-pill-color: #ffffff;
-          --nav-pill-hover-bg: rgba(255, 255, 255, 0.12);
-          --nav-pill-hover-border: rgba(255, 255, 255, 0.55);
-          --nav-pill-active-bg: #ffffff;
-          --nav-pill-active-color: var(--color-primary);
-          --nav-pill-muted-color: rgba(255, 255, 255, 0.6);
-        }
-        .topBarInner {
-          max-width: 1180px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 20px;
-          flex-wrap: wrap;
-        }
-        .brandArea {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          text-decoration: none;
-        }
-        .brandLogo {
-          width: 30px;
-          height: 30px;
-          object-fit: contain;
-          border-radius: 8px;
-          background: #ffffff;
-        }
-        .brandTitle {
-          font-size: 1.05rem;
-          font-weight: 800;
-          color: #ffffff;
-          letter-spacing: -0.02em;
-        }
+        /* 상단 헤더는 공용 <SiteHeader />(app/components/SiteHeader.js)로 통일됨. */
         .hero {
           position: relative;
           overflow: hidden;
@@ -766,10 +709,6 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
         @media (max-width: 640px) {
           .container {
             padding: 24px 18px 64px;
-          }
-          .topBar {
-            align-items: flex-start;
-            margin-bottom: 28px;
           }
           .hero {
             padding: 12px 0 8px;
