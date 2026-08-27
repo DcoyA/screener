@@ -1,9 +1,17 @@
 name: Retry Failed Pipeline
 
-# Weekday JSON Update가 실패로 끝나면 45분 대기 후 1회만 자동 재실행한다.
+# Weekday JSON Update가 실패로 끝나면 1회만 자동 재실행한다.
 # event != 'workflow_dispatch' 가드가 없으면, 이 워크플로가 트리거한
 # 재실행(workflow_dispatch로 시작됨)이 또 실패했을 때 그 완료 이벤트가
 # 다시 이 워크플로를 트리거해서 무한 재시도 루프에 빠질 수 있다.
+#
+# STEP 9 변경:
+#  - GITHUB_TOKEN → GH_PAT. GITHUB_TOKEN 으로 gh workflow run 하면 다른
+#    워크플로를 트리거하지 못하는 케이스가 있다(권한/이벤트 전파 제약).
+#  - sleep 2700(45분) 제거. 대기하는 45분간 러너가 그대로 점유돼 과금됐다.
+#    "실패 후 시간을 두고 재시도"는 weekly-json-update.yml 의 11:07 KST 백업
+#    스케줄이 이미 담당한다(오늘자 데이터가 있으면 스킵하는 가드 포함).
+#    여기서는 즉시 1회 재시도만 한다.
 on:
   workflow_run:
     workflows: ["Weekday JSON Update"]
@@ -18,17 +26,14 @@ jobs:
       github.event.workflow_run.conclusion == 'failure' &&
       github.event.workflow_run.event != 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-
-      - name: 45분 대기 후 재실행
-        run: sleep 2700
 
       - name: 재실행 트리거
         id: trigger
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh workflow run "weekly-json-update.yml" --repo "${{ github.repository }}"
           sleep 30
@@ -41,7 +46,7 @@ jobs:
         id: watch
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: gh run watch "${{ steps.trigger.outputs.run_id }}" --repo "${{ github.repository }}" --exit-status
 
       - name: 재실행도 실패 - 이중 알림
@@ -51,4 +56,4 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: failure
           job_name: "Weekday JSON Update - 자동 재시도"
-          message: "🔴🔴 최초 실행 실패 후 45분 대기 후 자동 재실행한 결과도 실패했습니다. 수동 확인이 필요합니다."
+          message: "🔴🔴 최초 실행 실패 후 즉시 자동 재실행한 결과도 실패했습니다. 11:07 KST 백업 스케줄이 다시 시도하지만, 원인 확인이 필요합니다."
