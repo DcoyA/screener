@@ -8,6 +8,9 @@ import { getUnifiedGrade } from "../../lib/grade";
 import GradeBadge from "../GradeBadge";
 import { getScoreGaugeColor } from "../../lib/scoreGauge";
 import { formatUpsideDisplay } from "../../lib/formatUpside";
+import { getFairValueStatus, fairValueStatusLabel } from "../../lib/fairValue";
+import { formatRatio } from "../../lib/formatNumber";
+import { buildOneLineReason, buildWarningLine } from "../../lib/screenerReason";
 import { cleanStockName } from "../../lib/stockName";
 
 const PAGE_SIZE = 30;
@@ -40,20 +43,6 @@ const RISK_CONFIG = {
 function formatPrice(value) {
   const num = Number(value);
   if (!Number.isFinite(num) || num <= 0) return "-";
-  return `${num.toLocaleString("ko-KR")}원`;
-}
-function formatPercent(value) {
-  if (value === null || value === undefined || value === "") return "-";
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
-}
-function formatKrwCompact(value) {
-  const num = Number(value || 0);
-  if (!num) return "-";
-  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
-  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
   return `${num.toLocaleString("ko-KR")}원`;
 }
 // 적정가 밴드 표시값(fair-value v2): 보수~낙관 범위, 둘 다 없으면 단일값.
@@ -235,79 +224,14 @@ function getScorePresentation(stock, activeView) {
     return { label: "가치 점수", valueText: `${Math.round(Number(stock?.valueScore ?? 0))}점`, tooltip: "가치 점수는 저평가 관점에서의 내부 점수이며 예상 수익률을 의미하지 않습니다." };
   }
   if (activeView === "upside") {
-    return { label: "상승여력", valueText: formatUpsideDisplay(stock), tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다. 캡을 초과하는 값은 숫자 대신 구조적 할인/할증 라벨로 표시됩니다." };
+    const fvStatus = getFairValueStatus(stock);
+    return {
+      label: "상승여력",
+      valueText: fvStatus === "ok" ? formatUpsideDisplay(stock) : fairValueStatusLabel(fvStatus),
+      tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다. 캡을 초과하는 값은 숫자 대신 구조적 할인/할증 라벨로 표시됩니다.",
+    };
   }
   return { label: "종합 점수", valueText: `${Math.round(Number(stock?.totalScore ?? 0))}점`, tooltip: "종합 점수는 안정성·가치·시장성 등을 함께 반영한 내부 점수이며 예상 수익률을 의미하지 않습니다." };
-}
-function buildOneLineReason(stock, activeView) {
-  const parts = [];
-  const valueScore = Number(stock?.valueScore ?? 0);
-  const totalScore = Number(stock?.totalScore ?? 0);
-  const upside = Number(stock?.metrics?.upside);
-  const debtRatio = Number(stock?.metrics?.debtRatio);
-  const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
-  const rankFlags = stock?.rankMeta?.flags || [];
-  const undervalueFlags = stock?.undervalueMeta?.flags || [];
-
-  if (activeView === "total") {
-    if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
-    if (totalScore >= 70) parts.push(`총점 ${totalScore}점`);
-    if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
-    if (rankPenalty > 0) parts.push(`패널티 ${rankPenalty}`);
-    if (rankFlags.length) parts.push(rankFlags[0]);
-  } else if (activeView === "undervalue") {
-    if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
-    if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
-    if (Number.isFinite(upside) && upside > 0) parts.push(`상승여력 ${formatPercent(upside)}`);
-    if (undervalueFlags.length) parts.push(undervalueFlags[0]);
-  } else if (activeView === "upside") {
-    if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
-    if (stock?.rankMeta?.topRankEligible) parts.push("종합 조건 통과");
-    if (rankFlags.length) parts.push(rankFlags[0]);
-  } else if (activeView === "short") {
-    const rate = Number(stock?.metrics?.priceChangeRate ?? stock?.metrics?.momentum);
-    if (Number.isFinite(rate)) parts.push(`최근 흐름 ${formatPercent(rate)}`);
-    if (Number.isFinite(upside)) parts.push(`상승여력 ${formatPercent(upside)}`);
-    if (Number(stock?.metrics?.avgTradeValue5d ?? 0) > 0) parts.push(`유동성 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)}`);
-  } else if (activeView === "annual") {
-    if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
-    if (totalScore > 0) parts.push(`총점 ${totalScore}점`);
-    if (Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth))) parts.push(`영업이익 성장 ${formatPercent(stock?.metrics?.operatingIncomeGrowth)}`);
-    if (Number.isFinite(Number(stock?.metrics?.revenueGrowth))) parts.push(`매출 성장 ${formatPercent(stock?.metrics?.revenueGrowth)}`);
-  } else if (activeView === "long") {
-    if (valueScore > 0) parts.push(`가치 점수 ${valueScore}점`);
-    if (Number.isFinite(debtRatio)) parts.push(`부채비율 ${formatPercent(debtRatio)}`);
-    if (Number.isFinite(Number(stock?.metrics?.roe))) parts.push(`ROE ${formatPercent(stock?.metrics?.roe)}`);
-    if (Number.isFinite(Number(stock?.metrics?.pbr))) parts.push(`PBR ${Number(stock.metrics.pbr).toFixed(2)}배`);
-  }
-  if (!parts.length) return "현재 수치 조합을 기준으로 상대 비교된 결과입니다.";
-  return parts.join(" · ");
-}
-function buildWarningLine(stock, activeView, activeRisk) {
-  const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
-  const rankFlags = stock?.rankMeta?.flags || [];
-  const undervalueFlags = stock?.undervalueMeta?.flags || [];
-  const debtRatio = Number(stock?.metrics?.debtRatio);
-  const upside = Number(stock?.metrics?.upside);
-
-  if (activeRisk === "highDebt") return `부채비율 ${formatPercent(debtRatio)} 수준이라 저평가처럼 보여도 재무 리스크를 먼저 확인해야 합니다.`;
-  if (activeRisk === "lowLiquidity") return `최근 5일 평균 거래대금 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)} 수준이라 체결/수급은 보수적으로 봐야 합니다.`;
-  if (activeRisk === "unstableEarnings") return "영업이익 또는 순이익 흐름이 약해, 다음 실적 발표와 회복 가능성을 우선 확인해야 합니다.";
-
-  if (activeView === "total" || activeView === "annual") {
-    if (rankPenalty > 0) return `종합 해석에는 패널티 ${rankPenalty}점이 반영됩니다.`;
-    if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
-    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `부채비율 ${formatPercent(debtRatio)}로 보수 해석이 필요합니다.`;
-    return "실적·재무·수급 변화에 따라 종합 조건 통과 여부가 바뀔 수 있습니다.";
-  }
-  if (activeView === "undervalue" || activeView === "long") {
-    if (undervalueFlags.length) return `주의 포인트: ${undervalueFlags[0]}`;
-    if (Number.isFinite(debtRatio) && debtRatio >= 150) return `저평가처럼 보여도 부채비율 ${formatPercent(debtRatio)}를 함께 확인해야 합니다.`;
-    return "가치 점수가 높아도 재무 안정성 해석은 별도로 확인해야 합니다.";
-  }
-  if (Number.isFinite(upside) && upside <= 0) return "현재 적정가 추정 기준 즉각적인 상승여력은 크지 않을 수 있습니다.";
-  if (rankFlags.length) return `주의 포인트: ${rankFlags[0]}`;
-  return "상승여력은 참고치이며 실제 결과는 업황·실적·수급에 따라 달라질 수 있습니다.";
 }
 
 // TASK 5(디자인·IA 개편): view/risk 초기값은 상위(ScreenerPageClient)가
@@ -382,7 +306,7 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
 
   return (
     <>
-      <section className="rtHero">
+      <section className="rtHero rubySurface">
         <h2>{activeViewMeta.title}</h2>
         <p className="rtDesc">
           {activeViewMeta.desc}<br />
@@ -481,6 +405,8 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
             const penalty = Number(stock?.rankMeta?.penalty || 0);
             const displayRank = rankMap.get(String(stock.code)) ?? "-";
             const scorePresentation = getScorePresentation(stock, activeView);
+            const fvStatus = getFairValueStatus(stock);
+            const fvOk = fvStatus === "ok";
             const unifiedGrade = getUnifiedGrade(stock);
             const gaugeColor = SCORE_GAUGE_VIEWS.has(activeView)
               ? getScoreGaugeColor(getGaugeScoreValue(stock, activeView))
@@ -518,13 +444,13 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
                   <div className="metricBox"><span>현재가</span><strong>{formatPrice(stock?.metrics?.closePrice)}</strong></div>
                   <div className="metricBox">
                     <span>적정가 추정</span>
-                    <strong>{formatTargetPriceBand(stock)}</strong>
-                    {stock?.holdingDiscount && stock?.metrics?.targetPrice ? (
+                    <strong>{fvOk ? formatTargetPriceBand(stock) : fairValueStatusLabel(fvStatus)}</strong>
+                    {fvOk && stock?.holdingDiscount && stock?.metrics?.targetPrice ? (
                       <small style={{ display: "block", marginTop: 2, color: "#94a3b8", fontSize: ".68rem", fontWeight: 700 }}>지주사 할인 30% 반영</small>
                     ) : null}
                   </div>
-                  <div className="metricBox"><span>상승여력</span><strong className="sky">{formatUpsideDisplay(stock)}</strong></div>
-                  <div className="metricBox"><span>부채비율</span><strong>{formatPercent(stock?.metrics?.debtRatio)}</strong></div>
+                  <div className="metricBox"><span>상승여력</span><strong className="sky">{fvOk ? formatUpsideDisplay(stock) : "산출 보류"}</strong></div>
+                  <div className="metricBox"><span>부채비율</span><strong>{formatRatio(stock?.metrics?.debtRatio)}</strong></div>
                 </div>
 
                 <div className="badgeRow">
@@ -576,7 +502,8 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
       <style jsx>{`
         /* CLEO 스타일 - 진한 인디고 '면'으로 채운 히어로 패널. 예전엔 좌우 2단
            flex(space-between)라 좁은 화면에서 가운데에 불필요한 빈 공간이 컸다. */
-        .rtHero { border-radius: var(--radius-card); background: var(--color-primary-dark); padding: 28px; margin-bottom: 20px; }
+        /* 배경(펄 레이어)은 전역 .rubySurface가 담당한다. */
+        .rtHero { border-radius: var(--radius-card); padding: 28px; margin-bottom: 20px; }
         .rtHero h2 { margin: 0 0 10px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.03em; color: #fff; }
         .rtDesc { margin: 0 0 22px; max-width: 700px; color: rgba(255,255,255,0.72); line-height: 1.8; font-size: 0.98rem; }
         .searchSection { margin-bottom: 22px; }

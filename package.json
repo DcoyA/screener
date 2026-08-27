@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/test/check-upside-display.mjs",
+    "check:display": "node scripts/test/check-upside-display.mjs",
+    "prebuild": "npm run check:display",
     "build": "next build",
     "start": "next start"
   },

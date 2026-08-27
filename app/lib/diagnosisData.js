@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "./supabase/server";
 import { formatUpside } from "./formatUpside";
+import { getFairValueStatus } from "./fairValue";
 
 export async function getStockDiagnosisData(code) {
   const supabase = await createSupabaseServerClient();
@@ -15,6 +16,13 @@ export async function getStockDiagnosisData(code) {
   const rawMetrics = rawData.metrics || {};
   const currentPrice = snapshot.current_price ?? rawMetrics.closePrice ?? null;
   const upsideResult = formatUpside(currentPrice, rawMetrics.targetPrice);
+  // 적정가 산출 상태. update_data.py가 채운 fairValueStatus를 그대로 쓰되,
+  // 이 필드가 없는 옛 스냅샷은 targetPrice로 유추한다(app/lib/fairValue.js).
+  const fairValueStatus = getFairValueStatus({
+    fairValueStatus: rawData.fairValueStatus,
+    fairValueMeta: rawData.fairValueMeta,
+    metrics: { closePrice: currentPrice, targetPrice: rawMetrics.targetPrice },
+  });
 
   return {
     code: snapshot.code,
@@ -26,6 +34,7 @@ export async function getStockDiagnosisData(code) {
     targetPrice: rawMetrics.targetPrice ?? null,
     targetPriceConservative: rawMetrics.targetPriceConservative ?? null,
     targetPriceOptimistic: rawMetrics.targetPriceOptimistic ?? null,
+    fairValueStatus,
     per: rawMetrics.per ?? null,
     pbr: rawMetrics.pbr ?? null,
     roe: rawMetrics.roe ?? null,

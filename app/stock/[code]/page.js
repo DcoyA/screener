@@ -9,6 +9,7 @@ import { getStockDiagnosisData, getSimilarStocks, getHoldingForCurrentUser } fro
 import { getGradeHistory } from "../../lib/gradeHistory";
 import { cleanStockName } from "../../lib/stockName";
 import { formatSectorRelative } from "../../lib/sectorRelative";
+import { fairValueStatusLabel } from "../../lib/fairValue";
 import ScoreAccordion from "./components/ScoreAccordion";
 
 const SCORE_GROUPS = [
@@ -124,12 +125,20 @@ function buildKeyReasons(stock) {
     detail: `부채비율 ${formatRatio(debt)} · 100% 넘으면 위험 신호`,
   });
 
-  const upsideRising = Number.isFinite(stock.upsideRaw) && stock.upsideRaw > 0;
-  reasons.push({
-    icon: upsideRising ? "📈" : "📉",
-    label: upsideRising ? "오를 여지 있음" : "여지 제한적",
-    detail: `상승여력 ${stock.upsideDisplay} · 적정가 대비`,
-  });
+  if (stock.fairValueStatus === "ok") {
+    const upsideRising = Number.isFinite(stock.upsideRaw) && stock.upsideRaw > 0;
+    reasons.push({
+      icon: upsideRising ? "📈" : "📉",
+      label: upsideRising ? "오를 여지 있음" : "여지 제한적",
+      detail: `상승여력 ${stock.upsideDisplay} · 적정가 대비`,
+    });
+  } else {
+    reasons.push({
+      icon: "📉",
+      label: "여지 판단 보류",
+      detail: `${fairValueStatusLabel(stock.fairValueStatus)} · 적정가 대비 상승여력을 계산하지 않았습니다.`,
+    });
+  }
 
   return reasons;
 }
@@ -192,10 +201,14 @@ export default async function StockDetailPage({ params }) {
         <Metric label="현재가" value={formatPrice(stock.currentPrice)} />
         <Metric
           label="적정가 추정(보수~낙관)"
-          value={formatPriceBand(stock.targetPriceConservative ?? stock.targetPrice, stock.targetPriceOptimistic ?? stock.targetPrice)}
-          note={stock.holdingDiscount && stock.targetPrice ? "지주사 할인 30% 반영" : null}
+          value={
+            stock.fairValueStatus === "ok"
+              ? formatPriceBand(stock.targetPriceConservative ?? stock.targetPrice, stock.targetPriceOptimistic ?? stock.targetPrice)
+              : fairValueStatusLabel(stock.fairValueStatus)
+          }
+          note={stock.fairValueStatus === "ok" && stock.holdingDiscount && stock.targetPrice ? "지주사 할인 30% 반영" : null}
         />
-        <Metric label="상승여력" value={stock.upsideDisplay} accent />
+        <Metric label="상승여력" value={stock.fairValueStatus === "ok" ? stock.upsideDisplay : "산출 보류"} accent />
         <Metric label="부채비율" value={formatRatio(stock.debtRatio)} />
       </section>
 
@@ -238,8 +251,8 @@ export default async function StockDetailPage({ params }) {
                       padding: "6px 10px",
                       borderRadius: 10,
                       fontWeight: 900,
-                      background: point.grade ? "#f1effe" : "#f8fafc",
-                      color: point.grade ? "#4b3fff" : "#cbd5e1",
+                      background: point.grade ? "var(--ruby-100)" : "#f8fafc",
+                      color: point.grade ? "var(--ruby-700)" : "#cbd5e1",
                     }}
                   >
                     {point.grade || "-"}

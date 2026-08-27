@@ -5,21 +5,8 @@ import { useMemo, useState } from "react";
 import marketState from "../../data/market_state.json";
 import etfUniverse from "../../data/etf_universe.json";
 import { formatUpsidePercent } from "../../lib/formatUpside";
+import { formatDelta, formatRatio } from "../../lib/formatNumber";
 import { cleanStockName } from "../../lib/stockName";
-
-function formatPercent(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
-}
-
-function formatPercentPlain(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
-}
 
 function formatKrwCompact(value) {
   const num = Number(value);
@@ -208,7 +195,7 @@ export default function AlternativeTab() {
     {
       key: "eligibleRatio",
       label: "종합 후보 비중",
-      value: formatPercent(eligibleRatio * 100),
+      value: formatRatio(eligibleRatio * 100),
       method: "전체 분석 종목 중 종합 조건(topRankEligible) 통과 종목 비율",
       scope: "ETF 전체가 아니라 개별주 후보군 기준",
       meaning: getEligibleBand(eligibleRatio),
@@ -244,7 +231,7 @@ export default function AlternativeTab() {
     {
       key: "momentumSupportRatio",
       label: "모멘텀 지지 비율",
-      value: formatPercent(momentumSupportRatio * 100),
+      value: formatRatio(momentumSupportRatio * 100),
       method: "상위 후보군 중 최근 흐름/반등/거래대금 증가 신호가 동반된 종목 비율",
       scope: "단기 진입 친화도에 가까운 지표",
       meaning: getMomentumBand(momentumSupportRatio),
@@ -253,7 +240,7 @@ export default function AlternativeTab() {
     {
       key: "riskConcentration",
       label: "위험 집중도",
-      value: formatPercent(riskConcentration * 100),
+      value: formatRatio(riskConcentration * 100),
       method: "상위 후보군이 특정 위험 특성에 얼마나 몰려 있는지 보는 비율",
       scope: "상위권이 한쪽 위험에 쏠렸는지 체크",
       meaning: getRiskBand(riskConcentration),
@@ -307,12 +294,12 @@ export default function AlternativeTab() {
             </p>
 
             <div className="signalMetricGrid">
-              <div className="metricCard"><span>종합 후보 비중</span><strong>{formatPercent(eligibleRatio * 100)}</strong></div>
+              <div className="metricCard"><span>종합 후보 비중</span><strong>{formatRatio(eligibleRatio * 100)}</strong></div>
               <div className="metricCard"><span>상위 평균 총점</span><strong>{avgTotalScore.toFixed(1)}점</strong></div>
               <div className="metricCard"><span>상위 평균 상승여력</span><strong>{formatUpsidePercent(avgUpside)}</strong></div>
               <div className="metricCard"><span>상위 평균 유동성</span><strong>{formatKrwCompact(avgLiquidity5d)}</strong></div>
-              <div className="metricCard"><span>모멘텀 지지 비율</span><strong>{formatPercent(momentumSupportRatio * 100)}</strong></div>
-              <div className="metricCard"><span>위험 집중도</span><strong>{formatPercent(riskConcentration * 100)}</strong></div>
+              <div className="metricCard"><span>모멘텀 지지 비율</span><strong>{formatRatio(momentumSupportRatio * 100)}</strong></div>
+              <div className="metricCard"><span>위험 집중도</span><strong>{formatRatio(riskConcentration * 100)}</strong></div>
             </div>
 
             <div className="signalHelpBox">
@@ -427,7 +414,7 @@ export default function AlternativeTab() {
                         {returnItems.map((ret) => (
                           <div className="returnItem" key={ret.label}>
                             <span>{ret.label}</span>
-                            <strong>{formatPercentPlain(ret.value)}</strong>
+                            <strong>{formatDelta(ret.value)}</strong>
                           </div>
                         ))}
                       </div>

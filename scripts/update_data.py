@@ -86,6 +86,20 @@ MIN_SECTOR_PERCENTILE_SAMPLE = 5
 # NAV 대비 30~50% 할인 중 보수적으로 30%를 목표가(전 구간)에 곱한다.
 HOLDING_DISCOUNT_RATE = 0.30
 
+# 적정가 밴드 이상치 컷: 밴드 상단이 현재가의 2배를 넘거나, 밴드 폭(상단-하단)이
+# 현재가의 100%를 넘으면 회귀 추정이 신뢰 구간을 벗어난 것으로 보고 목표가를
+# 포기한다(status=outlier_rejected, targetPrice=None). 소표본 섹터에서 섹터
+# 중앙값 PER이 극단적으로 높을 때(예: 게임 섹터 p50 PER 67배) 발생한다.
+FAIR_VALUE_OUTLIER_UPPER_MULT = 2.0
+FAIR_VALUE_OUTLIER_BAND_WIDTH_MULT = 1.0
+
+# fairValueStatus enum. UI(app/lib/fairValue.js)와 문자열이 정확히 일치해야 한다.
+FAIR_VALUE_STATUS_OK = "ok"
+FAIR_VALUE_STATUS_INSUFFICIENT = "insufficient_data"
+FAIR_VALUE_STATUS_NEGATIVE = "negative_earnings"
+FAIR_VALUE_STATUS_SECTOR_UNMAPPED = "sector_unmapped"
+FAIR_VALUE_STATUS_OUTLIER = "outlier_rejected"
+
 # 등급 백분위 컷오프 (INCLUDED 종목 기준, decision==EXCLUDED는 항상 D)
 GRADE_S_PCT = 0.07
 GRADE_A_PCT = 0.25
@@ -226,6 +240,136 @@ def leave_one_out_stats(bucket, own_value):
     if own_value in remaining:
         remaining.remove(own_value)
     return percentile_stats(remaining)
+
+
+def _fair_value_meta(sector_code, tier, size, lam, median_per, status):
+    return {
+        "sectorCode": sector_code,
+        "sectorSampleTier": tier,
+        "sectorSampleSize": size,
+        "regressionLambda": lam,
+        "sectorMedianPerUsed": median_per,
+        "status": status,
+    }
+
+
+def compute_fair_value_band(
+    per_value, close_price, sector_code, sector_per_buckets, market_per_values, holding_discount
+):
+    """섹터 부분회귀 기반 적정가 밴드(보수/기준/낙관)를 계산하는 순수 함수.
+
+    회귀가 불가능하거나 결과가 이상치면 목표가를 산출하지 않고(None) 사유를
+    fairValueStatus enum으로 돌려준다. 현재가를 대체값으로 넣지 않는다.
+
+    반환: {
+      "targetPrice", "targetPriceConservative", "targetPriceOptimistic",
+      "upside"(mid 기준 %, None 가능), "status", "meta"(fairValueMeta 형태)
+    }
+    """
+    none_band = {
+        "targetPrice": None,
+        "targetPriceConservative": None,
+        "targetPriceOptimistic": None,
+        "upside": None,
+    }
+
+    if not per_value or per_value <= 0 or not close_price:
+        # per(정규화 순이익 기준)이 없으면 목표가/upside 계산 근거 자체가 없다.
+        return {
+            **none_band,
+            "status": FAIR_VALUE_STATUS_NEGATIVE,
+            "meta": _fair_value_meta(sector_code, "fixed", 0, 0.0, None, FAIR_VALUE_STATUS_NEGATIVE),
+        }
+
+    if per_value > MAX_PLAUSIBLE_PER:
+        # 정규화 순이익이 0에 가까워 PER이 통계적으로 무의미한 값까지 튄 경우.
+        return {
+            **none_band,
+            "status": FAIR_VALUE_STATUS_OUTLIER,
+            "meta": _fair_value_meta(sector_code, "fixed", 0, 0.0, None, FAIR_VALUE_STATUS_OUTLIER),
+        }
+
+    # leave-one-out: 섹터/시장 표본에서 자기 자신의 PER 몫을 빼고 통계를 낸다.
+    # 안 그러면 표본이 작을 때(n=1, 또는 자신이 표본 중앙값) 회귀가 자기 자신으로
+    # 수렴해 target_price == close_price가 강제된다.
+    sector_bucket = sector_per_buckets.get(sector_code, []) if sector_code else []
+    loo_sector_stats = leave_one_out_stats(sector_bucket, per_value) if sector_code else None
+    loo_market_stats = leave_one_out_stats(market_per_values, per_value)
+
+    if loo_sector_stats and loo_sector_stats["n"] >= MIN_SECTOR_SAMPLE:
+        stats, lam, sample_tier = loo_sector_stats, REGRESSION_LAMBDA_FULL, "sector"
+    elif loo_sector_stats and loo_sector_stats["n"] >= MIN_LOO_SECTOR_SAMPLE:
+        stats, lam, sample_tier = loo_sector_stats, REGRESSION_LAMBDA_LOW, "sector_small"
+    elif loo_market_stats and loo_market_stats["n"] >= MIN_LOO_MARKET_SAMPLE:
+        stats, lam, sample_tier = loo_market_stats, REGRESSION_LAMBDA_LOW, "market"
+    else:
+        # 자기 자신을 뺀 뒤에도 비교할 표본이 없다 - 회귀를 강행하지 않는다.
+        size = loo_sector_stats["n"] if loo_sector_stats else 0
+        return {
+            **none_band,
+            "status": FAIR_VALUE_STATUS_INSUFFICIENT,
+            "meta": _fair_value_meta(
+                sector_code, "fixed", size, 0.0, None, FAIR_VALUE_STATUS_INSUFFICIENT
+            ),
+        }
+
+    target_per_low = per_value + lam * (stats["p25"] - per_value)
+    target_per_mid = per_value + lam * (stats["p50"] - per_value)
+    target_per_high = per_value + lam * (stats["p75"] - per_value)
+
+    target_price_low = int(close_price * (target_per_low / per_value))
+    target_price_mid = int(close_price * (target_per_mid / per_value))
+    target_price_high = int(close_price * (target_per_high / per_value))
+
+    # 지주회사 할인: 목표가 전 구간(보수/기준/낙관)에 동일하게 곱한다.
+    if holding_discount:
+        discount_factor = 1 - HOLDING_DISCOUNT_RATE
+        target_price_low = int(target_price_low * discount_factor)
+        target_price_mid = int(target_price_mid * discount_factor)
+        target_price_high = int(target_price_high * discount_factor)
+
+    meta_tier = sample_tier
+    meta_size = stats["n"]
+    meta_lam = lam
+    meta_median = stats["p50"]
+
+    # 이상치 컷: 밴드 상단이 현재가의 2배 초과, 또는 밴드 폭이 현재가의 100% 초과.
+    band_upper_excess = target_price_high > close_price * FAIR_VALUE_OUTLIER_UPPER_MULT
+    band_width_excess = (
+        (target_price_high - target_price_low) > close_price * FAIR_VALUE_OUTLIER_BAND_WIDTH_MULT
+    )
+    if band_upper_excess or band_width_excess:
+        return {
+            **none_band,
+            "status": FAIR_VALUE_STATUS_OUTLIER,
+            "meta": _fair_value_meta(
+                sector_code, meta_tier, meta_size, meta_lam, meta_median, FAIR_VALUE_STATUS_OUTLIER
+            ),
+        }
+
+    status = FAIR_VALUE_STATUS_OK if sector_code else FAIR_VALUE_STATUS_SECTOR_UNMAPPED
+    if status != FAIR_VALUE_STATUS_OK:
+        # 섹터 미분류(시장 전체 폴백으로만 추정)는 신뢰도가 낮아 숫자를 남기지
+        # 않는다. 사유만 기록한다.
+        return {
+            **none_band,
+            "status": status,
+            "meta": _fair_value_meta(
+                sector_code, meta_tier, meta_size, meta_lam, meta_median, status
+            ),
+        }
+
+    upside_raw = (target_price_mid - close_price) / close_price * 100
+    return {
+        "targetPrice": target_price_mid,
+        "targetPriceConservative": target_price_low,
+        "targetPriceOptimistic": target_price_high,
+        "upside": round(upside_raw, 1),
+        "status": FAIR_VALUE_STATUS_OK,
+        "meta": _fair_value_meta(
+            sector_code, meta_tier, meta_size, meta_lam, meta_median, FAIR_VALUE_STATUS_OK
+        ),
+    }
 
 
 def sector_major_category(stock_code):
@@ -1328,6 +1472,9 @@ def build_stock_item(item, corp_map):
         "sectorCode": sector_code,
         "modelVersion": model_version,
         "fairValuePartial": fair_value_partial,
+        # 실제 값은 main()의 FAIR VALUE V2 루프가 compute_fair_value_band()로
+        # 채운다. 그 전까지의 안전한 기본값(목표가 미산출).
+        "fairValueStatus": FAIR_VALUE_STATUS_INSUFFICIENT,
         "holdingDiscount": holding_discount,
         "holdingDiscountRate": HOLDING_DISCOUNT_RATE if holding_discount else None,
         "rawTotalScore": raw_total_score,
@@ -1818,118 +1965,28 @@ def main():
             if code:
                 sector_per_buckets.setdefault(code, []).append(per_value)
 
-    sector_per_stats = {
-        code: percentile_stats(values) for code, values in sector_per_buckets.items()
-    }
-    market_per_stats = percentile_stats(market_per_values)
-
     for s in stocks:
         metrics = s["metrics"]
-        per_value = metrics.get("per")
-        close_price = metrics.get("closePrice") or 0
-        sector_code = s.get("sectorCode")
-
-        if not per_value or per_value <= 0 or not close_price:
-            # per(정규화된 순이익 기준)이 없으면 목표가/upside 자체를 계산할
-            # 근거가 없다 — 종목을 빼지 않고 관련 필드만 null로 남긴다.
-            # metrics.targetPrice*/upside는 build_stock_item()에서 이미
-            # None으로 초기화돼 있으므로 여기서 건드릴 필요 없다.
-            s["fairValueMeta"] = {
-                "sectorCode": sector_code,
-                "sectorSampleTier": "fixed",
-                "sectorSampleSize": 0,
-                "regressionLambda": 0.0,
-                "sectorMedianPerUsed": None,
-                "status": "negative_earnings",
-            }
-            continue
-
-        if per_value > MAX_PLAUSIBLE_PER:
-            # 정규화 순이익이 0에 가까워 PER이 통계적으로 의미 없는 값까지
-            # 튄 경우 - 이 PER로 회귀를 돌리면 목표가 자체가 이상치가 된다.
-            s["fairValueMeta"] = {
-                "sectorCode": sector_code,
-                "sectorSampleTier": "fixed",
-                "sectorSampleSize": 0,
-                "regressionLambda": 0.0,
-                "sectorMedianPerUsed": None,
-                "status": "outlier_rejected",
-            }
-            continue
-
-        fair_value_status = None if sector_code else "sector_unmapped"
-
-        # leave-one-out: 섹터/시장 표본에서 자기 자신의 PER 몫을 빼고 통계를
-        # 낸다. 안 그러면 섹터 표본이 자기 자신뿐이거나(n=1) 자신이 표본의
-        # 중앙값인 경우 회귀가 자기 자신으로 수렴해 target_price가
-        # close_price와 정확히 같아지는 문제가 있었다.
-        sector_bucket = sector_per_buckets.get(sector_code, []) if sector_code else []
-        loo_sector_stats = leave_one_out_stats(sector_bucket, per_value) if sector_code else None
-        loo_market_stats = leave_one_out_stats(market_per_values, per_value)
-
-        if loo_sector_stats and loo_sector_stats["n"] >= MIN_SECTOR_SAMPLE:
-            stats = loo_sector_stats
-            lam = REGRESSION_LAMBDA_FULL
-            sample_tier = "sector"
-        elif loo_sector_stats and loo_sector_stats["n"] >= MIN_LOO_SECTOR_SAMPLE:
-            stats = loo_sector_stats
-            lam = REGRESSION_LAMBDA_LOW
-            sample_tier = "sector_small"
-        elif loo_market_stats and loo_market_stats["n"] >= MIN_LOO_MARKET_SAMPLE:
-            stats = loo_market_stats
-            lam = REGRESSION_LAMBDA_LOW
-            sample_tier = "market"
-        else:
-            # 자기 자신을 뺀 뒤에도 섹터/시장 어느 쪽으로도 비교할 표본이
-            # 부족하다 - 회귀를 강행하지 않고 목표가를 포기한다.
-            s["fairValueMeta"] = {
-                "sectorCode": sector_code,
-                "sectorSampleTier": "fixed",
-                "sectorSampleSize": loo_sector_stats["n"] if loo_sector_stats else 0,
-                "regressionLambda": 0.0,
-                "sectorMedianPerUsed": None,
-                "status": "insufficient_data",
-            }
-            continue
-
-        target_per_low = per_value + lam * (stats["p25"] - per_value)
-        target_per_mid = per_value + lam * (stats["p50"] - per_value)
-        target_per_high = per_value + lam * (stats["p75"] - per_value)
-
-        target_price_low = int(close_price * (target_per_low / per_value))
-        target_price_mid = int(close_price * (target_per_mid / per_value))
-        target_price_high = int(close_price * (target_per_high / per_value))
-
-        # 지주회사 할인: 목표가 전 구간(보수/중립/낙관)에 동일하게 적용한다.
-        # upside는 이 할인이 반영된 target_price_mid로부터 계산되므로,
-        # 이 아래의 모든 계산(캡/라벨, timingMeta, finalPickMeta)에 자동으로
-        # 전파된다.
-        holding_discount_applied = bool(s.get("holdingDiscount"))
-        if holding_discount_applied:
-            discount_factor = 1 - HOLDING_DISCOUNT_RATE
-            target_price_low = int(target_price_low * discount_factor)
-            target_price_mid = int(target_price_mid * discount_factor)
-            target_price_high = int(target_price_high * discount_factor)
-
-        upside_raw = (target_price_mid - close_price) / close_price * 100
-
-        metrics["targetPriceConservative"] = target_price_low
-        metrics["targetPrice"] = target_price_mid
-        metrics["targetPriceOptimistic"] = target_price_high
-        # 표시용 캡/라벨(구 display.upsideCapped/upsideLabel)은 더 이상 여기서
-        # 계산하지 않는다 - app/lib/formatUpside.js가 closePrice/targetPrice
-        # 원값으로부터 매번 다시 계산해서 화면에 보여준다(+60%/-40%, 단일
-        # 창구). upside_raw 자체는 그대로 보존한다.
-        metrics["upside"] = round(upside_raw, 1)
-
-        s["fairValueMeta"] = {
-            "sectorCode": sector_code,
-            "sectorSampleTier": sample_tier,
-            "sectorSampleSize": stats["n"] if stats else 0,
-            "regressionLambda": lam,
-            "sectorMedianPerUsed": stats["p50"] if stats else None,
-            "status": fair_value_status,
-        }
+        # 회귀/이상치 판정은 compute_fair_value_band()가 단독으로 책임진다.
+        # 산출 불가/이상치면 targetPrice*는 None으로 남고 사유가 fairValueStatus
+        # (ok | insufficient_data | negative_earnings | sector_unmapped |
+        # outlier_rejected)로 기록된다. 현재가를 대체값으로 넣지 않는다.
+        # 표시용 캡/라벨은 여기서 안 만든다 - app/lib/formatUpside.js가
+        # closePrice/targetPrice 원값에서 매번 다시 계산한다(+60%/-40%, 단일 창구).
+        fv = compute_fair_value_band(
+            metrics.get("per"),
+            metrics.get("closePrice") or 0,
+            s.get("sectorCode"),
+            sector_per_buckets,
+            market_per_values,
+            bool(s.get("holdingDiscount")),
+        )
+        metrics["targetPriceConservative"] = fv["targetPriceConservative"]
+        metrics["targetPrice"] = fv["targetPrice"]
+        metrics["targetPriceOptimistic"] = fv["targetPriceOptimistic"]
+        metrics["upside"] = fv["upside"]
+        s["fairValueStatus"] = fv["status"]
+        s["fairValueMeta"] = fv["meta"]
 
         # timingMeta는 build_stock_item()에서 upside=None인 채로 이미 한 번
         # 계산됐다 — 방금 채운 실제 upside로 다시 계산해야 한다.

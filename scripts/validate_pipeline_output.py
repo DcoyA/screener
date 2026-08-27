@@ -186,11 +186,17 @@ def check_stock_count(stocks, prev_stocks):
     )
 
 
+def _fair_value_status(s):
+    # update_data.py가 채우는 top-level fairValueStatus를 우선 본다. 예전
+    # 산출물은 fairValueMeta.status만 있으므로 그걸 폴백으로 쓴다.
+    return s.get("fairValueStatus") or (s.get("fairValueMeta") or {}).get("status")
+
+
 def check_fair_value_null(stocks):
     # 적자 종목(negative_earnings)은 PER 기반 적정가를 원천적으로 계산할 수
     # 없는 구조적 사유라 결측이 정상이다 - 데이터 결함 신호가 아니므로 분모/
     # 분자에서 제외하고, 진짜 결측(sector_unmapped/outlier_rejected 등)만 본다.
-    eligible = [s for s in stocks if (s.get("fairValueMeta") or {}).get("status") != "negative_earnings"]
+    eligible = [s for s in stocks if _fair_value_status(s) != "negative_earnings"]
     excluded = len(stocks) - len(eligible)
     total = len(eligible)
     null_count = sum(1 for s in eligible if s.get("metrics", {}).get("targetPrice") is None)
@@ -274,6 +280,29 @@ def check_sector_unmapped(stocks):
         "sector_unmapped_ratio", "섹터 미매핑 비율", ratio,
         f"{ratio * 100:.1f}% ({unmapped}/{total})",
         f"WARN>{warn_thr * 100:.0f}% / BLOCK>{block_thr * 100:.0f}%",
+        tier,
+    )
+
+
+def check_fair_value_fallback(stocks):
+    # 적정가 산출이 성공(ok)했다고 하면서 targetPrice가 현재가와 정확히 같으면,
+    # 회귀가 자기 자신으로 수렴했거나 구 fallback(현재가 대입)이 남아 있는
+    # 것이다. compute_fair_value_band() 도입 후에는 0건이어야 한다.
+    offenders = [
+        s for s in stocks
+        if _fair_value_status(s) == "ok"
+        and s.get("metrics", {}).get("targetPrice") is not None
+        and s.get("metrics", {}).get("targetPrice") == s.get("metrics", {}).get("closePrice")
+    ]
+    count = len(offenders)
+    tier = "block" if count > 0 else "pass"
+    sample = ", ".join(s.get("code", "?") for s in offenders[:5])
+    print(f"[품질게이트] status=ok인데 targetPrice==currentPrice: {count}건 -> {tier}"
+          + (f" ({sample})" if sample else ""))
+    return MetricResult(
+        "fair_value_fallback_count", "적정가==현재가(ok) 건수", count,
+        f"{count}건" + (f" ({sample})" if sample else ""),
+        "0건 (1건이라도 있으면 즉시 BLOCK)",
         tier,
     )
 
@@ -457,6 +486,7 @@ def main():
         check_s_grade_ratio(stocks),
         check_zero_close_price(stocks),
         check_sector_unmapped(stocks),
+        check_fair_value_fallback(stocks),
         check_uniform_close_price(stocks),
     ]:
         if r is not None:

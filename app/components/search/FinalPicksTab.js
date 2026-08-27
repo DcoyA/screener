@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import WishlistButton from "../../components/WishlistButton";
 import { getUnifiedGrade, GRADE_META, GRADE_ORDER } from "../../lib/grade";
 import { formatUpsideDisplay } from "../../lib/formatUpside";
+import { getFairValueStatus, fairValueStatusLabel } from "../../lib/fairValue";
+import { formatDelta } from "../../lib/formatNumber";
 import { cleanStockName } from "../../lib/stockName";
 
 const GROUP_DESC = {
@@ -32,12 +34,6 @@ function formatPrice(value) {
   return `${num.toLocaleString("ko-KR")}원`;
 }
 
-function formatPercent(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
-}
 
 // 적정가는 단일값이 아니라 보수~낙관 밴드로 표시한다.
 function formatTargetPriceBand(stock) {
@@ -170,6 +166,8 @@ function PickCard({ item }) {
   const color = item.decision.color;
   const bg = item.decision.bg;
   const debug = item.debug || {};
+  const fvStatus = getFairValueStatus(item);
+  const fvOk = fvStatus === "ok";
 
   return (
     <article style={{ ...S.card, padding: 24 }}>
@@ -200,15 +198,15 @@ function PickCard({ item }) {
           <Metric label="현재가" value={formatPrice(item?.metrics?.closePrice)} />
           <Metric
             label="적정가 추정"
-            value={formatTargetPriceBand(item)}
-            note={item?.holdingDiscount && item?.metrics?.targetPrice ? "지주사 할인 30% 반영" : null}
+            value={fvOk ? formatTargetPriceBand(item) : fairValueStatusLabel(fvStatus)}
+            note={fvOk && item?.holdingDiscount && item?.metrics?.targetPrice ? "지주사 할인 30% 반영" : null}
           />
-          <Metric label="상승여력" value={formatUpsideDisplay(item)} accent />
+          <Metric label="상승여력" value={fvOk ? formatUpsideDisplay(item) : "산출 보류"} accent />
           <Metric label="거래대금" value={formatCompactKrw(item?.metrics?.avgTradeValue5d)} />
           <Metric label="PER" value={item?.metrics?.per ? `${Number(item.metrics.per).toFixed(1)}배` : "-"} />
           <Metric label="PBR" value={item?.metrics?.pbr ? `${Number(item.metrics.pbr).toFixed(1)}배` : "-"} />
           <Metric label="부채비율" value={item?.metrics?.debtRatio ? `${Number(item.metrics.debtRatio).toFixed(1)}%` : "-"} />
-          <Metric label="5일 등락률" value={formatPercent(item?.metrics?.priceChangeRate)} accent />
+          <Metric label="5일 등락률" value={formatDelta(item?.metrics?.priceChangeRate)} accent />
         </div>
 
         <div style={{ border: "1px solid #0f172a", borderRadius: 18, padding: 16, background: "#0f172a", color: "#fff", marginBottom: 12 }}>

@@ -102,6 +102,7 @@ function mapToSnapshotRow(stock, grade) {
     operating_income: stock?.metrics?.operatingIncome ?? null,
     net_income: stock?.metrics?.netIncome ?? null,
     market_cap: stock?.metrics?.marketCap ?? null,
+    fair_value_status: stock?.fairValueStatus ?? null,
     final_pick_decision: stock?.finalPickMeta?.decision ?? null,
     final_pick_score: stock?.finalPickMeta?.finalScore ?? null,
     final_pick_reasons: stock?.finalPickMeta?.reasons ?? [],

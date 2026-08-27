@@ -50,3 +50,13 @@ export function formatUpsidePercent(value) {
 export function formatUpsideDisplay(stock) {
   return formatUpside(stock?.metrics?.closePrice, stock?.metrics?.targetPrice).display;
 }
+
+// 이유 문구용 "상승여력 <값>" 조각. 적정가 산출이 유효할 때만 만든다.
+// 로컬 formatPercent로 원본 %를 그대로 찍던 자리(홈 전략 슬롯 / 스크리너 카드
+// reason 빌더)를 이걸로 통일한다 - +60% 초과값은 formatUpsideDisplay가 이미
+// 라벨로 바꾸므로 숫자가 새지 않는다. 산출 불가면 null → 호출부가 항목을 뺀다.
+export function formatUpsideReasonPart(stock) {
+  const display = formatUpsideDisplay(stock);
+  if (!display || display === "-" || display === "산출 보류") return null;
+  return `상승여력 ${display}`;
+}

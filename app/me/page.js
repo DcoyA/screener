@@ -9,6 +9,7 @@ import PageTopBar from "../components/PageTopBar";
 import WishlistButton from "../components/WishlistButton";
 import { getWishlist } from "../lib/wishlist";
 import { formatUpsideDisplay, formatUpsidePercent } from "../lib/formatUpside";
+import { isFairValueOk } from "../lib/fairValue";
 import { cleanStockName } from "../lib/stockName";
 
 const TABS = [
@@ -47,8 +48,13 @@ function WishlistPanel() {
   const insight = useMemo(() => {
     if (!wishlistStocks.length) return null;
 
-    const avgUpside =
-      wishlistStocks.reduce((sum, item) => sum + (Number(item?.metrics?.upside) || 0), 0) / wishlistStocks.length;
+    // 적정가 산출이 ok인 종목만 평균에 넣는다(결측/이상치는 upside가 없음).
+    const upsideStocks = wishlistStocks.filter(
+      (item) => isFairValueOk(item) && Number.isFinite(Number(item?.metrics?.upside))
+    );
+    const avgUpside = upsideStocks.length
+      ? upsideStocks.reduce((sum, item) => sum + Number(item.metrics.upside), 0) / upsideStocks.length
+      : null;
 
     const riskyCount = wishlistStocks.filter((item) => {
       const level = riskMap.get(String(item.code))?.level || item?.riskMeta?.level;
@@ -71,10 +77,10 @@ function WishlistPanel() {
     <>
       {insight ? (
         <section style={{ marginBottom: 26 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, borderRadius: "var(--radius-card)", background: "var(--color-primary-dark)", padding: 20 }}>
+          <div className="rubySurface" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12, borderRadius: "var(--radius-card)", padding: 20 }}>
             <div>
               <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>평균 상승여력</span>
-              <strong style={{ fontSize: "1.4rem", color: "#fff" }}>{formatUpsidePercent(insight.avgUpside)}</strong>
+              <strong style={{ fontSize: "1.4rem", color: "#fff" }}>{insight.avgUpside === null ? "산출 보류" : formatUpsidePercent(insight.avgUpside)}</strong>
             </div>
             <div>
               <span style={{ display: "block", marginBottom: 8, color: "rgba(255,255,255,0.6)", fontSize: "0.84rem", fontWeight: 800 }}>위험 주의 종목</span>
@@ -115,7 +121,7 @@ function WishlistPanel() {
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <span style={{ display: "block", fontSize: "0.8rem", color: "#64748b" }}>상승여력</span>
-                      <strong>{formatUpsideDisplay(stock)}</strong>
+                      <strong>{isFairValueOk(stock) ? formatUpsideDisplay(stock) : "산출 보류"}</strong>
                     </div>
                     <div style={{ textAlign: "right" }}>
                       <span style={{ display: "block", fontSize: "0.8rem", color: "#64748b" }}>위험도</span>

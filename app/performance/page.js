@@ -7,6 +7,7 @@ import stocks from "../data/stocks.json";
 import PageTopBar from "../components/PageTopBar";
 import { cleanStockName } from "../lib/stockName";
 import { buildPerformanceData } from "../lib/performanceSummary";
+import { formatDelta, formatRatio } from "../lib/formatNumber";
 
 function formatPrice(value) {
   const num = Number(value);
@@ -31,22 +32,8 @@ function formatIndex(value) {
   });
 }
 
-function formatPercent(value) {
-  if (value === null || value === undefined || value === "") return "-";
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
-}
-
-// 승률은 증감이 아니라 비율이라 +/- 부호를 붙이지 않는다(formatPercent와
-// 구분 - 수익률/초과수익 같은 "증감"에는 부호가 맞지만 비율에는 안 맞다).
-function formatRatio(value) {
-  if (value === null || value === undefined || value === "") return "-";
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  return `${num.toFixed(1)}%`;
-}
+// 수익률/초과수익/벤치마크 수익률은 "증감"이라 formatDelta(+/- 부호),
+// 승률은 "비율"이라 formatRatio(무부호) - app/lib/formatNumber.js 단일 정의.
 
 function getToneClass(value) {
   const num = Number(value);
@@ -188,19 +175,19 @@ export default function PerformancePage() {
           <div className="kpiGrid">
             <div className="kpiCard">
               <span className="kpiLabel">전략 평균 수익률</span>
-              <strong className={getToneClass(performanceData.overallAvg)}>{formatPercent(performanceData.overallAvg)}</strong>
+              <strong className={getToneClass(performanceData.overallAvg)}>{formatDelta(performanceData.overallAvg)}</strong>
               <p>
                 추천 종목 전체 평균 기준 ({performanceData.validReturnCount}/{performanceData.totalPicks} 종목 기준)
               </p>
             </div>
             <div className="kpiCard">
               <span className="kpiLabel">KOSPI 평균 수익률</span>
-              <strong className={getToneClass(performanceData.benchmarkAvg)}>{formatPercent(performanceData.benchmarkAvg)}</strong>
+              <strong className={getToneClass(performanceData.benchmarkAvg)}>{formatDelta(performanceData.benchmarkAvg)}</strong>
               <p>동일 스냅샷 기준 KOSPI 비교값</p>
             </div>
             <div className="kpiCard">
               <span className="kpiLabel">평균 초과수익</span>
-              <strong className={getToneClass(performanceData.excessAvg)}>{formatPercent(performanceData.excessAvg)}</strong>
+              <strong className={getToneClass(performanceData.excessAvg)}>{formatDelta(performanceData.excessAvg)}</strong>
               <p className="sampleCaveat">
                 표본 {performanceData.totalSnapshots}주차 · 약 {Math.max(1, Math.round(performanceData.totalSnapshots / 4.33))}개월.
                 통계적으로 확정적이지 않습니다.
@@ -242,7 +229,7 @@ export default function PerformancePage() {
                 {chartValues.grid.map((g, idx) => (
                   <g key={idx}>
                     <line x1="16" x2={chartValues.width - 16} y1={g.y} y2={g.y} className={idx === 1 ? "gridLine strong" : "gridLine"} />
-                    <text x="0" y={g.y + 4} className="gridLabel">{formatPercent(g.value)}</text>
+                    <text x="0" y={g.y + 4} className="gridLabel">{formatDelta(g.value)}</text>
                   </g>
                 ))}
                 <line x1="16" x2={chartValues.width - 16} y1={chartValues.zeroY} y2={chartValues.zeroY} className="zeroLine" />
@@ -290,11 +277,11 @@ export default function PerformancePage() {
                         {row.weekLabel}
                         {row.isLatestSnapshot ? <span className="statusBadge neutral" style={{ marginLeft: 8 }}>집계 중</span> : null}
                       </td>
-                      <td className={getToneClass(row.avgReturn)}>{row.isLatestSnapshot ? "집계 중" : formatPercent(row.avgReturn)}</td>
-                      <td className={getToneClass(row.benchmarkReturn)}>{formatPercent(row.benchmarkReturn)}</td>
-                      <td className={getToneClass(row.excessReturn)}>{row.isLatestSnapshot ? "-" : formatPercent(row.excessReturn)}</td>
+                      <td className={getToneClass(row.avgReturn)}>{row.isLatestSnapshot ? "집계 중" : formatDelta(row.avgReturn)}</td>
+                      <td className={getToneClass(row.benchmarkReturn)}>{formatDelta(row.benchmarkReturn)}</td>
+                      <td className={getToneClass(row.excessReturn)}>{row.isLatestSnapshot ? "-" : formatDelta(row.excessReturn)}</td>
                       <td>{row.isLatestSnapshot ? "-" : formatRatio(row.winRate)}</td>
-                      <td>{row.isLatestSnapshot ? "-" : `${formatPercent(row.bestReturn)} / ${formatPercent(row.worstReturn)}`}</td>
+                      <td>{row.isLatestSnapshot ? "-" : `${formatDelta(row.bestReturn)} / ${formatDelta(row.worstReturn)}`}</td>
                       <td>
                         <button type="button" className={`detailBtn ${selectedSnapshotDate === row.snapshotDate ? "active" : ""}`} onClick={() => setSelectedSnapshotDate(row.snapshotDate)}>보기</button>
                       </td>
@@ -359,7 +346,7 @@ export default function PerformancePage() {
                   </span>
                   <strong>{formatIndex(selectedWeek.benchmarkCurrent)}</strong>
                   <span>벤치마크 수익률</span>
-                  <strong className={getToneClass(selectedWeek.benchmarkReturn)}>{formatPercent(selectedWeek.benchmarkReturn)}</strong>
+                  <strong className={getToneClass(selectedWeek.benchmarkReturn)}>{formatDelta(selectedWeek.benchmarkReturn)}</strong>
                 </div>
                 <div className="tableWrap">
                   <table className="detailTable">
@@ -410,8 +397,8 @@ export default function PerformancePage() {
                                 </span>
                               ) : null}
                             </td>
-                            <td className={getToneClass(pick.returnRate)}>{formatPercent(pick.returnRate)}</td>
-                            <td className={getToneClass(pick.excessReturnForPick)}>{formatPercent(pick.excessReturnForPick)}</td>
+                            <td className={getToneClass(pick.returnRate)}>{formatDelta(pick.returnRate)}</td>
+                            <td className={getToneClass(pick.excessReturnForPick)}>{formatDelta(pick.excessReturnForPick)}</td>
                             <td>{formatPrice(pick.targetPrice)}</td>
                             <td className={getToneClass(pick.upsideRaw)}>{pick.upsideDisplay}</td>
                             <td className={getToneClass(pick.currentUpsideRaw)}>{pick.currentUpsideDisplay}</td>
@@ -458,11 +445,11 @@ export default function PerformancePage() {
                         <div className="trustMetricRow">
                           <div className="trustMetricBox">
                             <span>수익률</span>
-                            <strong className={getToneClass(pick.returnRate)}>{formatPercent(pick.returnRate)}</strong>
+                            <strong className={getToneClass(pick.returnRate)}>{formatDelta(pick.returnRate)}</strong>
                           </div>
                           <div className="trustMetricBox">
                             <span>초과수익</span>
-                            <strong className={getToneClass(pick.excessReturnForPick)}>{formatPercent(pick.excessReturnForPick)}</strong>
+                            <strong className={getToneClass(pick.excessReturnForPick)}>{formatDelta(pick.excessReturnForPick)}</strong>
                           </div>
                           <div className="trustMetricBox">
                             <span>현재 총점</span>
@@ -501,7 +488,7 @@ export default function PerformancePage() {
                       <p className="pickName">{cleanStockName(item.name)}</p>
                       <p className="pickMeta">{item.market} · {item.code}</p>
                     </div>
-                    <strong className={getToneClass(item.returnRate)}>{formatPercent(item.returnRate)}</strong>
+                    <strong className={getToneClass(item.returnRate)}>{formatDelta(item.returnRate)}</strong>
                   </div>
                 ))}
               </div>
@@ -515,7 +502,7 @@ export default function PerformancePage() {
                       <p className="pickName">{cleanStockName(item.name)}</p>
                       <p className="pickMeta">{item.market} · {item.code}</p>
                     </div>
-                    <strong className={getToneClass(item.returnRate)}>{formatPercent(item.returnRate)}</strong>
+                    <strong className={getToneClass(item.returnRate)}>{formatDelta(item.returnRate)}</strong>
                   </div>
                 ))}
               </div>
@@ -537,7 +524,7 @@ export default function PerformancePage() {
               <div className="controversyGrid">
                 <div className="controversyMetric"><span>추천 당시</span><strong>{formatPrice(controversialPick.selectedPrice)}</strong></div>
                 <div className="controversyMetric"><span>현재가</span><strong>{formatPrice(controversialPick.currentPrice)}</strong></div>
-                <div className="controversyMetric"><span>현재 수익률</span><strong className={getToneClass(controversialPick.returnRate)}>{formatPercent(controversialPick.returnRate)}</strong></div>
+                <div className="controversyMetric"><span>현재 수익률</span><strong className={getToneClass(controversialPick.returnRate)}>{formatDelta(controversialPick.returnRate)}</strong></div>
                 <div className="controversyMetric"><span>당시 상승여력</span><strong className={getToneClass(controversialPick.upsideRaw)}>{controversialPick.upsideDisplay}</strong></div>
               </div>
               <div className="controversyReasonGrid">
@@ -553,7 +540,7 @@ export default function PerformancePage() {
                   <h3>현재 해석</h3>
                   <p>
                     기대 구간이 컸던 종목이라도 실제 성과는 시장 분위기와 업황, 개별 이벤트에 따라 크게 달라질 수 있습니다.
-                    현재 수익률 {formatPercent(controversialPick.returnRate)}와 KOSPI 수익률 {formatPercent(selectedWeek?.benchmarkReturn)}를 함께 보면서,
+                    현재 수익률 {formatDelta(controversialPick.returnRate)}와 KOSPI 수익률 {formatDelta(selectedWeek?.benchmarkReturn)}를 함께 보면서,
                     모델이 단순히 시장 상승을 따라간 것인지, 정말 초과수익을 만들었는지를 구분해서 볼 필요가 있습니다.
                   </p>
                 </div>

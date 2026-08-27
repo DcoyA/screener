@@ -1,16 +1,13 @@
-import { formatUpsideDisplay } from "./formatUpside";
+// 확장자 명시(.js): 이 모듈은 Next 번들러뿐 아니라 CI 회귀 검사
+// (scripts/test/check-upside-display.mjs)가 순수 Node ESM으로도 import한다.
+import { formatUpsideDisplay, formatUpsideReasonPart } from "./formatUpside.js";
+import { isFairValueOk } from "./fairValue.js";
+import { formatDelta, formatRatio } from "./formatNumber.js";
 
 function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
   return `${num.toLocaleString("ko-KR")}원`;
-}
-
-function formatPercent(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return "-";
-  const sign = num > 0 ? "+" : "";
-  return `${sign}${num.toFixed(1)}%`;
 }
 
 function formatKrwCompact(value) {
@@ -55,8 +52,10 @@ function passesHardFilter(stock) {
   const score = Number(stock?.totalScore ?? 0);
   if (score < MIN_STRATEGY_SCORE) return false;
 
-  const targetPrice = Number(stock?.metrics?.targetPrice);
-  if (!Number.isFinite(targetPrice) || targetPrice <= 0) return false; // fairValue 결측
+  // fairValue 결측/이상치(status !== 'ok')면 상승여력 기반 슬롯에서 제외한다.
+  // 예전엔 targetPrice > 0 만 봤는데, 구 fallback으로 targetPrice에 현재가가
+  // 들어간 종목은 이 조건을 통과해버려 실효가 없었다.
+  if (!isFairValueOk(stock)) return false;
 
   const liquidity = Number(stock?.metrics?.avgTradeValue5d ?? 0);
   if (liquidity < MIN_STRATEGY_LIQUIDITY) return false;
@@ -136,8 +135,8 @@ function buildReasonLine(parts, fallback) {
 function buildShortReason(stock) {
   return buildReasonLine(
     [
-      Number.isFinite(Number(stock?.metrics?.priceChangeRate)) ? `최근 흐름 ${formatPercent(stock?.metrics?.priceChangeRate)}` : null,
-      Number.isFinite(Number(stock?.metrics?.upside)) ? `상승여력 ${formatPercent(stock?.metrics?.upside)}` : null,
+      Number.isFinite(Number(stock?.metrics?.priceChangeRate)) ? `최근 흐름 ${formatDelta(stock?.metrics?.priceChangeRate)}` : null,
+      formatUpsideReasonPart(stock),
       stock?.metrics?.avgTradeValue5d ? `유동성 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)}` : null,
       (stock?.rankMeta?.flags || [])[0] || null,
     ],
@@ -150,8 +149,8 @@ function buildAnnualReason(stock) {
     [
       stock?.rankMeta?.topRankEligible ? "안정성 조건 통과" : null,
       Number(stock?.totalScore ?? 0) ? `총점 ${Number(stock.totalScore).toFixed(0)}점` : null,
-      Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth)) ? `영업이익 성장 ${formatPercent(stock?.metrics?.operatingIncomeGrowth)}` : null,
-      Number.isFinite(Number(stock?.metrics?.revenueGrowth)) ? `매출 성장 ${formatPercent(stock?.metrics?.revenueGrowth)}` : null,
+      Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth)) ? `영업이익 성장 ${formatDelta(stock?.metrics?.operatingIncomeGrowth)}` : null,
+      Number.isFinite(Number(stock?.metrics?.revenueGrowth)) ? `매출 성장 ${formatDelta(stock?.metrics?.revenueGrowth)}` : null,
     ],
     "연간 보유 관점에서 무난하게 가져갈 수 있는 후보입니다."
   );
@@ -161,8 +160,8 @@ function buildLongReason(stock) {
   return buildReasonLine(
     [
       Number(stock?.valueScore ?? 0) ? `가치 점수 ${Number(stock.valueScore).toFixed(0)}점` : null,
-      Number.isFinite(Number(stock?.metrics?.debtRatio)) ? `부채비율 ${formatPercent(stock?.metrics?.debtRatio)}` : null,
-      Number.isFinite(Number(stock?.metrics?.roe)) ? `ROE ${formatPercent(stock?.metrics?.roe)}` : null,
+      Number.isFinite(Number(stock?.metrics?.debtRatio)) ? `부채비율 ${formatRatio(stock?.metrics?.debtRatio)}` : null,
+      Number.isFinite(Number(stock?.metrics?.roe)) ? `ROE ${formatRatio(stock?.metrics?.roe)}` : null,
       Number.isFinite(Number(stock?.metrics?.pbr)) ? `PBR ${Number(stock.metrics.pbr).toFixed(2)}배` : null,
     ],
     "장기 보유 관점에서 가격보다 구조를 먼저 보는 후보입니다."
@@ -250,7 +249,6 @@ export function buildStrategyCards(items) {
 
 export {
   formatPrice,
-  formatPercent,
   formatKrwCompact,
   getUpsideClass,
   formatUpsideDisplay,

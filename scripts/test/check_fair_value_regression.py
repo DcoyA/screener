@@ -1,15 +1,17 @@
 """CLAUDE.md 작업 규칙 9: 파이프라인 로직 변경 시 실제 API를 호출하지 않고
 기존 app/data/stocks.json을 입력 픽스처로 써서 검증한다.
 
-update_data.py의 실제 함수(percentile_stats/leave_one_out_stats와 상수)를
-그대로 import해서, 기존 stocks.json에 있는 실제 종목들의 per/sectorCode/
-closePrice 값으로 목표가 계산 로직만 다시 돌려본다. update_data.py의
-main()은 호출하지 않으므로 네트워크 요청이 전혀 발생하지 않는다.
+update_data.py의 실제 함수(compute_fair_value_band와 상수)를 그대로 import해서,
+기존 stocks.json에 있는 실제 종목들의 per/sectorCode/closePrice 값으로 적정가
+밴드 계산 로직만 다시 돌려본다. update_data.py의 main()은 호출하지 않으므로
+네트워크 요청이 전혀 발생하지 않는다.
 
 검증 항목:
-1. 재계산한 targetPrice가 closePrice와 정확히 같은 종목이 0건인가
-   (leave-one-out 수정 전에는 006730/041510/383220 등 41건이 있었다)
+1. status=='ok'인데 재계산한 targetPrice가 closePrice와 정확히 같은 종목이 0건인가
+   (leave-one-out/이상치 컷 이전에는 006730/041510/383220 등이 여기 걸렸다)
 2. fairValueStatus 분포를 출력한다
+3. 샘플 종목(006730 서부티엔디 / 383220 F&F / 073240 금호타이어 / 030200 케이티)의
+   status·targetPrice·closePrice·밴드를 출력해 현재가==적정가 케이스가 0건임을 증명한다
 """
 
 import json
@@ -35,9 +37,20 @@ import update_data as ud  # noqa: E402  (환경변수 설정 이후에 import해
 
 STOCKS_PATH = ROOT / "app" / "data" / "stocks.json"
 
+SAMPLE_CODES = {
+    "006730": "서부티엔디",
+    "383220": "F&F",
+    "073240": "금호타이어",
+    "030200": "케이티",
+}
 
-def recompute_target_prices(stocks):
-    """update_data.py의 FAIR VALUE V2 루프를 그대로 재현한다(main() 미호출)."""
+
+def recompute(stocks):
+    """update_data.py의 FAIR VALUE V2 루프를 그대로 재현한다(main() 미호출).
+
+    population 통계(sector_per_buckets/market_per_values)만 여기서 만들고,
+    종목별 계산은 프로덕션과 동일한 compute_fair_value_band()에 위임한다.
+    """
     sector_per_buckets = {}
     market_per_values = []
     for s in stocks:
@@ -51,72 +64,82 @@ def recompute_target_prices(stocks):
     results = []
     for s in stocks:
         metrics = s.get("metrics", {})
-        per_value = metrics.get("per")
-        close_price = metrics.get("closePrice") or 0
-        sector_code = s.get("sectorCode")
-
-        if not per_value or per_value <= 0 or not close_price:
-            results.append({"code": s["code"], "status": "negative_earnings", "targetPrice": None})
-            continue
-        if per_value > ud.MAX_PLAUSIBLE_PER:
-            results.append({"code": s["code"], "status": "outlier_rejected", "targetPrice": None})
-            continue
-
-        fair_value_status = None if sector_code else "sector_unmapped"
-        sector_bucket = sector_per_buckets.get(sector_code, []) if sector_code else []
-        loo_sector_stats = ud.leave_one_out_stats(sector_bucket, per_value) if sector_code else None
-        loo_market_stats = ud.leave_one_out_stats(market_per_values, per_value)
-
-        if loo_sector_stats and loo_sector_stats["n"] >= ud.MIN_SECTOR_SAMPLE:
-            stats, lam = loo_sector_stats, ud.REGRESSION_LAMBDA_FULL
-        elif loo_sector_stats and loo_sector_stats["n"] >= ud.MIN_LOO_SECTOR_SAMPLE:
-            stats, lam = loo_sector_stats, ud.REGRESSION_LAMBDA_LOW
-        elif loo_market_stats and loo_market_stats["n"] >= ud.MIN_LOO_MARKET_SAMPLE:
-            stats, lam = loo_market_stats, ud.REGRESSION_LAMBDA_LOW
-        else:
-            results.append({"code": s["code"], "status": "insufficient_data", "targetPrice": None})
-            continue
-
-        target_per_mid = per_value + lam * (stats["p50"] - per_value)
-        target_price_mid = int(close_price * (target_per_mid / per_value))
-
-        if s.get("holdingDiscount"):
-            target_price_mid = int(target_price_mid * (1 - ud.HOLDING_DISCOUNT_RATE))
-
-        results.append({
-            "code": s["code"],
-            "status": fair_value_status,
-            "targetPrice": target_price_mid,
-            "closePrice": close_price,
-        })
-
+        fv = ud.compute_fair_value_band(
+            metrics.get("per"),
+            metrics.get("closePrice") or 0,
+            s.get("sectorCode"),
+            sector_per_buckets,
+            market_per_values,
+            bool(s.get("holdingDiscount")),
+        )
+        results.append(
+            {
+                "code": s["code"],
+                "name": s.get("name", ""),
+                "closePrice": metrics.get("closePrice") or 0,
+                **fv,
+            }
+        )
     return results
 
 
 def main():
     stocks = json.loads(STOCKS_PATH.read_text(encoding="utf-8"))
-    results = recompute_target_prices(stocks)
-
-    fallback_matches = [
-        r for r in results
-        if r["targetPrice"] is not None and r["targetPrice"] == r.get("closePrice")
-    ]
+    results = recompute(stocks)
+    by_code = {r["code"]: r for r in results}
 
     status_counts = {}
     for r in results:
-        key = r["status"] or "ok"
-        status_counts[key] = status_counts.get(key, 0) + 1
+        status_counts[r["status"]] = status_counts.get(r["status"], 0) + 1
 
     print(f"[검증] 전체 {len(results)}종목")
     print(f"[검증] fairValueStatus 분포: {status_counts}")
 
-    if fallback_matches:
-        print(f"[검증] targetPrice == closePrice 종목 {len(fallback_matches)}건 발견:")
-        for r in fallback_matches[:10]:
-            print(f"  - {r['code']}: targetPrice={r['targetPrice']}")
+    # status가 ok인데 목표가(mid)가 현재가와 정확히 같으면 fallback 아티팩트.
+    ok_fallback = [
+        r
+        for r in results
+        if r["status"] == ud.FAIR_VALUE_STATUS_OK
+        and r["targetPrice"] is not None
+        and r["targetPrice"] == r["closePrice"]
+    ]
+
+    print("[검증] 샘플 종목 재계산 결과:")
+    for code, label in SAMPLE_CODES.items():
+        r = by_code.get(code)
+        if not r:
+            print(f"  - {code} {label}: stocks.json 상위 유니버스에 없음(스킵)")
+            continue
+        band = (
+            f"{r['targetPriceConservative']}~{r['targetPriceOptimistic']}"
+            if r["targetPrice"] is not None
+            else "-"
+        )
+        eq = " (현재가==적정가!)" if r["targetPrice"] == r["closePrice"] and r["targetPrice"] is not None else ""
+        print(
+            f"  - {code} {label}: status={r['status']} "
+            f"close={r['closePrice']} target={r['targetPrice']} band={band} "
+            f"upside={r['upside']}{eq}"
+        )
+
+    sample_eq = [
+        code
+        for code in SAMPLE_CODES
+        if by_code.get(code)
+        and by_code[code]["targetPrice"] is not None
+        and by_code[code]["targetPrice"] == by_code[code]["closePrice"]
+    ]
+
+    if ok_fallback or sample_eq:
+        if ok_fallback:
+            print(f"[검증] 실패: status=ok인데 targetPrice==closePrice인 종목 {len(ok_fallback)}건")
+            for r in ok_fallback[:10]:
+                print(f"  - {r['code']} {r['name']}: targetPrice={r['targetPrice']}")
+        if sample_eq:
+            print(f"[검증] 실패: 샘플 종목 중 현재가==적정가 {sample_eq}")
         sys.exit(1)
 
-    print("[검증] targetPrice == closePrice 종목 0건 - 통과")
+    print("[검증] 통과: 샘플 4종목 및 전체에서 현재가==적정가(status=ok) 케이스 0건")
 
 
 if __name__ == "__main__":
