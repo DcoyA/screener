@@ -6,14 +6,16 @@ import MembershipHeroSection from "./MembershipHeroSection";
 import HomeBoardSection from "./HomeBoardSection";
 import HeroSection from "./HeroSection";
 import StrategySection from "./StrategySection";
+import PerformanceSummaryCard from "./PerformanceSummaryCard";
 import { buildStrategyCards } from "../../lib/homeData";
 
 // 기획서 홈: 5개 섹션.
-// 1) 멤버십 히어로  2) 데일리 Top10 + 내 관심종목 2열 보드
-// 3) 종목검색 바(HeroSection 재사용)  4) 오늘의 투자전략(StrategySection 재사용)
-// 5) 하단 물결 장식
+// ① 멤버십 히어로(WAITLIST 폼 흡수)  ② 데일리 Top10 + 내 관심종목 2열 보드
+// ③ 종목검색 바(HeroSection 재사용)  ④ 오늘의 투자전략(StrategySection 재사용)
+// ⑤ 우리 성적표 요약(PerformanceSummaryCard)
+// 하단 물결은 <main> 밖 장식이라 섹션 수에 안 들어간다(SVG 1개, 루비 톤).
 // stocks = stocks.json(빌드 스냅샷) 하나만. /performance·/screener와 숫자 일치.
-export default function HomeClient({ stocks }) {
+export default function HomeClient({ stocks, performanceSummary }) {
   const strategyCards = useMemo(() => buildStrategyCards(stocks), [stocks]);
   const updatedAt = stocks[0]?.updatedAt || "-";
 
@@ -29,6 +31,8 @@ export default function HomeClient({ stocks }) {
         <HeroSection updatedAt={updatedAt} stocks={stocks} />
 
         <StrategySection strategyCards={strategyCards} />
+
+        <PerformanceSummaryCard performanceSummary={performanceSummary} />
       </main>
 
       <div className="homeWave" aria-hidden="true">
@@ -48,7 +52,10 @@ export default function HomeClient({ stocks }) {
       <footer className="footer">
         <div className="footerInner">
           <p>HELLO MEDIA · All rights reserved.</p>
-          <a href="mailto:iamborghini5757@gmail.com">iamborghini5757@gmail.com</a>
+          <div className="footerLinks">
+            <a href="/notice">이용가이드</a>
+            <a href="mailto:iamborghini5757@gmail.com">iamborghini5757@gmail.com</a>
+          </div>
         </div>
       </footer>
 
@@ -309,6 +316,11 @@ export default function HomeClient({ stocks }) {
         }
         .footerInner p {
           margin: 0;
+        }
+        .footerLinks {
+          display: flex;
+          gap: 18px;
+          flex-wrap: wrap;
         }
         .footerInner a {
           color: var(--ink-900);
