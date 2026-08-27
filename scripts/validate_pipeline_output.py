@@ -199,7 +199,20 @@ def check_fair_value_null(stocks):
     eligible = [s for s in stocks if _fair_value_status(s) != "negative_earnings"]
     excluded = len(stocks) - len(eligible)
     total = len(eligible)
-    null_count = sum(1 for s in eligible if s.get("metrics", {}).get("targetPrice") is None)
+
+    # 실질 결측 = targetPrice가 None인 경우 + targetPrice == closePrice인 경우.
+    # 후자는 update_data.py가 고쳐지면 None으로 바뀌지만(VERIFY-2026-08.md F-1),
+    # 예전 산출물/회귀에 대비해 게이트에서도 결측으로 센다. 클라이언트도
+    # closePrice == targetPrice를 "산출 보류"로 표시하므로 사용자 체감과도 일치.
+    def _is_null(s):
+        m = s.get("metrics", {})
+        tp = m.get("targetPrice")
+        if tp is None:
+            return True
+        cp = m.get("closePrice")
+        return cp is not None and tp == cp
+
+    null_count = sum(1 for s in eligible if _is_null(s))
     ratio = null_count / total if total else 0
     warn_thr = _threshold("fair_value_null_ratio", "warn")
     block_thr = _threshold("fair_value_null_ratio", "block")

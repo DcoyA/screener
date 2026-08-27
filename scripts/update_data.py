@@ -359,6 +359,23 @@ def compute_fair_value_band(
             ),
         }
 
+    # 모델 중앙 적정가가 현재가와 정확히 같으면 상승여력 신호가 없다(0%, 방향성
+    # 없음). leave-one-out으로 자기수렴은 막았지만, 종목 PER이 섹터 중앙과 거의
+    # 같거나 반올림이 겹치면 여전히 target_price_mid == close_price가 나온다.
+    # 이 경우 숫자를 status=ok로 남기면 (1) 클라이언트 getFairValueStatus가
+    # closePrice==targetPrice를 "산출 보류"로 잘못 라벨하고 (2) 품질 게이트
+    # (targetPrice is None 기준)가 이 결측을 못 센다. 명시적으로 사유를 기록한다.
+    # (VERIFY-2026-08.md F-1)
+    if target_price_mid == close_price:
+        return {
+            **none_band,
+            "status": FAIR_VALUE_STATUS_INSUFFICIENT,
+            "meta": _fair_value_meta(
+                sector_code, meta_tier, meta_size, meta_lam, meta_median,
+                FAIR_VALUE_STATUS_INSUFFICIENT,
+            ),
+        }
+
     upside_raw = (target_price_mid - close_price) / close_price * 100
     return {
         "targetPrice": target_price_mid,
