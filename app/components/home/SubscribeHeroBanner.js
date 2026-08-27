@@ -1,6 +1,6 @@
 export default function SubscribeHeroBanner({ openModal }) {
   return (
-    <section className="subscribeHeroBanner">
+    <section className="subscribeHeroBanner rubySurface">
       <p className="subscribeHeroEyebrow">PREMIUM MVP WAITLIST</p>
       <h1>주간 프리미엄 리포트 사전등록</h1>
       <p className="subscribeHeroDesc">
@@ -8,16 +8,15 @@ export default function SubscribeHeroBanner({ openModal }) {
         <br />
         확정 수익률이 아니라 단기/중기/장기 시나리오와 체크 포인트를 제공하는 구조입니다.
       </p>
-      <button type="button" className="subscribeHeroBtn" onClick={openModal}>
+      <button type="button" className="subscribeHeroBtn rubyCta" onClick={openModal}>
         구독하기
       </button>
 
       <style jsx>{`
+        /* 배경(펄 레이어)·글자색은 전역 .rubySurface가 담당한다. */
         .subscribeHeroBanner {
-          background: var(--color-primary-dark);
           border-radius: var(--radius-card);
           padding: 40px 32px;
-          color: #ffffff;
         }
         .subscribeHeroEyebrow {
           display: inline-flex;
@@ -42,19 +41,13 @@ export default function SubscribeHeroBanner({ openModal }) {
           color: rgba(255, 255, 255, 0.75);
           line-height: 1.8;
         }
+        /* 색/펄 테두리/hover는 전역 .rubyCta가 담당한다. 여기선 레이아웃만. */
         .subscribeHeroBtn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border: none;
-          border-radius: var(--radius-pill);
           padding: 16px 32px;
-          font-weight: 800;
           font-size: 1.02rem;
-          /* "화면당 오렌지 1개" - 상단 네비 CTA(navSubscribeCta)가 이미
-             --color-accent를 쓰고 있어서 여기선 primary로 뺀다. */
-          background: var(--color-primary);
-          color: #ffffff;
           cursor: pointer;
         }
         @media (max-width: 640px) {

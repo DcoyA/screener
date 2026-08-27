@@ -1,11 +1,39 @@
 :root {
-  /* 디자인 토큰 - CLEO 레퍼런스 기준(고채도 인디고 + 순백 + 오렌지 포인트).
-     신규/재구성 화면은 하드코딩 헥스 대신 이 값들을 재사용한다 */
-  --color-primary: #4b3fff;
-  --color-primary-dark: #1b1140;
-  --color-accent: #ff7a1a;
+  /* 디자인 토큰 - 딥 루비 브랜드(기획서 크림슨 헤더에 맞춤).
+     신규/재구성 화면은 하드코딩 헥스 대신 이 값들을 재사용한다.
+
+     ⚠ 한국 시장에서 빨강은 "상승" 신호색이다. 브랜드 빨강과 신호 빨강을
+     명도로 분리한다:
+       - 브랜드   = 어둡고 깊은 저명도 루비 (--ruby-700 기본, 헤더/로고/CTA)
+       - 상승 신호 = 밝고 선명한 고채도 레드 (--signal-up, 숫자에만)
+       - 하락 신호 = 파랑 (--signal-down, 숫자에만) */
+  --ruby-950: #2b0308;
+  --ruby-900: #4a0714;
+  --ruby-800: #6b0a1d;
+  --ruby-700: #7a0c1f; /* 브랜드 기본 */
+  --ruby-600: #96122a;
+  --ruby-500: #b01b38;
+  --ruby-300: #e08a9b;
+  --ruby-100: #f7e4e8;
+  --ruby-50: #fdf7f8;
+  --pearl-warm: #ffe9d6;
+  --pearl-cool: #e7d9f0;
+
+  /* 신호색 - "숫자에만" 쓴다. 본문/라벨 색으로 쓰지 말 것. */
+  --signal-up: #e5334a;
+  --signal-down: #2563eb;
+  --signal-flat: #6b7280;
+
+  /* 본문 텍스트 - 흰 배경 위 ruby-500은 대비비가 낮아 본문에 쓰지 않는다.
+     본문은 --ink-900, 보조 텍스트는 --ink-600. */
+  --ink-900: #1a1013;
+  --ink-600: #6b5a5e;
+  --ink-300: #d8cccf;
+
+  --color-primary: var(--ruby-700);
+  --color-primary-dark: var(--ruby-950);
   --color-bg: #ffffff;
-  --color-surface-tint: #f1effe;
+  --color-surface-tint: var(--ruby-100);
   --color-card-bg: #ffffff;
   --color-score-good: #22c55e;
   --color-score-mid: #f59e0b;
@@ -32,15 +60,313 @@
   --line-tight: 1.15;
   --line-normal: 1.6;
 
-  /* 섹션별 배경색 - 최상위 라우트 <main>에 적용. 사용자가 색만 보고 위치를 안다 */
-  --bg-home: #f7f5fc;
-  --bg-screen: #eef6ff;
-  --bg-perf: #eafff4;
-  --bg-report: #fff4ec;
-  --bg-me: #f5f3ff;
+  /* 라우트 배경은 전부 하나로 통일한다(거의 흰색인 웜 뉴트럴).
+     라우트 구분은 배경이 아니라 액센트(--accent-*)로 옮긴다.
+     --bg-* 변수명은 유지 - 이걸 참조하는 컴포넌트를 안 건드리기 위함. */
+  --page-bg: #FDF7F8;
+  --bg-home: var(--page-bg);
+  --bg-screen: var(--page-bg);
+  --bg-perf: var(--page-bg);
+  --bg-report: var(--page-bg);
+  --bg-me: var(--page-bg);
 
-  --shadow-card: 0 2px 12px rgba(108, 79, 224, 0.06);
-  --shadow-lift: 0 8px 24px rgba(108, 79, 224, 0.12);
+  /* 라우트 구분용 액센트. eyebrow / 섹션 제목 밑줄 / 활성 네비 인디케이터에만
+     쓴다(적용은 별도 작업). primary/accent 브랜드 색과는 별개 토큰이다. */
+  --accent-home: #7A0C1F;
+  --accent-screen: #8A2233;
+  --accent-search: #8A2233;
+  --accent-perf: #A3324A;
+  --accent-report: #5E1220;
+  --accent-paper: #6B0A1D;
+  --accent-me: #3F0A15;
+
+  /* 루비 rgb(122,12,31) 기준 그림자 */
+  --shadow-card: 0 2px 12px rgba(122, 12, 31, 0.06);
+  --shadow-lift: 0 8px 24px rgba(122, 12, 31, 0.12);
+}
+
+/* ── 루비 표면 유틸 ─────────────────────────────────────────────
+   펄(진주) 효과는 단색이 아니라 레이어로 낸다. 상시 반짝임 금지 -
+   정적 레이어 + 호버 시에만 반응. */
+.rubySurface {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #ffffff;
+  background:
+    radial-gradient(120% 80% at 20% -10%, rgba(255, 233, 214, 0.22), transparent 60%),
+    radial-gradient(100% 90% at 85% 115%, rgba(0, 0, 0, 0.45), transparent 55%),
+    linear-gradient(158deg, var(--ruby-800), var(--ruby-700) 45%, var(--ruby-950));
+}
+/* 대각선 펄 시트 1줄. opacity 0.10 절대 초과 금지. */
+.rubySurface::before {
+  content: "";
+  position: absolute;
+  inset: -20% -40%;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(120deg, transparent 42%, var(--pearl-warm) 50%, transparent 58%);
+  opacity: 0.1;
+  transition: transform 0.6s ease;
+}
+/* feTurbulence 노이즈. */
+.rubySurface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.rubySurface:hover::before {
+  transform: translateX(6%);
+}
+
+/* 구독 CTA. border-box 그라디언트로 펄 림을 준다. */
+.rubyCta {
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(var(--ruby-700), var(--ruby-900)) padding-box,
+    linear-gradient(120deg, var(--pearl-warm), #ffffff, var(--pearl-cool), var(--pearl-warm)) border-box;
+  color: #ffffff;
+  font-weight: 800;
+  transition: filter 0.18s ease, transform 0.18s ease;
+}
+.rubyCta:hover {
+  filter: brightness(1.06);
+}
+.rubyCta:active {
+  transform: translateY(1px);
+}
+
+/* 금융 서비스라 상시 모션 금지 - 모션 축소 설정이면 전이/이동을 끈다. */
+@media (prefers-reduced-motion: reduce) {
+  .rubySurface::before,
+  .rubyCta,
+  .mainNavPill,
+  .mainNavAvatar {
+    transition: none;
+  }
+  .rubySurface:hover::before {
+    transform: none;
+  }
+  .rubyCta:active {
+    transform: none;
+  }
+}
+
+/* ── 사이트 헤더 + 메인 네비 ─────────────────────────────────────
+   SiteHeader.js(로고 좌 / MainNav 우) + MainNav.js. 항상 .rubySurface 위. */
+.siteHeader {
+  position: relative;
+  max-width: 1180px;
+  margin: 12px auto 24px;
+  border-radius: var(--radius-card);
+  padding: 12px 16px;
+}
+.siteHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.siteBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: #ffffff;
+  font-weight: 900;
+}
+.siteBrandLogo {
+  border-radius: 6px;
+  background: #ffffff;
+}
+.siteBrandName {
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.mainNav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.mainNavRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mainNavRow::-webkit-scrollbar {
+  display: none;
+}
+.mainNavPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.86rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.mainNavPill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+/* 활성 라우트는 흰 배경 위 --nav-accent(라우트별 --accent-*)로 표시한다.
+   페이지 배경색은 건드리지 않는다(STEP 3 원칙). */
+.mainNavPill.active {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--nav-accent, var(--ruby-700));
+}
+/* 기획서 목업의 그룹 구분선(┃). 데스크톱 행에서만 보인다. */
+.mainNavDivider {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  min-height: 22px;
+  margin: 0 2px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.mainNavSheet .mainNavDivider {
+  display: none;
+}
+.mainNavAvatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.mainNavAvatar:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.mainNavAvatar.active {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--nav-accent, var(--ruby-700));
+}
+.mainNavCta {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+.mainNavAuth {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mainNavToggle {
+  display: none;
+}
+
+/* 7항목 + CTA + 로그인이 한 줄에 안 들어가는 폭에서는 햄버거로 전환한다. */
+@media (max-width: 1120px) {
+  .mainNavRow {
+    display: none;
+  }
+  .mainNavToggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #ffffff;
+    cursor: pointer;
+  }
+  .mainNavScrim {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(0, 0, 0, 0.4);
+    border: 0;
+    padding: 0;
+    cursor: default;
+  }
+  .mainNavSheet {
+    position: fixed;
+    top: 78px;
+    left: 12px;
+    right: 12px;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 16px;
+    background: var(--ruby-950);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
+  }
+  .mainNavSheet .mainNavPill,
+  .mainNavSheet .mainNavCta {
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 44px;
+    border-radius: 10px;
+  }
+  .mainNavSheetAuth {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+  }
+}
+
+@media (max-width: 768px) {
+  .siteHeader {
+    margin: 10px auto 18px;
+    padding: 10px 12px;
+  }
+  .siteHeaderInner {
+    gap: 8px;
+  }
+  .mainNavSheet {
+    top: 72px;
+  }
+}
+
+@media (max-width: 400px) {
+  .siteBrandName {
+    display: none;
+  }
 }
 
 * {
@@ -85,8 +411,8 @@ a {
   margin: 0;
   padding: 8px 12px;
   border-radius: 999px;
-  background: #e0e7ff;
-  color: #3730a3;
+  background: var(--ruby-100);
+  color: var(--ruby-700);
   font-size: 13px;
   font-weight: 700;
 }
@@ -188,8 +514,8 @@ h1 {
   margin: 0 0 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: var(--ruby-100);
+  color: var(--ruby-700);
   font-size: 12px;
   font-weight: 700;
 }

@@ -181,20 +181,16 @@ function LockedReportView({ report }) {
           <br />
           아직이라면 아래에서 구독 신청할 수 있어요.
         </p>
+        {/* 색/펄 테두리는 전역 .rubyCta(app/globals.css)가 담당한다. */}
         <Link
           href="/reports"
+          className="rubyCta"
           style={{
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
             height: 48,
             padding: "0 24px",
-            borderRadius: "var(--radius-button)",
-            // "화면당 오렌지 1개" - PageTopBar의 MainNav가 이미 상시 CTA로
-            // --color-accent를 쓰고 있어서 여기선 primary로 뺀다.
-            background: "var(--color-primary)",
-            color: "#fff",
-            fontWeight: 800,
             textDecoration: "none",
           }}
         >
