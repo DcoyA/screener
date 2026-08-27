@@ -385,9 +385,6 @@ export default function NoticePage() {
             <button type="button" className="ghostBtn buttonLike" onClick={openModal}>프리미엄 이메일</button>
           </div>
         </div>
-        <div className="heroImageCol">
-          <img src="/main001.png" alt="메인 화면" className="realImage" />
-        </div>
       </section>
 
       <section className="summarySection">
@@ -560,7 +557,7 @@ export default function NoticePage() {
         <div className="ctaCard">
           <h2>이제 바로 시작해보세요</h2>
           <div className="ctaButtons">
-            <Link href="/screener?tab=ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "#0f172a", color: "#fff" }}>
+            <Link href="/screener?tab=ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "var(--ruby-900)", color: "#fff" }}>
               랭킹 보러 가기
             </Link>
             <Link href="/screener?tab=risk" className="primaryBtn">리스크</Link>
@@ -650,14 +647,14 @@ export default function NoticePage() {
         }
         .homeBtn,
         .primaryBtn {
-          border: 1px solid #0f172a;
-          background: #0f172a;
+          border: 1px solid var(--gold-500);
+          background: var(--ruby-900);
           color: #fff;
         }
         .ghostBtn {
-          border: 1px solid #dbe3f0;
+          border: 1px solid var(--gold-500);
           background: #fff;
-          color: #0f172a;
+          color: var(--ruby-700);
         }
         .heroCard,
         .summaryCard,
@@ -667,34 +664,15 @@ export default function NoticePage() {
         .ctaCard {
           border: 1px solid #e5e7eb;
           border-radius: 28px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          background: linear-gradient(180deg, #ffffff 0%, var(--ruby-50) 100%);
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06);
         }
         .heroCard {
-          display: grid;
-          grid-template-columns: minmax(0, 1.35fr) minmax(280px, 380px);
-          gap: 20px;
-          align-items: center;
           padding: 28px;
           margin-bottom: 28px;
         }
         .heroText {
           min-width: 0;
-        }
-        .heroImageCol {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-width: 0;
-        }
-        .realImage {
-          width: 100%;
-          max-width: 360px;
-          max-height: 440px;
-          height: auto;
-          display: block;
-          object-fit: contain;
-          border-radius: 22px;
         }
         .badge,
         .sectionEyebrow,
@@ -716,7 +694,7 @@ export default function NoticePage() {
           color: var(--ruby-700);
         }
         .stepTag {
-          background: #0f172a;
+          background: var(--ruby-900);
           color: #fff;
           margin-bottom: 10px;
         }
@@ -853,7 +831,7 @@ export default function NoticePage() {
         .bottomLine {
           border-radius: 16px;
           padding: 14px 16px;
-          background: #0f172a;
+          background: var(--ruby-950);
           color: #fff;
           font-weight: 800;
           line-height: 1.65;
@@ -949,7 +927,7 @@ export default function NoticePage() {
           width: min(560px, 100%);
           border: 1px solid #e5e7eb;
           border-radius: 28px;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          background: linear-gradient(180deg, #ffffff 0%, var(--ruby-50) 100%);
           box-shadow: 0 30px 70px rgba(15, 23, 42, 0.22);
           padding: 28px;
         }
@@ -960,7 +938,7 @@ export default function NoticePage() {
           width: 40px;
           height: 40px;
           border-radius: 999px;
-          border: 1px solid #dbe3f0;
+          border: 1px solid var(--ink-300);
           background: #fff;
           color: #0f172a;
           font-size: 1.5rem;
@@ -975,7 +953,7 @@ export default function NoticePage() {
           width: 100%;
           height: 52px;
           border-radius: 14px;
-          border: 1px solid #dbe3f0;
+          border: 1px solid var(--ink-300);
           background: #fff;
           color: #0f172a;
           padding: 0 16px;
@@ -1008,12 +986,6 @@ export default function NoticePage() {
           .imageGrid.twoCol,
           .exampleGrid {
             grid-template-columns: 1fr;
-          }
-          .heroImageCol {
-            justify-content: center;
-          }
-          .realImage {
-            max-width: 100%;
           }
           .imageGrid {
             grid-template-columns: 1fr;

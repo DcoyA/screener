@@ -543,9 +543,9 @@ h1 {
 }
 
 .primaryBtn {
-  background: #111827;
+  background: var(--ruby-900);
   color: #ffffff;
-  border-color: #111827;
+  border-color: var(--gold-500);
 }
 
 .secondaryBtn,
@@ -622,7 +622,7 @@ h1 {
   text-align: center;
   padding: 10px 14px;
   border-radius: 12px;
-  background: #111827;
+  background: var(--ruby-900);
   color: #ffffff;
   font-weight: 700;
 }
@@ -774,7 +774,7 @@ h1 {
 .reportDate {
   padding: 10px 14px;
   border-radius: 12px;
-  background: #111827;
+  background: var(--ruby-900);
   color: #ffffff;
   font-weight: 700;
 }
