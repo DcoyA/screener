@@ -25,9 +25,11 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python deps
+        id: deps_py
         run: pip install -r scripts/premium/requirements-premium.txt
 
       - name: Collect flow signals
+        id: collect_flow
         # 고정 300초 × 3회 대신 계단식 백오프(60/300/1200초 + 지터). 멱등성 가드가
         # 있어(FORCE 미설정 시 오늘자 있으면 exit 0) 전체 재실행이 안전하다.
         run: bash scripts/ci/retry-with-backoff.sh python scripts/premium/collect_flow_signals.py
@@ -40,6 +42,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Collect disclosures
+        id: collect_disc
         run: bash scripts/ci/retry-with-backoff.sh python scripts/premium/collect_disclosures.py
         env:
           RETRY_DELAYS: "60 300 1200"
@@ -56,9 +59,11 @@ jobs:
           cache-dependency-path: 'scripts/premium/package-lock.json'
 
       - name: Install Node deps
+        id: deps_node
         run: npm ci --prefix scripts/premium
 
       - name: Scan market issues
+        id: scan
         run: node scripts/premium/scan_market_issues.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -66,6 +71,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Generate topic candidates
+        id: gen_topics
         run: node scripts/premium/generate-topic-candidates.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -73,6 +79,7 @@ jobs:
           FORCE_DAY_TYPE: ${{ inputs.force_day_type }}
 
       - name: Notify editor via Slack
+        id: notify_editor
         run: node scripts/premium/notify-editor.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -87,4 +94,15 @@ jobs:
           status: failure
           job_name: ${{ github.workflow }}
           retry_workflow: premium-data-collect.yml
+          # continue-on-error가 없어 첫 실패에서 잡이 멈추므로 outcome=='failure'인
+          # 스텝은 정확히 하나다. 위에서부터 처음 걸리는 스텝 이름을 실어 보낸다.
+          failed_step: >-
+            ${{ steps.deps_py.outcome == 'failure' && 'Install Python deps'
+             || steps.collect_flow.outcome == 'failure' && 'Collect flow signals'
+             || steps.collect_disc.outcome == 'failure' && 'Collect disclosures'
+             || steps.deps_node.outcome == 'failure' && 'Install Node deps'
+             || steps.scan.outcome == 'failure' && 'Scan market issues'
+             || steps.gen_topics.outcome == 'failure' && 'Generate topic candidates'
+             || steps.notify_editor.outcome == 'failure' && 'Notify editor via Slack'
+             || 'unknown' }}
 
