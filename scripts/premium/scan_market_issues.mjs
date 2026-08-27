@@ -125,7 +125,36 @@ ${snippetText}`;
   }
 }
 
+// 멱등성 가드(STEP 9): market_issues에 오늘(issue_date) 행이 이미 있으면 True.
+// market_issues는 plain insert라 재실행 시 중복이 쌓인다. 조회 실패 시 fail-open.
+async function alreadyScannedToday(today) {
+  try {
+    const { data, error } = await supabase
+      .from("market_issues")
+      .select("id")
+      .eq("issue_date", today)
+      .limit(1);
+    if (error) {
+      console.warn(`[멱등성] market_issues 오늘자 확인 실패, 계속 진행: ${error.message}`);
+      return false;
+    }
+    return Array.isArray(data) && data.length > 0;
+  } catch (e) {
+    console.warn(`[멱등성] market_issues 오늘자 확인 예외, 계속 진행: ${e.message}`);
+    return false;
+  }
+}
+
 async function main() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // collect 워크플로를 실패 지점부터 재실행해도 이미 끝난 이 단계는 건너뛴다.
+  // FORCE=1이면 무시하고 강제 재수집(구글 뉴스 스크랩 + LLM 호출까지 다시 돈다).
+  if (process.env.FORCE !== "1" && (await alreadyScannedToday(today))) {
+    console.log(`[멱등성] market_issues에 오늘(${today}) 데이터가 이미 있어 스킵합니다 (강제 재수집: FORCE=1)`);
+    return;
+  }
+
   let allSnippets = [];
   for (const keyword of SEARCH_KEYWORDS) {
     const items = await searchGoogleNews(keyword);
@@ -147,7 +176,6 @@ async function main() {
     return;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
   const rows = issues.map((issue) => ({
     issue_date: today,
     category: issue.category,

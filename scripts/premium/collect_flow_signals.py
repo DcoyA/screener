@@ -123,9 +123,26 @@ def compute_short_balance_change(code, target_date):
     return round((latest_balance - prev_balance) / prev_balance * 100, 2)
 
 
+def already_collected_today(date_str):
+    """flow_signals에 오늘(KST) 날짜 행이 이미 있으면 True. (STEP 9 멱등성 가드)"""
+    try:
+        res = supabase.table("flow_signals").select("code").eq("date", date_str).limit(1).execute()
+        return bool(res.data)
+    except Exception as e:  # noqa: BLE001 - 가드 조회 실패 시 수집을 막지 않는다(fail-open)
+        print(f"[멱등성] 오늘자 확인 조회 실패, 수집을 계속합니다: {e}")
+        return False
+
+
 def main():
     target_date = kst_now()
     date_str = kst_today_str()
+
+    # 멱등성 가드: collect 워크플로를 실패 지점부터 재실행해도 이미 끝난 단계는
+    # 건너뛴다. FORCE=1이면 무시하고 강제 재수집(flow_signals는 code,date upsert라
+    # 재수집해도 중복은 안 생기고 값만 갱신된다).
+    if os.environ.get("FORCE") != "1" and already_collected_today(date_str):
+        print(f"[멱등성] flow_signals에 오늘({date_str}) 데이터가 이미 있어 스킵합니다 (강제 재수집: FORCE=1)")
+        sys.exit(0)
 
     ranked_codes = get_market_cap_ranked_codes(target_date)
     if not ranked_codes:

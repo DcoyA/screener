@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import time
 import zipfile
 import io
@@ -8,7 +9,11 @@ import urllib.parse
 import json
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
+from pathlib import Path
 from supabase import create_client
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.lib.kst import kst_now  # noqa: E402
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
@@ -106,7 +111,36 @@ def normalize_rcept_dt(raw_value):
     return f"{digits[:4]}-{digits[4:6]}-{digits[6:8]}"
 
 
+def already_collected_today():
+    """disclosure_events에 오늘(KST) 적재된 행이 있으면 True. (STEP 9 멱등성 가드)
+
+    disclosure_events는 disclosure_date(공시 자체 날짜, 최근 7일 범위)만 있고
+    "이번 실행에 넣었는지"를 나타내는 컬럼은 created_at 뿐이라 그걸로 판정한다.
+    created_at이 없으면(스키마 상이) 조회가 실패하므로 fail-open으로 수집을 계속한다.
+    """
+    today_midnight_kst = kst_now().strftime("%Y-%m-%dT00:00:00+09:00")
+    try:
+        res = (
+            supabase.table("disclosure_events")
+            .select("id")
+            .gte("created_at", today_midnight_kst)
+            .limit(1)
+            .execute()
+        )
+        return bool(res.data)
+    except Exception as e:  # noqa: BLE001 - fail-open
+        print(f"[멱등성] disclosure_events 오늘자 확인 실패(created_at 컬럼 부재 등), 수집을 계속합니다: {e}")
+        return False
+
+
 def main():
+    # 멱등성 가드(STEP 9): collect 재실행 시 이미 오늘 적재됐으면 스킵.
+    # disclosure_events는 plain insert라 재실행하면 중복이 쌓이므로 이 가드가 중요하다.
+    # FORCE=1이면 무시.
+    if os.environ.get("FORCE") != "1" and already_collected_today():
+        print("[멱등성] disclosure_events에 오늘 적재된 행이 있어 스킵합니다 (강제 재수집: FORCE=1)")
+        sys.exit(0)
+
     end_date = datetime.now()
     start_date = end_date - timedelta(days=7)
     end_str = end_date.strftime("%Y%m%d")
