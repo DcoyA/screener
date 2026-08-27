@@ -7,6 +7,7 @@
 // React 의존성 없음. scripts/test/check-quote-card-guards.mjs 가 픽스처로 검증한다.
 
 import { normalizeStockName } from "./stockName.js";
+import { formatKrwCompact } from "./formatMoney.js";
 
 function toNum(value) {
   if (value === null || value === undefined || value === "") return null;
@@ -108,12 +109,12 @@ export function formatVolume(value) {
   return `${Math.round(num).toLocaleString("ko-KR")}주`;
 }
 
+// 억원 단위 소수점 1자리는 공용 formatKrwCompact(app/lib/formatMoney.js)에 있다.
+// 이 카드는 결측을 "–"(en-dash)로 표기하므로 공용 함수의 "-" 만 매핑한다.
 export function formatMoney(value) {
-  const num = toNum(value);
-  if (num === null) return "–";
-  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
-  if (num >= 1_0000_0000) return `${Math.round(num / 1_0000_0000).toLocaleString("ko-KR")}억원`;
-  return `${Math.round(num).toLocaleString("ko-KR")}원`;
+  if (toNum(value) === null) return "–";
+  const s = formatKrwCompact(value);
+  return s === "-" ? "–" : s;
 }
 
 // ── 시세 조회 ────────────────────────────────────────────────

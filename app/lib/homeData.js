@@ -3,19 +3,12 @@
 import { formatUpsideDisplay, formatUpsideReasonPart } from "./formatUpside.js";
 import { isFairValueOk } from "./fairValue.js";
 import { formatDelta, formatRatio } from "./formatNumber.js";
+import { formatKrwCompact } from "./formatMoney.js";
 import { SLOT_SCORE_CUT } from "./scoreStats.js";
 
 function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
-  return `${num.toLocaleString("ko-KR")}원`;
-}
-
-function formatKrwCompact(value) {
-  const num = Number(value || 0);
-  if (!num) return "-";
-  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
-  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
   return `${num.toLocaleString("ko-KR")}원`;
 }
 

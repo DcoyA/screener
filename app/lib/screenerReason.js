@@ -9,14 +9,7 @@
 // 확장자 명시(.js): Next 번들러 + CI 회귀 검사(순수 Node ESM) 양쪽에서 import된다.
 import { formatDelta, formatRatio } from "./formatNumber.js";
 import { formatUpsideReasonPart } from "./formatUpside.js";
-
-function formatKrwCompact(value) {
-  const num = Number(value || 0);
-  if (!num) return "-";
-  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
-  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
-  return `${num.toLocaleString("ko-KR")}원`;
-}
+import { formatKrwCompact } from "./formatMoney.js";
 
 export function buildOneLineReason(stock, activeView) {
   const parts = [];

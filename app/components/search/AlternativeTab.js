@@ -6,15 +6,8 @@ import marketState from "../../data/market_state.json";
 import etfUniverse from "../../data/etf_universe.json";
 import { formatUpsidePercent } from "../../lib/formatUpside";
 import { formatDelta, formatRatio } from "../../lib/formatNumber";
+import { formatKrwCompact } from "../../lib/formatMoney";
 import { normalizeStockName } from "../../lib/stockName";
-
-function formatKrwCompact(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num) || num <= 0) return "-";
-  if (num >= 1_0000_0000_0000) return `${(num / 1_0000_0000_0000).toFixed(1)}조원`;
-  if (num >= 1_0000_0000) return `${(num / 1_0000_0000).toFixed(0)}억원`;
-  return `${num.toLocaleString("ko-KR")}원`;
-}
 
 function getStatusClass(status) {
   if (status === "유리") return "statusBadge good";
