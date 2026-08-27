@@ -3,6 +3,7 @@
 import { formatUpsideDisplay, formatUpsideReasonPart } from "./formatUpside.js";
 import { isFairValueOk } from "./fairValue.js";
 import { formatDelta, formatRatio } from "./formatNumber.js";
+import { SLOT_SCORE_CUT } from "./scoreStats.js";
 
 function formatPrice(value) {
   const num = Number(value || 0);
@@ -37,7 +38,6 @@ function formatTargetPriceBand(stock) {
   return formatPrice(stock?.metrics?.targetPrice);
 }
 
-const MIN_STRATEGY_SCORE = 40;
 const MIN_STRATEGY_LIQUIDITY = 10_0000_0000; // 10억원 (buildAvoidSummary의 저유동성 기준과 동일)
 // 문서 스펙은 "최근 20일 수익률"이지만, 파이프라인이 실제로 계산해 저장하는
 // 값은 5일 수익률(metrics.priceChangeRate)뿐이다(20일치 가격 히스토리 자체가
@@ -49,8 +49,10 @@ const SHORT_TERM_MOMENTUM_EXCLUDE_PCT = 50;
 // 전 슬롯 공통 하드 필터. 초보자 대상 화면에 부적격 종목이 올라가는 걸 막는
 // 최소 안전장치라 정렬 로직보다 먼저 적용한다.
 function passesHardFilter(stock) {
-  const score = Number(stock?.totalScore ?? 0);
-  if (score < MIN_STRATEGY_SCORE) return false;
+  // 공통 컷 = max(INCLUDED finalScore p70, 60). scoreStats.js에서 계산.
+  // 절대값 40은 전체 평균이 그보다 높은 모집단에서 아무도 못 걸렀다.
+  const finalScore = Number(stock?.finalPickMeta?.finalScore ?? 0);
+  if (finalScore < SLOT_SCORE_CUT) return false;
 
   // fairValue 결측/이상치(status !== 'ok')면 상승여력 기반 슬롯에서 제외한다.
   // 예전엔 targetPrice > 0 만 봤는데, 구 fallback으로 targetPrice에 현재가가
@@ -148,7 +150,7 @@ function buildAnnualReason(stock) {
   return buildReasonLine(
     [
       stock?.rankMeta?.topRankEligible ? "안정성 조건 통과" : null,
-      Number(stock?.totalScore ?? 0) ? `총점 ${Number(stock.totalScore).toFixed(0)}점` : null,
+      Number.isFinite(Number(stock?.finalPickMeta?.finalScore)) ? `종합 ${Math.round(Number(stock.finalPickMeta.finalScore))}점` : null,
       Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth)) ? `영업이익 성장 ${formatDelta(stock?.metrics?.operatingIncomeGrowth)}` : null,
       Number.isFinite(Number(stock?.metrics?.revenueGrowth)) ? `매출 성장 ${formatDelta(stock?.metrics?.revenueGrowth)}` : null,
     ],
@@ -219,7 +221,7 @@ export function buildStrategyCards(items) {
       title: "최근 거래가 몰린 종목",
       desc: "최근 흐름, 거래대금, 상승여력을 같이 봐서 지금 당장 반응 가능한 쪽을 고릅니다.",
       stock: shortTerm,
-      reason: shortTerm ? buildShortReason(shortTerm) : "단기 관점 후보가 아직 부족합니다.",
+      reason: shortTerm ? buildShortReason(shortTerm) : "오늘은 단기 관점 후보가 없습니다.",
       momentumWarning: shortTerm ? needsMomentumWarning(shortTerm) : false,
       actionLabel: "단기 흐름 더 보기",
       actionHref: "/screener?tab=ranking&view=short",
@@ -230,7 +232,7 @@ export function buildStrategyCards(items) {
       title: "올해 안에 다시 볼 종목",
       desc: "종합 점수, 실적 안정성, 성장 흐름을 묶어서 올해 안에 다시 볼 만한 종목을 고릅니다.",
       stock: annual,
-      reason: annual ? buildAnnualReason(annual) : "연간 관점 후보가 아직 부족합니다.",
+      reason: annual ? buildAnnualReason(annual) : "오늘은 연간 관점 후보가 없습니다.",
       actionLabel: "연간 투자 더 보기",
       actionHref: "/screener?tab=ranking&view=annual",
     },
@@ -240,7 +242,7 @@ export function buildStrategyCards(items) {
       title: "구조를 보고 담을 종목",
       desc: "저평가와 재무 안정성 기준으로, 당장보다 구조를 보고 들고 갈 만한 종목을 고릅니다.",
       stock: longTerm,
-      reason: longTerm ? buildLongReason(longTerm) : "장기 관점 후보가 아직 부족합니다.",
+      reason: longTerm ? buildLongReason(longTerm) : "오늘은 장기 관점 후보가 없습니다.",
       actionLabel: "장기 투자 더 보기",
       actionHref: "/screener?tab=ranking&view=long",
     },

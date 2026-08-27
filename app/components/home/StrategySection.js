@@ -1,25 +1,24 @@
 import Link from "next/link";
 import { cleanStockName } from "../../lib/stockName";
 import { getUnifiedGrade } from "../../lib/grade";
+import { formatScoreRank } from "../../lib/scoreStats";
 
-// TASK 4-1 블록②. 문서 스펙: "카드 내용 = 종목명 / 한 줄 결론 / 등급 배지 /
-// 비교 기준 1개 - 지금처럼 지표 5개를 다 넣지 않는다." 예전 카드는 가격·
-// 적정가밴드·상승여력·근거박스·요약까지 다 넣고 있었어서 통째로 줄였다.
-// "한 줄 결론"은 app/lib/grade.js의 등급별 설명(이미 한 문장)을 그대로
-// 쓰고, "비교 기준 1개"는 market_state.json의 전체 평균 총점 대비로 만든다
-// (없는 지표를 새로 만들지 않고 이미 계산되어 있는 값만 쓴다).
-function buildCompareLine(stock, avgTotalScore) {
-  const score = Number(stock?.finalPickMeta?.finalScore ?? stock?.totalScore);
-  const avg = Number(avgTotalScore);
-  if (!Number.isFinite(score) || !Number.isFinite(avg)) return null;
-  const diff = score - avg;
-  if (Math.abs(diff) < 0.5) return `총점 ${Math.round(score)}점, 전체 평균이랑 비슷해요`;
-  return diff > 0
-    ? `총점 ${Math.round(score)}점, 전체 평균(${Math.round(avg)}점)보다 높아요`
-    : `총점 ${Math.round(score)}점, 전체 평균(${Math.round(avg)}점)보다 낮아요`;
+// 카드의 "비교 기준 1개"는 종합판단점수 + 전 종목 백분위(scoreStats).
+// 예전엔 market_state.json의 avgTotalScore(≈ 상위 30 평균 74)를 "전체 평균"이라
+// 부르며 비교해서, 전체 상위권인 62점 종목이 "평균보다 낮아요"로 찍혔다 - 그 버그.
+const SLOT_EMPTY_TEXT = {
+  short: "오늘은 단기 관점 후보가 없습니다.",
+  annual: "오늘은 연간 관점 후보가 없습니다.",
+  long: "오늘은 장기 관점 후보가 없습니다.",
+};
+
+function buildCompareLine(stock) {
+  const score = Number(stock?.finalPickMeta?.finalScore);
+  if (!Number.isFinite(score)) return null;
+  return `종합판단점수 ${formatScoreRank(score)}`;
 }
 
-export default function StrategySection({ strategyCards, avgTotalScore }) {
+export default function StrategySection({ strategyCards }) {
   return (
     <section className="strategySection">
       <div className="sectionHeaderRow">
@@ -35,7 +34,7 @@ export default function StrategySection({ strategyCards, avgTotalScore }) {
         {strategyCards.map((section) => {
           const stock = section.stock;
           const grade = stock ? getUnifiedGrade(stock) : null;
-          const compareLine = stock ? buildCompareLine(stock, avgTotalScore) : null;
+          const compareLine = stock ? buildCompareLine(stock) : null;
 
           return (
             <div className="strategyCard" key={section.key}>
@@ -57,7 +56,7 @@ export default function StrategySection({ strategyCards, avgTotalScore }) {
                 </>
               ) : (
                 <div className="emptyStateBox">
-                  <p>현재 기준으로 이 관점에 맞는 후보가 충분하지 않습니다.</p>
+                  <p>{SLOT_EMPTY_TEXT[section.key] || "오늘은 이 관점 후보가 없습니다."}</p>
                 </div>
               )}
             </div>
