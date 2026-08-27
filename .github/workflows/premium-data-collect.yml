@@ -25,7 +25,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python deps
-        run: pip install pykrx supabase
+        run: pip install -r scripts/premium/requirements-premium.txt
 
       - name: Collect flow signals
         # 고정 300초 × 3회 대신 계단식 백오프(60/300/1200초 + 지터). 멱등성 가드가

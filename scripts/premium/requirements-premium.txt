@@ -1,0 +1,12 @@
+# 프리미엄 파이프라인(scripts/premium) Python 의존성 (STEP 9).
+# premium-data-collect.yml 이 `pip install -r scripts/premium/requirements-premium.txt` 로 설치한다.
+#
+# 예전 `pip install pykrx supabase` 는 매 실행마다 상류 최신을 받아 와서,
+# supabase 파이썬 클라이언트의 마이너 브레이킹 등으로 언제든 깨질 수 있었다.
+# 직접 의존성은 정확히 고정한다.
+#
+# ⚠ transitive(간접) 의존성까지는 여기서 잠그지 않는다. 완전 고정이 필요하면
+#   성공한 CI 실행에서 `pip freeze` 결과를 받아 이 파일을 교체하거나 pip-tools를 도입한다.
+
+pykrx==1.2.8
+supabase==2.31.0
