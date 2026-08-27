@@ -37,7 +37,7 @@ export const styles = {
   // 예전에는 이 배경 자체가 1440px로 잘려있어서, 사이트 전역 배경을 순백으로 바꾸자
   // 1440px보다 넓은 화면에서 좌우에 흰 띠가 보이는 문제가 생겼다.
   page: { background: "var(--page-bg)", color: "#111827", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif", minHeight: "100vh", overflowX: "hidden" },
-  pageInner: { maxWidth: "1440px", margin: "0 auto", padding: "0 24px 24px" },
+  pageInner: { maxWidth: "1180px", margin: "0 auto", padding: "0 24px 24px" },
   demoHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px", marginBottom: "28px", flexWrap: "wrap" },
   demoBrand: { display: "inline-flex", alignItems: "center", gap: "10px", textDecoration: "none", color: "#0f172a" },
   demoLogo: { width: "32px", height: "32px", objectFit: "contain" },

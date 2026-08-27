@@ -445,11 +445,12 @@ a {
 }
 
 .container {
-  max-width: 1100px;
+  /* 가로 최대폭은 홈(.container를 style jsx global로 1180px 지정)에 맞춰 전 페이지 통일. */
+  max-width: 1180px;
   margin: 0 auto;
   /* 상단 패딩 0: 모든 페이지에서 첫 자식 .siteHeader(margin-top 12px)가
      데이터 기준 바와의 간격을 정하도록 통일한다(홈과 동일). 하단/좌우는 유지. */
-  padding: 0 20px 80px;
+  padding: 0 24px 80px;
 }
 
 .hero {
