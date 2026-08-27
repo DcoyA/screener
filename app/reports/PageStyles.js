@@ -37,8 +37,8 @@ export default function ReportsPageStyles() {
         display: inline-flex;
         padding: 8px 14px;
         border-radius: 999px;
-        background: #eef2ff;
-        color: #4f46e5;
+        background: var(--ruby-100);
+        color: var(--ruby-700);
         font-size: 0.82rem;
         font-weight: 800;
         margin: 0 0 18px;
@@ -135,8 +135,8 @@ export default function ReportsPageStyles() {
         display: inline-flex;
         padding: 6px 10px;
         border-radius: 999px;
-        background: #eef2ff;
-        color: #4f46e5;
+        background: var(--ruby-100);
+        color: var(--ruby-700);
         font-size: 0.78rem;
         font-weight: 800;
         margin: 0 0 12px;
@@ -267,8 +267,8 @@ export default function ReportsPageStyles() {
       .reportDayType {
         padding: 4px 10px;
         border-radius: 999px;
-        background: #eef2ff;
-        color: #4f46e5;
+        background: var(--ruby-100);
+        color: var(--ruby-700);
         font-size: 0.8rem;
         font-weight: 800;
       }

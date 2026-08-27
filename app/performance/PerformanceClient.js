@@ -570,7 +570,7 @@ export default function PerformanceClient({ history, stocks }) {
         .performanceCrossLink { display: inline-flex; margin-bottom: 16px; color: var(--color-primary); font-weight: 800; text-decoration: none; }
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
         .badge, .methodBadge, .controversyBadge, .detailBadge { display: inline-flex; padding: 8px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
-        .badge { background: #eef2ff; color: #4f46e5; }
+        .badge { background: var(--ruby-100); color: var(--ruby-700); }
         .methodBadge { background: #ecfeff; color: #0891b2; }
         .controversyBadge, .detailBadge { background: #ecfeff; color: #0891b2; }
         h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em; }
@@ -643,7 +643,7 @@ export default function PerformanceClient({ history, stocks }) {
         .smallBadge.good { background: #ecfeff; color: #0891b2; }
         .smallBadge.warn { background: #fff7ed; color: #c2410c; }
         .smallBadge.muted { background: #f1f5f9; color: #475569; }
-        .smallBadge.soft { background: #eef2ff; color: #4f46e5; }
+        .smallBadge.soft { background: var(--ruby-100); color: var(--ruby-700); }
         .smallBadge.info { background: #e0f2fe; color: #0284c7; }
         .trustReason { margin: 0; color: #475569; line-height: 1.75; }
         .pickList { display: grid; gap: 12px; }

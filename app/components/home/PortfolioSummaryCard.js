@@ -181,8 +181,8 @@ const portfolioStyles = `
     display: inline-flex;
     padding: 6px 12px;
     border-radius: 999px;
-    background: #eef2ff;
-    color: #4f46e5;
+    background: var(--ruby-100);
+    color: var(--ruby-700);
     font-size: 0.78rem;
     font-weight: 800;
   }
@@ -195,7 +195,7 @@ const portfolioStyles = `
   .portfolioGoBtn {
     font-size: 0.85rem;
     font-weight: 800;
-    color: #4f46e5;
+    color: var(--ruby-700);
     text-decoration: none;
   }
   .portfolioGoBtn:hover {

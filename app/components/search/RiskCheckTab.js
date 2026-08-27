@@ -357,7 +357,7 @@ function RiskCheckTabContent({ stocks, risks }) {
 
       <style jsx>{`
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
-        .badge { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: #eef2ff; color: #4f46e5; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
+        .badge { display: inline-flex; padding: 8px 14px; border-radius: 999px; background: var(--ruby-100); color: var(--ruby-700); font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
         h1 { margin: 0 0 12px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.04em; }
         .desc { margin: 0; max-width: 760px; color: #475569; line-height: 1.8; font-size: 1.02rem; }
         .heroMetaWrap { display: grid; gap: 12px; min-width: 260px; width: 320px; }
@@ -386,7 +386,7 @@ function RiskCheckTabContent({ stocks, risks }) {
         .searchInputWrap { position: relative; flex: 1 1 560px; min-width: 0; }
         .searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
         .searchInput { width: 100%; height: 52px; border-radius: 16px; border: 1px solid #dbe3f0; padding: 0 16px 0 44px; font-size: 1rem; color: #0f172a; background: #fff; box-sizing: border-box; outline: none; }
-        .searchInput:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12); }
+        .searchInput:focus { border-color: var(--ruby-700); box-shadow: 0 0 0 4px rgba(122, 12, 31, 0.12); }
         .filterResetBtn, .resetBtn, .detailBtn, .ghostBtn { display: inline-flex; align-items: center; justify-content: center; border-radius: 14px; height: 52px; padding: 0 16px; font-weight: 800; text-decoration: none; border: 1px solid transparent; cursor: pointer; font-size: 0.95rem; }
         .filterResetBtn, .resetBtn { background: #fff; color: #0f172a; border-color: #dbe3f0; }
         .resetBtn.large { margin-top: 18px; }
@@ -414,7 +414,7 @@ function RiskCheckTabContent({ stocks, risks }) {
         .checkPointBox p { margin: 0; color: #475569; line-height: 1.75; }
         .cardActions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
         .nameMark { background: #fef3c7; color: #92400e; padding: 0 2px; border-radius: 4px; }
-        .targetCard { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), 0 20px 50px rgba(15,23,42,0.06); }
+        .targetCard { border-color: var(--ruby-300); box-shadow: 0 0 0 4px rgba(122, 12, 31, 0.12), 0 20px 50px rgba(15,23,42,0.06); }
         @media (max-width: 900px) {
           .pageHero { flex-direction: column; }
           .guideGrid { grid-template-columns: 1fr; }

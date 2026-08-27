@@ -501,7 +501,7 @@ export default function AlternativeTab() {
         .topLinks { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:26px; flex-wrap:wrap; }
         .homeBtn { display:inline-flex; align-items:center; justify-content:center; border-radius:14px; padding:12px 16px; text-decoration:none; font-weight:800; border:1px solid #0f172a; background:#0f172a; color:#fff; }
         .pageHero { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:24px; flex-wrap:wrap; }
-        .badge, .sectionLabel { display:inline-flex; padding:8px 14px; border-radius:999px; background:#eef2ff; color:#4f46e5; font-size:.82rem; font-weight:800; }
+        .badge, .sectionLabel { display:inline-flex; padding:8px 14px; border-radius:999px; background:var(--ruby-100); color:var(--ruby-700); font-size:.82rem; font-weight:800; }
         h1 { margin:14px 0 12px; font-size:clamp(2rem, 4vw, 3rem); letter-spacing:-0.04em; }
         h2 { margin:14px 0 12px; font-size:clamp(1.45rem, 2.6vw, 2rem); letter-spacing:-0.03em; }
         h3 { margin:0 0 10px; font-size:1.15rem; }
@@ -547,7 +547,7 @@ export default function AlternativeTab() {
         .scoreText, .metricInline, .codeLine { color:#0f172a; font-weight:700; }
         .scoreText { margin-top:12px; }
         .metricInline { margin:6px 0; }
-        .typeBadge, .sectorChip, .holdingChip { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; background:#eef2ff; color:#4f46e5; }
+        .typeBadge, .sectorChip, .holdingChip { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:7px 11px; font-size:.8rem; font-weight:800; background:var(--ruby-100); color:var(--ruby-700); }
         .typeBadge.soft { background:#f1f5f9; color:#475569; }
         .typeBadge.rank { background:#dcfce7; color:#15803d; }
         .holdingChip { background:#f8fafc; color:#334155; border:1px solid #e2e8f0; }

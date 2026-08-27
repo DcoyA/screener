@@ -712,8 +712,8 @@ export default function NoticePage() {
         .badge,
         .sectionEyebrow,
         .modalBadge {
-          background: #eef2ff;
-          color: #4f46e5;
+          background: var(--ruby-100);
+          color: var(--ruby-700);
         }
         .stepTag {
           background: #0f172a;

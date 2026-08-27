@@ -92,7 +92,7 @@ export const styles = {
   buyMarker: { background: "#dc2626" },
   sellMarker: { background: "#2563eb" },
   fomoBox: { marginTop: "16px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" },
-  fomoScore: { width: "64px", height: "64px", borderRadius: "999px", background: "#f59e0b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", fontWeight: "900", flex: "0 0 auto" },
+  fomoScore: { width: "64px", height: "64px", borderRadius: "999px", background: "var(--warn-600)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", fontWeight: "900", flex: "0 0 auto" },
   tabRow: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "14px" },
   tabButton: { border: "1px solid #d1d5db", background: "#f9fafb", borderRadius: "12px", padding: "12px", fontWeight: "900", cursor: "pointer" },
   buyTabActive: { border: "1px solid #ef4444", background: "#fee2e2", color: "#dc2626", borderRadius: "12px", padding: "12px", fontWeight: "900", cursor: "pointer" },

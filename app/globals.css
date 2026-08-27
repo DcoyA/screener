@@ -38,6 +38,10 @@
   --color-score-good: #22c55e;
   --color-score-mid: #f59e0b;
   --color-score-bad: #ef4444;
+  /* 경고 시맨틱(주의 등급/리스크 "주의"/관심 별/FOMO). 브랜드 루비도
+     상승 신호색도 아닌 "조심" 신호. 앰버 리터럴을 여기로 모은다 (VERIFY F-4). */
+  --warn-600: #b45309;
+  --warn-bg: #fef3c7;
   --radius-card: 20px;
   --radius-tile: 20px;
   --radius-button: 999px;

@@ -562,7 +562,7 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
         .stockCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: #fff; box-shadow: 0 20px 50px rgba(15,23,42,.05); }
         .cardTop { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
         .rankWrap { display: flex; gap: 12px; align-items: flex-start; }
-        .rankBadge { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; height: 42px; border-radius: 14px; background: #eef2ff; color: #4f46e5; font-weight: 900; flex-shrink: 0; }
+        .rankBadge { display: inline-flex; align-items: center; justify-content: center; min-width: 42px; height: 42px; border-radius: 14px; background: var(--ruby-100); color: var(--ruby-700); font-weight: 900; flex-shrink: 0; }
         .rankWrap h3 { margin: 0 0 4px; font-size: 1.3rem; letter-spacing: -0.03em; }
         .stockMeta { margin: 0; color: #64748b; font-size: .88rem; font-weight: 700; }
         .scoreWrap { text-align: right; }

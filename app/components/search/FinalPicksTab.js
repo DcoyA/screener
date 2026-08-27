@@ -133,7 +133,7 @@ function buildFinalPicks(stocksData, risksData) {
 
 const S = {
   card: { border: "1px solid #e5e7eb", borderRadius: 28, background: "linear-gradient(180deg,#ffffff 0%,#f8fbff 100%)", boxShadow: "0 20px 50px rgba(15,23,42,.06)" },
-  badge: { display: "inline-flex", padding: "8px 14px", borderRadius: 999, background: "#eef2ff", color: "#4f46e5", fontSize: ".82rem", fontWeight: 900, marginBottom: 16 },
+  badge: { display: "inline-flex", padding: "8px 14px", borderRadius: 999, background: "var(--ruby-100)", color: "var(--ruby-700)", fontSize: ".82rem", fontWeight: 900, marginBottom: 16 },
 };
 
 function Chip({ children, color = "#475569", bg = "#f1f5f9" }) {
@@ -174,7 +174,7 @@ function PickCard({ item }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 18, flexWrap: "wrap", marginBottom: 18 }}>
         <div style={{ minWidth: 0, flex: "1 1 560px" }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-            <Chip color="#4f46e5" bg="#eef2ff">기존 랭킹 #{item.baselineRank ?? "-"}</Chip>
+            <Chip color="var(--ruby-700)" bg="var(--ruby-100)">기존 랭킹 #{item.baselineRank ?? "-"}</Chip>
             <Chip color={color} bg={bg}>{item.decision.title}</Chip>
             <Chip color={item.riskLevel === "주의" ? "#dc2626" : item.riskLevel === "보통" ? "#b45309" : "#15803d"} bg={item.riskLevel === "주의" ? "#fee2e2" : item.riskLevel === "보통" ? "#fef3c7" : "#dcfce7"}>리스크 {item.riskLevel}</Chip>
             <Chip>{getSectorTypeLabel(item.sectorType)}</Chip>
