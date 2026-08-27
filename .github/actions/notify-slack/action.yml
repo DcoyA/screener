@@ -15,6 +15,21 @@ inputs:
     description: "추가로 붙일 메시지(선택)"
     required: false
     default: ""
+  failed_step:
+    description: "실패한 스텝 이름(선택). 실패 알림에서 원인 분류용으로 표시한다."
+    required: false
+    default: ""
+  retry_workflow:
+    description: >
+      재시작할 워크플로 파일명(예: premium-data-collect.yml). 값이 있으면
+      실패 알림에 [🔄 이 단계부터 재시작] / [무시] 버튼을 붙인다.
+      (버튼 처리는 app/api/slack/interactions/route.js 의 retry_workflow 핸들러)
+    required: false
+    default: ""
+  run_id:
+    description: "재시작 버튼 value 에 실을 원본 run id. 기본값은 현재 실행."
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -25,6 +40,9 @@ runs:
         STATUS: ${{ inputs.status }}
         JOB_NAME: ${{ inputs.job_name }}
         MESSAGE: ${{ inputs.message }}
+        FAILED_STEP: ${{ inputs.failed_step }}
+        RETRY_WORKFLOW: ${{ inputs.retry_workflow }}
+        RUN_ID: ${{ inputs.run_id != '' && inputs.run_id || github.run_id }}
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         if [ -z "$WEBHOOK_URL" ]; then
@@ -41,12 +59,42 @@ runs:
         fi
 
         TEXT="${EMOJI} *${JOB_NAME}* - ${LABEL}"
+        if [ -n "$FAILED_STEP" ]; then
+          TEXT="${TEXT}$(printf '\n')실패 스텝: \`${FAILED_STEP}\`"
+        fi
         if [ -n "$MESSAGE" ]; then
           TEXT="${TEXT}$(printf '\n')${MESSAGE}"
         fi
         TEXT="${TEXT}$(printf '\n')<${RUN_URL}|실행 로그 보기>"
 
+        # 기본: section 블록 하나.
         PAYLOAD=$(jq -n --arg text "$TEXT" '{blocks: [{type: "section", text: {type: "mrkdwn", text: $text}}]}')
+
+        # 실패 + retry_workflow 지정 시: 재시작 / 무시 버튼을 붙인다.
+        # 버튼 value 는 "<워크플로 파일명>|<run_id>" (route.js 의 retry_workflow 핸들러가 파싱).
+        if [ "$STATUS" = "failure" ] && [ -n "$RETRY_WORKFLOW" ]; then
+          PAYLOAD=$(printf '%s' "$PAYLOAD" | jq \
+            --arg wf "$RETRY_WORKFLOW" \
+            --arg rid "$RUN_ID" \
+            '.blocks += [{
+              type: "actions",
+              elements: [
+                {
+                  type: "button",
+                  text: { type: "plain_text", text: "🔄 이 단계부터 재시작" },
+                  style: "primary",
+                  action_id: "retry_workflow",
+                  value: ($wf + "|" + $rid)
+                },
+                {
+                  type: "button",
+                  text: { type: "plain_text", text: "무시" },
+                  action_id: "ignore_failure",
+                  value: $wf
+                }
+              ]
+            }]')
+        fi
 
         HTTP_CODE=$(curl -s -o /tmp/notify-slack-response.txt -w "%{http_code}" \
           -X POST -H 'Content-type: application/json' \

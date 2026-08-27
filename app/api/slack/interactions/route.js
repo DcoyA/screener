@@ -5,6 +5,17 @@ import { createSupabaseAdminClient } from "../../../lib/supabase/admin";
 const REPLAY_WINDOW_SECONDS = 60 * 5; // 슬랙 공식 문서 권장: 5분 초과 요청은 재전송 공격으로 간주해 거부
 const GITHUB_REPO = "DcoyA/screener";
 
+// 슬랙 "재시작" 버튼이 트리거할 수 있는 워크플로 (STEP 9).
+// workflow_dispatch 로 통째로 재실행하지만, 각 수집 스크립트에 "오늘자 있으면
+// exit 0" 멱등성 가드가 있어 실패 지점부터만 실제로 다시 돈다. 후보선택/승인의
+// 사람 검수 게이트는 그대로 유지된다("재시작 → 메일 발송까지"는 구현 안 함).
+const RETRY_WORKFLOW_ALLOWLIST = new Set([
+  "premium-data-collect.yml",
+  "premium-report-generate.yml",
+  "premium-report-send.yml",
+  "weekly-json-update.yml",
+]);
+
 function isValidSlackSignature(rawBody, timestamp, signature, signingSecret) {
   if (!timestamp || !signature || !signingSecret) return false;
 
@@ -68,6 +79,59 @@ async function replySlack(responseUrl, text) {
   if (!res.ok) {
     console.error(`response_url 호출 실패: ${res.status}`);
   }
+}
+
+// 원본 메시지 스레드가 아니라 채널에 별도 알림을 보낸다(에러성 안내용).
+// SLACK_WEBHOOK_URL 은 Vercel 환경변수로 설정돼 있어야 하며, 없으면 조용히 넘어간다.
+async function postSlackWebhook(text) {
+  const url = process.env.SLACK_WEBHOOK_URL;
+  if (!url) {
+    console.warn("SLACK_WEBHOOK_URL 미설정 - 별도 슬랙 알림을 건너뜁니다");
+    return;
+  }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) console.error(`SLACK_WEBHOOK_URL 호출 실패: ${res.status}`);
+  } catch (e) {
+    console.error("SLACK_WEBHOOK_URL 호출 예외:", e);
+  }
+}
+
+// [🔄 이 단계부터 재시작] 버튼. value = "<워크플로 파일명>|<run_id>".
+// 화이트리스트 밖 파일명은 400으로 거절한다.
+async function handleRetryWorkflow(action, responseUrl) {
+  const rawValue = action?.value || "";
+  const [workflowFile, runId] = rawValue.split("|");
+
+  if (!workflowFile || !RETRY_WORKFLOW_ALLOWLIST.has(workflowFile)) {
+    console.error(`[슬랙 인터랙션] 허용되지 않은 retry_workflow 대상: "${workflowFile}"`);
+    return NextResponse.json(
+      { ok: false, error: `허용되지 않은 워크플로: ${workflowFile || "(빈 값)"}` },
+      { status: 400 }
+    );
+  }
+
+  const dispatch = await triggerWorkflowDispatch(workflowFile);
+  await replySlack(
+    responseUrl,
+    dispatch.ok
+      ? `🔄 \`${workflowFile}\` 재시작을 요청했습니다. 멱등성 가드로 이미 끝난 단계는 건너뜁니다. (원본 run: ${runId || "-"})`
+      : `⚠️ \`${workflowFile}\` 재시작 트리거 실패 (${dispatch.error || "원인 미상"}) - GitHub Actions에서 수동 실행해주세요.`
+  );
+  console.log(`[슬랙 인터랙션] retry_workflow ${workflowFile} (원본 run ${runId || "-"}) -> ${dispatch.ok ? "dispatched" : "실패"}`);
+  return NextResponse.json({ ok: true });
+}
+
+// [무시] 버튼. 상태 변경 없이 알림만 정리한다.
+async function handleIgnoreFailure(action, responseUrl) {
+  const workflowFile = action?.value || "";
+  await replySlack(responseUrl, `🙈 무시됨${workflowFile ? ` (\`${workflowFile}\`)` : ""}`);
+  console.log(`[슬랙 인터랙션] ignore_failure ${workflowFile || "-"}`);
+  return NextResponse.json({ ok: true });
 }
 
 // notify-editor.mjs가 체크박스 + "선택한 항목으로 초안 생성"/"전체 스킵"
@@ -147,12 +211,19 @@ async function handleReportAction(supabase, actionId, reportId, responseUrl) {
 
   if (newStatus === "approved") {
     const dispatch = await triggerWorkflowDispatch("premium-report-send.yml", { report_id: String(reportId) });
-    await replySlack(
-      responseUrl,
-      dispatch.ok
-        ? "✅ 승인됨 - 발송을 시작합니다"
-        : "✅ 승인됨 (자동 발송 트리거 실패 - Send 워크플로를 수동으로 실행해주세요)"
-    );
+    if (dispatch.ok) {
+      await replySlack(responseUrl, "✅ 승인됨 - 발송을 시작합니다");
+    } else {
+      // 자동 발송 트리거 실패를 "✅ 승인됨"으로만 표시하면 발송 누락을 놓친다.
+      // 문구를 경고로 바꾸고, 별도 에러 알림도 채널에 남긴다(STEP 9 task 4).
+      await replySlack(
+        responseUrl,
+        `⚠️ 승인은 됐지만 발송이 자동 시작되지 않았습니다 - 수동 실행 필요 (${dispatch.error || "원인 미상"})`
+      );
+      await postSlackWebhook(
+        `🔴 리포트 ${reportId} 승인됨 - 자동 발송 트리거 실패. premium-report-send.yml 을 report_id=${reportId} 로 수동 실행해주세요. (원인: ${dispatch.error || "원인 미상"})`
+      );
+    }
   } else if (newStatus === "needs_revision") {
     await replySlack(
       responseUrl,
@@ -197,7 +268,11 @@ export async function POST(request) {
   // Vercel 서버리스 함수는 응답을 반환한 뒤 백그라운드 실행을 보장하지 않으므로,
   // 응답 전에 DB 갱신 + workflow_dispatch + response_url 호출을 동기적으로
   // 끝낸다(슬랙의 3초 타임아웃 안에 들어와야 함).
-  if (actionId === "generate_selected_candidates" || actionId === "skip_all_candidates") {
+  if (actionId === "retry_workflow") {
+    result = await handleRetryWorkflow(action, responseUrl);
+  } else if (actionId === "ignore_failure") {
+    result = await handleIgnoreFailure(action, responseUrl);
+  } else if (actionId === "generate_selected_candidates" || actionId === "skip_all_candidates") {
     result = await handleCandidateSelection(supabase, actionId, action, payload, responseUrl);
   } else if (REPORT_ACTION_TO_STATUS[actionId]) {
     const value = action?.value;

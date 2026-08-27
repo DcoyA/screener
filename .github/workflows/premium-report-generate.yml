@@ -41,3 +41,4 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           status: failure
           job_name: ${{ github.workflow }}
+          retry_workflow: premium-report-generate.yml
