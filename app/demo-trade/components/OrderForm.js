@@ -26,6 +26,8 @@ export default function OrderForm({
   onHoldingDaysChange,
   onSubmit,
   orderStatus,
+  canOrder,
+  orderDisabledReason,
 }) {
   return (
     <aside style={styles.orderPanel}>
@@ -93,9 +95,19 @@ export default function OrderForm({
           <option value="30">30일 이상</option>
         </select>
 
-        <button style={side === "BUY" ? styles.buyButton : styles.sellButton} onClick={onSubmit}>
+        <button
+          style={{
+            ...(side === "BUY" ? styles.buyButton : styles.sellButton),
+            ...(canOrder ? undefined : { opacity: 0.5, cursor: "not-allowed" }),
+          }}
+          onClick={onSubmit}
+          disabled={!canOrder}
+        >
           {side === "BUY" ? "가상 매수" : "가상 매도"}
         </button>
+        {!canOrder && orderDisabledReason ? (
+          <div style={{ ...styles.orderStatus, color: "#b45309" }}>{orderDisabledReason}</div>
+        ) : null}
         {orderStatus && <div style={styles.orderStatus}>{orderStatus}</div>}
       </div>
     </aside>

@@ -6,8 +6,11 @@ import { getGradeCodeForOrder } from "../../../../lib/gradeLookup";
 async function handleOrder(body) {
   const { side, code, name, price, quantity, reason } = body;
 
-  if (!code || !price || !quantity) {
-    return { status: 400, body: { ok: false, error: "종목코드, 가격, 수량을 확인해주세요." } };
+  const priceNum = Number(price);
+  const qtyNum = Number(quantity);
+  if (!code || !(priceNum > 0) || !(qtyNum > 0)) {
+    // 0원/음수 가격 체결은 체결 이력을 오염시킨다. 서버에서 최종 차단한다.
+    return { status: 400, body: { ok: false, error: "종목코드, 0보다 큰 가격, 1주 이상 수량이 필요합니다." } };
   }
 
   const supabaseServer = await createSupabaseServerClient();

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from "react";
 import PageTopBar from "../components/PageTopBar";
+import { toNumber } from "./lib/format";
 import { useDemoAccount } from "./hooks/useDemoAccount";
 import { useWishlist } from "./hooks/useWishlist";
 import { useQuote } from "./hooks/useQuote";
@@ -109,11 +110,14 @@ function DemoTradeContent() {
           change={quote.change}
           rate={quote.rate}
           candles={quote.candles}
+          candleInterval={quote.candleInterval}
           chartData={quote.chartData}
-          loadingQuote={quote.loadingQuote}
+          quoteState={quote.quoteState}
           quoteError={quote.quoteError}
+          marketOpen={quote.marketOpen}
+          priceBasis={quote.priceBasis}
           tradeMarkers={tradeMarkers}
-          onRefresh={() => quote.fetchQuote(quote.code, quote.name)}
+          onRetry={quote.retry}
           fomoScore={ordersState.fomoScore}
           fomoLabel={ordersState.fomoLabel}
           showFomoTip={ordersState.showFomoTip}
@@ -143,6 +147,14 @@ function DemoTradeContent() {
           onHoldingDaysChange={ordersState.setHoldingDays}
           onSubmit={ordersState.submitOrder}
           orderStatus={ordersState.orderStatus}
+          canOrder={Boolean(demoAccount.account) && quote.quoteState === "ready" && toNumber(quote.price) > 0}
+          orderDisabledReason={
+            !demoAccount.account
+              ? ""
+              : quote.quoteState !== "ready" || !(toNumber(quote.price) > 0)
+                ? "시세를 불러온 뒤 주문할 수 있어요."
+                : ""
+          }
         />
       </section>
 

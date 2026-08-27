@@ -61,11 +61,7 @@ export function useDemoAccount() {
   }
 
   async function resetAccount() {
-    const confirmed = window.confirm(
-      "계좌를 초기화하면 기존 가상계좌 데이터가 삭제됩니다. 현금 1억원부터 다시 시작하려면 확인을 눌러주세요. 초기화하시겠습니까?"
-    );
-    if (!confirmed) return;
-
+    // 확인 절차는 AccountPanel의 2단계 인라인 확인이 담당한다.
     setResetting(true);
     try {
       const res = await fetch("/api/demo/account/reset", { method: "POST" });

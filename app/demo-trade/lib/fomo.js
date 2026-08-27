@@ -12,6 +12,14 @@ export function calculateFomoScore({ reason, stopLossPrice, targetPrice, holding
   return Math.min(score, 100);
 }
 
+// 화면에 구간 기준을 그대로 노출한다(점수만 보고 "왜 낮음?"이 안 되게).
+export const FOMO_BANDS = [
+  { max: 39, label: "낮음" },
+  { max: 69, label: "주의" },
+  { max: 100, label: "위험" },
+];
+export const FOMO_BAND_TEXT = "0–39 낮음 · 40–69 주의 · 70+ 위험";
+
 export function fomoLabelFromScore(score) {
   if (score >= 70) return "위험";
   if (score >= 40) return "주의";

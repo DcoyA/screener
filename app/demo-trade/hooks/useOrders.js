@@ -177,8 +177,12 @@ export function useOrders({ account, code, name, price, onAccountCashUpdate }) {
       alert("먼저 가상계좌를 생성하거나 불러오세요.");
       return;
     }
-    if (!code || !price || !quantity) {
-      alert("종목, 현재가, 수량을 확인해주세요.");
+    if (!code || !quantity) {
+      alert("종목, 수량을 확인해주세요.");
+      return;
+    }
+    if (!(toNumber(price) > 0)) {
+      alert("현재가를 불러온 뒤 주문할 수 있어요. 시세를 새로고침해 주세요.");
       return;
     }
     if (toNumber(quantity) <= 0) {

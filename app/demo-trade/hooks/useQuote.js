@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toNumber } from "../lib/format";
+
+const QUOTE_TIMEOUT_MS = 10_000;
 
 export function useQuote() {
   const searchParams = useSearchParams();
@@ -16,49 +18,84 @@ export function useQuote() {
   const [change, setChange] = useState("");
   const [rate, setRate] = useState("");
   const [candles, setCandles] = useState([]);
-  const [quoteError, setQuoteError] = useState("");
-  const [loadingQuote, setLoadingQuote] = useState(false);
+  const [candleInterval, setCandleInterval] = useState("minute");
+  const [marketOpen, setMarketOpen] = useState(null); // null=미상, true/false
+  const [priceBasis, setPriceBasis] = useState(""); // "realtime" | "close"
 
-  async function fetchQuote(targetCode = code, targetName = "", source = "manual") {
-    const cleanCode = String(targetCode || "").trim();
+  // 3-상태: 무한 로딩 금지. loading(10초 타임아웃) / ready / error(재시도).
+  const [quoteState, setQuoteState] = useState("loading");
+  const [quoteError, setQuoteError] = useState("");
+
+  const lastRequestRef = useRef({ code: "005930", name: "삼성전자", source: "popular" });
+
+  const fetchQuote = useCallback(async (targetCode, targetName = "", source = "manual") => {
+    const cleanCode = String(targetCode ?? "").trim();
     if (!cleanCode) {
       alert("종목코드를 입력하세요.");
       return;
     }
 
-    setLoadingQuote(true);
+    lastRequestRef.current = { code: cleanCode, name: targetName, source };
+    setQuoteState("loading");
     setQuoteError("");
 
-    try {
-      const res = await fetch(`/api/kis/quote?code=${encodeURIComponent(cleanCode)}`);
-      const data = await res.json();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), QUOTE_TIMEOUT_MS);
 
-      if (!data.ok) {
-        setQuoteError("현재 시세를 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
+    try {
+      const res = await fetch(`/api/kis/quote?code=${encodeURIComponent(cleanCode)}`, {
+        signal: controller.signal,
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || !data.ok) {
+        setQuoteState("error");
+        setQuoteError("시세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
         console.warn("통합 시세 조회 실패:", data);
         return;
       }
 
-      const resolvedName = data.name || targetName || cleanCode;
+      const resolvedPrice = toNumber(data.price);
+      if (!(resolvedPrice > 0)) {
+        // 시세 소스는 응답했지만 가격이 비어 있음 → 주문 불가라 error로 취급.
+        setQuoteState("error");
+        setQuoteError("현재가를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+        console.warn("가격 결측 응답:", data);
+        return;
+      }
+
       setCode(cleanCode);
       setSearchCode(cleanCode);
-      setName(resolvedName);
+      setName(data.name || targetName || cleanCode);
       setPrice(data.price || "");
-      setChange(data.change || "");
-      setRate(data.rate || "");
+      setChange(data.change ?? "");
+      setRate(data.rate ?? "");
       setCandles(Array.isArray(data.candles) ? data.candles : []);
+      setCandleInterval(data.candleInterval || "minute");
+      setMarketOpen(typeof data.marketOpen === "boolean" ? data.marketOpen : null);
+      setPriceBasis(data.priceBasis || "");
       setSelectedPopularCode(source === "popular" ? cleanCode : "");
+      setQuoteState("ready");
 
-      if (data.minuteError) {
-        console.warn("분봉 조회 실패:", data.minuteError);
-      }
+      if (data.minuteError) console.warn("분봉 안내:", data.minuteError);
     } catch (error) {
-      console.error(error);
-      setQuoteError("현재 시세를 불러오지 못했습니다. 잠시 후 다시 시도하세요.");
+      const aborted = error?.name === "AbortError";
+      setQuoteState("error");
+      setQuoteError(
+        aborted
+          ? "시세 응답이 10초 안에 오지 않았습니다. 다시 시도해 주세요."
+          : "시세를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+      );
+      if (!aborted) console.error(error);
     } finally {
-      setLoadingQuote(false);
+      clearTimeout(timer);
     }
-  }
+  }, []);
+
+  const retry = useCallback(() => {
+    const { code: c, name: n, source } = lastRequestRef.current;
+    fetchQuote(c, n, source);
+  }, [fetchQuote]);
 
   function selectStock(stock) {
     setSearchCode(stock.code);
@@ -117,9 +154,14 @@ export function useQuote() {
     change,
     rate,
     candles,
+    candleInterval,
+    marketOpen,
+    priceBasis,
+    quoteState,
     quoteError,
-    loadingQuote,
+    loadingQuote: quoteState === "loading",
     fetchQuote,
+    retry,
     selectStock,
     chartScale,
     chartData: chartScale.chartData,

@@ -14,13 +14,31 @@ function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function getKoreaTime() {
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+}
+
 function getNowTimeString() {
-  const now = new Date();
-  const koreaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const koreaTime = getKoreaTime();
   const hours = String(koreaTime.getHours()).padStart(2, "0");
   const minutes = String(koreaTime.getMinutes()).padStart(2, "0");
   const seconds = String(koreaTime.getSeconds()).padStart(2, "0");
   return `${hours}${minutes}${seconds}`;
+}
+
+// KST 평일 09:00~15:30 을 정규장으로 본다. 그 밖은 종가(마지막 체결가) 기준.
+// naver basic의 marketStatus("OPEN"/"CLOSE" 등)가 오면 그것을 우선한다.
+function resolveMarket(naverMarketStatus) {
+  const status = String(naverMarketStatus || "").toUpperCase();
+  if (status === "OPEN") return { marketOpen: true, priceBasis: "realtime" };
+  if (status === "CLOSE" || status === "PREOPEN" || status === "EXPIRE") {
+    return { marketOpen: false, priceBasis: "close" };
+  }
+  const kst = getKoreaTime();
+  const day = kst.getDay(); // 0=일 6=토
+  const minutes = kst.getHours() * 60 + kst.getMinutes();
+  const open = day >= 1 && day <= 5 && minutes >= 9 * 60 && minutes <= 15 * 60 + 30;
+  return { marketOpen: open, priceBasis: open ? "realtime" : "close" };
 }
 
 function normalizeMinuteItem(item) {
@@ -271,6 +289,8 @@ async function getKisQuote(code) {
     }
   }
 
+  const market = resolveMarket("");
+
   return {
     ok: true,
     source: "KIS",
@@ -281,8 +301,11 @@ async function getKisQuote(code) {
     change: priceData.change,
     rate: priceData.rate,
     candles: minuteData.candles,
+    candleInterval: "minute",
     minuteError: minuteData.minuteError,
     fallbackUsed: false,
+    marketOpen: market.marketOpen,
+    priceBasis: market.priceBasis,
   };
 }
 
@@ -307,6 +330,8 @@ export async function GET(request) {
       const naverPrice = await fetchNaverBasic(code);
       const fallbackCandles = await fetchNaverDailyCandles(code);
 
+      const market = resolveMarket(naverPrice.marketStatus);
+
       return NextResponse.json({
         ok: true,
         source: naverPrice.source,
@@ -317,11 +342,16 @@ export async function GET(request) {
         change: naverPrice.change,
         rate: naverPrice.rate,
         candles: fallbackCandles,
+        // 네이버 폴백은 1분봉이 아니라 일봉이다. 화면에서 "장중 표시" 문구를
+        // 띄우지 않도록 daily 플래그를 준다.
+        candleInterval: "day",
         minuteError: fallbackCandles.length > 0 ? "KIS 분봉 대신 네이버 일봉 데이터를 표시합니다." : "분봉 데이터를 불러오지 못했습니다.",
         fallbackUsed: true,
         fallbackReason: kisError.message || "KIS 조회 실패",
         marketStatus: naverPrice.marketStatus,
         localTradedAt: naverPrice.localTradedAt,
+        marketOpen: market.marketOpen,
+        priceBasis: market.priceBasis,
       });
     } catch (fallbackError) {
       console.error("All quote sources failed:", {
