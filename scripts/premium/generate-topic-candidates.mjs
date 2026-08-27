@@ -172,6 +172,8 @@ function scoreEconomicCalendarItems(items) {
       source: "economic_calendar",
       score: 60 + urgencyBonus,
       title: (item.title || item.event_name || "주요 경제 일정").slice(0, 60),
+      summary: (item.description || item.title || item.event_name || "").slice(0, 500) || null,
+      sources: [],
       rationale: `${item.event_date} 예정된 high 중요도 일정 (D-${daysUntil}).${
         item.description ? ` ${item.description}` : ""
       }`,
@@ -191,6 +193,9 @@ function scoreMarketIssueItems(items) {
       source: "market_issues",
       score: base + directionBonus,
       title: (item.title || "시장 이슈").slice(0, 60),
+      summary: (item.summary || "").slice(0, 1000) || null,
+      // scan_market_issues.mjs 가 LLM source_indices 로 채운 [{url,title}]. 없으면 [].
+      sources: Array.isArray(item.sources) ? item.sources : [],
       rationale: `${item.issue_date} 감지된 이슈 (confidence=${item.confidence}, direction=${item.direction}). ${
         item.summary || ""
       }`.trim(),
@@ -209,6 +214,11 @@ function scoreDisclosureEventItems(items) {
       source: "disclosure_events",
       score: base,
       title: `${item.code} 공시: ${(item.summary || item.type || "").slice(0, 40)}`,
+      summary: (item.summary || `${item.code} ${item.type} 공시`).slice(0, 500),
+      // DART 링크는 1:1 귀속. LLM 미경유.
+      sources: item.source_url
+        ? [{ url: item.source_url, title: (item.summary || `${item.code} 공시`).slice(0, 80) }]
+        : [],
       rationale: `${item.disclosure_date} ${item.code} 종목의 ${item.type} 공시. ${item.summary || ""}`.trim(),
       related_codes: item.code ? [item.code] : [],
       related_sectors: [],
@@ -233,6 +243,8 @@ function scoreFlowSignalItems(items) {
     source: "flow_signals",
     score: 40 + Math.min(40, (Math.abs(foreign) + Math.abs(inst)) / 1e8) + Math.min(10, shortChange),
     title: `${item.code} 수급 변동`,
+    summary: `${item.code} 종목에서 외국인·기관 수급이 크게 움직였습니다 (외국인 순매수 ${foreign.toLocaleString()}, 기관 ${inst.toLocaleString()}).`,
+    sources: [],
     rationale: `${item.date} 기준 외국인 순매수 ${foreign.toLocaleString()}, 기관 순매수 ${inst.toLocaleString()}, 공매도잔고 변동 ${shortChange}%.`,
     related_codes: item.code ? [item.code] : [],
     related_sectors: [],
@@ -341,6 +353,8 @@ async function fetchRotationCandidates(table, sourceLabel, categoryLabel) {
     source: sourceLabel,
     score: 35,
     title: row.topic_title,
+    summary: `${categoryLabel} 관점의 기획 소재입니다. 시의성보다 꾸준히 도움이 되는 주제로 로테이션 편성됩니다.`,
+    sources: [],
     rationale: `${categoryLabel} 소재뱅크 로테이션 (last_used_at=${row.last_used_at || "없음(최우선)"})`,
     related_codes: [],
     related_sectors: [],
@@ -489,9 +503,12 @@ async function main() {
     day_type: dayType,
     candidate_no: idx,
     title: c.title,
+    summary: c.summary ?? null,
     rationale: c.rationale,
     related_codes: c.related_codes || [],
     related_sectors: c.related_sectors || [],
+    // [{url, title}] - 후보 선택 화면 상세 + generate-report 컨텍스트 재사용.
+    sources: Array.isArray(c.sources) ? c.sources : [],
     status: "proposed",
     source: c.source,
     meta: c.meta || {},

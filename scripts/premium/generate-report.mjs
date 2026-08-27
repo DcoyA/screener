@@ -107,10 +107,16 @@ async function fetchAdditionalContext(relatedCodes, relatedSectors, followup) {
 
 function buildPrompt(candidates, context, retryFeedback) {
   const candidatesText = candidates
-    .map(
-      (c, i) =>
-        `${i + 1}. [${c.title}]\n${c.rationale}\n관련 종목: ${(c.related_codes || []).join(", ") || "-"}\n관련 섹터: ${(c.related_sectors || []).join(", ") || "-"}`
-    )
+    .map((c, i) => {
+      const lines = [`${i + 1}. [${c.title}]`];
+      if (c.summary) lines.push(`요약: ${c.summary}`);
+      lines.push(c.rationale);
+      lines.push(`관련 종목: ${(c.related_codes || []).join(", ") || "-"}`);
+      lines.push(`관련 섹터: ${(c.related_sectors || []).join(", ") || "-"}`);
+      // 출처 URL은 프롬프트에 넣지 않는다 - LLM이 sections[].sources를 자체 생성하고,
+      // 여기서 URL을 주면 그대로 복사하거나 그럴듯한 변형을 만들어낸다.
+      return lines.join("\n");
+    })
     .join("\n\n");
 
   const contextSummary = buildContextSummary(context);
