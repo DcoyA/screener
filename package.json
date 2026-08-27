@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "next dev",
     "check:display": "node scripts/test/check-upside-display.mjs",
-    "prebuild": "npm run check:display",
+    "check:quote-card": "node scripts/test/check-quote-card-guards.mjs",
+    "prebuild": "npm run check:display && npm run check:quote-card",
     "build": "next build",
     "start": "next start"
   },

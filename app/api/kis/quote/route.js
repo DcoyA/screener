@@ -261,6 +261,47 @@ async function fetchKisMinute({ baseUrl, token, appKey, appSecret, code }) {
   return { candles, minuteError: "" };
 }
 
+// 종목검색 결과 카드(STEP 7)용 스냅샷. 카드가 자체 검증(가드 1~3)을 하므로
+// 여기서는 소스 값을 숫자로만 정리해 넘긴다. 값이 없으면 null.
+// KIS inquire-price output 기준.
+function buildKisSnapshot(output) {
+  const o = output || {};
+  const n = (v) => {
+    const x = toNumber(v);
+    return x > 0 ? x : null;
+  };
+  return {
+    price: n(o.stck_prpr),
+    prevClose: n(o.stck_sdpr), // 기준가 = 전일종가
+    open: n(o.stck_oprc),
+    high: n(o.stck_hgpr),
+    low: n(o.stck_lwpr),
+    volume: n(o.acml_vol),
+    tradeValue: n(o.acml_tr_pbmn),
+  };
+}
+
+// 네이버 폴백: basic(현재가·전일대비) + 일봉 마지막 행(시/고/저/거래량).
+// 거래대금은 네이버 일봉 JSON에 없어 null (운영 KIS 경로에서는 채워진다).
+function buildFallbackSnapshot(naverPrice, dailyCandles) {
+  const price = toNumber(naverPrice?.price);
+  const change = toNumber(naverPrice?.change);
+  const last = Array.isArray(dailyCandles) && dailyCandles.length ? dailyCandles[dailyCandles.length - 1] : null;
+  const n = (v) => {
+    const x = toNumber(v);
+    return x > 0 ? x : null;
+  };
+  return {
+    price: n(price),
+    prevClose: price > 0 && Number.isFinite(change) ? n(price - change) : null,
+    open: last ? n(last.open) : null,
+    high: last ? n(last.high) : null,
+    low: last ? n(last.low) : null,
+    volume: last ? n(last.volume) : null,
+    tradeValue: null,
+  };
+}
+
 async function getKisQuote(code) {
   const baseUrl = process.env.KIS_BASE_URL;
   const appKey = process.env.KIS_APP_KEY;
@@ -306,6 +347,7 @@ async function getKisQuote(code) {
     fallbackUsed: false,
     marketOpen: market.marketOpen,
     priceBasis: market.priceBasis,
+    snapshot: buildKisSnapshot(priceData.raw),
   };
 }
 
@@ -352,6 +394,7 @@ export async function GET(request) {
         localTradedAt: naverPrice.localTradedAt,
         marketOpen: market.marketOpen,
         priceBasis: market.priceBasis,
+        snapshot: buildFallbackSnapshot(naverPrice, fallbackCandles),
       });
     } catch (fallbackError) {
       console.error("All quote sources failed:", {
