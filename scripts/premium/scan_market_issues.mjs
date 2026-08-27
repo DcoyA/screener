@@ -40,6 +40,8 @@ async function searchGoogleNews(keyword) {
     description: stripHtml(item.description || ""),
     pubDate: item.pubDate || "",
     source: item.source?.["#text"] || item.source || "",
+    // STEP 10: 출처 귀속용. 없으면 '' 가 아니라 null (NULL/'' 혼재 방지).
+    link: item.link || null,
   }));
 }
 
@@ -51,14 +53,15 @@ function stripHtml(text) {
 }
 
 async function extractIssuesWithLLM(newsSnippets) {
+  // 프롬프트 조립과 매핑은 같은 배열(newsSnippets)의 1-based 인덱스를 쓴다.
   const snippetText = newsSnippets
     .map(
-      (n) =>
-        `- 제목: ${n.title} / 요약: ${n.description} / 날짜: ${n.pubDate} / 출처: ${n.source}`
+      (n, i) =>
+        `[${i + 1}] 제목: ${n.title} / 요약: ${n.description} / 날짜: ${n.pubDate} / 출처: ${n.source}`
     )
     .join("\n");
 
-  const prompt = `아래는 최근 3일간 수집된 국내외 뉴스 제목/스니펫 목록이다.
+  const prompt = `아래는 최근 3일간 수집된 국내외 뉴스 제목/스니펫 목록이다. 각 항목 앞의 [N]은 기사 번호다.
 
 너는 반드시 이 목록에서 최소 1개, 최대 5개의 이슈를 골라야 한다. "관련성이 애매해서 못 고르겠다"는 답은 허용되지 않는다. 완전히 무관한 연예/스포츠 기사가 아니라면, 국내 증시(코스피/코스닥)와의 연결고리가 조금이라도 있다고 볼 수 있으면 무조건 이슈로 포함시켜라. 정말 연관성이 약하다고 판단되면 confidence를 low로 표시하되, 그래도 최소 1개는 반드시 채워서 출력하라.
 
@@ -69,6 +72,10 @@ async function extractIssuesWithLLM(newsSnippets) {
 - direction: bull/bear/neutral 중 하나
 - impacted_sectors: 관련 산업/섹터명 배열 (예: ["반도체","자동차"])
 - confidence: high/mid/low 중 하나
+- source_indices: 이 이슈의 근거가 된 위 목록의 기사 번호(정수) 배열. 예: [2, 5]. 실제로 근거가 된 것만 넣고 추측하지 마라. 확실한 근거가 없으면 빈 배열 []. 최대 5개.
+
+예시 형식(값은 예시일 뿐):
+[{"category":"policy","title":"금리 인하 기대 확대","summary":"한은 총재 발언으로 인하 기대가 커졌다.","direction":"bull","impacted_sectors":["은행","건설"],"confidence":"mid","source_indices":[3,7]}]
 
 뉴스 목록:
 ${snippetText}`;
@@ -125,6 +132,52 @@ ${snippetText}`;
   }
 }
 
+function normalizeUrl(u) {
+  try {
+    const url = new URL(u);
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return String(u || "").trim();
+  }
+}
+
+// LLM이 반환한 source_indices → [{url, title}] (STEP 10).
+// LLM에게 URL을 만들게 하지 않고 번호만 받아 범위 검증 후 매핑한다.
+//  - 정수 강제변환, 1..snippetCount 범위, 중복 제거(번호 + URL), 최대 5개
+//  - 유효 0개면 [] (NULL 아님). 여기서 억지로 채우지 않는다 = 2번 폴백.
+function resolveIssueSources(rawIndices, snippets, issueTitle) {
+  const dropped = [];
+  const seenIdx = new Set();
+  const validIdx = [];
+  for (const raw of Array.isArray(rawIndices) ? rawIndices : []) {
+    const n = Math.trunc(Number(raw));
+    if (!Number.isInteger(n) || n < 1 || n > snippets.length) {
+      dropped.push(raw);
+      continue;
+    }
+    if (seenIdx.has(n)) continue;
+    seenIdx.add(n);
+    validIdx.push(n);
+    if (validIdx.length >= 5) break;
+  }
+  if (dropped.length > 0) {
+    console.warn(`[source attribution] "${issueTitle}" 무효 번호 버림: ${JSON.stringify(dropped)}`);
+  }
+
+  const seenUrl = new Set();
+  const sources = [];
+  for (const n of validIdx) {
+    const snip = snippets[n - 1];
+    if (!snip?.link) continue; // link 없는 기사는 건너뜀
+    const key = normalizeUrl(snip.link);
+    if (seenUrl.has(key)) continue;
+    seenUrl.add(key);
+    sources.push({ url: snip.link, title: snip.title || "(제목 없음)" });
+  }
+  return { sources, droppedCount: dropped.length };
+}
+
 // 멱등성 가드(STEP 9): market_issues에 오늘(issue_date) 행이 이미 있으면 True.
 // market_issues는 plain insert라 재실행 시 중복이 쌓인다. 조회 실패 시 fail-open.
 async function alreadyScannedToday(today) {
@@ -145,12 +198,14 @@ async function alreadyScannedToday(today) {
   }
 }
 
+const DRY_RUN = process.argv.includes("--dry-run") || process.env.DRY_RUN === "1";
+
 async function main() {
   const today = new Date().toISOString().slice(0, 10);
 
   // collect 워크플로를 실패 지점부터 재실행해도 이미 끝난 이 단계는 건너뛴다.
   // FORCE=1이면 무시하고 강제 재수집(구글 뉴스 스크랩 + LLM 호출까지 다시 돈다).
-  if (process.env.FORCE !== "1" && (await alreadyScannedToday(today))) {
+  if (!DRY_RUN && process.env.FORCE !== "1" && (await alreadyScannedToday(today))) {
     console.log(`[멱등성] market_issues에 오늘(${today}) 데이터가 이미 있어 스킵합니다 (강제 재수집: FORCE=1)`);
     return;
   }
@@ -176,7 +231,46 @@ async function main() {
     return;
   }
 
-  const rows = issues.map((issue) => ({
+  // 출처 귀속: LLM source_indices → [{url,title}]
+  let attributedCount = 0;
+  let totalLinks = 0;
+  let droppedTotal = 0;
+  const enriched = issues.map((issue) => {
+    const { sources, droppedCount } = resolveIssueSources(
+      issue.source_indices,
+      allSnippets,
+      issue.title || "(제목 없음)"
+    );
+    droppedTotal += droppedCount;
+    if (sources.length > 0) attributedCount += 1;
+    totalLinks += sources.length;
+    return { ...issue, sources };
+  });
+
+  const pct = issues.length ? Math.round((attributedCount / issues.length) * 100) : 0;
+  const avgLinks = issues.length ? (totalLinks / issues.length).toFixed(1) : "0";
+  console.log(
+    `[source attribution] 이슈 ${issues.length}건 중 귀속 성공 ${attributedCount}건(${pct}%), ` +
+      `평균 링크 ${avgLinks}개, 무효번호 버림 ${droppedTotal}건`
+  );
+
+  if (DRY_RUN) {
+    console.log("\n===== DRY RUN: 저장 안 함. 이슈 ↔ 근거 대조 =====");
+    enriched.forEach((issue, i) => {
+      console.log(`\n[이슈 ${i + 1}] ${issue.title}  (${issue.category}/${issue.confidence}/${issue.direction})`);
+      console.log(`  요약: ${issue.summary}`);
+      console.log(`  source_indices(원문): ${JSON.stringify(issue.source_indices)}`);
+      if (issue.sources.length === 0) {
+        console.log(`  → 매핑된 출처: 없음 (자동 귀속 실패)`);
+      } else {
+        issue.sources.forEach((s) => console.log(`  → ${s.title}\n     ${s.url}`));
+      }
+    });
+    console.log("\n===== DRY RUN 끝 =====");
+    return;
+  }
+
+  const rows = enriched.map((issue) => ({
     issue_date: today,
     category: issue.category,
     title: issue.title,
@@ -186,6 +280,8 @@ async function main() {
     impacted_codes: [],
     confidence: issue.confidence,
     source_note: "google_news_rss_scan",
+    // [{url, title}] - LLM source_indices 로 귀속. 자동 귀속 실패 시 [](NULL 아님).
+    sources: issue.sources,
   }));
 
   const { error } = await supabase.from("market_issues").insert(rows);
