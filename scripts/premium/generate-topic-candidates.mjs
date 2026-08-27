@@ -423,9 +423,14 @@ async function main() {
     process.exit(1);
   }
 
-  if (existing.length > 0) {
-    console.log(`[생성] 오늘(${today}, day_type=${dayType})은 이미 후보가 ${existing.length}건 존재하므로 신규 생성을 스킵합니다`);
+  if (existing.length > 0 && process.env.FORCE !== "1") {
+    // 멱등성 가드(STEP 9): collect 워크플로를 실패 지점부터 통째로 재실행해도
+    // 이 단계는 오늘자 배치가 있으면 그냥 빠진다. FORCE=1로 강제 재생성 가능.
+    console.log(`[생성] 오늘(${today}, day_type=${dayType})은 이미 후보가 ${existing.length}건 존재하므로 신규 생성을 스킵합니다 (강제 재생성: FORCE=1)`);
     return;
+  }
+  if (existing.length > 0) {
+    console.log(`[생성] FORCE=1 - 오늘자 후보 ${existing.length}건이 있지만 강제로 재생성합니다 (유니크 제약이 중복 삽입을 막습니다)`);
   }
 
   const [marketIssues, disclosureEvents, calendarEvents, flowSignals, recentSelected] = await Promise.all([
@@ -491,9 +496,29 @@ async function main() {
     source: c.source,
     meta: c.meta || {},
   }));
+  // title_key 는 DB GENERATED 컬럼이라 페이로드에 넣지 않는다(넣으면 에러).
 
-  const { error } = await supabase.from("topic_candidates").insert(rows);
+  // 유니크 키 (target_issue_date, day_type, source, title_key) 중 source 는
+  // 스크립트가 채워야 한다. 비어 있으면 STEP 4의 NOT NULL 제약에 걸리므로 먼저 막는다.
+  const missingSource = rows.filter((r) => !r.source);
+  if (missingSource.length > 0) {
+    console.error(`[생성] source 가 비어 있는 후보 ${missingSource.length}건 - 저장 중단`);
+    console.error(missingSource.map((r) => `  - ${r.title}`).join("\n"));
+    process.exit(1);
+  }
+
+  // 멱등성(STEP 9): 재실행 시 이미 있는 (date, day_type, source, title_key) 는
+  // 건너뛴다(DO NOTHING). 반려/편집된 기존 행을 재제안이 덮어쓰지 않게 하기 위함.
+  const { data: inserted, error } = await supabase
+    .from("topic_candidates")
+    .upsert(rows, { onConflict: "target_issue_date,day_type,source,title_key", ignoreDuplicates: true })
+    .select("id");
   if (error) {
+    if (error.code === "42P10") {
+      console.error("[생성] topic_candidates 유니크 제약(target_issue_date, day_type, source, title_key) 미적용 - 마이그레이션 필요");
+      console.error("      docs/migrations/20260827-topic-candidates-unique-key.sql 을 먼저 실행하세요.");
+      process.exit(1); // 치명적 - 재시도 불가
+    }
     console.error("topic_candidates 저장 실패 (원문):");
     console.error(`code: ${error.code}`);
     console.error(`message: ${error.message}`);
@@ -502,9 +527,15 @@ async function main() {
     process.exit(1);
   }
 
+  const insertedCount = Array.isArray(inserted) ? inserted.length : 0;
+  const skippedCount = rows.length - insertedCount;
+  if (skippedCount > 0) {
+    console.log(`[생성] ${skippedCount}건은 이미 존재해 건너뜀(중복 키)`);
+  }
+
   await markTopicBankItemsAsUsed(finalCandidates);
 
-  console.log(`[생성] ${rows.length}건 후보 선정 및 저장 완료`);
+  console.log(`[생성] 후보 ${rows.length}건 중 신규 ${insertedCount}건 저장 완료`);
 }
 
 main();
