@@ -1,0 +1,42 @@
+-- docs/migrations/fair-value-status-column.sql
+--
+-- 적정가 산출 상태(fairValueStatus)를 stock_daily_snapshots에 개별 컬럼으로
+-- 노출한다. scripts/update_data.py의 compute_fair_value_band()가 종목마다
+-- 아래 enum 중 하나를 s.fairValueStatus에 넣고, scripts/ingest-daily-snapshot.mjs의
+-- mapToSnapshotRow()가 이 컬럼에 복사한다.
+--
+--   ok | insufficient_data | negative_earnings | sector_unmapped | outlier_rejected
+--
+-- 실행은 사용자가 직접 한다 (스크립트가 자동으로 이 파일을 실행하지 않음).
+-- IF NOT EXISTS를 썼으므로 여러 번 실행해도 안전하다.
+--
+-- 이 컬럼을 추가하지 않아도 파이프라인은 실패하지 않는다: 값은 이미
+-- raw_data JSON(raw_data->>'fairValueStatus')에 통째로 실려 있고, 애플리케이션
+-- (app/lib/fairValue.js)은 raw_data 기준으로 동작한다. 이 컬럼은 raw_data를
+-- 파싱하지 않고 SQL에서 바로 필터링/집계(WHERE fair_value_status <> 'ok' 등)
+-- 하고 싶을 때를 위한 선택적 확장이다.
+--
+-- latest_stock_snapshots가 stock_daily_snapshots 기반 뷰라면, 그 뷰가
+-- SELECT * 형태면 자동으로 노출되고, 컬럼을 명시적으로 나열하는 형태면
+-- 뷰 정의도 함께 갱신해야 한다(이 저장소 코드만으로는 뷰 정의 확인 불가).
+
+ALTER TABLE stock_daily_snapshots
+  ADD COLUMN IF NOT EXISTS fair_value_status text;
+
+-- 과거(이 컬럼 도입 이전) 행은 NULL로 남는다. 조회 측(app/lib/fairValue.js의
+-- getFairValueStatus)이 fairValueStatus 부재 시 targetPrice로 유추하므로
+-- 백필은 필수가 아니다. 필요하면 아래로 대략 백필할 수 있다(참고용, 미실행):
+--
+--   UPDATE stock_daily_snapshots
+--   SET fair_value_status = COALESCE(
+--         raw_data->>'fairValueStatus',
+--         raw_data->'fairValueMeta'->>'status',
+--         CASE
+--           WHEN (raw_data->'metrics'->>'targetPrice') IS NULL
+--                OR (raw_data->'metrics'->>'targetPrice')::numeric <= 0
+--                OR (raw_data->'metrics'->>'targetPrice')::numeric
+--                   = (raw_data->'metrics'->>'closePrice')::numeric
+--           THEN 'insufficient_data'
+--           ELSE 'ok'
+--         END)
+--   WHERE fair_value_status IS NULL;
