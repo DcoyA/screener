@@ -63,6 +63,10 @@ export default function MainNav() {
     );
   };
 
+  // 홈에는 멤버십 히어로 섹션이 그 자체로 구독 CTA다("이 화면의 유일한 강조색"
+  // 규칙). 헤더 CTA와 중복 + 강조색 2개가 되므로 홈에서는 헤더 CTA를 숨긴다.
+  const showCta = pathname !== "/";
+
   return (
     <nav className="mainNav" aria-label="메인 메뉴">
       {/* 데스크톱 가로 네비 */}
@@ -71,9 +75,11 @@ export default function MainNav() {
           renderItem(item),
           item.groupEnd ? <span className="mainNavDivider" aria-hidden="true" key={`${item.id}-div`} /> : null,
         ])}
-        <Link href="/reports" className="mainNavCta rubyCta">
-          주 4회 리포트 받기
-        </Link>
+        {showCta ? (
+          <Link href="/reports" className="mainNavCta rubyCta">
+            주 4회 리포트 받기
+          </Link>
+        ) : null}
         <span className="mainNavAuth">
           <AuthButton />
         </span>
@@ -96,9 +102,11 @@ export default function MainNav() {
           <button type="button" className="mainNavScrim" aria-hidden="true" tabIndex={-1} onClick={() => setOpen(false)} />
           <div id="mainNavSheet" className="mainNavSheet" role="menu">
             {NAV_ITEMS.map((item) => renderItem(item, { inSheet: true }))}
-            <Link href="/reports" className="mainNavCta rubyCta sheetItem" role="menuitem">
-              주 4회 리포트 받기
-            </Link>
+            {showCta ? (
+              <Link href="/reports" className="mainNavCta rubyCta sheetItem" role="menuitem">
+                주 4회 리포트 받기
+              </Link>
+            ) : null}
             <span className="mainNavSheetAuth">
               <AuthButton />
             </span>

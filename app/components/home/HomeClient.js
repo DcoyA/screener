@@ -1,107 +1,49 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import SiteHeader from "../SiteHeader";
+import MembershipHeroSection from "./MembershipHeroSection";
+import HomeBoardSection from "./HomeBoardSection";
 import HeroSection from "./HeroSection";
-import SubscribeSection from "./SubscribeSection";
-import SubscribeHeroBanner from "./SubscribeHeroBanner";
 import StrategySection from "./StrategySection";
-import AvoidSection from "./AvoidSection";
-import QuickLinksSection from "./QuickLinksSection";
-import TodayHeadline from "./TodayHeadline";
-import PerformanceSummaryCard from "./PerformanceSummaryCard";
-import { buildStrategyCards, buildAvoidSummary } from "../../lib/homeData";
-import PortfolioSummaryCard from "./PortfolioSummaryCard";
-import ScreenerLinkSection from "./ScreenerLinkSection";
+import { buildStrategyCards } from "../../lib/homeData";
 
-export default function HomeClient({ stocks, marketState, performanceSummary }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  const strategyCards = useMemo(() => buildStrategyCards(stocks), []);
-  const avoidSummary = useMemo(() => buildAvoidSummary(stocks), []);
+// 기획서 홈: 5개 섹션.
+// 1) 멤버십 히어로  2) 데일리 Top10 + 내 관심종목 2열 보드
+// 3) 종목검색 바(HeroSection 재사용)  4) 오늘의 투자전략(StrategySection 재사용)
+// 5) 하단 물결 장식
+// stocks = stocks.json(빌드 스냅샷) 하나만. /performance·/screener와 숫자 일치.
+export default function HomeClient({ stocks }) {
+  const strategyCards = useMemo(() => buildStrategyCards(stocks), [stocks]);
   const updatedAt = stocks[0]?.updatedAt || "-";
-  const avgTotalScore = marketState?.signals?.avgTotalScore;
-
-  const openModal = () => {
-    setIsModalOpen(true);
-    setIsSubmitted(false);
-    setSubmitError("");
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEmail("");
-    setIsSubmitted(false);
-    setIsSubmitting(false);
-    setSubmitError("");
-  };
-
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) return;
-    setIsSubmitting(true);
-    setSubmitError("");
-
-    try {
-      const res = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail }),
-      });
-      const data = await res.json().catch(() => null);
-
-      if (!res.ok || !data?.success) {
-        setSubmitError(data?.error || "신청 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-        return;
-      }
-
-      setIsSubmitted(true);
-      setEmail("");
-    } catch (err) {
-      setSubmitError("신청 전송 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <>
       <SiteHeader />
 
       <main className="container" style={{ background: "var(--bg-home)" }}>
-        <TodayHeadline marketState={marketState} />
+        <MembershipHeroSection />
+
+        <HomeBoardSection stocks={stocks} />
 
         <HeroSection updatedAt={updatedAt} stocks={stocks} />
-        <ScreenerLinkSection />
 
-        <PortfolioSummaryCard />
-
-        <SubscribeSection
-          isModalOpen={isModalOpen}
-          email={email}
-          setEmail={setEmail}
-          isSubmitted={isSubmitted}
-          isSubmitting={isSubmitting}
-          submitError={submitError}
-          closeModal={closeModal}
-          handleSubscribe={handleSubscribe}
-        />
-
-        <StrategySection strategyCards={strategyCards} avgTotalScore={avgTotalScore} />
-
-        <AvoidSection avoidSummary={avoidSummary} />
-
-        <PerformanceSummaryCard performanceSummary={performanceSummary} />
-
-        <SubscribeHeroBanner openModal={openModal} />
-
-        <QuickLinksSection />
+        <StrategySection strategyCards={strategyCards} />
       </main>
+
+      <div className="homeWave" aria-hidden="true">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M0 40 C 180 0, 360 80, 540 40 S 900 0, 1080 40 S 1440 80, 1440 40 L 1440 80 L 0 80 Z"
+            fill="var(--ruby-100)"
+          />
+          <path
+            d="M0 52 C 180 20, 360 84, 540 52 S 900 20, 1080 52 S 1440 84, 1440 52 L 1440 80 L 0 80 Z"
+            fill="var(--ruby-300)"
+            opacity="0.5"
+          />
+        </svg>
+      </div>
 
       <footer className="footer">
         <div className="footerInner">
@@ -114,214 +56,23 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
         .container {
           max-width: 1180px;
           margin: 0 auto;
-          padding: 32px 24px 80px;
-          color: #0f172a;
+          padding: 8px 24px 40px;
+          color: var(--ink-900);
         }
-        /* 상단 헤더는 공용 <SiteHeader />(app/components/SiteHeader.js)로 통일됨. */
-        .hero {
-          position: relative;
-          overflow: hidden;
-          padding: 20px 0 8px;
+        .homeWave {
+          max-width: 1180px;
+          margin: 0 auto;
+          line-height: 0;
         }
-        .hero::before {
-          content: "";
-          position: absolute;
-          right: -40px;
-          top: 10px;
-          width: 340px;
-          height: 340px;
-          background: radial-gradient(circle, rgba(0, 255, 100, 0.16), transparent 68%);
-          filter: blur(42px);
-          pointer-events: none;
-          z-index: 0;
-        }
-        .heroTop {
-          position: relative;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 24px;
-          flex-wrap: wrap;
-          min-height: 420px;
-          z-index: 1;
-        }
-        .heroMain {
-          position: relative;
-          z-index: 2;
-          flex: 1 1 720px;
-          min-width: 0;
-          max-width: 760px;
-        }
-        .heroCharacter {
-          position: absolute;
-          right: -10px;
-          bottom: -20px;
-          width: min(42vw, 520px);
-          height: min(42vw, 520px);
-          max-width: 520px;
-          max-height: 520px;
-          opacity: 1;
-          pointer-events: none;
-          transition: opacity 0.5s ease, transform 0.2s ease;
-          z-index: 1;
-          overflow: hidden;
-        }
-        .hero:hover .heroCharacter {
-          opacity: 0.5;
-          transform: translateY(-4px);
-        }
-        .heroCharacterGlow {
-          position: absolute;
-          inset: 16% 18% 18% 18%;
-          background: radial-gradient(circle, rgba(120, 255, 160, 0.22), transparent 72%);
-          filter: blur(24px);
-          z-index: 0;
-        }
-        .heroCharacterImage {
-          object-fit: contain;
-          object-position: left bottom;
-        }
-        .badge,
-        .subscribeEyebrow,
-        .modalBadge,
-        .strategyBadge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 14px;
-          border-radius: var(--radius-pill);
-          background: var(--color-surface-tint);
-          color: var(--color-primary);
-          font-size: 0.82rem;
-          font-weight: 800;
-          letter-spacing: 0.02em;
-          margin: 0 0 18px;
-        }
-        h1 {
-          font-size: clamp(2.2rem, 5vw, 3.5rem);
-          line-height: 1.1;
-          letter-spacing: -0.04em;
-          margin: 0 0 16px;
-        }
-        .desc {
-          max-width: 920px;
-          font-size: 1.08rem;
-          line-height: 1.9;
-          color: #475569;
-          margin: 0;
-        }
-        .desc strong,
-        .subscribeDesc strong {
-          color: #0f172a;
-        }
-        .heroPointRow {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          margin-top: 18px;
-        }
-        .heroPoint {
-          display: inline-flex;
-          padding: 8px 12px;
-          border-radius: 999px;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          color: #334155;
-          font-size: 0.86rem;
-          font-weight: 700;
-        }
-        .updateBox {
-          position: relative;
-          z-index: 2;
-          min-width: 200px;
-          padding: 16px 18px;
-          border-radius: 18px;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
-          text-align: right;
-        }
-        .updateLabel {
+        .homeWave svg {
           display: block;
-          margin-bottom: 6px;
-          color: #64748b;
-          font-size: 0.88rem;
-          font-weight: 700;
+          width: 100%;
+          height: 64px;
         }
-        .updateBox strong {
-          display: block;
-          font-size: 1.15rem;
-          color: #0f172a;
-        }
-        .updateDesc {
-          margin: 8px 0 0;
-          color: #64748b;
-          font-size: 0.92rem;
-          line-height: 1.5;
-        }
-        .heroActions,
-        .modalActions,
-        .subscribeActions {
-          display: flex;
-          gap: 14px;
-          flex-wrap: wrap;
-          margin-top: 28px;
-        }
-        .primaryBtn,
-        .secondaryBtn,
-        .linkBtn,
-        .ghostBtn,
-        .miniActionLink {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: var(--radius-pill);
-          padding: 14px 22px;
-          font-weight: 800;
-          text-decoration: none;
-          border: 1px solid transparent;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 0.98rem;
-        }
-        .primaryBtn {
-          background: var(--color-primary);
-          color: #ffffff;
-          box-shadow: 0 10px 24px rgba(75, 63, 255, 0.18);
-        }
-        .primaryBtn:hover {
-          background: #3c30e0;
-        }
-        .primaryBtn:disabled,
-        .ghostBtn:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          box-shadow: none;
-        }
-        .secondaryBtn,
-        .ghostBtn,
-        .linkBtn,
-        .miniActionLink {
-          background: #ffffff;
-          color: var(--color-primary);
-          border-color: var(--color-primary);
-        }
-        .secondaryBtn:hover,
-        .ghostBtn:hover,
-        .linkBtn:hover,
-        .miniActionLink:hover {
-          background: #f8fafc;
-        }
-        .sectionHeaderRow {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          gap: 16px;
-          margin: 56px 0 22px;
-          flex-wrap: wrap;
-        }
+
+        /* ── 종목검색 바 (HeroSection.js) ───────────────────────── */
         .searchBarForm {
-          margin-top: 24px;
+          margin-top: 0;
           max-width: 640px;
         }
         .searchBarWrap {
@@ -329,36 +80,36 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
         }
         .searchBarInput {
           width: 100%;
-          height: 58px;
+          height: 56px;
           border-radius: 16px;
-          border: 1px solid #cbd5e1;
+          border: 1px solid var(--ink-300);
           padding: 0 110px 0 20px;
           font-size: 1.02rem;
           outline: none;
           box-sizing: border-box;
           background: #ffffff;
-          box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+          box-shadow: var(--shadow-card);
         }
         .searchBarInput:focus {
-          border-color: #4f46e5;
-          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+          border-color: var(--ruby-600);
+          box-shadow: 0 0 0 4px rgba(122, 12, 31, 0.12);
         }
         .searchBarBtn {
           position: absolute;
           right: 8px;
           top: 8px;
-          height: 42px;
+          height: 40px;
           padding: 0 20px;
           border-radius: 12px;
           border: none;
-          background: #0f172a;
+          background: var(--ruby-700);
           color: #ffffff;
           font-weight: 800;
           cursor: pointer;
-          transition: background 0.2s ease;
+          transition: filter 0.18s ease;
         }
         .searchBarBtn:hover {
-          background: #111827;
+          filter: brightness(1.08);
         }
         .searchDropdown {
           position: absolute;
@@ -366,7 +117,7 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
           left: 0;
           right: 0;
           background: #ffffff;
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--ink-300);
           border-radius: 16px;
           box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
           overflow: hidden;
@@ -394,14 +145,14 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
           transition: background 0.15s ease;
         }
         .searchResultItem:hover {
-          background: #f8fafc;
+          background: var(--ruby-50);
         }
         .searchResultName {
           font-weight: 800;
-          color: #0f172a;
+          color: var(--ink-900);
         }
         .searchResultCode {
-          color: #64748b;
+          color: var(--ink-600);
           font-size: 0.85rem;
         }
         .searchResultMarket {
@@ -409,74 +160,75 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
           display: inline-flex;
           padding: 4px 10px;
           border-radius: 999px;
-          background: #eef2ff;
-          color: #4f46e5;
+          background: var(--ruby-100);
+          color: var(--ruby-700);
           font-size: 0.75rem;
           font-weight: 800;
         }
         .searchNoResult {
           margin: 0;
           padding: 18px;
-          color: #64748b;
+          color: var(--ink-600);
           font-size: 0.92rem;
           text-align: center;
         }
         @media (max-width: 640px) {
           .searchBarInput {
             padding-right: 90px;
-            height: 54px;
+            height: 52px;
           }
           .searchBarBtn {
-            height: 38px;
+            height: 36px;
             padding: 0 14px;
             font-size: 0.9rem;
           }
         }
-        .compactHeader {
-          margin-top: 0;
-          margin-bottom: 16px;
+
+        /* ── 오늘의 투자전략 (StrategySection.js) ────────────────── */
+        .strategySection {
+          margin-top: 36px;
+        }
+        .sectionHeaderRow {
+          margin: 0 0 18px;
         }
         .sectionTitle {
           margin: 0 0 8px;
           font-size: var(--font-hero);
           font-weight: var(--font-hero-weight);
           letter-spacing: -0.03em;
+          color: var(--ink-900);
         }
         .sectionDesc {
           margin: 0;
-          color: #64748b;
+          color: var(--ink-600);
           line-height: 1.7;
         }
-        .strategySection,
-        .avoidSection,
-        .subscribeSection,
-        .quickLinksSection {
-          margin-top: 40px;
-        }
-        .strategyGrid,
-        .quickLinksGrid {
-          display: grid;
-          gap: 18px;
-        }
         .strategyGrid {
+          display: grid;
+          gap: 16px;
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
-        .quickLinksGrid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .strategyCard,
-        .quickLinksCard,
-        .subscribeCard {
+        .strategyCard {
           border-radius: var(--radius-card);
-          border: 1px solid #e5e7eb;
-          background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+          border: 1px solid var(--ink-300);
+          background: #ffffff;
           box-shadow: var(--shadow-card);
-          padding: 24px;
+          padding: 22px;
+        }
+        .strategyBadge {
+          display: inline-flex;
+          padding: 6px 12px;
+          border-radius: var(--radius-pill);
+          background: var(--ruby-100);
+          color: var(--ruby-700);
+          font-size: 0.78rem;
+          font-weight: 800;
         }
         .strategyCard h3 {
-          margin: 14px 0 10px;
-          font-size: 1.3rem;
+          margin: 12px 0 10px;
+          font-size: 1.25rem;
           letter-spacing: -0.03em;
+          color: var(--ink-900);
         }
         .gradeBadge {
           display: inline-flex;
@@ -493,177 +245,42 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
         }
         .compareLine {
           margin: 0 0 16px;
-          color: #64748b;
-          font-size: 0.86rem;
+          color: var(--ink-600);
+          font-size: 0.84rem;
           font-weight: 700;
         }
+        .linkBtn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: var(--radius-pill);
+          padding: 12px 20px;
+          font-weight: 800;
+          text-decoration: none;
+          font-size: 0.94rem;
+          background: #ffffff;
+          color: var(--ruby-700);
+          border: 1px solid var(--ruby-700);
+          transition: background 0.18s ease;
+        }
+        .linkBtn:hover {
+          background: var(--ruby-50);
+        }
         .emptyStateBox {
-          margin-top: 18px;
-          border: 1px dashed #cbd5e1;
+          margin-top: 8px;
+          border: 1px dashed var(--ink-300);
           border-radius: 16px;
           padding: 18px;
           background: #ffffff;
         }
-        .emptyStateBox p,
-        .subscribeDesc,
-        .modalDesc,
-        .quickLinkItem span {
+        .emptyStateBox p {
           margin: 0;
-          color: #475569;
+          color: var(--ink-600);
           line-height: 1.8;
-        }
-        .avoidItem {
-          max-width: 480px;
-          border: 1px solid #e5e7eb;
-          border-radius: var(--radius-card);
-          padding: 18px;
-          background: #ffffff;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          text-decoration: none;
-          transition: all 0.18s ease;
-        }
-        .avoidItem.clickable:hover {
-          transform: translateY(-2px);
-          border-color: #cbd5e1;
-          background: #fbfdff;
-        }
-        .avoidItem strong {
-          font-size: 1rem;
-          color: #0f172a;
-        }
-        .avoidItem span {
-          color: #b45309;
-          font-weight: 800;
-          font-size: 0.9rem;
-        }
-        .avoidItem p {
-          margin: 0;
-          color: #475569;
-          line-height: 1.8;
-        }
-        .quickLinksCard h2,
-        .subscribeCard h2 {
-          margin: 0 0 16px;
-          font-size: 1.6rem;
-          letter-spacing: -0.03em;
-        }
-        .quickLinkItem {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          text-decoration: none;
-          padding: 22px 20px;
-          border-radius: var(--radius-tile);
-          background: var(--color-primary);
-          color: #ffffff;
-          transition: transform 0.15s ease;
-        }
-        .quickLinkItem:hover {
-          transform: translateY(-2px);
-        }
-        .quickLinkItem strong {
-          font-size: 1.05rem;
-        }
-        .quickLinkItem span {
-          color: rgba(255, 255, 255, 0.78);
-        }
-        .footer {
-          border-top: 1px solid #e5e7eb;
-          background: #ffffff;
-        }
-        .footerInner {
-          max-width: 1180px;
-          margin: 0 auto;
-          padding: 28px 24px 44px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-          color: #64748b;
-        }
-        .footerInner p {
-          margin: 0;
-        }
-        .footerInner a {
-          color: #0f172a;
-          text-decoration: none;
-          font-weight: 700;
-        }
-        .modalOverlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.55);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          z-index: 1000;
-        }
-        .modalCard {
-          position: relative;
-          width: min(100%, 560px);
-          background: #ffffff;
-          border-radius: 28px;
-          padding: 30px;
-          box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
-        }
-        .modalCard h3 {
-          margin: 0 0 12px;
-          font-size: 1.7rem;
-          letter-spacing: -0.03em;
-        }
-        .closeBtn {
-          position: absolute;
-          top: 14px;
-          right: 14px;
-          width: 40px;
-          height: 40px;
-          border-radius: 999px;
-          border: none;
-          background: #f1f5f9;
-          font-size: 1.5rem;
-          cursor: pointer;
-        }
-        .subscribeForm {
-          margin-top: 22px;
-        }
-        .subscribeForm input {
-          width: 100%;
-          height: 54px;
-          border-radius: 14px;
-          border: 1px solid #cbd5e1;
-          padding: 0 16px;
-          font-size: 1rem;
-          outline: none;
-          box-sizing: border-box;
-        }
-        .subscribeForm input:focus {
-          border-color: #4f46e5;
-          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
-        }
-        .errorText {
-          margin: 12px 0 0;
-          color: #dc2626;
-          font-size: 0.92rem;
-          font-weight: 600;
-        }
-        .singleAction {
-          justify-content: flex-start;
-        }
-        @media (max-width: 1100px) {
-          .strategyGrid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
         }
         @media (max-width: 900px) {
-          /* 문서 스펙: 모바일에서는 그리드가 아니라 가로 스와이프 캐러셀로,
-             한 번에 1.2장 정도 보이게 한다. */
           .strategyGrid {
             display: flex;
-            grid-template-columns: none;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
             gap: 14px;
@@ -673,93 +290,34 @@ export default function HomeClient({ stocks, marketState, performanceSummary }) 
             flex: 0 0 82%;
             scroll-snap-align: start;
           }
-          .quickLinksGrid {
-            grid-template-columns: 1fr;
-          }
-          .heroTop {
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: stretch;
-            min-height: 0;
-            gap: 16px;
-          }
-          .heroMain {
-            max-width: 100%;
-            flex: none;
-          }
-          .updateBox {
-            width: 100%;
-            text-align: left;
-            min-width: 0;
-          }
-          .heroCharacter {
-            display: block;
-            position: relative;
-            right: auto;
-            bottom: auto;
-            width: min(72vw, 360px);
-            height: min(72vw, 360px);
-            margin: 0 auto;
-            opacity: 0.95;
-          }
-          .hero::before {
-            display: none;
-          }
+        }
+
+        .footer {
+          border-top: 1px solid #e5e7eb;
+          background: #ffffff;
+        }
+        .footerInner {
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+          color: var(--ink-600);
+        }
+        .footerInner p {
+          margin: 0;
+        }
+        .footerInner a {
+          color: var(--ink-900);
+          text-decoration: none;
+          font-weight: 700;
         }
         @media (max-width: 640px) {
           .container {
-            padding: 24px 18px 64px;
-          }
-          .hero {
-            padding: 12px 0 8px;
-          }
-          .heroTop {
-            gap: 12px;
-          }
-          .heroCharacter {
-            width: min(78vw, 320px);
-            height: min(78vw, 320px);
-            margin-top: 4px;
-          }
-          .heroCharacterGlow {
-            display: none;
-          }
-          .desc {
-            font-size: 1rem;
-            line-height: 1.8;
-          }
-          .heroActions {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            gap: 10px;
-            margin-top: 20px;
-            width: 100%;
-          }
-          .modalActions,
-          .subscribeActions {
-            flex-direction: column;
-          }
-          .heroActions .primaryBtn,
-          .heroActions .secondaryBtn {
-            width: calc(50% - 5px);
-            min-width: 0;
-            padding: 14px 10px;
-            font-size: 0.95rem;
-            white-space: nowrap;
-          }
-          .ghostBtn,
-          .linkBtn,
-          .miniActionLink,
-          .primaryBtn,
-          .secondaryBtn {
-            width: 100%;
-          }
-          .strategyCard,
-          .quickLinksCard,
-          .subscribeCard,
-          .modalCard {
-            padding: 22px;
+            padding: 4px 18px 32px;
           }
         }
       `}</style>
