@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageTopBar from "../components/PageTopBar";
 import { cleanStockName } from "../lib/stockName";
 import { buildPerformanceData } from "../lib/performanceSummary";
@@ -73,6 +73,24 @@ export default function PerformanceClient({ history, stocks }) {
     history[1]?.snapshotDate || history[0]?.snapshotDate || null
   );
   const [visibleWeeksCount, setVisibleWeeksCount] = useState(10);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeDetailTab, setActiveDetailTab] = useState("detail");
+
+  const closeModal = () => setModalOpen(false);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setModalOpen(false);
+    };
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [modalOpen]);
 
   const performanceData = useMemo(
     () => buildPerformanceData({ history, stocks, selectedSnapshotDate }),
@@ -282,7 +300,17 @@ export default function PerformanceClient({ history, stocks }) {
                       <td>{row.isLatestSnapshot ? "-" : formatRatio(row.winRate)}</td>
                       <td>{row.isLatestSnapshot ? "-" : `${formatDelta(row.bestReturn)} / ${formatDelta(row.worstReturn)}`}</td>
                       <td>
-                        <button type="button" className={`detailBtn ${selectedSnapshotDate === row.snapshotDate ? "active" : ""}`} onClick={() => setSelectedSnapshotDate(row.snapshotDate)}>보기</button>
+                        <button
+                          type="button"
+                          className={`detailBtn ${selectedSnapshotDate === row.snapshotDate ? "active" : ""}`}
+                          onClick={() => {
+                            setSelectedSnapshotDate(row.snapshotDate);
+                            setActiveDetailTab("detail");
+                            setModalOpen(true);
+                          }}
+                        >
+                          보기
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -325,18 +353,49 @@ export default function PerformanceClient({ history, stocks }) {
           </div>
         </section>
 
-        {selectedWeek ? (
-          <>
-            <section className="detailSection">
-              <div className="sectionCard">
-                <div className="detailHeader">
-                  <div>
-                    <h2>{selectedWeek.weekLabel} 상세 성과</h2>
-                    <p className="detailDesc">추천 당시 가격, 현재 가격, 실제 수익률과 당시 상승여력을 함께 보여줍니다.</p>
-                  </div>
+        {modalOpen && selectedWeek ? (
+          <div
+            className="perfModalBackdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selectedWeek.weekLabel} 상세`}
+            onClick={closeModal}
+          >
+            <div className="perfModalCard" onClick={(e) => e.stopPropagation()}>
+              <div className="perfModalHeader">
+                <div>
                   <span className="detailBadge">기준일 {selectedWeek.snapshotDate}</span>
+                  <h2>{selectedWeek.weekLabel} 상세</h2>
                 </div>
-                <div className="benchmarkSummary">
+                <button type="button" className="perfModalClose" onClick={closeModal} aria-label="닫기">
+                  ×
+                </button>
+              </div>
+              <div className="perfModalTabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeDetailTab === "detail"}
+                  className={`perfModalTab ${activeDetailTab === "detail" ? "active" : ""}`}
+                  onClick={() => setActiveDetailTab("detail")}
+                >
+                  상세 성과
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeDetailTab === "trust"}
+                  className={`perfModalTab ${activeDetailTab === "trust" ? "active" : ""}`}
+                  onClick={() => setActiveDetailTab("trust")}
+                >
+                  추천 vs 현재 판정
+                </button>
+              </div>
+              <div className="perfModalBody">
+                {activeDetailTab === "detail" ? (
+                  <div className="perfModalPane">
+                    <p className="detailDesc">추천 당시 가격, 현재 가격, 실제 수익률과 당시 상승여력을 함께 보여줍니다.</p>
+                    <div className="benchmarkSummary">
                   <span>KOSPI 기준값</span>
                   <strong>{formatIndex(selectedWeek.benchmarkBase)}</strong>
                   <span>
@@ -407,18 +466,11 @@ export default function PerformanceClient({ history, stocks }) {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </section>
-
-            <section className="trustSection">
-              <div className="sectionCard">
-                <div className="sectionHeaderInline">
-                  <div>
-                    <h2>{selectedWeek.weekLabel} 추천 vs 현재 판정</h2>
-                    <p className="detailDesc">선택한 주차에서 현재 시점 기준 상대적으로 강하게 남은 종목을 위쪽에 정렬했습니다.</p>
                   </div>
-                </div>
-                <div className="trustGrid">
+                ) : (
+                  <div className="perfModalPane">
+                    <p className="detailDesc">선택한 주차에서 현재 시점 기준 상대적으로 강하게 남은 종목을 위쪽에 정렬했습니다.</p>
+                    <div className="trustGrid">
                   {performanceData.selectedWeekSortedPicks.slice(0, 4).map((pick) => {
                     const status = getRowStatusLabel(pick.returnRate, selectedWeek.benchmarkReturn, {
                       isLatestSnapshot: selectedWeek.isLatestSnapshot,
@@ -470,10 +522,12 @@ export default function PerformanceClient({ history, stocks }) {
                       </div>
                     );
                   })}
-                </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </section>
-          </>
+            </div>
+          </div>
         ) : null}
 
         <section className="pickSection">
@@ -573,7 +627,7 @@ export default function PerformanceClient({ history, stocks }) {
         .updateBox { min-width: 180px; padding: 16px 18px; border-radius: 18px; background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05); text-align: right; }
         .updateLabel { display: block; margin-bottom: 6px; color: #64748b; font-size: 0.88rem; font-weight: 700; }
         .updateBox strong { display: block; font-size: 1.15rem; color: #0f172a; }
-        .methodSection, .kpiSection, .graphSection, .historySection, .detailSection, .trustSection, .pickSection, .controversySection, .noticeSection { margin-top: 24px; }
+        .methodSection, .kpiSection, .graphSection, .historySection, .pickSection, .controversySection, .noticeSection { margin-top: 24px; }
         .methodCard, .kpiCard, .graphCard, .sectionCard, .noticeCard, .pickCard, .controversyCard { border: 1px solid #e5e7eb; border-radius: 28px; padding: 24px; background: linear-gradient(180deg, #ffffff 0%, var(--ruby-50) 100%); box-shadow: 0 20px 50px rgba(15, 23, 42, 0.06); }
         .methodHeader h2, .graphCard h2, .sectionCard h2, .noticeCard h2, .pickCard h2, .controversyCard h2 { margin: 0 0 10px; font-size: 1.5rem; letter-spacing: -0.03em; }
         .methodGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
@@ -612,6 +666,27 @@ export default function PerformanceClient({ history, stocks }) {
         .tableNote { margin: 14px 0 0; color: #64748b; font-size: 0.92rem; line-height: 1.7; }
         .detailBtn { height: 38px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--gold-500); background: #ffffff; color: #0f172a; font-weight: 800; cursor: pointer; }
         .detailBtn.active { background: var(--ruby-700); color: #ffffff; border-color: var(--ruby-700); }
+        .perfModalBackdrop { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding: 48px 20px; background: rgba(43, 3, 8, 0.45); backdrop-filter: blur(3px); overflow-y: auto; animation: perfModalFade 0.16s ease-out; }
+        .perfModalCard { width: 100%; max-width: 960px; max-height: calc(100vh - 96px); display: flex; flex-direction: column; overflow: hidden; background: #ffffff; border: 1px solid rgba(201, 163, 74, 0.55); border-radius: var(--radius-card, 24px); box-shadow: 0 30px 80px rgba(43, 3, 8, 0.4); animation: perfModalRise 0.18s ease-out; }
+        .perfModalHeader { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 22px 24px 16px; border-bottom: 1px solid #e5e7eb; }
+        .perfModalHeader .detailBadge { margin: 0 0 8px; }
+        .perfModalHeader h2 { margin: 0; font-size: 1.35rem; letter-spacing: -0.03em; }
+        .perfModalClose { flex-shrink: 0; width: 38px; height: 38px; border-radius: 999px; border: 1px solid var(--gold-500); background: #ffffff; color: var(--ruby-700); font-size: 1.3rem; line-height: 1; font-weight: 800; cursor: pointer; }
+        .perfModalClose:hover { background: var(--ruby-50); }
+        .perfModalTabs { display: flex; gap: 8px; padding: 14px 24px 0; flex-wrap: wrap; }
+        .perfModalTab { height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--gold-500); background: #ffffff; color: #0f172a; font-weight: 800; font-size: 0.94rem; cursor: pointer; }
+        .perfModalTab.active { background: var(--ruby-700); color: #ffffff; border-color: var(--ruby-700); }
+        .perfModalBody { flex: 1; overflow-y: auto; padding: 20px 24px 26px; }
+        .perfModalPane .detailDesc { margin: 0 0 16px; }
+        @keyframes perfModalFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes perfModalRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @media (prefers-reduced-motion: reduce) {
+          .perfModalBackdrop, .perfModalCard { animation: none; }
+        }
+        @media (max-width: 720px) {
+          .perfModalBackdrop { padding: 0; }
+          .perfModalCard { max-width: none; min-height: 100vh; max-height: 100vh; border-radius: 0; border: none; }
+        }
         .benchmarkSummary { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; align-items: center; }
         .benchmarkSummary span { color: #64748b; font-size: 0.85rem; font-weight: 700; }
         .benchmarkSummary strong { font-size: 1rem; font-weight: 900; }
