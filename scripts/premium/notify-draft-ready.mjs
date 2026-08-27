@@ -42,11 +42,47 @@ function buildPreviewUrl(reportId) {
   return token ? `${base}?token=${encodeURIComponent(token)}` : base;
 }
 
+// 슬랙 plain_text 옵션 라벨 75자 제한.
+function truncate(s, n = 72) {
+  const str = String(s || "");
+  return str.length > n ? `${str.slice(0, n)}…` : str;
+}
+
+// "빼고 발송할 섹션" 체크박스. 미선택 = 전체 발송.
+// 승인 시 handleReportAction 이 payload.state.values.exclude_sections_block 에서 읽는다.
+function buildExcludeSectionsBlock(report) {
+  const sections = report.content_json?.sections || [];
+  if (sections.length === 0) return null;
+
+  // 슬랙 체크박스 그룹당 옵션 최대 10개. 초과 시 뒷섹션은 제외 대상에서 빠지므로
+  // (전체 발송) 안전한 방향이지만 로그로 남긴다.
+  const MAX = 10;
+  if (sections.length > MAX) {
+    console.warn(`[알림] 섹션 ${sections.length}개 - 제외 체크박스는 앞 ${MAX}개만 노출됩니다`);
+  }
+  const options = sections.slice(0, MAX).map((s, i) => ({
+    text: { type: "plain_text", text: truncate(`${i + 1}. ${s.title}`) },
+    value: String(i),
+  }));
+
+  return {
+    type: "section",
+    block_id: "exclude_sections_block",
+    text: { type: "mrkdwn", text: "*빼고 발송할 섹션* (선택 안 하면 전체 발송)" },
+    accessory: {
+      type: "checkboxes",
+      action_id: "exclude_sections_select",
+      options,
+    },
+  };
+}
+
 function buildMessage(report) {
   const sectionCount = (report.content_json?.sections || []).length;
   const readingMin = estimateReadingMinutes(report);
   const stockCount = countRelatedStockCodes(report);
   const previewUrl = buildPreviewUrl(report.id);
+  const excludeBlock = buildExcludeSectionsBlock(report);
 
   return {
     text: `${report.issue_date} 리포트 초안 생성 완료`,
@@ -61,6 +97,7 @@ function buildMessage(report) {
             `<${previewUrl}|미리보기 열기>`,
         },
       },
+      ...(excludeBlock ? [excludeBlock] : []),
       {
         type: "actions",
         block_id: `report_${report.id}`,

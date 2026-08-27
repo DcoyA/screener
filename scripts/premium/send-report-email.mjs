@@ -35,7 +35,7 @@ function sleep(ms) {
 // 지정 없으면 오늘 issue_date의 approved 리포트를 찾는다(정상 경로에선
 // 하루 1건만 존재 - generate-report.mjs가 issue_date당 1건으로 막아둠).
 async function fetchApprovedReports(reportId) {
-  let query = supabase.from("reports").select("id, issue_date, topic_title, content_json").eq("status", "approved");
+  let query = supabase.from("reports").select("id, issue_date, topic_title, content_json, excluded_sections").eq("status", "approved");
   query = reportId ? query.eq("id", reportId) : query.eq("issue_date", kstTodayStr());
 
   const { data, error } = await query;
@@ -49,7 +49,7 @@ async function fetchApprovedReports(reportId) {
 async function fetchLatestReport() {
   const { data, error } = await supabase
     .from("reports")
-    .select("id, issue_date, topic_title, content_json")
+    .select("id, issue_date, topic_title, content_json, excluded_sections")
     .order("issue_date", { ascending: false })
     .limit(1)
     .maybeSingle();

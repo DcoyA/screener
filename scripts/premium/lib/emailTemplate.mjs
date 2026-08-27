@@ -5,6 +5,7 @@
 // 클라이언트 대부분이 CSS 변수를 지원하지 않아 인라인 리터럴이 필수).
 // 토큰이 바뀌면 이 파일도 같이 고쳐야 한다 - 자동 동기화 수단은 없다.
 import { cleanStockName } from "../../../app/lib/stockName.js";
+import { visibleSections } from "../../../app/lib/reportSections.js";
 
 const COLOR_PRIMARY = "#4b3fff"; // --color-primary
 const COLOR_SURFACE_TINT = "#f1effe"; // --color-surface-tint
@@ -111,7 +112,9 @@ function renderCalendar(items) {
 export function buildEmailHtml(report, { webviewUrl, unsubscribeUrl }) {
   const content = report.content_json || {};
   const cover = content.cover || {};
-  const sections = (content.sections || []).map(renderSection).join("");
+  // STEP 10: reports.excluded_sections 로 걸러진 섹션만. content_json 은 불변.
+  // 번호(renderSection 의 index+1)는 필터 후 위치 기준으로 다시 매겨진다(1,2,3…).
+  const sections = visibleSections(report).map(renderSection).join("");
 
   return `<!doctype html>
 <html lang="ko">

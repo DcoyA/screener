@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../../lib/supabase/admin";
 import { resolveReportAccess } from "../../lib/reportAccess";
 import { cleanStockName } from "../../lib/stockName";
+import { visibleSections } from "../../lib/reportSections";
 import PageTopBar from "../../components/PageTopBar";
 
 const HORIZON_LABEL = { short: "단기", mid: "중기", long: "장기" };
@@ -30,7 +31,8 @@ const styles = {
 function ReportBody({ report }) {
   const content = report.content_json || {};
   const cover = content.cover || {};
-  const sections = content.sections || [];
+  // STEP 10: reports.excluded_sections 로 걸러진 섹션만. content_json 은 불변.
+  const sections = visibleSections(report);
   const followup = content.followup || [];
   const nextWeekCalendar = content.next_week_calendar || [];
 
@@ -148,7 +150,8 @@ function ReportBody({ report }) {
 function LockedReportView({ report }) {
   const content = report.content_json || {};
   const cover = content.cover || {};
-  const firstSection = (content.sections || [])[0];
+  // 잠금 미리보기도 제외된 섹션은 건너뛴다(제외 1번 섹션이 미리보기로 새면 안 됨).
+  const firstSection = visibleSections(report)[0];
   const previewText = firstSection?.what_happened
     ? `${firstSection.what_happened.slice(0, 120)}${firstSection.what_happened.length > 120 ? "…" : ""}`
     : null;
@@ -209,7 +212,7 @@ export default async function ReportDetailPage({ params, searchParams }) {
   const supabase = createSupabaseAdminClient();
   const { data: report, error } = await supabase
     .from("reports")
-    .select("id, issue_date, day_type, topic_title, content_json, status")
+    .select("id, issue_date, day_type, topic_title, content_json, status, excluded_sections")
     .eq("id", id)
     .maybeSingle();
 

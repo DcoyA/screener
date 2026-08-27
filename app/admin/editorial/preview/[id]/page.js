@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../../../../lib/supabase/admin";
 import { buildEmailHtml } from "../../../../../scripts/premium/lib/emailTemplate.mjs";
 import { cleanStockName } from "../../../../lib/stockName";
+import { visibleSections } from "../../../../lib/reportSections";
 
 const STATUS_LABEL = {
   draft: "초안(검수 대기)",
@@ -70,7 +71,7 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
   const supabase = createSupabaseAdminClient();
   const { data: report, error } = await supabase
     .from("reports")
-    .select("id, issue_date, day_type, topic_title, content_json, status")
+    .select("id, issue_date, day_type, topic_title, content_json, status, excluded_sections")
     .eq("id", id)
     .maybeSingle();
 
@@ -83,6 +84,9 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
   }
 
   const content = report.content_json || {};
+  // 편집자 미리보기는 전체 섹션을 보여주되 제외된 것에 표시만 한다.
+  // 아래 이메일 HTML iframe(buildEmailHtml)은 excluded_sections를 반영해 실제 발송본과 동일.
+  const excludedSet = new Set((report.excluded_sections || []).map(Number));
   const sections = content.sections || [];
   const followup = content.followup || [];
   const nextWeekCalendar = content.next_week_calendar || [];
@@ -103,9 +107,12 @@ export default async function EditorialPreviewPage({ params, searchParams }) {
       {content.cover?.market_temp ? <p style={styles.marketTemp}>{content.cover.market_temp}</p> : null}
 
       {sections.map((s, i) => (
-        <div key={i} style={styles.section}>
+        <div key={i} style={{ ...styles.section, ...(excludedSet.has(i) ? { opacity: 0.4 } : {}) }}>
           <h2 style={styles.sectionTitle}>
             {i + 1}. {s.title}
+            {excludedSet.has(i) ? (
+              <span style={{ ...styles.status, marginLeft: 8, background: "#fee2e2", color: "#991b1b" }}>발송 제외됨</span>
+            ) : null}
           </h2>
 
           <p style={styles.label}>무슨 일이 있었나</p>

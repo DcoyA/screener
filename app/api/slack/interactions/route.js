@@ -200,31 +200,121 @@ const REPORT_ACTION_TO_STATUS = {
   discard_report: "discarded",
 };
 
-async function handleReportAction(supabase, actionId, reportId, responseUrl) {
-  const newStatus = REPORT_ACTION_TO_STATUS[actionId];
+// 초안 알림의 "빼고 발송할 섹션" 체크박스에서 선택된 인덱스(원본 sections 기준 0-based).
+function readExcludedSections(payload) {
+  const opts = payload?.state?.values?.exclude_sections_block?.exclude_sections_select?.selected_options || [];
+  const seen = new Set();
+  for (const o of opts) {
+    const n = Number(o?.value);
+    if (Number.isInteger(n) && n >= 0) seen.add(n);
+  }
+  return [...seen].sort((a, b) => a - b);
+}
 
+// 승인 확정: excluded_sections 저장 → 상태 approved → 발송 워크플로 트리거.
+async function finalizeApproval(supabase, reportId, excluded, responseUrl) {
+  const { error } = await supabase
+    .from("reports")
+    .update({ status: "approved", excluded_sections: excluded })
+    .eq("id", reportId);
+  if (error) {
+    console.error("reports 승인 업데이트 실패:", error);
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+  }
+
+  const exclNote = excluded.length > 0 ? ` (제외 섹션: ${excluded.map((i) => i + 1).join(", ")})` : "";
+  const dispatch = await triggerWorkflowDispatch("premium-report-send.yml", { report_id: String(reportId) });
+  if (dispatch.ok) {
+    await replySlack(responseUrl, `✅ 승인됨 - 발송을 시작합니다${exclNote}`);
+  } else {
+    await replySlack(
+      responseUrl,
+      `⚠️ 승인은 됐지만 발송이 자동 시작되지 않았습니다 - 수동 실행 필요${exclNote} (${dispatch.error || "원인 미상"})`
+    );
+    await postSlackWebhook(
+      `🔴 리포트 ${reportId} 승인됨 - 자동 발송 트리거 실패. premium-report-send.yml 을 report_id=${reportId} 로 수동 실행해주세요. (원인: ${dispatch.error || "원인 미상"})`
+    );
+  }
+  console.log(`[슬랙 인터랙션] report ${reportId} -> approved, excluded=[${excluded.join(",")}]`);
+  return NextResponse.json({ ok: true });
+}
+
+async function handleReportApprove(supabase, reportId, payload, responseUrl, { skipSingleConfirm = false } = {}) {
+  const { data: report, error: fetchErr } = await supabase
+    .from("reports")
+    .select("content_json")
+    .eq("id", reportId)
+    .maybeSingle();
+  if (fetchErr || !report) {
+    console.error("reports 조회 실패(approve):", fetchErr);
+    return NextResponse.json({ ok: false, error: "리포트를 찾을 수 없습니다" }, { status: 404 });
+  }
+
+  const total = (report.content_json?.sections || []).length;
+  const excludedRaw = readExcludedSections(payload);
+  // 범위 밖 인덱스는 버린다(섹션 수가 줄었거나 이상값).
+  const excluded = excludedRaw.filter((i) => i < total);
+  const remaining = total - excluded.length;
+
+  // 가드 1: 전 섹션 제외 → 발송 차단. 상태 유지.
+  if (total > 0 && remaining <= 0) {
+    await replySlack(
+      responseUrl,
+      "⛔ 모든 섹션이 제외됐습니다. 발송할 내용이 없어 승인하지 않았습니다. 체크박스를 조정한 뒤 다시 승인해주세요."
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  // 가드 2: 남은 섹션 1개 → 한 번 더 확인. 재확인 버튼에 excluded 를 실어 보낸다.
+  if (!skipSingleConfirm && total > 1 && remaining === 1) {
+    const keptIdx = [...Array(total).keys()].find((i) => !excluded.includes(i));
+    await replySlack(
+      responseUrl,
+      `⚠️ 섹션 ${excluded.length}개를 빼면 *${keptIdx + 1}번 섹션 1개만* 발송됩니다.\n` +
+        `그래도 발송하려면 아래 버튼을 눌러주세요.`
+    );
+    // 원본 메시지를 대체했으므로 재확인 버튼을 별도 메시지로 남긴다.
+    await fetch(responseUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        replace_original: false,
+        blocks: [
+          {
+            type: "actions",
+            block_id: `report_confirm_${reportId}`,
+            elements: [
+              {
+                type: "button",
+                text: { type: "plain_text", text: "1개 섹션으로 발송" },
+                style: "primary",
+                action_id: "approve_report_confirm_single",
+                value: `${reportId}|${excluded.join(",")}`,
+              },
+            ],
+          },
+        ],
+      }),
+    });
+    return NextResponse.json({ ok: true });
+  }
+
+  return finalizeApproval(supabase, reportId, excluded, responseUrl);
+}
+
+async function handleReportAction(supabase, actionId, reportId, payload, responseUrl) {
+  if (actionId === "approve_report") {
+    return handleReportApprove(supabase, reportId, payload, responseUrl);
+  }
+
+  const newStatus = REPORT_ACTION_TO_STATUS[actionId];
   const { error } = await supabase.from("reports").update({ status: newStatus }).eq("id", reportId);
   if (error) {
     console.error("reports 업데이트 실패:", error);
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  if (newStatus === "approved") {
-    const dispatch = await triggerWorkflowDispatch("premium-report-send.yml", { report_id: String(reportId) });
-    if (dispatch.ok) {
-      await replySlack(responseUrl, "✅ 승인됨 - 발송을 시작합니다");
-    } else {
-      // 자동 발송 트리거 실패를 "✅ 승인됨"으로만 표시하면 발송 누락을 놓친다.
-      // 문구를 경고로 바꾸고, 별도 에러 알림도 채널에 남긴다(STEP 9 task 4).
-      await replySlack(
-        responseUrl,
-        `⚠️ 승인은 됐지만 발송이 자동 시작되지 않았습니다 - 수동 실행 필요 (${dispatch.error || "원인 미상"})`
-      );
-      await postSlackWebhook(
-        `🔴 리포트 ${reportId} 승인됨 - 자동 발송 트리거 실패. premium-report-send.yml 을 report_id=${reportId} 로 수동 실행해주세요. (원인: ${dispatch.error || "원인 미상"})`
-      );
-    }
-  } else if (newStatus === "needs_revision") {
+  if (newStatus === "needs_revision") {
     await replySlack(
       responseUrl,
       "✏️ 수정 필요로 표시했습니다. Supabase에서 reports.content_json을 직접 수정한 뒤 status를 draft로 되돌리고 다시 검수 요청해주세요."
@@ -257,8 +347,8 @@ export async function POST(request) {
   const responseUrl = payload?.response_url;
 
   // 체크박스 토글 자체(각 클릭마다 슬랙이 보냄)는 상태 갱신 없이 그냥
-  // 200만 돌려준다 - 실제 처리는 제출 버튼 클릭 시에만 한다.
-  if (actionId === "select_candidates") {
+  // 200만 돌려준다 - 실제 처리는 제출/승인 버튼 클릭 시에만 한다.
+  if (actionId === "select_candidates" || actionId === "exclude_sections_select") {
     return NextResponse.json({ ok: true });
   }
 
@@ -274,12 +364,23 @@ export async function POST(request) {
     result = await handleIgnoreFailure(action, responseUrl);
   } else if (actionId === "generate_selected_candidates" || actionId === "skip_all_candidates") {
     result = await handleCandidateSelection(supabase, actionId, action, payload, responseUrl);
+  } else if (actionId === "approve_report_confirm_single") {
+    // "1개 섹션으로 발송" 재확인 버튼. value = "<reportId>|<제외인덱스,콤마>"
+    const [reportId, exclCsv] = String(action?.value || "").split("|");
+    if (!reportId) {
+      return NextResponse.json({ ok: false, error: "report id 없음" }, { status: 400 });
+    }
+    const excluded = (exclCsv || "")
+      .split(",")
+      .map(Number)
+      .filter((n) => Number.isInteger(n) && n >= 0);
+    result = await finalizeApproval(supabase, reportId, excluded, responseUrl);
   } else if (REPORT_ACTION_TO_STATUS[actionId]) {
     const value = action?.value;
     if (!value) {
       return NextResponse.json({ ok: false, error: "report id 없음" }, { status: 400 });
     }
-    result = await handleReportAction(supabase, actionId, value, responseUrl);
+    result = await handleReportAction(supabase, actionId, value, payload, responseUrl);
   } else {
     return NextResponse.json({ ok: false, error: "알 수 없는 action" }, { status: 400 });
   }
