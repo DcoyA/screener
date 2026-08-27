@@ -108,7 +108,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           height: 40px;
           padding: 0 20px;
           border-radius: 12px;
-          border: none;
+          border: 1px solid var(--gold-500);
           background: var(--ruby-700);
           color: #ffffff;
           font-weight: 800;
@@ -267,7 +267,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           font-size: 0.94rem;
           background: #ffffff;
           color: var(--ruby-700);
-          border: 1px solid var(--ruby-700);
+          border: 1px solid var(--gold-500);
           transition: background 0.18s ease;
         }
         .linkBtn:hover {

@@ -23,7 +23,7 @@ export default function StrategySection({ strategyCards }) {
     <section className="strategySection">
       <div className="sectionHeaderRow">
         <div>
-          <h2 className="sectionTitle">오늘 볼 만한 거 3개</h2>
+          <h2 className="sectionTitle">보유기간별 추천종목</h2>
           <p className="sectionDesc">
             얼마나 오래 들고 갈지에 따라 나눠봤어요.
           </p>

@@ -19,6 +19,22 @@
   --pearl-warm: #ffe9d6;
   --pearl-cool: #e7d9f0;
 
+  /* 금색 액센트 - 버건디/루비에 어울리는 "화려한 금"(노랑 아님).
+     테두리·구분선·강조 림에만 쓴다(본문 텍스트 금지). */
+  --gold-700: #8a6d2c; /* 딥 (그림자쪽) */
+  --gold-500: #c9a34a; /* 기본 리치 골드 */
+  --gold-300: #e8d199; /* 하이라이트 */
+  /* 금속 광택 바 - CTA 테두리처럼 각도가 살아있는 곳에 border-image/border-box로 */
+  --gold-metallic: linear-gradient(
+    135deg,
+    #8a6d2c 0%,
+    #e8d199 20%,
+    #c9a34a 40%,
+    #f4e6b8 58%,
+    #b28a35 78%,
+    #8a6d2c 100%
+  );
+
   /* 신호색 - "숫자에만" 쓴다. 본문/라벨 색으로 쓰지 말 것. */
   --signal-up: #e5334a;
   --signal-down: #2563eb;
@@ -97,6 +113,9 @@
   isolation: isolate;
   overflow: hidden;
   color: #ffffff;
+  /* 금색 하이라인 림. 버건디 위 얇은 금테 = 클래식 럭셔리 페어링. */
+  border: 1px solid rgba(201, 163, 74, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(232, 209, 153, 0.12);
   background:
     radial-gradient(120% 80% at 20% -10%, rgba(255, 233, 214, 0.22), transparent 60%),
     radial-gradient(100% 90% at 85% 115%, rgba(0, 0, 0, 0.45), transparent 55%),
@@ -128,19 +147,20 @@
   transform: translateX(6%);
 }
 
-/* 구독 CTA. border-box 그라디언트로 펄 림을 준다. */
+/* 구독 CTA. border-box 그라디언트로 금속 광택 금테를 준다. */
 .rubyCta {
   border: 2px solid transparent;
   border-radius: var(--radius-pill);
   background:
     linear-gradient(var(--ruby-700), var(--ruby-900)) padding-box,
-    linear-gradient(120deg, var(--pearl-warm), #ffffff, var(--pearl-cool), var(--pearl-warm)) border-box;
+    var(--gold-metallic) border-box;
   color: #ffffff;
   font-weight: 800;
+  box-shadow: 0 1px 0 rgba(232, 209, 153, 0.25), 0 6px 18px rgba(43, 3, 8, 0.28);
   transition: filter 0.18s ease, transform 0.18s ease;
 }
 .rubyCta:hover {
-  filter: brightness(1.06);
+  filter: brightness(1.08) saturate(1.05);
 }
 .rubyCta:active {
   transform: translateY(1px);

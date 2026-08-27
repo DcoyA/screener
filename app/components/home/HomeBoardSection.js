@@ -321,7 +321,7 @@ export default function HomeBoardSection({ stocks = [] }) {
           margin-top: 12px;
           width: 100%;
           padding: 10px;
-          border: 1px solid var(--ink-300);
+          border: 1px solid var(--gold-500);
           border-radius: 12px;
           background: #fff;
           font-weight: 800;

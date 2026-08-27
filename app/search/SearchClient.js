@@ -193,7 +193,7 @@ export default function SearchClient({ index = [] }) {
           height: 52px;
           padding: 0 22px;
           border-radius: 14px;
-          border: none;
+          border: 1px solid var(--gold-500);
           background: var(--ruby-700);
           color: #ffffff;
           font-weight: 800;
