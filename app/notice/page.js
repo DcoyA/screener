@@ -619,7 +619,7 @@ export default function NoticePage() {
         .container {
           max-width: 1180px;
           margin: 0 auto;
-          padding: 32px 24px 80px;
+          padding: 0 24px 80px;
           color: #0f172a;
         }
         .topLinks {
@@ -1030,7 +1030,7 @@ export default function NoticePage() {
         }
         @media (max-width: 760px) {
           .container {
-            padding: 24px 18px 64px;
+            padding: 0 18px 64px;
           }
           .sectionHeader,
           .topLinks {

@@ -14,7 +14,7 @@ const VERDICT_STYLE = {
 };
 
 const styles = {
-  container: { maxWidth: 760, margin: "0 auto", padding: "24px 24px 100px", color: "#0f172a" },
+  container: { maxWidth: 760, margin: "0 auto", padding: "0 24px 100px", color: "#0f172a" },
   meta: { color: "#64748b", fontWeight: 700, margin: "0 0 8px" },
   title: { margin: "0 0 8px", letterSpacing: "-0.03em" },
   marketTemp: { color: "#475569", margin: "0 0 28px" },

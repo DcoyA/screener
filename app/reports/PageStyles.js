@@ -13,7 +13,7 @@ export default function ReportsPageStyles() {
       .container {
         max-width: 1180px;
         margin: 0 auto;
-        padding: 32px 24px 80px;
+        padding: 0 24px 80px;
         color: #0f172a;
       }
       .performanceCrossLink {
@@ -299,7 +299,7 @@ export default function ReportsPageStyles() {
       }
       @media (max-width: 720px) {
         .reports-page .container {
-          padding: 24px 18px 64px;
+          padding: 0 18px 64px;
         }
         .pageHero,
         .reportHead {

@@ -75,7 +75,7 @@ export default function ScreenerPageClient({ stocks, risks, initialTab, initialV
         .container {
           max-width: 1180px;
           margin: 0 auto;
-          padding: 18px 24px 80px;
+          padding: 0 24px 80px;
           color: #0f172a;
         }
         .pageHero {

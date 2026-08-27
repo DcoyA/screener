@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import PageTopBar from "../components/PageTopBar";
 import { cleanStockName } from "../lib/stockName";
@@ -123,9 +122,6 @@ export default function PerformanceClient({ history, stocks }) {
     <>
       <main className="container" style={{ background: "var(--bg-perf)" }}>
         <PageTopBar />
-
-        {/* 상단 네비를 4개로 통합하면서 "성과/백테스트"가 네비에서 빠져 여기서 진입 경로를 열어둔다 */}
-        <Link href="/reports" className="performanceCrossLink">← 무료 리포트로 돌아가기</Link>
 
         <section className="pageHero">
           <div>
@@ -566,8 +562,7 @@ export default function PerformanceClient({ history, stocks }) {
       </main>
 
       <style jsx>{`
-        .container { max-width: 1180px; margin: 0 auto; padding: 18px 24px 80px; color: #0f172a; }
-        .performanceCrossLink { display: inline-flex; margin-bottom: 16px; color: var(--color-primary); font-weight: 800; text-decoration: none; }
+        .container { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; color: #0f172a; }
         .pageHero { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 28px; flex-wrap: wrap; }
         .badge, .methodBadge, .controversyBadge, .detailBadge { display: inline-flex; padding: 8px 14px; border-radius: 999px; font-size: 0.82rem; font-weight: 800; margin: 0 0 18px; }
         .badge { background: var(--ruby-100); color: var(--ruby-700); }
@@ -667,7 +662,7 @@ export default function PerformanceClient({ history, stocks }) {
           .methodGrid, .kpiGrid, .trustGrid, .pickGrid, .noticeGrid, .controversyGrid, .controversyReasonGrid, .benchmarkSummary, .trustMetricRow { grid-template-columns: 1fr; }
         }
         @media (max-width: 720px) {
-          .container { padding: 24px 18px 64px; }
+          .container { padding: 0 18px 64px; }
           .pageHero, .graphHeader, .detailHeader, .controversyHeader, .sectionHeaderInline { flex-direction: column; }
           .updateBox { width: 100%; text-align: left; }
           .methodCard, .kpiCard, .graphCard, .sectionCard, .noticeCard, .pickCard, .controversyCard { padding: 22px; }

@@ -177,7 +177,7 @@ function MePageContent({ stocks }) {
   };
 
   return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a", background: "var(--bg-me)" }}>
+    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "0 24px 80px", color: "#0f172a", background: "var(--bg-me)" }}>
       <PageTopBar />
 
       <section style={{ marginBottom: 26 }}>
@@ -224,7 +224,7 @@ function MePageContent({ stocks }) {
 
 function MePageFallback() {
   return (
-    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px 80px", color: "#0f172a", background: "var(--bg-me)" }}>
+    <main style={{ maxWidth: 1180, margin: "0 auto", padding: "0 24px 80px", color: "#0f172a", background: "var(--bg-me)" }}>
       <p style={{ color: "#64748b", fontWeight: 700 }}>불러오는 중...</p>
     </main>
   );
