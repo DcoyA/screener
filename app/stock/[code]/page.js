@@ -10,6 +10,7 @@ import { getGradeHistory } from "../../lib/gradeHistory";
 import { cleanStockName } from "../../lib/stockName";
 import { formatSectorRelative } from "../../lib/sectorRelative";
 import { fairValueStatusLabel } from "../../lib/fairValue";
+import { formatScoreRank, scoreColor } from "../../lib/scoreStats";
 import ScoreAccordion from "./components/ScoreAccordion";
 
 const SCORE_GROUPS = [
@@ -80,10 +81,11 @@ function formatRatio(value) {
 // ① 한 줄 결론 - 등급 라벨이 아니라 사람이 읽는 문장으로. 매수/매도를
 // 지시하지 않고("사세요"류 금지) 상태만 서술한다(CLAUDE.md 표현 규칙).
 function buildConclusionSentence(stock, grade) {
-  const score = Math.round(Number(stock.totalScore) || 0);
+  // 사용자 화면엔 totalScore를 렌더하지 않는다. 종합판단점수 = finalScore.
+  const score = Math.round(Number(stock?.finalPickMeta?.finalScore) || 0);
   switch (grade.code) {
     case "S":
-      return `지금 조건이 가장 좋은 편입니다. 종합 ${score}점으로 상위권입니다.`;
+      return `지금 조건이 가장 좋은 편입니다. 종합판단점수 ${score}점으로 상위권입니다.`;
     case "A":
       return "기본 체력은 갖췄지만, 지금 바로 담기보단 확인할 조건이 남았습니다.";
     case "B":
@@ -189,7 +191,14 @@ export default async function StockDetailPage({ params }) {
           <WishlistButton code={stock.code} name={stock.name} />
         </div>
         <h1 style={{ margin: "0 0 8px", fontSize: "2.1rem", letterSpacing: "-0.03em" }}>{cleanStockName(stock.name)}</h1>
-        <p style={{ margin: "0 0 18px", color: "#64748b", fontWeight: 700 }}>{stock.market} · {stock.code}</p>
+        <p style={{ margin: "0 0 6px", color: "#64748b", fontWeight: 700 }}>{stock.market} · {stock.code}</p>
+        {Number.isFinite(Number(stock?.finalPickMeta?.finalScore)) ? (
+          <p style={{ margin: "0 0 18px", fontWeight: 800, color: scoreColor(stock.finalPickMeta.finalScore) }}>
+            종합판단점수 {formatScoreRank(stock.finalPickMeta.finalScore)}
+          </p>
+        ) : (
+          <p style={{ margin: "0 0 18px" }} />
+        )}
       </section>
 
       {/* ① 한 줄 결론 */}

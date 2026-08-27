@@ -10,6 +10,7 @@ import { getScoreGaugeColor } from "../../lib/scoreGauge";
 import { formatUpsideDisplay } from "../../lib/formatUpside";
 import { getFairValueStatus, fairValueStatusLabel } from "../../lib/fairValue";
 import { formatRatio } from "../../lib/formatNumber";
+import { percentileLabel, scoreColor } from "../../lib/scoreStats";
 import { buildOneLineReason, buildWarningLine } from "../../lib/screenerReason";
 import { cleanStockName } from "../../lib/stockName";
 
@@ -193,7 +194,7 @@ function computeShortSuitability(stock) {
   return Math.round(momentumScore + upsideScore + liquidityScore);
 }
 function computeAnnualSuitability(stock) {
-  return clamp(Math.round(Number(stock?.totalScore ?? 0)), 0, 100);
+  return clamp(Math.round(Number(stock?.finalPickMeta?.finalScore ?? 0)), 0, 100);
 }
 function computeLongSuitability(stock) {
   const valueScore = Number(stock?.valueScore ?? 0);
@@ -208,7 +209,7 @@ function getGaugeScoreValue(stock, activeView) {
   if (activeView === "short") return computeShortSuitability(stock);
   if (activeView === "annual") return computeAnnualSuitability(stock);
   if (activeView === "long") return computeLongSuitability(stock);
-  return Math.round(Number(stock?.totalScore ?? 0));
+  return Math.round(Number(stock?.finalPickMeta?.finalScore ?? 0));
 }
 function getScorePresentation(stock, activeView) {
   if (activeView === "short") {
@@ -231,7 +232,17 @@ function getScorePresentation(stock, activeView) {
       tooltip: "상승여력은 적정가 추정 대비 괴리 참고치이며 실제 단기 수익률을 보장하지 않습니다. 캡을 초과하는 값은 숫자 대신 구조적 할인/할증 라벨로 표시됩니다.",
     };
   }
-  return { label: "종합 점수", valueText: `${Math.round(Number(stock?.totalScore ?? 0))}점`, tooltip: "종합 점수는 안정성·가치·시장성 등을 함께 반영한 내부 점수이며 예상 수익률을 의미하지 않습니다." };
+  // 종합판단점수 = finalPickMeta.finalScore (등급 산출·슬롯 선정을 구동하는 값과
+  // 동일). 스크리너/상세가 서로 다른 숫자를 보여주던 문제를 없앤다.
+  // 값 텍스트/색은 app/lib/scoreStats.js(전 종목 백분위) 단일 창구를 거친다.
+  const finalScore = Number(stock?.finalPickMeta?.finalScore);
+  return {
+    label: "종합판단점수",
+    valueText: Number.isFinite(finalScore) ? `${Math.round(finalScore)}점` : "-",
+    subText: percentileLabel(finalScore),
+    color: scoreColor(finalScore),
+    tooltip: "종합판단점수는 안정성·가치·시장성·타이밍을 함께 반영한 내부 판단 점수입니다. 옆의 '상위 N%'는 전 종목 대비 위치입니다.",
+  };
 }
 
 // TASK 5(디자인·IA 개편): view/risk 초기값은 상위(ScreenerPageClient)가
@@ -408,9 +419,11 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
             const fvStatus = getFairValueStatus(stock);
             const fvOk = fvStatus === "ok";
             const unifiedGrade = getUnifiedGrade(stock);
-            const gaugeColor = SCORE_GAUGE_VIEWS.has(activeView)
-              ? getScoreGaugeColor(getGaugeScoreValue(stock, activeView))
-              : null;
+            // total 보기는 scoreStats의 백분위 색(scorePresentation.color)을 쓴다.
+            // short/annual/long은 0~100 적합도라 기존 게이지 색(70/40) 유지.
+            const gaugeColor =
+              scorePresentation.color ??
+              (SCORE_GAUGE_VIEWS.has(activeView) ? getScoreGaugeColor(getGaugeScoreValue(stock, activeView)) : null);
 
             return (
               <article className="stockCard" key={`${stock.code}-${activeView}-${activeRisk}`}>
@@ -434,8 +447,8 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
                       </span>
                     </div>
                     <strong style={gaugeColor ? { color: gaugeColor } : undefined}>{scorePresentation.valueText}</strong>
-                    {activeView === "total" && Number(stock.rawTotalScore) !== Number(stock.totalScore) ? (
-                      <span className="rawScore">원점수 {stock.rawTotalScore}</span>
+                    {scorePresentation.subText ? (
+                      <span className="scoreSub">{scorePresentation.subText}</span>
                     ) : null}
                   </div>
                 </div>
@@ -553,7 +566,7 @@ export default function RankingTab({ stocks, initialView: rawInitialView, initia
         .tooltipBubble { position: absolute; right: 0; top: 22px; width: 220px; background: #0f172a; color: #fff; padding: 10px 12px; border-radius: 10px; font-size: .78rem; line-height: 1.5; display: none; z-index: 10; text-align: left; }
         .tooltipTrigger:hover .tooltipBubble, .tooltipTrigger:focus .tooltipBubble { display: block; }
         .scoreWrap strong { font-size: 1.5rem; letter-spacing: -0.03em; }
-        .rawScore { display: block; color: #94a3b8; font-size: .78rem; margin-top: 2px; }
+        .scoreSub { display: block; color: #94a3b8; font-size: .74rem; font-weight: 700; margin-top: 3px; white-space: nowrap; }
         .metricRow { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
         .metricBox { border: 1px solid #eef2f7; border-radius: 14px; padding: 12px; background: #fbfdff; }
         .metricBox span { display: block; color: #94a3b8; font-size: .76rem; margin-bottom: 4px; }

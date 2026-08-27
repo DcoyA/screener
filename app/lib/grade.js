@@ -58,13 +58,10 @@ function buildDescription(stock, gradeCode) {
     Number(stock?.valueScore || 0) + Number(stock?.qualityScore || 0) + Number(stock?.safetyScore || 0);
   const financeGood = financeScore >= 45;
 
-  // 종목별 종합판단점수를 문구 앞에 붙인다 — 같은 등급 구간(S/A/B/C/D) 안에
-  // 묶여도 종목마다 실제 점수는 다르므로, 라벨만 보고 "다 똑같은 종목"으로
-  // 오해하지 않도록 하기 위함이다. finalPickMeta.finalScore가 없으면
-  // totalScore로 대체한다.
-  const rawScore = stock?.finalPickMeta?.finalScore ?? stock?.totalScore;
-  const scoreNum = Number(rawScore);
-  const scorePrefix = Number.isFinite(scoreNum) ? `종합판단점수 ${Math.round(scoreNum)}점 · ` : "";
+  // 종합판단점수 숫자(+백분위)는 이제 화면 쪽에서 scoreStats(app/lib/scoreStats.js)를
+  // 거쳐 별도 라인으로 색까지 입혀 보여준다. 여기서 문구 앞에 또 붙이면
+  // 같은 점수가 두 번 찍히므로 접두어를 뺀다.
+  const scorePrefix = "";
 
   if (gradeCode === "S") {
     return (

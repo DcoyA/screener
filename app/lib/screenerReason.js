@@ -21,7 +21,8 @@ function formatKrwCompact(value) {
 export function buildOneLineReason(stock, activeView) {
   const parts = [];
   const valueScore = Number(stock?.valueScore ?? 0);
-  const totalScore = Number(stock?.totalScore ?? 0);
+  // 사용자 화면엔 totalScore를 렌더하지 않는다. 종합판단점수 = finalScore.
+  const finalScore = Number(stock?.finalPickMeta?.finalScore ?? 0);
   const upside = Number(stock?.metrics?.upside);
   const debtRatio = Number(stock?.metrics?.debtRatio);
   const rankPenalty = Number(stock?.rankMeta?.penalty ?? 0);
@@ -32,7 +33,7 @@ export function buildOneLineReason(stock, activeView) {
 
   if (activeView === "total") {
     if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
-    if (totalScore >= 70) parts.push(`총점 ${totalScore}점`);
+    if (finalScore >= 70) parts.push(`종합 ${Math.round(finalScore)}점`);
     if (upsidePart && upside > 0) parts.push(upsidePart);
     if (rankPenalty > 0) parts.push(`패널티 ${rankPenalty}`);
     if (rankFlags.length) parts.push(rankFlags[0]);
@@ -52,7 +53,7 @@ export function buildOneLineReason(stock, activeView) {
     if (Number(stock?.metrics?.avgTradeValue5d ?? 0) > 0) parts.push(`유동성 ${formatKrwCompact(stock?.metrics?.avgTradeValue5d)}`);
   } else if (activeView === "annual") {
     if (stock?.rankMeta?.topRankEligible) parts.push("안정성 조건 통과");
-    if (totalScore > 0) parts.push(`총점 ${totalScore}점`);
+    if (finalScore > 0) parts.push(`종합 ${Math.round(finalScore)}점`);
     if (Number.isFinite(Number(stock?.metrics?.operatingIncomeGrowth))) parts.push(`영업이익 성장 ${formatDelta(stock?.metrics?.operatingIncomeGrowth)}`);
     if (Number.isFinite(Number(stock?.metrics?.revenueGrowth))) parts.push(`매출 성장 ${formatDelta(stock?.metrics?.revenueGrowth)}`);
   } else if (activeView === "long") {

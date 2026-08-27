@@ -73,16 +73,22 @@ export function percentileOf(score) {
   return percentileRankTop(allScores, toScore(score));
 }
 
+// 점수 옆 백분위 라벨만. "전체 500개 중 상위 12%" / 산출 불가 시 "전체 중앙값 57점".
+export function percentileLabel(score) {
+  const pct = percentileOf(score);
+  if (pct === null) return SCORE_MEDIAN === null ? null : `전체 중앙값 ${SCORE_MEDIAN}점`;
+  return `전체 ${POPULATION_SIZE}개 중 상위 ${pct}%`;
+}
+
 // 1순위 표기: "82점 · 전체 500개 중 상위 12%".
 // 백분위 산출 불가 시에만 "82점 (전체 중앙값 57점)"으로 폴백.
 export function formatScoreRank(score) {
   const s = toScore(score);
   if (!Number.isFinite(s)) return "-";
+  const label = percentileLabel(s);
+  if (!label) return `${Math.round(s)}점`;
   const pct = percentileOf(s);
-  if (pct === null) {
-    return SCORE_MEDIAN === null ? `${Math.round(s)}점` : `${Math.round(s)}점 (전체 중앙값 ${SCORE_MEDIAN}점)`;
-  }
-  return `${Math.round(s)}점 · 전체 ${POPULATION_SIZE}개 중 상위 ${pct}%`;
+  return pct === null ? `${Math.round(s)}점 (${label})` : `${Math.round(s)}점 · ${label}`;
 }
 
 // 색 구간: 상위 20% 이내 --ruby-600 / 20~60% --ink-600 / 60% 밖 --ink-300.
