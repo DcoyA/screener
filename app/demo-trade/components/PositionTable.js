@@ -2,6 +2,7 @@
 
 import { styles } from "../styles";
 import { formatWon, formatRate } from "../lib/format";
+import { normalizeStockName } from "../../lib/stockName";
 
 export default function PositionTable({ portfolioSummary, loadingPositions, onRefresh }) {
   return (
@@ -22,7 +23,7 @@ export default function PositionTable({ portfolioSummary, loadingPositions, onRe
           </div>
           {portfolioSummary.map((item) => (
             <div key={item.code} style={styles.tableRow} className="dt-position-row">
-              <span><strong>{item.name}</strong><br /><em style={styles.codeText}>{item.code}</em></span>
+              <span><strong>{normalizeStockName(item.name)}</strong><br /><em style={styles.codeText}>{item.code}</em></span>
               <span>{item.quantity.toLocaleString()}</span>
               <span>{formatWon(item.avgPrice)}</span>
               <span>{formatWon(item.currentPrice)}</span>

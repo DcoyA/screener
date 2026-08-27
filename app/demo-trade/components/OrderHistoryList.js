@@ -2,6 +2,7 @@
 
 import { styles } from "../styles";
 import { formatWon, normalizeSide, toNumber } from "../lib/format";
+import { normalizeStockName } from "../../lib/stockName";
 
 export default function OrderHistoryList({ orders }) {
   return (
@@ -15,7 +16,7 @@ export default function OrderHistoryList({ orders }) {
             <div key={order.orderId} style={styles.orderItem} className="dt-order-item">
               <div>
                 <strong style={normalizeSide(order.side) === "BUY" ? styles.upText : styles.downText}>
-                  {normalizeSide(order.side) === "BUY" ? "매수" : "매도"} {order.name || order.code}
+                  {normalizeSide(order.side) === "BUY" ? "매수" : "매도"} {order.name ? normalizeStockName(order.name) : order.code}
                 </strong>
                 <p>{order.reason || "매매 사유 없음"}</p>
               </div>

@@ -3,6 +3,8 @@
 // JSON 중간에서 잘려 LLM이 깨진 구조를 오독할 수 있었다 - 여기선 항목 단위로만
 // 자른다(문자열 중간 절단 금지).
 
+import { normalizeStockName } from "../../../app/lib/stockName.js";
+
 const SECTION_CHAR_CAP = 3000; // 섹션(카테고리)당 상한
 const TOTAL_CHAR_CAP = 12000; // 전체 상한
 
@@ -38,7 +40,7 @@ function formatRelatedStock(item) {
     item.sector_strength_score != null
       ? `섹터 강도 점수 ${item.sector_strength_score}/100${item.sector_leader ? " (섹터 리더)" : ""}`
       : "섹터 상대 위치 데이터 없음";
-  return `- ${item.code} ${item.name}: 등급 ${gradeChange}, ${strength}`;
+  return `- ${item.code} ${normalizeStockName(item.name)}: 등급 ${gradeChange}, ${strength}`;
 }
 
 const SECTION_FORMATTERS = {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { styles } from "../styles";
 import { formatWon, formatRate, toNumber } from "../lib/format";
+import { normalizeStockName } from "../../lib/stockName";
 
 export default function ChartPanel({
   name,
@@ -25,7 +26,7 @@ export default function ChartPanel({
     <section style={styles.centerPanel}>
       <div style={styles.quoteHeader} className="dt-quote-header">
         <div>
-          <div style={styles.stockName}>{name || code}</div>
+          <div style={styles.stockName}>{name ? normalizeStockName(name) : code}</div>
           <div style={styles.stockCode}>{code}</div>
           {code && (
             <Link

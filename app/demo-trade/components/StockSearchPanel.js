@@ -2,6 +2,7 @@
 
 import { styles } from "../styles";
 import { POPULAR_STOCKS } from "../lib/constants";
+import { normalizeStockName } from "../../lib/stockName";
 
 export default function StockSearchPanel({
   searchCode,
@@ -40,7 +41,7 @@ export default function StockSearchPanel({
             style={{ ...styles.stockButton, ...(selectedPopularCode === stock.code ? styles.stockButtonActive : {}) }}
             onClick={() => onSelectPopular(stock)}
           >
-            <span>{stock.name}</span>
+            <span>{normalizeStockName(stock.name)}</span>
             <em>{stock.code}</em>
           </button>
         ))}
@@ -66,7 +67,7 @@ export default function StockSearchPanel({
                     cursor: "pointer",
                   }}
                 >
-                  ★ {item.name}
+                  ★ {normalizeStockName(item.name)}
                 </button>
               ))}
             </div>

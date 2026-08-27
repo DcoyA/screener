@@ -6,7 +6,7 @@ import marketState from "../../data/market_state.json";
 import etfUniverse from "../../data/etf_universe.json";
 import { formatUpsidePercent } from "../../lib/formatUpside";
 import { formatDelta, formatRatio } from "../../lib/formatNumber";
-import { cleanStockName } from "../../lib/stockName";
+import { normalizeStockName } from "../../lib/stockName";
 
 function formatKrwCompact(value) {
   const num = Number(value);
@@ -385,7 +385,7 @@ export default function AlternativeTab() {
                           {etf.sector && etf.sector !== "지수" ? <span className="typeBadge soft">{etf.sector}</span> : null}
                           {etf._isRecommended ? <span className="typeBadge rank">추천</span> : null}
                         </div>
-                        <h3>{etf.name}</h3>
+                        <h3>{normalizeStockName(etf.name)}</h3>
                         <p className="codeLine">ETF 코드 {etf.code || "-"} · 유니버스 순위 #{etf._rank || "-"}</p>
                       </div>
                       <div className="scorePanel">
@@ -466,7 +466,7 @@ export default function AlternativeTab() {
                 <h3>오늘의 1종목</h3>
                 {todayStock ? (
                   <>
-                    <h4>{cleanStockName(todayStock.name)}</h4>
+                    <h4>{normalizeStockName(todayStock.name)}</h4>
                     <p className="codeLine">{todayStock.market} · {todayStock.code} · {todayStock.sector || "미분류"}</p>
                     <div className="metricInline">총점 <b>{Number(todayStock.totalScore || 0).toFixed(0)}점</b></div>
                     <div className="metricInline">상승여력 <b>{formatUpsidePercent(todayStock.upside)}</b></div>

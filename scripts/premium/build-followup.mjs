@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { normalizeStockName } from "../../app/lib/stockName.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -124,7 +125,7 @@ export async function buildFollowup() {
 
     followupItems.push({
       from_issue: report.issue_date,
-      topic: `${s.name}(${s.code}) - ${s.sectionTitle}`,
+      topic: `${normalizeStockName(s.name)}(${s.code}) - ${s.sectionTitle}`,
       what_changed: `${gradeChangeText}주가 ${changePct >= 0 ? "+" : ""}${changePct.toFixed(1)}% (${thenPrice.toLocaleString()}원 → ${now.price.toLocaleString()}원)`,
       verdict,
     });
