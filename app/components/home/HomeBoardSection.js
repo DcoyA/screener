@@ -216,7 +216,7 @@ export default function HomeBoardSection({ stocks = [] }) {
         }
         .boardTitle {
           margin: 0 0 14px;
-          font-size: 1.15rem;
+          font-size: var(--font-title);
           font-weight: 800;
           letter-spacing: -0.02em;
           color: var(--ink-900);
@@ -236,7 +236,7 @@ export default function HomeBoardSection({ stocks = [] }) {
           padding: 0 8px 8px;
           border-bottom: 1px solid var(--ink-100);
           color: var(--ink-600);
-          font-size: 0.76rem;
+          font-size: var(--font-caption);
           font-weight: 700;
         }
         .boardHeadRow.twoCol {
@@ -274,7 +274,7 @@ export default function HomeBoardSection({ stocks = [] }) {
         .boardRank {
           font-weight: 900;
           color: var(--ruby-600);
-          font-size: 0.9rem;
+          font-size: var(--font-body);
         }
         .boardNameCell {
           min-width: 0;
@@ -282,26 +282,26 @@ export default function HomeBoardSection({ stocks = [] }) {
           flex-direction: column;
           gap: 2px;
         }
-        /* 종목명은 라벨 - 숫자보다 한 단계 낮춘다 */
+        /* 종목명은 라벨 - 숫자(현재가/점수)와 같은 body 크기지만 무게를 낮춰 구분 */
         .boardName {
           font-weight: 700;
           color: var(--ink-900);
-          font-size: 0.88rem;
+          font-size: var(--font-body);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .boardMeta {
           color: var(--ink-600);
-          font-size: 0.72rem;
+          font-size: var(--font-caption);
           font-weight: 700;
         }
-        /* 현재가는 이 행의 주인공 - 종목명보다 크고 무겁게 */
+        /* 현재가는 이 행의 주인공 - 크기는 body로 통일하고 무게(800)·우측정렬·고정폭으로 세운다 */
         .boardPrice {
           text-align: right;
           font-weight: 800;
           color: var(--ink-900);
-          font-size: 1rem;
+          font-size: var(--font-body);
           white-space: nowrap;
         }
         .boardScore {
@@ -314,12 +314,12 @@ export default function HomeBoardSection({ stocks = [] }) {
           font-variant-numeric: tabular-nums;
         }
         .boardScore b {
-          font-size: 1rem;
+          font-size: var(--font-body);
           font-weight: 800;
           color: var(--ink-900);
         }
         .boardScore small {
-          font-size: 0.68rem;
+          font-size: var(--font-caption);
           font-weight: 700;
         }
         .boardMore {
@@ -358,7 +358,7 @@ export default function HomeBoardSection({ stocks = [] }) {
           border: 1px solid var(--ruby-700);
           color: var(--ruby-700);
           font-weight: 800;
-          font-size: 0.86rem;
+          font-size: var(--font-body);
           text-decoration: none;
         }
         @media (max-width: 768px) {
