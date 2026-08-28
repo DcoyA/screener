@@ -157,6 +157,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         .searchResultName {
           font-weight: 800;
           color: var(--ink-900);
+          font-size: var(--font-body);
         }
         .searchResultCode {
           color: var(--ink-600);
@@ -209,6 +210,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         .sectionDesc {
           margin: 0;
           color: var(--ink-600);
+          font-size: var(--font-body);
           line-height: 1.7;
         }
         .strategyGrid {
@@ -249,6 +251,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         .conclusionLine {
           margin: 0 0 8px;
           color: var(--ink-700);
+          font-size: var(--font-body);
           line-height: 1.7;
         }
         /* 종합판단점수 라인 - 크기는 본문과 같은 body, 무게(800)와 고정폭 숫자로
@@ -287,6 +290,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         .emptyStateBox p {
           margin: 0;
           color: var(--ink-600);
+          font-size: var(--font-body);
           line-height: 1.8;
         }
         @media (max-width: 900px) {
