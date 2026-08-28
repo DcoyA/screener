@@ -234,8 +234,8 @@ export default function HomeBoardSection({ stocks = [] }) {
           grid-template-columns: 1fr auto 88px;
           gap: 10px;
           padding: 0 8px 8px;
-          border-bottom: 1px solid #eef2f7;
-          color: #94a3b8;
+          border-bottom: 1px solid var(--ink-100);
+          color: var(--ink-600);
           font-size: 0.76rem;
           font-weight: 700;
         }
@@ -257,7 +257,7 @@ export default function HomeBoardSection({ stocks = [] }) {
           width: 100%;
           padding: 12px 8px;
           border: 0;
-          border-bottom: 1px solid #f1f5f9;
+          border-bottom: 1px solid var(--ink-100);
           background: transparent;
           text-align: left;
           cursor: pointer;

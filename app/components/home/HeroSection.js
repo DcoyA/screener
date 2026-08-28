@@ -207,7 +207,7 @@ export default function HeroSection({ stocks = [], updatedAt }) {
         }
         .updatedAtCaption {
           margin: 10px 0 0;
-          color: #94a3b8;
+          color: var(--ink-600);
           font-size: 0.8rem;
           font-weight: 700;
           font-variant-numeric: tabular-nums;

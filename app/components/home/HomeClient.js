@@ -248,7 +248,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         }
         .conclusionLine {
           margin: 0 0 8px;
-          color: #334155;
+          color: var(--ink-700);
           line-height: 1.7;
         }
         /* 종합판단점수 라인 - 카드 본문(.conclusionLine)보다 한 단계 크고 무겁게,

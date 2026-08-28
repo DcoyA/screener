@@ -45,7 +45,7 @@ export default function PerformanceSummaryCard({ performanceSummary }) {
           border-radius: var(--radius-card);
           padding: 24px;
           background: var(--bg-perf);
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--ink-200);
           box-shadow: var(--shadow-card);
         }
         .perfTitle {
@@ -58,12 +58,12 @@ export default function PerformanceSummaryCard({ performanceSummary }) {
           font-size: var(--font-hero);
           font-weight: var(--font-hero-weight);
           letter-spacing: -0.03em;
-          color: #0f172a;
+          color: var(--ink-900);
           font-variant-numeric: tabular-nums;
         }
         .perfSubline {
           margin: 0 0 18px;
-          color: #475569;
+          color: var(--ink-600);
           font-size: var(--font-body);
           font-variant-numeric: tabular-nums;
         }
