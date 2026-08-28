@@ -210,6 +210,7 @@ export default function HeroSection({ stocks = [], updatedAt }) {
           color: #94a3b8;
           font-size: 0.8rem;
           font-weight: 700;
+          font-variant-numeric: tabular-nums;
         }
       `}</style>
     </section>

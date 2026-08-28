@@ -161,6 +161,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         .searchResultCode {
           color: var(--ink-600);
           font-size: 0.85rem;
+          font-variant-numeric: tabular-nums;
         }
         .searchResultMarket {
           margin-left: auto;
@@ -250,11 +251,14 @@ export default function HomeClient({ stocks, performanceSummary }) {
           color: #334155;
           line-height: 1.7;
         }
+        /* 종합판단점수 라인 - 카드 본문(.conclusionLine)보다 한 단계 크고 무겁게,
+           숫자는 고정폭. 색은 이번 커밋에서 건드리지 않음. */
         .compareLine {
           margin: 0 0 16px;
           color: var(--ink-600);
-          font-size: 0.84rem;
-          font-weight: 700;
+          font-size: 1rem;
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
         }
         .linkBtn {
           display: inline-flex;

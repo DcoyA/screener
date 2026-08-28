@@ -262,6 +262,8 @@ export default function HomeBoardSection({ stocks = [] }) {
           text-align: left;
           cursor: pointer;
           font: inherit;
+          /* 행 안의 순위·현재가·점수 등 모든 숫자를 고정폭으로 - 세로로 자릿수 정렬 */
+          font-variant-numeric: tabular-nums;
         }
         .boardRow:hover {
           background: var(--ruby-50);
@@ -280,10 +282,11 @@ export default function HomeBoardSection({ stocks = [] }) {
           flex-direction: column;
           gap: 2px;
         }
+        /* 종목명은 라벨 - 숫자보다 한 단계 낮춘다 */
         .boardName {
-          font-weight: 800;
+          font-weight: 700;
           color: var(--ink-900);
-          font-size: 0.92rem;
+          font-size: 0.88rem;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -293,11 +296,12 @@ export default function HomeBoardSection({ stocks = [] }) {
           font-size: 0.72rem;
           font-weight: 700;
         }
+        /* 현재가는 이 행의 주인공 - 종목명보다 크고 무겁게 */
         .boardPrice {
           text-align: right;
-          font-weight: 700;
+          font-weight: 800;
           color: var(--ink-900);
-          font-size: 0.9rem;
+          font-size: 1rem;
           white-space: nowrap;
         }
         .boardScore {
@@ -307,9 +311,10 @@ export default function HomeBoardSection({ stocks = [] }) {
           line-height: 1.2;
           color: var(--ink-600);
           white-space: nowrap;
+          font-variant-numeric: tabular-nums;
         }
         .boardScore b {
-          font-size: 0.9rem;
+          font-size: 1rem;
           font-weight: 800;
           color: var(--ink-900);
         }

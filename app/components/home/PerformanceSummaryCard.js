@@ -59,11 +59,13 @@ export default function PerformanceSummaryCard({ performanceSummary }) {
           font-weight: var(--font-hero-weight);
           letter-spacing: -0.03em;
           color: #0f172a;
+          font-variant-numeric: tabular-nums;
         }
         .perfSubline {
           margin: 0 0 18px;
           color: #475569;
           font-size: var(--font-body);
+          font-variant-numeric: tabular-nums;
         }
       `}</style>
     </section>
