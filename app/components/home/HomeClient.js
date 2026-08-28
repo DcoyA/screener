@@ -91,7 +91,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           border-radius: 16px;
           border: 1px solid var(--ink-300);
           padding: 0 110px 0 20px;
-          font-size: 1.02rem;
+          font-size: var(--font-body);
           outline: none;
           box-sizing: border-box;
           background: #ffffff;
@@ -148,7 +148,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           background: transparent;
           cursor: pointer;
           text-align: left;
-          font-size: 0.95rem;
+          font-size: var(--font-body);
           transition: background 0.15s ease;
         }
         .searchResultItem:hover {
@@ -160,7 +160,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
         }
         .searchResultCode {
           color: var(--ink-600);
-          font-size: 0.85rem;
+          font-size: var(--font-caption);
           font-variant-numeric: tabular-nums;
         }
         .searchResultMarket {
@@ -170,14 +170,14 @@ export default function HomeClient({ stocks, performanceSummary }) {
           border-radius: 999px;
           background: var(--ruby-100);
           color: var(--ruby-700);
-          font-size: 0.75rem;
+          font-size: var(--font-caption);
           font-weight: 800;
         }
         .searchNoResult {
           margin: 0;
           padding: 18px;
           color: var(--ink-600);
-          font-size: 0.92rem;
+          font-size: var(--font-body);
           text-align: center;
         }
         @media (max-width: 640px) {
@@ -188,7 +188,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           .searchBarBtn {
             height: 36px;
             padding: 0 14px;
-            font-size: 0.9rem;
+            font-size: var(--font-body);
           }
         }
 
@@ -229,12 +229,12 @@ export default function HomeClient({ stocks, performanceSummary }) {
           border-radius: var(--radius-pill);
           background: var(--ruby-100);
           color: var(--ruby-700);
-          font-size: 0.78rem;
+          font-size: var(--font-caption);
           font-weight: 800;
         }
         .strategyCard h3 {
           margin: 12px 0 10px;
-          font-size: 1.25rem;
+          font-size: var(--font-title);
           letter-spacing: -0.03em;
           color: var(--ink-900);
         }
@@ -242,7 +242,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           display: inline-flex;
           padding: 6px 12px;
           border-radius: var(--radius-chip);
-          font-size: 0.8rem;
+          font-size: var(--font-caption);
           font-weight: 800;
           margin-bottom: 12px;
         }
@@ -251,12 +251,12 @@ export default function HomeClient({ stocks, performanceSummary }) {
           color: var(--ink-700);
           line-height: 1.7;
         }
-        /* 종합판단점수 라인 - 카드 본문(.conclusionLine)보다 한 단계 크고 무겁게,
-           숫자는 고정폭. 색은 이번 커밋에서 건드리지 않음. */
+        /* 종합판단점수 라인 - 크기는 본문과 같은 body, 무게(800)와 고정폭 숫자로
+           카드 본문(.conclusionLine, weight 400)보다 도드라지게. */
         .compareLine {
           margin: 0 0 16px;
           color: var(--ink-600);
-          font-size: 1rem;
+          font-size: var(--font-body);
           font-weight: 800;
           font-variant-numeric: tabular-nums;
         }
@@ -268,7 +268,7 @@ export default function HomeClient({ stocks, performanceSummary }) {
           padding: 12px 20px;
           font-weight: 800;
           text-decoration: none;
-          font-size: 0.94rem;
+          font-size: var(--font-body);
           background: #ffffff;
           color: var(--ruby-700);
           border: 1px solid var(--gold-500);
