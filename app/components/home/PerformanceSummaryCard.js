@@ -41,10 +41,14 @@ export default function PerformanceSummaryCard({ performanceSummary }) {
         .perfSummarySection {
           margin-top: 40px;
         }
+        /* 카드 배경은 흰색으로 고정해 페이지 배경(--page-bg #FDF7F8)과 분리한다.
+           예전엔 --bg-perf(=--page-bg 별칭)를 써서 카드가 배경에 묻혔고,
+           그건 성적표 라우트용 토큰이라 홈에서 끌어쓸 이유도 없다.
+           흰 배경은 홈의 다른 카드(.boardCard/.strategyCard)와도 일치. */
         .perfSummaryCard {
           border-radius: var(--radius-card);
           padding: 24px;
-          background: var(--bg-perf);
+          background: #ffffff;
           border: 1px solid var(--ink-200);
           box-shadow: var(--shadow-card);
         }
