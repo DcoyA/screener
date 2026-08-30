@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
 import { FORBIDDEN_PHRASES, MAX_ABS_UPSIDE_PERCENT, REPORT_JSON_EXAMPLE } from "./lib/reportSchema.mjs";
+import { reportJsonSchema } from "./report-schema.mjs";
 import { buildContextSummary } from "./lib/buildContextSummary.mjs";
 import { validateReport } from "./lib/validateReport.mjs";
 import { buildFollowup } from "./build-followup.mjs";
@@ -159,6 +160,10 @@ ${FORBIDDEN_PHRASES.map((p) => `- "${p}"`).join("\n")}
   숨기거나 완곡하게 쓰지 마라 - 틀린 것도 그대로 싣는다${retryBlock}`;
 }
 
+// 구조화 출력: tool_use 로 받는다. SDK 가 아니라 raw fetch 지만 요청 바디 키는 동일.
+// - tool_choice 강제 지정을 쓰므로 이 호출에 한해 thinking 을 끈다(강제 tool_choice
+//   와 extended thinking 은 API 레벨에서 비호환 - 400).
+// - block.input 이 곧 결과 객체다. JSON.parse 는 어디에도 없다.
 async function callAnthropic(prompt) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -169,33 +174,54 @@ async function callAnthropic(prompt) {
     },
     body: JSON.stringify({
       model: "claude-sonnet-5",
-      max_tokens: 4000,
+      max_tokens: 16000,
+      thinking: { type: "disabled" },
+      tools: [
+        {
+          name: "emit_report",
+          description: "생성한 프리미엄 리포트를 구조화된 형태로 제출한다",
+          input_schema: reportJsonSchema,
+        },
+      ],
+      tool_choice: { type: "tool", name: "emit_report" },
       messages: [{ role: "user", content: prompt }],
     }),
   });
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`Anthropic API 호출 실패: ${res.status} - ${errText}`);
+    // 400/401 은 STEP 5 에서 fatal 로 분류. 여기서는 상태코드를 그대로 실어 던진다.
+    const err = new Error(`Anthropic API 호출 실패: ${res.status} - ${errText}`);
+    err.httpStatus = res.status;
+    throw err;
   }
 
   const data = await res.json();
-  const textBlock = (data?.content || []).find((block) => block.type === "text");
-  if (!textBlock) {
-    throw new Error(`응답 content 배열에 type='text' 블록이 없습니다. 원문: ${JSON.stringify(data)}`);
+
+  // 1) max_tokens 로 잘리면 tool input 이 불완전할 수 있다. 조용히 넘어가지 말 것.
+  if (data.stop_reason === "max_tokens") {
+    const outTok = data.usage?.output_tokens;
+    console.error(`[생성] stop_reason=max_tokens (output_tokens=${outTok}) - tool input 이 잘렸습니다`);
+    throw new Error(`응답이 max_tokens 로 잘렸습니다 (output_tokens=${outTok}, max_tokens=16000). max_tokens 를 늘리거나 섹션 수를 줄여야 합니다`);
   }
 
-  const text = textBlock.text || "";
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error(`LLM 응답에서 JSON 객체를 찾지 못했습니다. 원문: ${text}`);
+  const toolBlock = (data.content || []).find(
+    (b) => b.type === "tool_use" && b.name === "emit_report"
+  );
+  if (!toolBlock) {
+    const textBlocks = (data.content || [])
+      .filter((b) => b.type === "text")
+      .map((b) => b.text)
+      .join("\n");
+    console.error(
+      `[생성] tool_use(emit_report) 블록 없음. stop_reason=${data.stop_reason}` +
+        (data.stop_details ? ` stop_details=${JSON.stringify(data.stop_details)}` : "") +
+        (textBlocks ? `\n[text 블록 내용]\n${textBlocks}` : "")
+    );
+    throw new Error(`tool_use(emit_report) 블록이 응답에 없습니다 (stop_reason=${data.stop_reason})`);
   }
 
-  try {
-    return JSON.parse(jsonMatch[0]);
-  } catch (e) {
-    throw new Error(`JSON 파싱 실패(${e.message}). 파싱 시도했던 원문: ${jsonMatch[0]}`);
-  }
+  return toolBlock.input;
 }
 
 // LLM 생성 -> 후처리 검증. 실패하면 실패 사유를 프롬프트에 붙여 1회만 재생성.
