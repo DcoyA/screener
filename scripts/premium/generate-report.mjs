@@ -1,7 +1,8 @@
+import { writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
 import { FORBIDDEN_PHRASES, MAX_ABS_UPSIDE_PERCENT } from "./lib/reportSchema.mjs";
-import { reportJsonSchema } from "./report-schema.mjs";
+import { reportJsonSchema, reportSchema } from "./report-schema.mjs";
 import { buildContextSummary } from "./lib/buildContextSummary.mjs";
 import { validateReport } from "./lib/validateReport.mjs";
 import { buildFollowup } from "./build-followup.mjs";
@@ -184,9 +185,9 @@ async function callAnthropic(prompt) {
 
   if (!res.ok) {
     const errText = await res.text();
-    // 400/401 은 STEP 5 에서 fatal 로 분류. 여기서는 상태코드를 그대로 실어 던진다.
     const err = new Error(`Anthropic API 호출 실패: ${res.status} - ${errText}`);
     err.httpStatus = res.status;
+    err.fatal = res.status === 400 || res.status === 401; // 그 외(429/5xx)는 retryable
     throw err;
   }
 
@@ -212,46 +213,93 @@ async function callAnthropic(prompt) {
         (data.stop_details ? ` stop_details=${JSON.stringify(data.stop_details)}` : "") +
         (textBlocks ? `\n[text 블록 내용]\n${textBlocks}` : "")
     );
-    throw new Error(`tool_use(emit_report) 블록이 응답에 없습니다 (stop_reason=${data.stop_reason})`);
+    const err = new Error(`tool_use(emit_report) 블록이 응답에 없습니다 (stop_reason=${data.stop_reason})`);
+    err.fatal = true; // tool_use 블록 부재 = fatal (재시도해도 구조가 안 잡힘)
+    throw err;
   }
 
-  return toolBlock.input;
+  return { report: toolBlock.input, apiResponse: data };
 }
 
-// LLM 생성 -> 후처리 검증. 실패하면 실패 사유를 프롬프트에 붙여 1회만 재생성.
-// 그래도 실패하면 null을 반환한다(호출 측이 슬랙 알림 후 종료).
+// zod 이슈를 사람이 읽는 한 줄씩으로. path 는 필드 경로, message 는 zod 원문.
+function formatZodIssues(zodError) {
+  return zodError.issues.map((iss) => {
+    const path = iss.path.length ? iss.path.join(".") : "(최상위)";
+    return `${path}: ${iss.message}`;
+  });
+}
+
+// 검증 실패 시 raw 응답 전문을 파일로. 워크플로가 actions/upload-artifact 로 올린다.
+function saveRawResponse(attempt, apiResponse) {
+  const file = `scripts/premium/raw-response-attempt${attempt}.json`;
+  try {
+    writeFileSync(file, JSON.stringify(apiResponse, null, 2));
+    console.warn(`[생성] raw 응답을 ${file} 에 저장했습니다`);
+  } catch (e) {
+    console.error(`[생성] raw 응답 저장 실패(${file}): ${e.message}`);
+  }
+}
+
+// LLM 생성 -> ① zod 스키마 검증(구조) -> ② validateReport(표현 규칙).
+// 검증 실패는 retryable: 실패 사유를 다음 시도 프롬프트에 그대로 넣어 재생성.
+// tool_use 블록 부재 / 400 / 401 은 fatal(재시도 안 함).
+// STEP 6 에서 MAX_ATTEMPTS 를 config.mjs 상수로 분리한다.
+const MAX_ATTEMPTS = 3;
+
 async function generateReportContent(candidates, context) {
   let retryFeedback = null;
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     const prompt = buildPrompt(candidates, context, retryFeedback);
-    let parsed;
+
+    let report;
+    let apiResponse;
     try {
-      parsed = await callAnthropic(prompt);
+      ({ report, apiResponse } = await callAnthropic(prompt));
     } catch (e) {
-      console.error(`[생성] 시도 ${attempt}/2 실패(API/파싱 오류): ${e.message}`);
-      if (attempt === 2) return { ok: false, errors: [e.message] };
+      console.error(`[생성] 시도 ${attempt}/${MAX_ATTEMPTS} 호출 실패: ${e.message}`);
+      if (e.fatal) return { ok: false, fatal: true, errors: [e.message] };
+      if (attempt === MAX_ATTEMPTS) return { ok: false, errors: [e.message] };
       retryFeedback = [e.message];
       continue;
     }
 
-    const { ok, errors } = await validateReport(parsed, { supabase });
+    // ① 구조 검증(zod safeParse). JSON.parse 는 없다 - tool input 객체를 그대로 검사.
+    const schemaResult = reportSchema.safeParse(report);
+    if (!schemaResult.success) {
+      const zodErrs = formatZodIssues(schemaResult.error);
+      saveRawResponse(attempt, apiResponse);
+      console.warn(
+        `[생성] 시도 ${attempt}/${MAX_ATTEMPTS} 스키마 검증 실패:\n${zodErrs.map((e) => `  - ${e}`).join("\n")}`
+      );
+      if (attempt === MAX_ATTEMPTS) return { ok: false, errors: zodErrs };
+      retryFeedback = ["이전 시도에서 다음 필드가 규격을 벗어났다:", ...zodErrs];
+      continue;
+    }
+    const validated = schemaResult.data;
+
+    // ② 표현 규칙 검증(zod 로 못 잡는 것: 금지표현, 상승여력 %, 종목코드 실존)
+    const { ok, errors } = await validateReport(validated, { supabase });
     if (ok) {
-      console.log(`[생성] 시도 ${attempt}/2에서 검증 통과`);
-      return { ok: true, report: parsed };
+      console.log(`[생성] 시도 ${attempt}/${MAX_ATTEMPTS} 에서 검증 통과`);
+      return { ok: true, report: validated };
     }
 
-    console.warn(`[생성] 시도 ${attempt}/2 검증 실패:\n${errors.map((e) => `  - ${e}`).join("\n")}`);
-    if (attempt === 2) return { ok: false, errors };
-    retryFeedback = errors;
+    saveRawResponse(attempt, apiResponse);
+    console.warn(
+      `[생성] 시도 ${attempt}/${MAX_ATTEMPTS} 표현 규칙 검증 실패:\n${errors.map((e) => `  - ${e}`).join("\n")}`
+    );
+    if (attempt === MAX_ATTEMPTS) return { ok: false, errors };
+    retryFeedback = ["이전 시도에서 다음 규칙을 위반했다:", ...errors];
   }
 
   return { ok: false, errors: ["알 수 없는 오류"] };
 }
 
-async function notifyGenerationFailure(errors) {
+async function notifyGenerationFailure(errors, { fatal = false } = {}) {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
-  const text = `🔴 [프리미엄 리포트] 생성 실패, 사유:\n${errors.map((e) => `- ${e}`).join("\n")}\n(발송되지 않았습니다)`;
+  const head = fatal ? "🔴 [프리미엄 리포트] 생성 실패(치명적 - 재시도 안 함)" : "🔴 [프리미엄 리포트] 생성 실패";
+  const text = `${head}, 사유:\n${errors.map((e) => `- ${e}`).join("\n")}\n(발송되지 않았습니다)`;
 
   if (!webhookUrl) {
     console.log("[생성] SLACK_WEBHOOK_URL 없음 - 콘솔에만 출력\n" + text);
@@ -311,7 +359,7 @@ async function main() {
   const result = await generateReportContent(candidates, context);
 
   if (!result.ok) {
-    await notifyGenerationFailure(result.errors);
+    await notifyGenerationFailure(result.errors, { fatal: !!result.fatal });
     console.error("[생성] 검증을 통과한 리포트를 만들지 못해 종료합니다(발송 안 함)");
     process.exit(1);
   }

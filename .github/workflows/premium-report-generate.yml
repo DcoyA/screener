@@ -34,6 +34,15 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           EDITORIAL_PREVIEW_TOKEN: ${{ secrets.EDITORIAL_PREVIEW_TOKEN }}
 
+      - name: Upload raw LLM responses (검증 실패 진단용)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-llm-responses
+          path: scripts/premium/raw-response-attempt*.json
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Notify on failure
         if: failure()
         uses: ./.github/actions/notify-slack
