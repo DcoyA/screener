@@ -12,6 +12,7 @@ import { formatSectorRelative } from "../../lib/sectorRelative";
 import { fairValueStatusLabel } from "../../lib/fairValue";
 import { formatScoreRank, scoreColor } from "../../lib/scoreStats";
 import ScoreAccordion from "./components/ScoreAccordion";
+import BackLink from "./components/BackLink";
 
 const SCORE_GROUPS = [
   {
@@ -180,9 +181,7 @@ export default async function StockDetailPage({ params }) {
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: "32px 24px 120px", color: "#0f172a" }}>
       <div style={{ marginBottom: 24 }}>
-        <Link href="/screener?tab=ranking" style={{ fontWeight: 800, textDecoration: "none", color: "#334155" }}>
-          ← 검색으로 돌아가기
-        </Link>
+        <BackLink />
       </div>
 
       <section style={{ marginBottom: 20 }}>
