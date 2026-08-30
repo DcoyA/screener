@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "../../lib/supabase/admin";
 import { resolveReportAccess } from "../../lib/reportAccess";
+import { getSubscriberForSession } from "../../lib/subscription";
 import { cleanStockName } from "../../lib/stockName";
 import { visibleSections } from "../../lib/reportSections";
 import PageTopBar from "../../components/PageTopBar";
@@ -224,7 +225,9 @@ export default async function ReportDetailPage({ params, searchParams }) {
     notFound();
   }
 
-  const access = await resolveReportAccess({ reportId: report.id, token, session: null });
+  // 토큰(이메일 링크)이 없어도 로그인한 활성 구독자면 열람 허용한다.
+  const { subscriber } = await getSubscriberForSession();
+  const access = await resolveReportAccess({ reportId: report.id, token, subscriber });
 
   if (!access.allowed && access.reason === "secret_missing") {
     // REPORT_LINK_SECRET 미설정은 "구독 안 함"이 아니라 설정 오류다.
