@@ -2,17 +2,16 @@
 
 import { useMemo } from "react";
 import SiteHeader from "../SiteHeader";
-import MembershipHeroSection from "./MembershipHeroSection";
 import HomeBoardSection from "./HomeBoardSection";
 import HeroSection from "./HeroSection";
 import StrategySection from "./StrategySection";
 import PerformanceSummaryCard from "./PerformanceSummaryCard";
 import { buildStrategyCards } from "../../lib/homeData";
 
-// 기획서 홈: 5개 섹션.
-// ① 멤버십 히어로(WAITLIST 폼 흡수)  ② 데일리 Top10 + 내 관심종목 2열 보드
-// ③ 종목검색 바(HeroSection 재사용)  ④ 오늘의 투자전략(StrategySection 재사용)
-// ⑤ 우리 성적표 요약(PerformanceSummaryCard)
+// 홈 4개 섹션.
+// ① 데일리 Top10 + 내 관심종목 2열 보드  ② 종목검색 바(HeroSection 재사용)
+// ③ 오늘의 투자전략(StrategySection 재사용)  ④ 우리 성적표 요약(PerformanceSummaryCard)
+// 구독 CTA는 헤더(MainNav)로 일원화 - 예전 멤버십 히어로 섹션은 걷어냈다.
 // 하단 물결은 <main> 밖 장식이라 섹션 수에 안 들어간다(SVG 1개, 루비 톤).
 // stocks = stocks.json(빌드 스냅샷) 하나만. /performance·/screener와 숫자 일치.
 export default function HomeClient({ stocks, performanceSummary }) {
@@ -24,8 +23,6 @@ export default function HomeClient({ stocks, performanceSummary }) {
       <SiteHeader />
 
       <main className="container" style={{ background: "var(--bg-home)" }}>
-        <MembershipHeroSection />
-
         <HomeBoardSection stocks={stocks} />
 
         <HeroSection updatedAt={updatedAt} stocks={stocks} />

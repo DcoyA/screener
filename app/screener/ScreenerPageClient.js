@@ -106,12 +106,16 @@ export default function ScreenerPageClient({ stocks, risks, initialTab, initialV
         .tabSwitchSection {
           margin-bottom: 24px;
         }
+        /* 이 서비스는 상승=빨강 / 하락=파랑이 고정 규칙이라(globals.css --signal-*),
+           탭 트랙·라벨에 슬레이트/청록 계열을 쓰면 "하락" 신호로 오독될 수 있다.
+           루비/잉크 토큰으로만 잡는다: 트랙 --ink-100, 선택 --ruby-600(흰 글자
+           10.3:1), 미선택 라벨 --ink-600(트랙 대비 5.6:1, WCAG AA 통과). */
         .tabSwitchRow {
           display: inline-flex;
           gap: 8px;
           padding: 6px;
           border-radius: 999px;
-          background: #f1f5f9;
+          background: var(--ink-100);
         }
         .tabBtn {
           border: none;
@@ -120,12 +124,12 @@ export default function ScreenerPageClient({ stocks, risks, initialTab, initialV
           border-radius: 999px;
           font-weight: 800;
           font-size: 0.95rem;
-          color: #64748b;
+          color: var(--ink-600);
           cursor: pointer;
           transition: all 0.18s ease;
         }
         .tabBtn.active {
-          background: var(--color-primary);
+          background: var(--ruby-600);
           color: #fff;
         }
         @media (max-width: 640px) {

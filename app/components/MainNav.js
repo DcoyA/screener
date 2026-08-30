@@ -67,9 +67,10 @@ export default function MainNav() {
     );
   };
 
-  // 홈에는 멤버십 히어로 섹션이 그 자체로 구독 CTA다("이 화면의 유일한 강조색"
-  // 규칙). 헤더 CTA와 중복되므로 홈에서는 헤더 CTA를 숨긴다.
-  const showCta = pathname !== "/";
+  // 구독 CTA는 홈 포함 모든 페이지 헤더 우측 상단에 노출한다(기획안). 예전엔
+  // 홈에서만 숨기고 본문 멤버십 히어로 섹션이 그 역할을 대신했으나, 히어로를
+  // 걷어내고 헤더 CTA 하나로 일원화했다.
+  const showCta = true;
 
   return (
     <nav className="mainNav" aria-label="메인 메뉴">
