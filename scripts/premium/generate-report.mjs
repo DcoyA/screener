@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { kstTodayStr } from "./lib/date.mjs";
-import { FORBIDDEN_PHRASES, MAX_ABS_UPSIDE_PERCENT, REPORT_JSON_EXAMPLE } from "./lib/reportSchema.mjs";
+import { FORBIDDEN_PHRASES, MAX_ABS_UPSIDE_PERCENT } from "./lib/reportSchema.mjs";
 import { reportJsonSchema } from "./report-schema.mjs";
 import { buildContextSummary } from "./lib/buildContextSummary.mjs";
 import { validateReport } from "./lib/validateReport.mjs";
@@ -136,11 +136,9 @@ ${candidatesText}
 
 ${contextSummary}
 
-위 내용을 종합해 오늘자 프리미엄 리포트 초안을 아래와 정확히 같은 키/중첩 구조의 JSON 하나로만 출력하라 (다른 설명 문장 절대 넣지 말 것):
-
-${JSON.stringify(REPORT_JSON_EXAMPLE, null, 2)}
-
-sections는 위 후보 개수만큼 만들어라.
+위 내용을 종합해 오늘자 프리미엄 리포트 초안을 emit_report 도구로 제출하라.
+도구의 input_schema 가 정확한 형식(키 이름·중첩·배열 길이·필드 길이)을 강제하므로
+여기서 형식을 다시 설명하지 않는다. sections 는 위에 나열된 승인 후보 하나당 하나씩 만들어라.
 
 [표현 금지 — 위반 시 출력 전체 무효]
 ${FORBIDDEN_PHRASES.map((p) => `- "${p}"`).join("\n")}
@@ -149,14 +147,10 @@ ${FORBIDDEN_PHRASES.map((p) => `- "${p}"`).join("\n")}
 
 [필수 규칙]
 - 모든 사실 주장에는 sources 배열에 근거 URL과 날짜를 넣는다
-- 컨텍스트 데이터에 없는 사실은 절대 생성하지 않는다 (related_stocks의 grade/grade_4w_ago/
-  sector_percentile은 위 컨텍스트의 "관련 종목 상세" 값만 그대로 옮겨 적어라. 데이터가 없으면
-  null로 두거나 "데이터 없음"이라고 써라 - 지어내지 마라)
+- 컨텍스트 데이터에 없는 사실은 절대 생성하지 않는다 (related_stocks 의 grade/grade_4w_ago/
+  sector_percentile 은 위 컨텍스트 "관련 종목 상세" 값만 그대로 옮겨 적고, 없으면 null 로 둔다 - 지어내지 마라)
 - 상승여력을 언급할 때 ±${MAX_ABS_UPSIDE_PERCENT}%를 넘는 수치는 숫자로 쓰지 않는다
-- invalidation은 검증 가능한 조건이어야 한다
-  (X) "시장 상황이 나빠지면"
-  (O) "3분기 영업이익이 전년 동기 대비 감소로 전환하면"
-- followup 컨텍스트가 있으면 반드시 followup 필드에 반영하고, verdict가 "틀림"이어도
+- followup 컨텍스트가 있으면 반드시 followup 필드에 반영하고, verdict 가 "틀림"이어도
   숨기거나 완곡하게 쓰지 마라 - 틀린 것도 그대로 싣는다${retryBlock}`;
 }
 
