@@ -5,6 +5,8 @@
   "description": "프리미엄 리포트 파이프라인(scripts/premium) 전용 의존성. 루트 package.json과 분리해 격리한다(CLAUDE.md: premium은 독립 서비스, 루트 의존성 5개 유지). 워크플로는 `npm ci --prefix scripts/premium`로 설치한다.",
   "dependencies": {
     "@supabase/supabase-js": "2.112.3",
-    "fast-xml-parser": "5.11.1"
+    "fast-xml-parser": "5.11.1",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.2"
   }
 }
