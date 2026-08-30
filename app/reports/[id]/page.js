@@ -236,9 +236,12 @@ export default async function ReportDetailPage({ params, searchParams }) {
   }
 
   return (
-    <main style={styles.container}>
-      <PageTopBar backHref="/reports" backLabel="목록으로" />
-      {access.allowed ? <ReportBody report={report} /> : <LockedReportView report={report} />}
-    </main>
+    <>
+      {/* 헤더는 전폭(1180)으로 - 본문 컨테이너(760)에 넣으면 네비가 잘린다. */}
+      <PageTopBar />
+      <main style={styles.container}>
+        {access.allowed ? <ReportBody report={report} /> : <LockedReportView report={report} />}
+      </main>
+    </>
   );
 }
