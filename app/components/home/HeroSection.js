@@ -4,9 +4,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cleanStockName } from "../../lib/stockName";
 import { fetchQuoteSnapshot } from "../../lib/quoteCard";
 import StockQuoteCard from "../StockQuoteCard";
+import SearchPreviewCard from "./SearchPreviewCard";
 
 const MAX_SUGGESTIONS = 8;
 const QUOTE_TIMEOUT_MS = 10000;
+
+// 검색 무입력 시 예시로 띄우는 종목. 삼성전자를 쓰는 이유:
+//  (1) 국내 인지도 1위 → "이 서비스가 종목당 어떤 정보를 주는지" 데모가 즉시 이해됨.
+//  (2) fairValueStatus=ok라 적정가·상승여력까지 전 항목이 채워진 예시를 보여줄 수 있음.
+// stocks.json에 없으면(사실상 불가) 프리뷰를 렌더하지 않는다.
+const HOME_PREVIEW_STOCK_CODE = "005930";
 
 function normalize(value) {
   return (value || "").toString().trim().toLowerCase();
@@ -42,6 +49,14 @@ export default function HeroSection({ stocks = [], updatedAt }) {
 
   const results = useMemo(() => searchStocks(stocks, query), [stocks, query]);
   const showDropdown = isFocused && query.trim().length > 0;
+
+  // 무입력이고 아직 아무 종목도 안 고른 상태에서만 예시 프리뷰를 보여준다.
+  // 검색어가 들어오거나 결과를 고르면 검색 결과 블록이 그 자리를 대신한다.
+  const previewStock = useMemo(
+    () => stocks.find((s) => s?.code === HOME_PREVIEW_STOCK_CODE) || null,
+    [stocks]
+  );
+  const showPreview = query.trim() === "" && !selected;
 
   const loadQuote = (stock) => {
     if (!stock?.code) return;
@@ -175,6 +190,8 @@ export default function HeroSection({ stocks = [], updatedAt }) {
           )}
         </div>
       )}
+
+      {showPreview && previewStock && <SearchPreviewCard stock={previewStock} />}
 
       {updatedAt && <p className="updatedAtCaption">최근 업데이트: {updatedAt}</p>}
 

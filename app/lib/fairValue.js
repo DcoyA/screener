@@ -39,3 +39,16 @@ export function isFairValueOk(stock) {
 export function fairValueStatusLabel(status) {
   return FAIR_VALUE_STATUS_LABEL[status] || "적정가 산출 보류";
 }
+
+// 적정가는 단일값이 아니라 보수/낙관 밴드로 표시한다(fair-value v2). 만원 단위 반올림.
+// 상세 페이지(app/stock/[code])와 홈 검색 프리뷰가 같은 함수를 봐야 표기가 일치한다.
+export function formatPriceBand(low, high) {
+  const loNum = Number(low);
+  const hiNum = Number(high);
+  if (!Number.isFinite(loNum) || !Number.isFinite(hiNum) || (!loNum && !hiNum)) return "-";
+  const toManwon = (n) => Math.round(n / 10000);
+  const lo = toManwon(loNum);
+  const hi = toManwon(hiNum);
+  if (lo === hi) return `${lo.toLocaleString("ko-KR")}만원`;
+  return `${lo.toLocaleString("ko-KR")}만~${hi.toLocaleString("ko-KR")}만원`;
+}

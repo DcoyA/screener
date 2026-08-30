@@ -9,7 +9,7 @@ import { getStockDiagnosisData, getSimilarStocks, getHoldingForCurrentUser } fro
 import { getGradeHistory } from "../../lib/gradeHistory";
 import { cleanStockName } from "../../lib/stockName";
 import { formatSectorRelative } from "../../lib/sectorRelative";
-import { fairValueStatusLabel } from "../../lib/fairValue";
+import { fairValueStatusLabel, formatPriceBand } from "../../lib/fairValue";
 import { formatScoreRank, scoreColor } from "../../lib/scoreStats";
 import ScoreAccordion from "./components/ScoreAccordion";
 import BackLink from "./components/BackLink";
@@ -59,18 +59,6 @@ function formatPrice(value) {
   const num = Number(value || 0);
   if (!num) return "-";
   return `${num.toLocaleString("ko-KR")}원`;
-}
-
-// 적정가는 단일값이 아니라 보수/낙관 밴드로 표시한다(fair-value v2).
-function formatPriceBand(low, high) {
-  const loNum = Number(low);
-  const hiNum = Number(high);
-  if (!Number.isFinite(loNum) || !Number.isFinite(hiNum) || (!loNum && !hiNum)) return "-";
-  const toManwon = (n) => Math.round(n / 10000);
-  const lo = toManwon(loNum);
-  const hi = toManwon(hiNum);
-  if (lo === hi) return `${lo.toLocaleString("ko-KR")}만원`;
-  return `${lo.toLocaleString("ko-KR")}만~${hi.toLocaleString("ko-KR")}만원`;
 }
 
 function formatRatio(value) {
