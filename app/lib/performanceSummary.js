@@ -147,6 +147,19 @@ export function buildPerformanceData({ history, stocks, selectedSnapshotDate = n
 
   const sortedByReturn = [...allPicks].filter((item) => Number.isFinite(item.returnRate)).sort((a, b) => b.returnRate - a.returnRate);
 
+  // 같은 종목이 여러 주차에 추천됐으면 베스트/워스트 목록엔 종목당 1건만 남긴다.
+  // sortedByReturn이 수익률 내림차순이므로, 앞에서부터 dedupe하면 종목별 최고
+  // 수익률만 남고, 뒤집어서 dedupe하면 종목별 최저 수익률만 남는다.
+  // (평균/승률/표본수 집계는 위 allPicks 전체를 그대로 쓴다 - 여기서만 중복 제거)
+  const dedupeByCode = (list) => {
+    const seen = new Set();
+    return list.filter((item) => {
+      if (seen.has(item.code)) return false;
+      seen.add(item.code);
+      return true;
+    });
+  };
+
   const selectedWeek = weeklyRows.find((row) => row.snapshotDate === selectedSnapshotDate) || matureRows[0] || weeklyRows[0] || null;
 
   const chartRows = [...matureRows]
@@ -193,7 +206,7 @@ export function buildPerformanceData({ history, stocks, selectedSnapshotDate = n
     outOfUniverseRatio,
     survivorshipWarning,
     latestBenchmarkDate: history[0]?.snapshotDate || null,
-    bestPicks: sortedByReturn.slice(0, 3),
-    worstPicks: [...sortedByReturn].reverse().slice(0, 3),
+    bestPicks: dedupeByCode(sortedByReturn).slice(0, 3),
+    worstPicks: dedupeByCode([...sortedByReturn].reverse()).slice(0, 3),
   };
 }

@@ -561,6 +561,10 @@ export default function PerformanceClient({ history, stocks }) {
               </div>
             </div>
           </div>
+          <p className="pickNote">
+            같은 종목이 여러 주차에 뽑혔어도 여기서는 종목당 1건(가장 나쁜/좋은 주차)만 표시합니다.
+            위 평균·승률 집계에는 모든 주차 기록이 그대로 들어갑니다.
+          </p>
         </section>
 
         {controversialPick ? (
@@ -664,6 +668,7 @@ export default function PerformanceClient({ history, stocks }) {
         .historyTable th, .detailTable th { color: #64748b; font-size: 0.86rem; font-weight: 800; }
         .historyTable td, .detailTable td { color: #0f172a; font-size: 0.95rem; }
         .tableNote { margin: 14px 0 0; color: #64748b; font-size: 0.92rem; line-height: 1.7; }
+        .pickNote { margin: 14px 0 0; color: #64748b; font-size: 0.88rem; line-height: 1.7; }
         .detailBtn { height: 38px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--gold-500); background: #ffffff; color: #0f172a; font-weight: 800; cursor: pointer; }
         .detailBtn.active { background: var(--ruby-700); color: #ffffff; border-color: var(--ruby-700); }
         .perfModalBackdrop { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-start; justify-content: center; padding: 48px 20px; background: rgba(43, 3, 8, 0.45); backdrop-filter: blur(3px); overflow-y: auto; animation: perfModalFade 0.16s ease-out; }
