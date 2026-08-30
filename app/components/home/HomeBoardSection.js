@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { cleanStockName } from "../../lib/stockName";
 import { percentileOf } from "../../lib/scoreStats";
 import { getWishlist, getCurrentUser } from "../../lib/wishlist";
+import { createSupabaseBrowserClient } from "../../lib/supabase/client";
+import { SkeletonLines } from "../Skeleton";
 
 const PREVIEW_ROWS = 5;
 
@@ -121,24 +123,50 @@ function WatchlistColumn({ stocks }) {
 
   const rows = expanded ? items : items.slice(0, PREVIEW_ROWS);
 
+  // "＋ 종목 추가": 홈에 이미 있는 검색 바(HeroSection, 이 카드 바로 아래)로
+  // 스크롤 + 포커스. 별도 검색 UI를 카드 안에 복제하지 않는다.
+  const scrollToSearch = () => {
+    const input = document.getElementById("homeSearchInput");
+    if (!input) return;
+    input.scrollIntoView({ behavior: "smooth", block: "center" });
+    input.focus({ preventScroll: true });
+  };
+
+  const loginWithKakao = async () => {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
+    });
+  };
+
   let body;
   if (state === "loading") {
-    body = <p className="boardEmpty">불러오는 중…</p>;
+    body = (
+      <div style={{ padding: "8px" }}>
+        <SkeletonLines count={2} gap={12} lastWidth="72%" />
+      </div>
+    );
   } else if (state === "anon") {
     body = (
       <div className="boardEmptyBox">
-        <p>관심종목을 저장하면 여기서 한눈에 봅니다.</p>
-        <Link href="/me" className="boardEmptyLink">
-          로그인하기
-        </Link>
+        <p className="boardEmptyTitle">관심종목을 등록하세요</p>
+        <p className="boardEmptyDesc">로그인하면 담은 종목을 기기 간에 동기화해서 볼 수 있어요.</p>
+        <button type="button" className="boardEmptyLink" onClick={loginWithKakao}>
+          카카오로 로그인
+        </button>
       </div>
     );
   } else if (state === "empty") {
     body = (
       <div className="boardEmptyBox">
-        <p>아직 담은 관심종목이 없어요.</p>
-        <Link href="/screener?tab=ranking" className="boardEmptyLink">
-          종목 찾아보기
+        <p className="boardEmptyTitle">관심종목을 등록하세요</p>
+        <p className="boardEmptyDesc">데일리 Top10이나 종목 상세에서 ☆ 를 누르면 여기에 모여요.</p>
+        <button type="button" className="boardEmptyLink" onClick={scrollToSearch}>
+          ＋ 종목 추가
+        </button>
+        <Link href="/screener?tab=ranking" className="boardEmptyLinkSub">
+          데일리 Top10 보기
         </Link>
       </div>
     );
@@ -173,18 +201,8 @@ function WatchlistColumn({ stocks }) {
     );
   }
 
-  // 비로그인/0건이면 대부분 비어 있을 영역이라 접어둔다(기본 닫힘).
-  const collapsible = state === "anon" || state === "empty";
-
-  if (collapsible) {
-    return (
-      <details className="boardCard watchlistCard collapsible">
-        <summary className="boardTitle boardSummary">내 관심종목</summary>
-        {body}
-      </details>
-    );
-  }
-
+  // 빈 상태(anon/empty)도 접지 않고 항상 펼쳐서, 무엇을 해야 하는지 카드
+  // 안에서 바로 보이게 한다.
   return (
     <div className="boardCard watchlistCard">
       <h2 className="boardTitle">내 관심종목</h2>
@@ -220,14 +238,6 @@ export default function HomeBoardSection({ stocks = [] }) {
           font-weight: 800;
           letter-spacing: -0.02em;
           color: var(--ink-900);
-        }
-        .boardSummary {
-          cursor: pointer;
-          list-style: revert;
-          margin: 0;
-        }
-        details.collapsible[open] .boardSummary {
-          margin-bottom: 14px;
         }
         .boardHeadRow {
           display: grid;
@@ -333,20 +343,22 @@ export default function HomeBoardSection({ stocks = [] }) {
           color: var(--ruby-700);
           cursor: pointer;
         }
-        .boardEmpty {
-          margin: 0;
-          padding: 24px 8px;
-          color: var(--ink-600);
-        }
         .boardEmptyBox {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 12px;
-          padding: 24px 8px;
+          gap: 10px;
+          padding: 20px 8px;
         }
-        .boardEmptyBox p {
+        .boardEmptyTitle {
           margin: 0;
+          font-size: var(--font-body);
+          font-weight: 800;
+          color: var(--ink-900);
+        }
+        .boardEmptyDesc {
+          margin: 0 0 4px;
+          font-size: var(--font-caption);
           color: var(--ink-600);
           line-height: 1.6;
         }
@@ -356,10 +368,21 @@ export default function HomeBoardSection({ stocks = [] }) {
           padding: 10px 16px;
           border-radius: var(--radius-pill);
           border: 1px solid var(--ruby-700);
+          background: #fff;
           color: var(--ruby-700);
+          font-family: inherit;
           font-weight: 800;
           font-size: var(--font-body);
+          line-height: 1;
           text-decoration: none;
+          cursor: pointer;
+        }
+        .boardEmptyLinkSub {
+          font-size: var(--font-caption);
+          font-weight: 700;
+          color: var(--ink-600);
+          text-decoration: underline;
+          text-underline-offset: 2px;
         }
         @media (max-width: 768px) {
           .homeBoard {

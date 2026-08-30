@@ -90,11 +90,14 @@ function WishlistPanel({ stocks }) {
       <section>
         {wishlistStocks.length === 0 ? (
           <div style={{ border: "1px solid #e5e7eb", borderRadius: 24, padding: 40, textAlign: "center", background: "#fbfdff" }}>
-            <p style={{ margin: "0 0 16px", color: "#64748b", fontSize: "1.02rem", fontWeight: 700 }}>
-              아직 관심종목이 없습니다. 랭킹이나 종목 상세 페이지에서 ☆ 버튼을 눌러 추가해보세요.
+            <p style={{ margin: "0 0 6px", color: "#0f172a", fontSize: "1.05rem", fontWeight: 800 }}>
+              관심종목을 등록하세요
+            </p>
+            <p style={{ margin: "0 0 18px", color: "#64748b", fontSize: "0.95rem", lineHeight: 1.6 }}>
+              데일리 Top10이나 종목 상세에서 ☆ 를 누르면 여기에 모여요.
             </p>
             <Link href="/screener?tab=ranking" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", borderRadius: 14, padding: "12px 18px", textDecoration: "none", fontWeight: 800, background: "#0f172a", color: "#fff" }}>
-              랭킹 보러 가기
+              데일리 Top10 보기
             </Link>
           </div>
         ) : (
@@ -184,7 +187,7 @@ function MePageContent({ stocks }) {
         <p style={{ display: "inline-flex", padding: "8px 14px", borderRadius: 999, background: "var(--color-surface-tint)", color: "var(--color-primary)", fontSize: "0.82rem", fontWeight: 900, marginBottom: 16 }}>MY</p>
         <h1 style={{ margin: "0 0 12px", fontSize: "clamp(2rem, 4vw, 3rem)", letterSpacing: "-0.04em" }}>내 종목</h1>
         <p style={{ margin: 0, color: "#475569", lineHeight: 1.8, fontSize: "1.02rem" }}>
-          랭킹·위험진단·실전투자·종목상세 페이지에서 ☆ 버튼을 눌러 추가한 종목을 한곳에서 모아봅니다. 이 목록은 브라우저에만 저장되며 서버로 전송되지 않습니다.
+          데일리 Top10·리스크 체크·실전투자·종목 상세에서 ☆ 버튼을 눌러 추가한 종목을 한곳에서 모아봅니다. 로그인 계정에 저장되어, 다른 기기에서도 같은 목록을 볼 수 있습니다.
         </p>
       </section>
 

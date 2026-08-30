@@ -106,10 +106,11 @@ export default function HeroSection({ stocks = [], updatedAt }) {
   };
 
   return (
-    <section className="compactSearchHero">
+    <section className="compactSearchHero" id="homeSearch">
       <form className="searchBarForm" onSubmit={handleSubmit} role="search">
         <div className="searchBarWrap">
           <input
+            id="homeSearchInput"
             type="text"
             className="searchBarInput"
             placeholder="종목명 또는 종목코드로 검색 (예: 삼성전자, 005930)"
