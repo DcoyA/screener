@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getWishlist, removeFromWishlist } from "../../lib/wishlist";
+import { createSupabaseBrowserClient } from "../../lib/supabase/client";
 import { cleanStockName } from "../../lib/stockName";
 
 // 마이페이지(계정 모달 + /me 풀페이지)가 공유하는 패널들. 스타일은 인라인
@@ -198,12 +199,124 @@ export function NotificationsPanel() {
   );
 }
 
-// ── 계정 관리 (스프린트 5에서 회원 탈퇴 채움) ──────────
-export function AccountDangerPanel() {
+// ── 계정 관리 — 회원 탈퇴 (다단계) ─────────────────────
+const DELETED_DATA = [
+  "카카오 로그인 계정",
+  "관심종목 목록",
+  "가상계좌 · 거래 내역 · 보유 종목 전체",
+];
+
+export function AccountDangerPanel({ overview }) {
+  const [step, setStep] = useState("warn"); // warn | unsub | confirm
+  const [ackUnsub, setAckUnsub] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  if (overview && !overview.loggedIn) return <LoggedOutNotice />;
+
+  const email = overview?.user?.email || "";
+  const isSubscriber = overview?.subscription?.isSubscriber;
+  const unsubUrl = overview?.subscription?.unsubscribeUrl;
+  const canSubmit = typed.trim().toLowerCase() === email.trim().toLowerCase() && email;
+
+  const goFromWarn = () => {
+    setError("");
+    setStep(isSubscriber ? "unsub" : "confirm");
+  };
+
+  const submit = async () => {
+    if (!canSubmit || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirm: typed.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!data.ok) {
+        setError(data.error || "탈퇴 처리에 실패했습니다.");
+        setBusy(false);
+        return;
+      }
+      const supabase = createSupabaseBrowserClient();
+      await supabase.auth.signOut().catch(() => {});
+      window.location.href = "/";
+    } catch {
+      setError("탈퇴 처리 중 오류가 발생했습니다.");
+      setBusy(false);
+    }
+  };
+
+  const dangerBtn = {
+    ...outlineBtn,
+    borderColor: "var(--signal-up)",
+    color: "var(--signal-up)",
+  };
+
   return (
-    <div style={{ ...card, textAlign: "center", padding: 28 }}>
-      <p style={{ margin: "0 0 6px", fontWeight: 800, fontSize: "var(--font-body)", color: "var(--ink-900)" }}>계정 관리 준비 중</p>
-      <p style={muted}>회원 탈퇴 기능은 곧 제공됩니다.</p>
+    <div style={{ ...card, display: "grid", gap: 14 }}>
+      <p style={{ margin: 0, fontWeight: 800, fontSize: "var(--font-body)", color: "var(--ink-900)" }}>회원 탈퇴</p>
+
+      {step === "warn" && (
+        <>
+          <p style={muted}>탈퇴하면 아래 데이터가 <strong style={{ color: "var(--signal-up)" }}>즉시, 되돌릴 수 없게</strong> 삭제됩니다.</p>
+          <ul style={{ margin: 0, paddingLeft: 18, color: "var(--ink-700)", fontSize: "var(--font-caption)", lineHeight: 1.9 }}>
+            {DELETED_DATA.map((d) => <li key={d}>{d}</li>)}
+          </ul>
+          <button type="button" onClick={goFromWarn} style={dangerBtn}>탈퇴 진행</button>
+        </>
+      )}
+
+      {step === "unsub" && (
+        <>
+          <p style={muted}>
+            이메일 리포트 구독은 계정과 별개로 관리됩니다. 탈퇴해도 구독은 유지되니,
+            중단하려면 먼저 구독을 해지하세요.
+          </p>
+          {unsubUrl ? (
+            <Link href={unsubUrl} style={{ ...outlineBtn, width: "fit-content" }}>구독 해지 페이지 열기</Link>
+          ) : null}
+          <label style={{ display: "flex", gap: 8, alignItems: "flex-start", ...muted }}>
+            <input type="checkbox" checked={ackUnsub} onChange={(e) => setAckUnsub(e.target.checked)} style={{ marginTop: 2 }} />
+            <span>구독 해지는 별도로 처리하겠습니다. 계정 탈퇴를 계속합니다.</span>
+          </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={() => setStep("warn")} style={{ ...outlineBtn, borderColor: "var(--ink-300)", color: "var(--ink-600)" }}>뒤로</button>
+            <button type="button" disabled={!ackUnsub} onClick={() => setStep("confirm")} style={{ ...dangerBtn, opacity: ackUnsub ? 1 : 0.5 }}>계속</button>
+          </div>
+        </>
+      )}
+
+      {step === "confirm" && (
+        <>
+          <p style={muted}>
+            확인을 위해 아래에 <strong style={{ color: "var(--ink-900)" }}>{email}</strong> 를 그대로 입력하세요.
+          </p>
+          <input
+            type="text"
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            placeholder={email}
+            autoComplete="off"
+            style={{ height: 42, padding: "0 12px", borderRadius: 10, border: "1px solid var(--ink-300)", fontSize: "var(--font-body)" }}
+          />
+          {error ? <p style={{ ...muted, color: "var(--signal-up)" }}>{error}</p> : null}
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={() => setStep(isSubscriber ? "unsub" : "warn")} style={{ ...outlineBtn, borderColor: "var(--ink-300)", color: "var(--ink-600)" }}>뒤로</button>
+            <button
+              type="button"
+              disabled={!canSubmit || busy}
+              onClick={submit}
+              style={{ ...dangerBtn, background: canSubmit ? "var(--signal-up)" : "#fff", color: canSubmit ? "#fff" : "var(--signal-up)", opacity: busy ? 0.6 : 1 }}
+            >
+              {busy ? "처리 중…" : "회원 탈퇴"}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

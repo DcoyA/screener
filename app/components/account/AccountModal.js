@@ -81,7 +81,7 @@ export default function AccountModal({ open = false, onClose, inline = false, in
   ) : section === "notifications" ? (
     <NotificationsPanel />
   ) : (
-    <AccountDangerPanel />
+    <AccountDangerPanel overview={overview} />
   );
 
   const body = (
