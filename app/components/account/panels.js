@@ -47,6 +47,20 @@ function providerLabel(p) {
   return p;
 }
 
+async function kakaoLogin() {
+  const supabase = createSupabaseBrowserClient();
+  await supabase.auth.signInWithOAuth({
+    provider: "kakao",
+    options: { redirectTo: `${window.location.origin}/auth/callback?next=${window.location.pathname}` },
+  });
+}
+
+async function logout() {
+  const supabase = createSupabaseBrowserClient();
+  await supabase.auth.signOut().catch(() => {});
+  window.location.reload();
+}
+
 // ── 내 정보 ─────────────────────────────────────────────
 export function MyInfoPanel({ overview }) {
   if (overview && !overview.loggedIn) return <LoggedOutNotice />;
@@ -66,6 +80,13 @@ export function MyInfoPanel({ overview }) {
         <strong style={value}>{providerLabel(u?.provider)}</strong>
       </div>
       <p style={muted}>이메일·로그인 수단은 카카오 계정에서 관리됩니다. 이 화면에서는 변경할 수 없습니다.</p>
+      <button
+        type="button"
+        onClick={logout}
+        style={{ ...outlineBtn, borderColor: "var(--ink-300)", color: "var(--ink-600)", width: "fit-content" }}
+      >
+        로그아웃
+      </button>
     </div>
   );
 }
@@ -324,7 +345,8 @@ export function AccountDangerPanel({ overview }) {
 function LoggedOutNotice() {
   return (
     <div style={{ ...card, textAlign: "center", padding: 28 }}>
-      <p style={{ margin: "0 0 12px", ...muted }}>로그인하면 내 정보와 구독 현황을 볼 수 있어요.</p>
+      <p style={{ margin: "0 0 16px", ...muted }}>로그인하면 내 정보와 구독 현황을 볼 수 있어요.</p>
+      <button type="button" onClick={kakaoLogin} style={outlineBtn}>카카오로 로그인</button>
     </div>
   );
 }
