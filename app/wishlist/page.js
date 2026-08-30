@@ -4,5 +4,5 @@
 import { redirect } from "next/navigation";
 
 export default function WishlistRedirect() {
-  redirect("/me?tab=wishlist");
+  redirect("/me?section=wishlist");
 }

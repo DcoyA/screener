@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS, NAV_ICONS, NAV_SHEET_ITEMS, isNavItemActive } from "../config/nav-items";
 import Icon from "./icons/Icon";
 import AuthButton from "./AuthButton";
+import AccountMenu from "./account/AccountMenu";
 
 // 스타일은 app/globals.css의 .mainNav* 규칙. 항상 .rubySurface(SiteHeader) 안.
 //   ≥1280px       텍스트 pill 6 + 구분선 + 아이콘 2 + 구독 CTA
@@ -30,6 +31,11 @@ export default function MainNav() {
   }, [open]);
 
   const renderItem = (item, { inSheet } = {}) => {
+    // 사용자 아이콘은 /me 로 이동하지 않고 마이페이지 모달을 연다.
+    if (item.id === "account") {
+      return <AccountMenu key={item.id} inSheet={!!inSheet} />;
+    }
+
     const active = isNavItemActive(item, pathname);
     const accentStyle = { "--nav-accent": `var(${item.accent})` };
 
