@@ -26,6 +26,18 @@ function daysAgoStr(days) {
   return d.toISOString().slice(0, 10);
 }
 
+function addDaysStr(dateStr, n) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function daysBetweenStr(fromStr, toStr) {
+  return Math.round(
+    (Date.parse(`${toStr}T00:00:00Z`) - Date.parse(`${fromStr}T00:00:00Z`)) / 86400000
+  );
+}
+
 async function safeFetchContext(label, queryFn) {
   try {
     const { data, error } = await queryFn();
@@ -63,19 +75,54 @@ async function fetchRelatedStockDetails(relatedCodes) {
       .order("snapshot_date", { ascending: false })
   );
 
+  // 4주 전 등급 결측이 "적재 이력이 28일에 못 미쳐서"인지 "이력은 충분한데
+  // 이 종목 행만 없어서"인지 구분한다. 전자는 정상(9월 중순 자동 해소), 후자만
+  // 실제로 확인이 필요한 상태.
+  let minSnapshotDate = null;
+  {
+    const { data, error } = await supabase
+      .from("stock_daily_snapshots")
+      .select("snapshot_date")
+      .order("snapshot_date", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.warn(`[리포트 컨텍스트] stock_daily_snapshots 최소 날짜 조회 실패(무시): ${error.message}`);
+    } else {
+      minSnapshotDate = data?.[0]?.snapshot_date || null;
+    }
+  }
+  const historyTooShort =
+    !minSnapshotDate || daysBetweenStr(minSnapshotDate, kstTodayStr()) < GRADE_LOOKBACK_DAYS;
+  const missingReason = historyTooShort ? "이력 부족" : "해당 종목 데이터 없음";
+
+  if (past.length === 0) {
+    if (historyTooShort) {
+      const detail = minSnapshotDate
+        ? `적재 이력 부족(최초 ${minSnapshotDate}, 28일 경과 예정 ${addDaysStr(minSnapshotDate, GRADE_LOOKBACK_DAYS)})`
+        : "stock_daily_snapshots 비어 있음";
+      console.log(`[리포트 컨텍스트] 4주 전 등급 0건 - ${detail}. 정상`);
+    } else {
+      console.log("[리포트 컨텍스트] 4주 전 등급 0건 - 관련 종목이 4주 전 스냅샷에 없음(이력은 충분). 정상");
+    }
+  }
+
   const pastGradeByCode = new Map();
   for (const row of past) {
     if (!pastGradeByCode.has(row.code)) pastGradeByCode.set(row.code, row.unified_grade_code);
   }
 
-  return current.map((row) => ({
-    code: row.code,
-    name: row.raw_data?.name || row.code,
-    grade: row.unified_grade_code,
-    grade_4w_ago: pastGradeByCode.get(row.code) || null,
-    sector_strength_score: row.raw_data?.sectorMeta?.strengthScore ?? null,
-    sector_leader: row.raw_data?.sectorMeta?.leaderFlag || false,
-  }));
+  return current.map((row) => {
+    const past4w = pastGradeByCode.get(row.code) || null;
+    return {
+      code: row.code,
+      name: row.raw_data?.name || row.code,
+      grade: row.unified_grade_code,
+      grade_4w_ago: past4w,
+      grade_4w_ago_reason: past4w ? null : missingReason,
+      sector_strength_score: row.raw_data?.sectorMeta?.strengthScore ?? null,
+      sector_leader: row.raw_data?.sectorMeta?.leaderFlag || false,
+    };
+  });
 }
 
 async function fetchAdditionalContext(relatedCodes, relatedSectors, followup) {

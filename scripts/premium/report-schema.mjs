@@ -41,7 +41,9 @@ const relatedStockSchema = z
       .string()
       .max(20)
       .nullable()
-      .describe("4주 전 등급. 컨텍스트에 없으면 null (지어내지 말 것)"),
+      .describe(
+        "4주 전 등급. null 이면 4주 전 등급을 알 수 없다는 뜻이다. 등급이 유지됐다거나 변화가 없었다고 서술하지 마라. 비교 자체가 불가하다고 쓰거나 언급을 생략해라. 컨텍스트에 값이 없으면 null (지어내지 말 것)"
+      ),
     sector_percentile: z
       .string()
       .max(40)

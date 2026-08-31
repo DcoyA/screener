@@ -43,7 +43,9 @@ function formatFollowupItem(item) {
 }
 
 function formatRelatedStock(item) {
-  const gradeChange = item.grade_4w_ago ? `${item.grade_4w_ago} → ${item.grade}` : `${item.grade} (4주 전 데이터 없음)`;
+  const gradeChange = item.grade_4w_ago
+    ? `${item.grade_4w_ago} → ${item.grade}`
+    : `${item.grade} (4주 전 등급 없음 - ${item.grade_4w_ago_reason || "사유 미상"}, 비교 불가)`;
   const strength =
     item.sector_strength_score != null
       ? `섹터 강도 점수 ${item.sector_strength_score}/100${item.sector_leader ? " (섹터 리더)" : ""}`
