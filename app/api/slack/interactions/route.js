@@ -182,7 +182,9 @@ async function handleCandidateSelection(supabase, actionId, action, payload, res
     return NextResponse.json({ ok: true });
   }
 
-  const dispatch = await triggerWorkflowDispatch("premium-report-generate.yml");
+  // 검수 승인 -> 실제 발행 회차. dry_run 을 명시적으로 false 로 넘긴다
+  // (안 넘기면 워크플로 input 기본값 true 라 조용히 dry-run 으로 돌아 리포트가 안 나온다).
+  const dispatch = await triggerWorkflowDispatch("premium-report-generate.yml", { dry_run: "false" });
   await replySlack(
     responseUrl,
     dispatch.ok

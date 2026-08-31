@@ -4,14 +4,32 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "LLM 호출 + zod 검증까지만. DB 쓰기·슬랙·메일·검수알림 전부 스킵."
+        description: "LLM 호출 + zod 검증까지만. DB 쓰기·슬랙·메일·검수알림 전부 스킵. (수동 UI 오클릭 방지용 기본 true)"
         type: boolean
         default: true
+  # schedule 은 이 워크플로에 없다(수집은 premium-data-collect.yml). 나중에 추가돼도
+  # 아래 'Resolve run mode'가 schedule 을 무조건 실발행으로 처리한다.
+  # 실제 발행 회차는 슬랙 검수 승인 -> app/api/slack/interactions/route.js 가
+  # workflow_dispatch 로 { dry_run: "false" } 를 명시 전달해 돌린다.
 
 jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+            echo "[모드] 실발행 (trigger=schedule)"
+          elif [ "${{ inputs.dry_run }}" = "false" ]; then
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+            echo "[모드] 실발행 (trigger=workflow_dispatch, dry_run=false)"
+          else
+            echo "dry_run=true" >> "$GITHUB_OUTPUT"
+            echo "[모드] dry-run (trigger=${{ github.event_name }}, dry_run=${{ inputs.dry_run }})"
+          fi
+
       - uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -25,14 +43,14 @@ jobs:
         run: npm ci --prefix scripts/premium
 
       - name: Generate report
-        run: node scripts/premium/generate-report.mjs ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: node scripts/premium/generate-report.mjs ${{ steps.mode.outputs.dry_run == 'true' && '--dry-run' || '' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Notify draft ready (사람 검수 요청 - 여기서 발송 안 함)
-        if: ${{ success() && !inputs.dry_run }}
+        if: ${{ success() && steps.mode.outputs.dry_run == 'false' }}
         run: node scripts/premium/notify-draft-ready.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -50,7 +68,7 @@ jobs:
           retention-days: 14
 
       - name: Notify on failure
-        if: ${{ failure() && !inputs.dry_run }}
+        if: ${{ failure() && steps.mode.outputs.dry_run == 'false' }}
         uses: ./.github/actions/notify-slack
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
