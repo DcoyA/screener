@@ -51,6 +51,31 @@ async function countGrade(today, grade) {
   return count;
 }
 
+// 오늘자 적재 결과. ingest-daily-snapshot.mjs가 성공/실패 시 batch_ingest_logs에
+// 한 행씩 남긴다. 없으면 null. 조회 자체가 실패하면 throw(휴장일 조회와 동일 원칙).
+async function fetchTodayIngestLog(date) {
+  const { data, error } = await supabase
+    .from("batch_ingest_logs")
+    .select("status, total_rows, finished_at")
+    .eq("snapshot_date", date)
+    .order("finished_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(`batch_ingest_logs 조회 실패: ${error.message}`);
+  return data || null;
+}
+
+// 현재 KST 시각. { hour: 0~23, hhmm: "HH:MM" }
+function kstNow() {
+  const hhmm = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Seoul",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+  return { hour: parseInt(hhmm.slice(0, 2), 10) % 24, hhmm };
+}
+
 function buildActionsLink() {
   const repo = process.env.GITHUB_REPOSITORY;
   const runId = process.env.GITHUB_RUN_ID;
@@ -122,7 +147,53 @@ async function main() {
   const todayCount = await countForDate(today);
   console.log(`[검증] 오늘(${today}) 행 수: ${todayCount}`);
   if (todayCount === 0) {
-    failures.push({ label: "오늘 날짜 행 존재", actual: "0건", expected: "1건 이상" });
+    // 벽시계 고정 시각("09:07 이후면 실패")은 신뢰 못 한다 - 8/28엔 파이프라인이
+    // KST 20:17에 돌았다. "적재가 실제로 끝났는가"(batch_ingest_logs)를 본다.
+    let ingestLog;
+    try {
+      ingestLog = await fetchTodayIngestLog(today);
+    } catch (err) {
+      console.error(`[검증] ${err.message}`);
+      process.exit(1);
+    }
+
+    if (ingestLog?.status === "success") {
+      // 적재는 성공으로 끝났는데 스냅샷이 0건 = 뷰 파손/날짜 불일치/부분 삭제 등 진짜 모순
+      failures.push({
+        label: "적재 완료 후에도 오늘 행 없음",
+        actual: `0건 (batch_ingest_logs status=success, total_rows=${ingestLog.total_rows ?? "?"})`,
+        expected: "1건 이상",
+      });
+    } else if (ingestLog?.status === "failed") {
+      // 적재 잡이 스스로 실패 알림을 이미 보냈다 - 여기서 중복 알림하지 않는다.
+      console.log("[보류] 오늘 수집이 실패로 종료됨 (batch_ingest_logs status=failed) - 적재 잡 알림 확인");
+      process.exit(0);
+    } else {
+      // batch_ingest_logs에 오늘 행이 없음 = 적재가 아직/전혀 안 돎.
+      const { hour, hhmm } = kstNow();
+      const isSchedule = process.env.GITHUB_EVENT_NAME === "schedule";
+      // STRICT: 안전망 cron(KST 22:00)이 제 시각(21:00~23:59)에 떴는데도 적재
+      // 기록이 전혀 없다 = 오늘 수집 파이프라인이 시작조차 안 됨.
+      const strict = isSchedule && hour >= 21 && hour <= 23;
+
+      if (strict) {
+        failures.push({
+          label: "오늘 수집 미시작",
+          actual: `batch_ingest_logs 오늘 행 없음 (안전망 cron 시각 KST ${hhmm})`,
+          expected: "KST 22:00 이전 수집 완료",
+        });
+      } else if (isSchedule) {
+        // 22:00 cron 자체가 지연돼 다음날 오전으로 밀리면, 새 거래일을 0건으로
+        // 오판해 원래 버그가 재발한다. 창(21~23시) 밖의 schedule 실행은 보류.
+        console.log(`[스킵] 스케줄 지연 감지(현재 KST ${hhmm}), 판정 보류`);
+        process.exit(0);
+      } else {
+        // workflow_run / manual: 적재 직후거나 사람이 돌린 것. 기록이 아직
+        // 없으면 그냥 안 끝난 것 - 조용히 보류.
+        console.log("[대기] 오늘 수집 미완료, 판정 보류");
+        process.exit(0);
+      }
+    }
   }
 
   const prevDate = await fetchMostRecentPriorDate(today);
