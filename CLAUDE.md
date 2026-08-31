@@ -197,7 +197,34 @@
 
 ## 프리미엄 리포트 프로젝트 (별도 서비스)
 scripts/premium/, app/admin/editorial/ 는 이 문서의 위 도메인 규칙(적정가/성과/표현 규칙)과
-무관한 완전히 독립된 서비스다. 작업 중 다음 파일/테이블은 절대 수정하지 않는다:
-weekly-json-update.yml, sync-supabase.yml, update_data.py, app/data/stocks.json,
-latest_stock_snapshots 테이블(읽기 전용 참조만 허용).
+무관한 완전히 독립된 서비스다.
+
+### 데이터 파이프라인 동결 범위
+대상: weekly-json-update.yml, sync-supabase.yml, update_data.py,
+app/data/stocks.json, latest_stock_snapshots 테이블(읽기 전용 참조만 허용).
+
+동결은 파일 단위가 아니라 변경 종류 단위로 적용한다:
+- [동결] 적재/수집 로직, cron 시각, 데이터 스키마, 트리거 추가.
+  내가 명시적으로 지시하기 전까지 건드리지 않는다.
+- [허용] 주석 추가, 문서화, 실행 이력 0건으로 확인된 죽은 트리거 제거.
+  단 [허용]에 해당하는 변경도 커밋 전에 내 승인을 받는다.
+
+### 예외 이력
+- 2026-08-31 / weekly-json-update.yml (name: "Weekday JSON Update")
+  `name:` 줄 위에 경고 주석 1줄 추가 — 이 name 을 바꾸면
+  sync-supabase-watchdog.yml 의 workflow_run 트리거가 조용히 죽는다.
+  승인 근거: watchdog 트리거 개편 지시에 포함. 실행 경로 영향 없음(주석만).
+- 2026-08-31 / sync-supabase.yml
+  `on: push` 제거, workflow_dispatch 수동 복구 전용으로 전환. GITHUB_TOKEN 으로
+  푸시된 커밋은 `on: push` 를 발동하지 못해 실행 이력이 0건이었고, 정규 적재는
+  weekly-json-update.yml 의 인라인 스텝("Sync latest data to Supabase")이 담당한다.
+  승인 근거: 위 지시에 명시. 동작 영향 없음(원래 발동되지 않던 트리거).
+  부작용: 향후 checkout 에 PAT 를 붙여도 push 트리거는 부활하지 않는다.
+  인라인 적재 스텝과의 이중 적재/루프를 막으려고 의도한 것이다.
+
+### 동결 목록 점검 (지적만, 임의로 목록에서 빼지 않음)
+- app/data/stocks.json 은 이미 상단 "작업 규칙 3" 및 "디렉토리 구조" 주석에서
+  손 수정 금지로 전역 동결돼 있다. 여기 목록의 항목은 그와 중복이며, 파이프라인
+  로직이라서가 아니라 산출물이기 때문에 동결된 것이다. 나머지 4개 항목은
+  수집 파이프라인의 실행 코드/트리거/저장소라 동결 사유가 로직과 직결된다.
 
