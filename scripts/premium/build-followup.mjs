@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { normalizeStockName } from "../../app/lib/stockName.js";
+import { kstDaysAgoStr } from "../lib/market-calendar.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -10,14 +11,9 @@ const FOLLOWUP_LOOKBACK_DAYS = 7;
 const BULLISH_HIT_THRESHOLD_PCT = 3;
 const BULLISH_MISS_THRESHOLD_PCT = -3;
 
-function daysAgoStr(days) {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - days);
-  return d.toISOString().slice(0, 10);
-}
-
 async function fetchReportFromDaysAgo(days) {
-  const targetDate = daysAgoStr(days);
+  // issue_date 는 kstTodayStr 로 기록되므로 기준일도 KST 로 맞춘다.
+  const targetDate = kstDaysAgoStr(days);
   const { data, error } = await supabase
     .from("reports")
     .select("id, issue_date, topic_title, content_json")

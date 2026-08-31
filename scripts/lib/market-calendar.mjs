@@ -9,6 +9,15 @@ export function kstDateStr(d = new Date()) {
   return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(d);
 }
 
+// KST 기준 오늘에서 days 일 뺀 날짜 문자열 (YYYY-MM-DD). 실행 시각/러너 타임존과
+// 무관하게 "달력상 며칠 전"만 계산한다 - UTC 기반 계산은 UTC 자정 근처에 하루
+// 밀린다. 비교 대상(예: reports.issue_date)이 KST 로 기록될 때 기준을 맞추는 용도.
+export function kstDaysAgoStr(days, d = new Date()) {
+  const base = new Date(`${kstDateStr(d)}T00:00:00Z`);
+  base.setUTCDate(base.getUTCDate() - days);
+  return base.toISOString().slice(0, 10);
+}
+
 // KST 기준 요일. 0=일 ... 6=토.
 export function kstWeekday(d = new Date()) {
   const name = new Intl.DateTimeFormat("en-US", {
