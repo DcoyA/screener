@@ -33,6 +33,19 @@ jobs:
         run: npm install @supabase/supabase-js
         continue-on-error: false
 
+      # 스크립트 파일이 없어서 감시가 10일간 꺼져 있던 적이 있다("Cannot find
+      # module"은 원인이 안 보인다). 없으면 명확한 문구로 즉시 실패시킨다.
+      - name: Assert watchdog script is present
+        run: |
+          missing=0
+          for f in scripts/verify-today-ingested.mjs scripts/lib/market-calendar.mjs; do
+            if [ ! -f "$f" ]; then
+              echo "::error::워치독 파일 없음: $f - 삭제/이동/미배포 여부 확인. 감시가 꺼진 상태다."
+              missing=1
+            fi
+          done
+          exit $missing
+
       - name: Verify today's snapshot
         run: node scripts/verify-today-ingested.mjs
         continue-on-error: false

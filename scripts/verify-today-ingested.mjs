@@ -93,7 +93,7 @@ function buildActionsLink() {
   return `https://github.com/${repo}/actions/runs/${runId}`;
 }
 
-async function sendSlackAlert(failures) {
+async function sendSlackAlert(failures, { test = false, todayCount = null } = {}) {
   // 전용 ALERT_WEBHOOK_URL 시크릿은 만들지 않고, 이미 존재하는
   // SLACK_WEBHOOK_URL(프리미엄 에디터 알림과 같은 채널)을 재사용한다.
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
@@ -106,7 +106,12 @@ async function sendSlackAlert(failures) {
     .map((f) => `• *${f.label}* - 실측: ${f.actual} / 기대: ${f.expected}`)
     .join("\n");
 
-  const text = `:rotating_light: [워치독] 오늘(${kstDateStr()}) 데이터 검증 실패 ${failures.length}건 (트리거: ${triggerLabel()})\n${lines}\n${buildActionsLink()}`;
+  // 원인 판단에 로그를 다시 안 열어도 되게, 조회 대상/행 수/트리거를 본문에 박는다.
+  const countStr = todayCount === null ? "미조회" : `${todayCount}건`;
+  const context = `조회 테이블: latest_stock_snapshots / 날짜(KST): ${kstDateStr()} / 오늘 행 수: ${countStr} / 트리거: ${triggerLabel()}`;
+  const prefix = test ? "[테스트] " : "";
+
+  const text = `:rotating_light: ${prefix}[워치독] 오늘(${kstDateStr()}) 데이터 검증 실패 ${failures.length}건\n${context}\n${lines}\n${buildActionsLink()}`;
 
   const res = await fetch(webhookUrl, {
     method: "POST",
@@ -127,9 +132,10 @@ async function main() {
   // 알림 배선 자체를 실제 데이터 상태와 무관하게 테스트하기 위한 강제 실패 경로
   if (process.env.FORCE_FAIL) {
     console.error("[검증] FORCE_FAIL 설정됨 - 강제로 실패 처리합니다");
-    await sendSlackAlert([
-      { label: "FORCE_FAIL 강제 테스트", actual: "강제 실패", expected: "알림 경로 확인용(정상 동작이면 실패 아님)" },
-    ]);
+    await sendSlackAlert(
+      [{ label: "FORCE_FAIL 강제 테스트", actual: "강제 실패", expected: "알림 경로 확인용(정상 동작이면 실패 아님)" }],
+      { test: true }
+    );
     process.exit(1);
   }
 
@@ -252,7 +258,7 @@ async function main() {
 
   if (failures.length > 0) {
     console.error(`[검증] 총 ${failures.length}건 실패`);
-    await sendSlackAlert(failures);
+    await sendSlackAlert(failures, { todayCount });
     process.exit(1);
   }
 
