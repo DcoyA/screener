@@ -14,6 +14,12 @@ const supabase = createClient(
 
 const GRADE_LOOKBACK_DAYS = 28;
 
+// 요청에 쓰는 실제 max_tokens (진단 로그가 이 변수를 참조한다).
+const REPORT_MAX_TOKENS = 16000;
+
+// 진단/테스트용. LLM 호출 + zod 검증까지만 하고 DB 쓰기·슬랙을 전부 건너뛴다.
+const DRY_RUN = process.argv.includes("--dry-run");
+
 function daysAgoStr(days) {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - days);
@@ -169,7 +175,7 @@ async function callAnthropic(prompt) {
     },
     body: JSON.stringify({
       model: "claude-sonnet-5",
-      max_tokens: 16000,
+      max_tokens: REPORT_MAX_TOKENS,
       thinking: { type: "disabled" },
       tools: [
         {
@@ -193,16 +199,36 @@ async function callAnthropic(prompt) {
 
   const data = await res.json();
 
-  // 1) max_tokens 로 잘리면 tool input 이 불완전할 수 있다. 조용히 넘어가지 말 것.
-  if (data.stop_reason === "max_tokens") {
-    const outTok = data.usage?.output_tokens;
-    console.error(`[생성] stop_reason=max_tokens (output_tokens=${outTok}) - tool input 이 잘렸습니다`);
-    throw new Error(`응답이 max_tokens 로 잘렸습니다 (output_tokens=${outTok}, max_tokens=16000). max_tokens 를 늘리거나 섹션 수를 줄여야 합니다`);
-  }
-
   const toolBlock = (data.content || []).find(
     (b) => b.type === "tool_use" && b.name === "emit_report"
   );
+
+  // [진단] 성공/실패 무관 무조건. 절단 여부 판단의 핵심은 성공 시 output_tokens.
+  {
+    const inp = toolBlock?.input;
+    const sections = Array.isArray(inp?.sections) ? inp.sections : null;
+    console.log("[진단] stop_reason:", data.stop_reason);
+    console.log("[진단] output_tokens:", data.usage?.output_tokens, "/ input_tokens:", data.usage?.input_tokens);
+    console.log("[진단] max_tokens 설정값:", REPORT_MAX_TOKENS);
+    console.log("[진단] tool_use 블록 존재:", !!toolBlock);
+    console.log("[진단] JSON.stringify(block.input).length:", inp ? JSON.stringify(inp).length : null);
+    console.log("[진단] block.input 최상위 키:", inp ? Object.keys(inp) : null);
+    console.log(
+      "[진단] sections 길이:",
+      sections ? sections.length : "(배열 아님)",
+      "| 각 section 키 개수:",
+      sections ? sections.map((s) => (s && typeof s === "object" ? Object.keys(s).length : null)) : null
+    );
+  }
+
+  // max_tokens 로 잘리면 tool input 이 불완전할 수 있다. 조용히 넘어가지 말 것.
+  if (data.stop_reason === "max_tokens") {
+    const outTok = data.usage?.output_tokens;
+    console.error(`[생성] stop_reason=max_tokens (output_tokens=${outTok}) - tool input 이 잘렸습니다`);
+    throw new Error(
+      `응답이 max_tokens 로 잘렸습니다 (output_tokens=${outTok}, max_tokens=${REPORT_MAX_TOKENS}). max_tokens 를 늘리거나 섹션 수를 줄여야 합니다`
+    );
+  }
   if (!toolBlock) {
     const textBlocks = (data.content || [])
       .filter((b) => b.type === "text")
@@ -347,8 +373,12 @@ async function main() {
   }
 
   if (existingReports.length > 0) {
-    console.log("[생성] 오늘 issue_date의 리포트가 이미 존재하여 스킵합니다");
-    return;
+    if (DRY_RUN) {
+      console.log("[dry-run] 오늘 issue_date 리포트가 이미 존재 - 중복 방지 가드 우회 (진단 목적)");
+    } else {
+      console.log("[생성] 오늘 issue_date의 리포트가 이미 존재하여 스킵합니다");
+      return;
+    }
   }
 
   const relatedCodes = [...new Set(candidates.flatMap((c) => c.related_codes || []))];
@@ -359,8 +389,13 @@ async function main() {
   const result = await generateReportContent(candidates, context);
 
   if (!result.ok) {
-    await notifyGenerationFailure(result.errors, { fatal: !!result.fatal });
-    console.error("[생성] 검증을 통과한 리포트를 만들지 못해 종료합니다(발송 안 함)");
+    if (DRY_RUN) {
+      console.log("[dry-run] 슬랙 실패알림 스킵");
+      console.error("[dry-run] 검증 실패:\n" + result.errors.map((e) => `  - ${e}`).join("\n"));
+    } else {
+      await notifyGenerationFailure(result.errors, { fatal: !!result.fatal });
+      console.error("[생성] 검증을 통과한 리포트를 만들지 못해 종료합니다(발송 안 함)");
+    }
     process.exit(1);
   }
 
@@ -382,6 +417,12 @@ async function main() {
     status: "draft",
     pdf_url: null,
   };
+
+  if (DRY_RUN) {
+    console.log(`[dry-run] reports insert 스킵 (topic_title="${row.topic_title}", sections=${(generated.sections || []).length}개)`);
+    console.log("[dry-run] 생성+검증 통과. DB 미기록, 슬랙/메일 미발송.");
+    return;
+  }
 
   const { error: insertError } = await supabase.from("reports").insert(row);
   if (insertError) {

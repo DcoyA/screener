@@ -2,6 +2,11 @@ name: Premium Report - Generate
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "LLM 호출 + zod 검증까지만. DB 쓰기·슬랙·메일·검수알림 전부 스킵."
+        type: boolean
+        default: true
 
 jobs:
   generate:
@@ -20,13 +25,14 @@ jobs:
         run: npm ci --prefix scripts/premium
 
       - name: Generate report
-        run: node scripts/premium/generate-report.mjs
+        run: node scripts/premium/generate-report.mjs ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Notify draft ready (사람 검수 요청 - 여기서 발송 안 함)
+        if: ${{ success() && !inputs.dry_run }}
         run: node scripts/premium/notify-draft-ready.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -44,7 +50,7 @@ jobs:
           retention-days: 14
 
       - name: Notify on failure
-        if: failure()
+        if: ${{ failure() && !inputs.dry_run }}
         uses: ./.github/actions/notify-slack
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
