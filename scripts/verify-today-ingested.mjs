@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { kstTodayStr } from "./premium/lib/date.mjs";
+import { isMarketHoliday, isWeekendKst, kstDateStr } from "./lib/market-calendar.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -71,7 +71,7 @@ async function sendSlackAlert(failures) {
     .map((f) => `• *${f.label}* - 실측: ${f.actual} / 기대: ${f.expected}`)
     .join("\n");
 
-  const text = `:rotating_light: [워치독] 오늘(${kstTodayStr()}) 데이터 검증 실패 ${failures.length}건\n${lines}\n${buildActionsLink()}`;
+  const text = `:rotating_light: [워치독] 오늘(${kstDateStr()}) 데이터 검증 실패 ${failures.length}건\n${lines}\n${buildActionsLink()}`;
 
   const res = await fetch(webhookUrl, {
     method: "POST",
@@ -87,7 +87,7 @@ async function sendSlackAlert(failures) {
 }
 
 async function main() {
-  const today = kstTodayStr();
+  const today = kstDateStr();
 
   // 알림 배선 자체를 실제 데이터 상태와 무관하게 테스트하기 위한 강제 실패 경로
   if (process.env.FORCE_FAIL) {
@@ -96,6 +96,25 @@ async function main() {
       { label: "FORCE_FAIL 강제 테스트", actual: "강제 실패", expected: "알림 경로 확인용(정상 동작이면 실패 아님)" },
     ]);
     process.exit(1);
+  }
+
+  // 거래일이 아니면 스냅샷이 없는 게 정상이므로 검증을 건너뛴다. cron 지연으로
+  // 실행이 KST 자정을 넘겨 주말/휴장일로 밀려도 여기서 걸러진다.
+  if (isWeekendKst()) {
+    console.log("[스킵] 비거래일(주말)");
+    return;
+  }
+  let holiday;
+  try {
+    holiday = await isMarketHoliday(supabase, today);
+  } catch (err) {
+    // 조회 실패를 휴장일로 오인하면 진짜 장애를 놓친다 - 실패로 처리한다.
+    console.error(`[검증] ${err.message}`);
+    process.exit(1);
+  }
+  if (holiday) {
+    console.log("[스킵] 비거래일(휴장일)");
+    return;
   }
 
   const failures = [];

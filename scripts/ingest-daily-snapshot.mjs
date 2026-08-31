@@ -1,18 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 import stocks from "../app/data/stocks.json" with { type: "json" };
 import { getUnifiedGrade } from "../app/lib/grade.js";
+import { isMarketHoliday, kstDateStr } from "./lib/market-calendar.mjs";
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-const todayKst = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date());
-
-async function isMarketHoliday(dateStr) {
-  const { data } = await supabase
-    .from("market_holidays")
-    .select("holiday_date")
-    .eq("holiday_date", dateStr)
-    .maybeSingle();
-  return !!data;
-}
+const todayKst = kstDateStr();
 
 async function validateAndGuard(rawList) {
   const valid = rawList.filter((s) => s?.code && s?.name && s?.market);
@@ -149,7 +141,7 @@ async function upsertPriceDaily(list) {
 async function runIngest() {
   const startedAt = new Date().toISOString();
   try {
-    if (await isMarketHoliday(todayKst)) {
+    if (await isMarketHoliday(supabase, todayKst)) {
       console.log("휴장일이라 적재를 건너뜁니다.");
       return;
     }
