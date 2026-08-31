@@ -23,9 +23,14 @@ const scenarioSchema = z
   .object({
     horizon: z.string().min(1).max(40).describe("기간 표기 (예: 1~4주, 1~6개월, 1년+)"),
     view: z.string().min(1).max(500).describe("이 기간의 관점 1~2문장"),
-    watch: z.string().min(1).max(300).describe("이 기간에 지켜볼 지표/이벤트"),
+    watch: z
+      .string()
+      .min(1)
+      .max(300)
+      .describe("해당 기간 시나리오 안에 위치하는 관찰 포인트(지표/이벤트). scenarios 객체 레벨이 아니라 short/mid/long 각 객체 안에 둔다"),
   })
-  .strict();
+  .strict()
+  .describe("horizon, view, watch 를 반드시 이 객체 안에 둔다");
 
 const relatedStockSchema = z
   .object({
@@ -68,7 +73,9 @@ const sectionSchema = z
     scenarios: z
       .object({ short: scenarioSchema, mid: scenarioSchema, long: scenarioSchema })
       .strict()
-      .describe("단기/중기/장기 3개 모두 필수"),
+      .describe(
+        "short/mid/long 세 개 키만 가진다(3개 모두 필수). watch/horizon/view 를 이 레벨에 두지 마라 - 각 시나리오 객체 안에 넣는다"
+      ),
     invalidation: z
       .string()
       .min(20)
