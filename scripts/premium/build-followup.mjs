@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { normalizeStockName } from "../../app/lib/stockName.js";
-import { kstDaysAgoStr } from "../lib/market-calendar.mjs";
+import { kstDateStr, kstDaysAgoStr } from "../lib/market-calendar.mjs";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -8,24 +8,39 @@ const supabase = createClient(
 );
 
 const FOLLOWUP_LOOKBACK_DAYS = 7;
+// 정확 일치(today-7)를 풀면 발행 간격이 7일에서 어긋난 리포트도 잡을 수 있는
+// 대신, 하한이 없으면 옛 리포트가 몇 달 뒤에도 "지난 리포트"로 잡힌다. 상한선.
+const FOLLOWUP_MAX_AGE_DAYS = 14;
 const BULLISH_HIT_THRESHOLD_PCT = 3;
 const BULLISH_MISS_THRESHOLD_PCT = -3;
 
-async function fetchReportFromDaysAgo(days) {
-  // issue_date 는 kstTodayStr 로 기록되므로 기준일도 KST 로 맞춘다.
-  const targetDate = kstDaysAgoStr(days);
+// today-7 ~ today-14 (KST) 범위에서 가장 최근에 발행(sent)된 리포트 1건.
+// 등급 룩백 쿼리와 같은 패턴(.lte + order desc + limit 1).
+async function fetchRecentSentReport() {
+  const newest = kstDaysAgoStr(FOLLOWUP_LOOKBACK_DAYS);
+  const oldest = kstDaysAgoStr(FOLLOWUP_MAX_AGE_DAYS);
   const { data, error } = await supabase
     .from("reports")
     .select("id, issue_date, topic_title, content_json")
-    .eq("issue_date", targetDate)
     .eq("status", "sent")
+    .lte("issue_date", newest)
+    .gte("issue_date", oldest)
+    .order("issue_date", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (error) {
-    console.warn(`[후속추적] ${targetDate} 리포트 조회 실패(무시): ${error.message}`);
+    console.warn(`[후속추적] 리포트 조회 실패(무시): ${error.message}`);
     return null;
   }
   return data;
+}
+
+// issue_date 와 오늘(KST) 사이 실제 간격(일). "7일 전"으로 단정하지 않기 위해.
+function gapDaysFromToday(issueDate) {
+  return Math.round(
+    (Date.parse(`${kstDateStr()}T00:00:00Z`) - Date.parse(`${issueDate}T00:00:00Z`)) / 86400000
+  );
 }
 
 // content_json.sections[].related_stocks에서 코드 기준 중복 없이 모은다.
@@ -87,11 +102,19 @@ function judgeVerdict(stance, changePct) {
 // 않는다. 걸러내지 않는 걸 검증하려면 이 함수가 반환한 배열을 그대로
 // generate-report.mjs가 컨텍스트에 넣는지만 확인하면 된다(별도 필터 없음).
 export async function buildFollowup() {
-  const report = await fetchReportFromDaysAgo(FOLLOWUP_LOOKBACK_DAYS);
+  const report = await fetchRecentSentReport();
   if (!report) {
-    console.log(`[후속추적] ${FOLLOWUP_LOOKBACK_DAYS}일 전 발행(sent) 리포트가 없어 후속 추적을 스킵합니다`);
+    console.log(
+      `[후속추적] 스킵 - 대상 없음(범위: today-${FOLLOWUP_LOOKBACK_DAYS} ~ today-${FOLLOWUP_MAX_AGE_DAYS})`
+    );
     return [];
   }
+
+  const gapDays = gapDaysFromToday(report.issue_date);
+  console.log(
+    `[후속추적] 대상 리포트 issue_date=${report.issue_date}, 오늘과 실제 간격 ${gapDays}일` +
+      (gapDays !== FOLLOWUP_LOOKBACK_DAYS ? ` (기준 ${FOLLOWUP_LOOKBACK_DAYS}일 아님)` : "")
+  );
 
   const stocks = collectRelatedStocksFromReport(report);
   if (stocks.length === 0) {

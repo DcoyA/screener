@@ -4,6 +4,7 @@
 // 자른다(문자열 중간 절단 금지).
 
 import { normalizeStockName } from "../../../app/lib/stockName.js";
+import { kstDateStr } from "../../lib/market-calendar.mjs";
 
 const SECTION_CHAR_CAP = 3000; // 섹션(카테고리)당 상한
 const TOTAL_CHAR_CAP = 12000; // 전체 상한
@@ -31,7 +32,14 @@ function formatEconomicEvent(item) {
 }
 
 function formatFollowupItem(item) {
-  return `- (${item.from_issue}) ${item.topic}: ${item.what_changed} → 판정: ${item.verdict}`;
+  let when = item.from_issue;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(item.from_issue || "")) {
+    const gap = Math.round(
+      (Date.parse(`${kstDateStr()}T00:00:00Z`) - Date.parse(`${item.from_issue}T00:00:00Z`)) / 86400000
+    );
+    when = `${item.from_issue}, ${gap}일 전`;
+  }
+  return `- (${when}) ${item.topic}: ${item.what_changed} → 판정: ${item.verdict}`;
 }
 
 function formatRelatedStock(item) {
@@ -48,7 +56,11 @@ const SECTION_FORMATTERS = {
   disclosure_events: { heading: "최근 공시", formatFn: formatDisclosureEvent },
   flow_signals: { heading: "수급 신호", formatFn: formatFlowSignal },
   economic_calendar: { heading: "예정된 주요 일정", formatFn: formatEconomicEvent },
-  followup: { heading: "지난 리포트 후속 추적(있으면 반드시 followup 필드에 반영할 것)", formatFn: formatFollowupItem },
+  followup: {
+    heading:
+      "지난 리포트 후속 추적(각 항목의 '○일 전'을 그대로 쓰고 '지난주'/'7일 전'으로 단정하지 말 것. 있으면 반드시 followup 필드에 반영)",
+    formatFn: formatFollowupItem,
+  },
   related_stock_details: { heading: "관련 종목 상세(등급/섹터 위치 - related_stocks 작성 시 이 값만 사용)", formatFn: formatRelatedStock },
 };
 
