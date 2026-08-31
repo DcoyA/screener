@@ -1,9 +1,10 @@
+# 수동 재적재 전용. 정규 적재는 weekly-json-update.yml 의 인라인 스텝
+# ("Sync latest data to Supabase")이 담당한다.
+# push 트리거는 GITHUB_TOKEN 정책상 동작하지 않아(봇 푸시는 on:push 를
+# 트리거하지 않음) 제거했다. PAT 로 되살리면 인라인 스텝과 이중 적재되고
+# 루프 위험이 있으므로 되살리지 말 것.
 name: Sync stocks.json to Supabase
 on:
-  push:
-    branches: [main]
-    paths:
-      - "app/data/stocks.json"
   workflow_dispatch:
     inputs:
       allow_shrink:
