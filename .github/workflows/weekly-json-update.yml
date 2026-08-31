@@ -1,3 +1,4 @@
+# 이 name 을 바꾸면 sync-supabase-watchdog.yml 의 workflow_run 트리거가 조용히 죽는다.
 name: Weekday JSON Update
 
 on:

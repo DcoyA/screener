@@ -76,6 +76,16 @@ function kstNow() {
   return { hour: parseInt(hhmm.slice(0, 2), 10) % 24, hhmm };
 }
 
+// 어떤 트리거로 돈 실행인지. 중복 방지 로직을 두지 않으므로, 사람이 슬랙에서
+// 중복 알림임을 알아볼 수 있게 메시지에 넣는다.
+function triggerLabel() {
+  const e = process.env.GITHUB_EVENT_NAME || "";
+  if (e === "schedule") return "schedule";
+  if (e === "workflow_run") return "workflow_run";
+  if (e === "workflow_dispatch") return "manual";
+  return e || "local";
+}
+
 function buildActionsLink() {
   const repo = process.env.GITHUB_REPOSITORY;
   const runId = process.env.GITHUB_RUN_ID;
@@ -96,7 +106,7 @@ async function sendSlackAlert(failures) {
     .map((f) => `• *${f.label}* - 실측: ${f.actual} / 기대: ${f.expected}`)
     .join("\n");
 
-  const text = `:rotating_light: [워치독] 오늘(${kstDateStr()}) 데이터 검증 실패 ${failures.length}건\n${lines}\n${buildActionsLink()}`;
+  const text = `:rotating_light: [워치독] 오늘(${kstDateStr()}) 데이터 검증 실패 ${failures.length}건 (트리거: ${triggerLabel()})\n${lines}\n${buildActionsLink()}`;
 
   const res = await fetch(webhookUrl, {
     method: "POST",

@@ -1,8 +1,17 @@
 # .github/workflows/sync-supabase-watchdog.yml
 name: Verify today's snapshot exists
 on:
+  # 주 경로: 데이터 파이프라인이 끝나는 즉시 검증한다. 고정 시각 대신 이걸 쓰는
+  # 이유는 파이프라인 실행이 GitHub 스케줄 지연으로 몇 시간씩 밀리기 때문.
+  # ▶ workflows 의 문자열은 weekly-json-update.yml 의 `name:` 과 정확히 일치해야
+  #   한다. 그 name 을 바꾸면 이 트리거가 조용히 죽는다(대응 주석을 그쪽에도 달아둠).
+  workflow_run:
+    workflows: ["Weekday JSON Update"]
+    types: [completed]
+  # 안전망: 파이프라인이 아예 안 돈 날을 잡는다. 기존 KST 17:00 은 파이프라인이
+  # 밀리면 무의미해서 KST 22:00 으로 늦춤.
   schedule:
-    - cron: "0 8 * * 1-5"   # 평일 UTC 08:00 = KST 17:00
+    - cron: "0 13 * * 1-5"   # 평일 UTC 13:00 = KST 22:00
   workflow_dispatch:
     inputs:
       force_fail:
