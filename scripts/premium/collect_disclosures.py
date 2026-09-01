@@ -147,11 +147,16 @@ def main():
     start_str = start_date.strftime("%Y%m%d")
 
     targets = get_target_codes_with_corp_code()
-    print(f"총 {len(targets)}개 종목 공시 조회 시작 ({start_str} ~ {end_str})")
+    total = len(targets)
+    started_at = time.monotonic()
+    print(f"총 {total}개 종목 공시 조회 시작 ({start_str} ~ {end_str})", flush=True)
 
     rows = []
     skipped_bad_date = 0
-    for code, corp_code in targets:
+    for idx, (code, corp_code) in enumerate(targets, 1):
+        if idx % 25 == 0 or idx == total:
+            elapsed = time.monotonic() - started_at
+            print(f"[{idx}/{total}] {code} 경과 {elapsed:.0f}s", flush=True)
         for d_type in DISCLOSURE_TYPES:
             try:
                 items = fetch_recent_disclosures(d_type, corp_code, start_str, end_str)

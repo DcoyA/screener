@@ -51,6 +51,14 @@ while true; do
     exit 0
   fi
 
+  if [ "$code" -eq 124 ]; then
+    # timeout(1)의 SIGTERM. 같은 RETRY_TIMEOUT 를 4번 반복해서 태우면(2h36m 사례)
+    # 순손실이다. 정체 지점은 다음 스케줄 실행 로그(-u + 진행 로그)로 특정한 뒤
+    # 분할/체크포인트/타임아웃 상향을 판단한다. 여기선 즉시 종료.
+    echo "attempt ${attempt}/${MAX_ATTEMPTS}, exit=124 (RETRY_TIMEOUT ${TIMEOUT}s 초과) - 재시도 안 함, 즉시 종료"
+    exit 124
+  fi
+
   if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
     echo "attempt ${attempt}/${MAX_ATTEMPTS}, exit=${code} - 재시도 소진, 실패"
     exit "$code"

@@ -45,6 +45,8 @@ jobs:
         id: collect_disc
         run: bash scripts/ci/retry-with-backoff.sh python scripts/premium/collect_disclosures.py
         env:
+          # timeout(exit 124)으로 죽으면 stdout 버퍼가 flush 안 돼 진행이 안 보인다.
+          PYTHONUNBUFFERED: "1"
           RETRY_DELAYS: "60 300 1200"
           RETRY_TIMEOUT: "1800"
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
