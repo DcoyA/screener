@@ -42,6 +42,14 @@ export async function isMarketHoliday(supabase, dateStr) {
     .eq("holiday_date", dateStr)
     .maybeSingle();
   if (error) {
+    // 테이블 자체가 없을 때(PostgREST PGRST205 / PG 42P01)는 원인이 안 보이는
+    // 스키마 캐시 에러로만 뜬다. 다음 사람이 30분 헤매지 않게 조치를 찍어준다.
+    // (동작은 그대로 - 여전히 throw 해서 실패 처리한다.)
+    if (error.code === "PGRST205" || error.code === "42P01") {
+      throw new Error(
+        `market_holidays 테이블 없음 - docs/migrations/20260901-market-holidays.sql 를 Supabase SQL 에디터에 적용해야 한다 (원본 에러: ${error.message})`
+      );
+    }
     throw new Error(`market_holidays 조회 실패: ${error.message}`);
   }
   return !!data;
