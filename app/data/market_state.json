@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T10:28:13Z",
+  "generatedAt": "2026-09-02T04:31:13Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,10 +12,10 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.888,
-    "avgTotalScore": 74.45,
-    "avgUpside": 5.19,
-    "avgLiquidity5d": 15517915656.15,
+    "eligibleRatio": 0.89,
+    "avgTotalScore": 74.15,
+    "avgUpside": 9.89,
+    "avgLiquidity5d": 11681469272.95,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
@@ -34,19 +34,19 @@
       "111770",
       "041510",
       "383220",
-      "004800",
       "267250",
       "375500",
       "073240",
-      "100840",
-      "081660"
+      "081660",
+      "004800",
+      "002790"
     ]
   },
   "modeScores": {
-    "stock_pick": 43.38,
-    "etf": 50.64,
-    "dividend_defensive": 40.81,
-    "high_risk": 2.49
+    "stock_pick": 46.04,
+    "etf": 52.73,
+    "dividend_defensive": 36.11,
+    "high_risk": 4.75
   },
   "preferredModes": [
     "ETF",
@@ -60,28 +60,28 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 43.38,
+      "score": 46.04,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 50.64,
+      "score": 52.73,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
     {
       "key": "dividend_defensive",
       "label": "배당/방어",
-      "score": 40.81,
+      "score": 36.11,
       "status": "보수",
       "description": "공격보다 방어와 안정에 무게를 두는 접근"
     },
     {
       "key": "high_risk",
       "label": "고위험",
-      "score": 2.49,
+      "score": 4.75,
       "status": "보수",
       "description": "레버리지·고변동 상품처럼 짧고 강한 방향 베팅에 가까운 접근"
     }
@@ -101,15 +101,15 @@
   ],
   "today": {
     "todayStock": {
-      "code": "000270",
-      "name": "기아보통주",
+      "code": "062040",
+      "name": "산일전기보통주",
       "market": "KOSPI",
       "sector": "대형주",
       "totalScore": 70.0,
-      "upside": 31.8,
-      "avgTradeValue5d": 118381235880.0,
-      "summary": "PER 6.8배, PBR 0.8배, 시총 51.1조원, 최근 5일 평균 거래대금 1184억원, 부채비율 61.8%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 70점 · 상승여력 31.8%"
+      "upside": 36.7,
+      "avgTradeValue5d": 70846073620.0,
+      "summary": "PER 40.2배, PBR 10.2배, 시총 6.0조원, 최근 5일 평균 거래대금 708억원, 부채비율 16.5%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 70점 · 상승여력 36.7%"
     },
     "todayAlternative": {
       "mode": "etf",
