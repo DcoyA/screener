@@ -1,0 +1,26 @@
+# 읽기 전용 진단. Supabase 테이블 존재 여부를 head+count 프로브로 확인한다.
+# workflow_dispatch 전용 - 스케줄 없음. 쓰기 없음.
+name: Probe Supabase tables
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Node dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Probe tables
+        run: node scripts/diagnose/probe-tables.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
