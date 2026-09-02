@@ -9,6 +9,10 @@ on:
         description: "발송할 reports.id (안전장치 - 지정 시 이 리포트만 발송)"
         type: string
         required: false
+      test_recipient:
+        description: "설정하면 이 한 주소로만 테스트 발송(send-report-email.mjs runTestMode - reports/report_subscribers/send_logs/consent_logs 미기록, status 미변경). 비우면 전체 활성 구독자에게 실발송."
+        type: string
+        required: false
 
 jobs:
   send:
@@ -34,6 +38,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           REPORT_ID: ${{ inputs.report_id }}
+          TEST_RECIPIENT_EMAIL: ${{ inputs.test_recipient }}
           REPORT_LINK_SECRET: ${{ secrets.REPORT_LINK_SECRET }}
 
       - name: Notify on failure
