@@ -8,6 +8,10 @@ import { createReportLinkToken } from "../../app/lib/reportLinkToken.js";
 // 아직 Pending이면(DNS 전파 대기) 인증 완료 전까지 실사용 불가 -
 // TEST_RECIPIENT_EMAIL 모드로 먼저 확인할 것.
 const FROM_ADDRESS = "news@report.hellomedia.win";
+// 발신자 표시 이름. Resend 는 "이름 <주소>" 형식을 그대로 받아 From 헤더의
+// 표시 이름을 UTF-8 MIME 인코딩(=?UTF-8?B?…?=)까지 알아서 한다 - 코드에서
+// 별도 인코딩 불필요. 주소/도메인은 위 상수 그대로.
+const FROM_NAME = "우량주 스카우터";
 
 const SITE_URL = "https://www.hellomedia.win";
 const UNSUBSCRIBE_BASE_URL = "https://www.hellomedia.win/unsubscribe";
@@ -95,7 +99,7 @@ async function sendOneEmail(to, subject, htmlBody, reportId, unsubscribeUrl) {
       authorization: `Bearer ${process.env.RESEND_API_KEY}`,
     },
     body: JSON.stringify({
-      from: FROM_ADDRESS,
+      from: `${FROM_NAME} <${FROM_ADDRESS}>`,
       to: [to],
       subject,
       html: htmlBody,
