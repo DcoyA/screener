@@ -53,7 +53,12 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
 
+      # disclosure_events 에 이미 20만+ 행이 있어 당일 수집(Collect disclosures)이
+      # timeout 으로 실패해도 후보 생성은 가능하다. gen_topics 가 node 로 도므로
+      # 그 선행인 Node.js 설치/deps 도 실패해도 실행돼야 한다. Collect disclosures
+      # 실패는 여전히 잡 전체를 red 로 만든다(continue-on-error 안 씀).
       - name: Set up Node.js
+        if: success() || failure()
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -62,8 +67,12 @@ jobs:
 
       - name: Install Node deps
         id: deps_node
+        if: success() || failure()
         run: npm ci --prefix scripts/premium
 
+      # Scan market issues 는 조건을 안 붙인다. gen_topics 는 market_issues 를
+      # DB(3일 창)에서 읽지 당일 스캔 결과를 필수로 요구하지 않으므로, 상류
+      # 실패 시엔 그대로 skip 되게 둔다(부분 실패 뒤 LLM 호출을 아낀다).
       - name: Scan market issues
         id: scan
         run: node scripts/premium/scan_market_issues.mjs
@@ -74,14 +83,17 @@ jobs:
 
       - name: Generate topic candidates
         id: gen_topics
+        if: success() || failure()
         run: node scripts/premium/generate-topic-candidates.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           FORCE_DAY_TYPE: ${{ inputs.force_day_type }}
 
+      # 후보가 생겨도 이 알림이 skip 되면 에디터가 슬랙에서 못 고른다 -> draft 안 나옴.
       - name: Notify editor via Slack
         id: notify_editor
+        if: success() || failure()
         run: node scripts/premium/notify-editor.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -96,8 +108,9 @@ jobs:
           status: failure
           job_name: ${{ github.workflow }}
           retry_workflow: premium-data-collect.yml
-          # continue-on-error가 없어 첫 실패에서 잡이 멈추므로 outcome=='failure'인
-          # 스텝은 정확히 하나다. 위에서부터 처음 걸리는 스텝 이름을 실어 보낸다.
+          # Collect disclosures 뒤 몇 스텝은 실패해도(if: success() || failure())
+          # 계속 돌므로 outcome=='failure'인 스텝이 둘 이상일 수 있다. 위에서부터
+          # 처음 걸리는(= 근본 원인) 스텝 이름을 실어 보낸다.
           failed_step: >-
             ${{ steps.deps_py.outcome == 'failure' && 'Install Python deps'
              || steps.collect_flow.outcome == 'failure' && 'Collect flow signals'
