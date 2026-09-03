@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T04:31:13Z",
+  "generatedAt": "2026-09-03T04:38:38Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -12,41 +12,41 @@
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.89,
-    "avgTotalScore": 74.15,
-    "avgUpside": 9.89,
-    "avgLiquidity5d": 11681469272.95,
+    "eligibleRatio": 0.892,
+    "avgTotalScore": 74.95,
+    "avgUpside": 7.24,
+    "avgLiquidity5d": 20228912937.55,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 5,
+    "sectorSpread": 6,
     "strongSectorCounts": {
-      "대형주": 12,
+      "대형주": 10,
       "중소형주": 5,
-      "미디어/엔터": 1,
+      "미디어/엔터": 2,
       "자동차/부품": 1,
-      "반도체": 1
+      "산업재": 1
     },
     "topPoolCodes": [
       "041190",
+      "192080",
       "111770",
       "041510",
       "383220",
-      "267250",
-      "375500",
-      "073240",
-      "081660",
       "004800",
-      "002790"
+      "267250",
+      "006730",
+      "084110",
+      "375500"
     ]
   },
   "modeScores": {
-    "stock_pick": 46.04,
-    "etf": 52.73,
-    "dividend_defensive": 36.11,
-    "high_risk": 4.75
+    "stock_pick": 46.08,
+    "etf": 55.22,
+    "dividend_defensive": 38.76,
+    "high_risk": 3.48
   },
   "preferredModes": [
     "ETF",
@@ -60,28 +60,28 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 46.04,
+      "score": 46.08,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 52.73,
+      "score": 55.22,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
     {
       "key": "dividend_defensive",
       "label": "배당/방어",
-      "score": 36.11,
+      "score": 38.76,
       "status": "보수",
       "description": "공격보다 방어와 안정에 무게를 두는 접근"
     },
     {
       "key": "high_risk",
       "label": "고위험",
-      "score": 4.75,
+      "score": 3.48,
       "status": "보수",
       "description": "레버리지·고변동 상품처럼 짧고 강한 방향 베팅에 가까운 접근"
     }
@@ -106,10 +106,10 @@
       "market": "KOSPI",
       "sector": "대형주",
       "totalScore": 70.0,
-      "upside": 36.7,
-      "avgTradeValue5d": 70846073620.0,
-      "summary": "PER 40.2배, PBR 10.2배, 시총 6.0조원, 최근 5일 평균 거래대금 708억원, 부채비율 16.5%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 70점 · 상승여력 36.7%"
+      "upside": 38.0,
+      "avgTradeValue5d": 71911392630.0,
+      "summary": "PER 37.8배, PBR 9.6배, 시총 5.6조원, 최근 5일 평균 거래대금 719억원, 부채비율 16.5%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 70점 · 상승여력 38.0%"
     },
     "todayAlternative": {
       "mode": "etf",
