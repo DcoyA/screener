@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-03T04:38:38Z",
+  "generatedAt": "2026-09-04T04:31:05Z",
   "source": {
     "stocks": "app/data/stocks.json",
     "sectorMap": null,
@@ -7,27 +7,27 @@
   },
   "header": {
     "title": "대안 투자",
-    "summary": "현재는 확신형 장세보다 확인형 장세에 가깝고, ETF / 개별주 관점으로 보는 편이 무난합니다.",
-    "marketTone": "중립"
+    "summary": "지금은 개별주 추격보다 ETF / 개별주처럼 분산형 접근이 더 적합한 구간입니다.",
+    "marketTone": "분산 접근 우위"
   },
   "signals": {
     "count": 500,
-    "eligibleRatio": 0.892,
-    "avgTotalScore": 74.95,
-    "avgUpside": 7.24,
-    "avgLiquidity5d": 20228912937.55,
+    "eligibleRatio": 0.888,
+    "avgTotalScore": 75.15,
+    "avgUpside": 6.88,
+    "avgLiquidity5d": 10724927302.4,
     "riskConcentration": 0.0,
     "momentumSupportRatio": 0.0,
     "reboundRatio": 0,
     "liquidityBurstRatio": 0,
     "investorPositiveRatio": 0,
-    "sectorSpread": 6,
+    "sectorSpread": 7,
     "strongSectorCounts": {
       "대형주": 10,
-      "중소형주": 5,
+      "중소형주": 4,
       "미디어/엔터": 2,
-      "자동차/부품": 1,
-      "산업재": 1
+      "산업재": 1,
+      "바이오/제약": 1
     },
     "topPoolCodes": [
       "041190",
@@ -36,17 +36,17 @@
       "041510",
       "383220",
       "004800",
+      "439260",
       "267250",
       "006730",
-      "084110",
-      "375500"
+      "069620"
     ]
   },
   "modeScores": {
-    "stock_pick": 46.08,
-    "etf": 55.22,
-    "dividend_defensive": 38.76,
-    "high_risk": 3.48
+    "stock_pick": 45.9,
+    "etf": 58.72,
+    "dividend_defensive": 39.12,
+    "high_risk": 3.3
   },
   "preferredModes": [
     "ETF",
@@ -60,28 +60,28 @@
     {
       "key": "stock_pick",
       "label": "개별주",
-      "score": 46.08,
+      "score": 45.9,
       "status": "유리",
       "description": "좋은 기업 중 지금 실제로 반응 가능한 후보를 선별하는 접근"
     },
     {
       "key": "etf",
       "label": "ETF",
-      "score": 55.22,
+      "score": 58.72,
       "status": "유리",
       "description": "개별 종목보다 업종/지수 분산으로 방향성에 대응하는 접근"
     },
     {
       "key": "dividend_defensive",
       "label": "배당/방어",
-      "score": 38.76,
+      "score": 39.12,
       "status": "보수",
       "description": "공격보다 방어와 안정에 무게를 두는 접근"
     },
     {
       "key": "high_risk",
       "label": "고위험",
-      "score": 3.48,
+      "score": 3.3,
       "status": "보수",
       "description": "레버리지·고변동 상품처럼 짧고 강한 방향 베팅에 가까운 접근"
     }
@@ -101,15 +101,15 @@
   ],
   "today": {
     "todayStock": {
-      "code": "062040",
-      "name": "산일전기보통주",
+      "code": "000270",
+      "name": "기아보통주",
       "market": "KOSPI",
       "sector": "대형주",
-      "totalScore": 70.0,
-      "upside": 38.0,
-      "avgTradeValue5d": 71911392630.0,
-      "summary": "PER 37.8배, PBR 9.6배, 시총 5.6조원, 최근 5일 평균 거래대금 719억원, 부채비율 16.5%입니다.",
-      "whyNow": "종합 조건 통과 · 총점 70점 · 상승여력 38.0%"
+      "totalScore": 71.0,
+      "upside": 40.8,
+      "avgTradeValue5d": 114162104133.0,
+      "summary": "PER 6.6배, PBR 0.8배, 시총 49.7조원, 최근 5일 평균 거래대금 1142억원, 부채비율 61.8%입니다.",
+      "whyNow": "종합 조건 통과 · 총점 71점 · 상승여력 40.8%"
     },
     "todayAlternative": {
       "mode": "etf",
